@@ -225,6 +225,16 @@ export type Slots = Brix.System & {
 	-- How many of each find out of `player`'s job box are in the world now (in anyone's hands,
 	-- on a head, lying or set down), by name: Save.boxed takes them off what's in the box.
 	fromBox: (self: any, player: Player) -> { [string]: number },
+	-- A find `name` out of `player`'s job box straight onto their head (S5-03f2b, D-316: worn off
+	-- their clothes rail; a Gold's gilded), marked as from their box as `unbox` does. Its model,
+	-- or nil when it isn't worn, their head isn't free, or they have no living character.
+	boxToHead: (self: any, player: Player, name: string) -> Model?,
+	-- The find on `player`'s head, by its save's name, and whether it came out of their own box.
+	onHead: (self: any, player: Player) -> (string?, boolean),
+	-- Hangs `player`'s worn find `name` back up (D-316): out of their own box, it goes off their
+	-- head and back into the box, out of the world. Where it was on their head, or nil if they
+	-- don't wear one of `name` from their box.
+	hangUp: (self: any, player: Player, name: string) -> Vector3?,
 	-- Lays placed tool `id` on the floor at `at`, turned `yaw` degrees (its front gone from under it).
 	-- `still`: stood there at once, no fall and no clank (the toy car let go to roll: every screen
 	-- plays its roll there from where it was set down).
@@ -1961,6 +1971,80 @@ function Slots.new(): Slots
 			end
 		end
 		return out
+	end
+
+	function system.boxToHead(_: any, player: Player, name: string): Model?
+		local base = Gold.base(name)
+		local key = base or name
+		local row = Catalog[key]
+		local root = rootOf(player)
+		if not (row and row.find and Head.fit(key) and root) or heads[player] then
+			return nil
+		end
+		local model = Tools.clone(key, root.CFrame)
+		local body = if model then Tools.body(model) else nil
+		if not (model and body) then
+			if model then
+				model:Destroy()
+			end
+			return nil
+		end
+		if base then
+			Gold.gild(model)
+		end
+		nextId += 1
+		local t: Tool = {
+			id = `{key}{nextId}`,
+			n = nextId,
+			key = key,
+			model = model,
+			body = body,
+			owner = player,
+			uses = Wear.full(key),
+			home = player.UserId,
+			gold = base ~= nil,
+		}
+		tools[t.id] = t
+		heads[player] = t.id
+		wearOn(player)
+		dress(player)
+		publish(player)
+		changed:fire({ player = player, kind = "Wear" })
+		return model
+	end
+
+	function system.onHead(_: any, player: Player): (string?, boolean)
+		local id = heads[player]
+		local t = if id then tools[id] else nil
+		if not t then
+			return nil, false
+		end
+		return named(t), t.home == player.UserId
+	end
+
+	function system.hangUp(_: any, player: Player, name: string): Vector3?
+		local id = heads[player]
+		local t = if id then tools[id] else nil
+		if not (t and t.home == player.UserId and named(t) == name) then
+			return nil
+		end
+		local at = t.body.Position
+		if t.model.Parent then
+			glint(at) -- off your head in a glint, as one going back into the box does
+		end
+		offHead(player)
+		tools[t.id] = nil
+		grounds[t.id] = nil
+		unoffer(t)
+		-- back in the box: a crack it took while out comes home with it (D-296)
+		taken:fire({ home = player.UserId, name = name, how = "Back", cracked = t.chipped == true })
+		t.owner = nil
+		stow(t)
+		t.model:Destroy()
+		dress(player)
+		publish(player)
+		changed:fire({ player = player, kind = "Wear" })
+		return at
 	end
 
 	function system.lower(_: any, id: string, at: Vector3, yaw: number, still: boolean?)

@@ -2555,10 +2555,12 @@ Done when players watch the results to the end and change their perks between cl
       oak hangers from its graphite bar, shoes on its rack), castors under it; built the unit's
       way in `art/home`; seen in Play on the A16. `art/sheets/lobby-rail*.png`,
       `docs/art/S5-03f2a-*`.
-    - [ ] **S5-03f2b Wearing from the rail** (idea 23; Lethal Company's suit rack): everything you
-      own that you can wear hangs on its row (`Specs.Rail`); press one and you're wearing it, with
-      the find's own sound (the hard hat's knock and its lamp's click), and see it in the mirror;
-      press again to hang it back. Server-owned, validated and rate-limited.
+    - [x] **S5-03f2b Wearing from the rail** (D-316): every kind you own that you wear (the hard
+      hat and its Gold) stands on the rail's hat shelf, at the size you wear it, while one is in
+      your job box, never on the shelf again; Wear puts one from your box on your head with its
+      knock and click, lit for good at home, and Hang up puts it back in a glint with its knock.
+      Only you see the presses; the server checks them. Seen on the A16: wear it, see it in the
+      mirror, hang it back. `docs/art/S5-03f2b-*`.
     - [ ] **S5-03f3 Nothing worn or switched on runs down at home** (idea 23's rule): the hard
       hat's minute starts only once you're on a climb.
     - [ ] **S5-03f4 Wrap colours tried on** (idea 24): seen on you in the mirror for a few
@@ -3045,6 +3047,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
 
 ## Polish waiting for a slot
 
+- **The rail's motion** (S5-03f2b, D-316): the hat lifting off the rail toward your head as you
+  wear it (now it's gone from the rail as it lands on you, with its knock and click), and
+  settling onto the shelf with a small drop as you hang it up (now a glint at your head and its
+  knock on the rail).
 - **Arranging's extras** (S5-03e3a1, D-311): finds standing on a lifted find ride its ghost (now
   they stay put until it's set down); pinch and pan the Arrange camera in a bigger unit; a faint
   grid on the walls for a hanging find; the tray's card lifting off as its find rises out of it;

@@ -106,7 +106,8 @@ function HomeCards.new(): HomeCards
 		}
 	end
 
-	-- A home's own buttons, the switch's and the job box's (JobBoxes), shown only to its holder.
+	-- A home's own buttons, the switch's, the job box's (JobBoxes) and the clothes rail's (Rails),
+	-- shown only to its holder.
 	local function showSwitch(unit: Model)
 		local me = Players.LocalPlayer
 		local mine = me ~= nil and unit:GetAttribute(Door.HolderAttribute) == me.UserId
@@ -115,6 +116,14 @@ function HomeCards.new(): HomeCards
 			local prompt = spot and spot:FindFirstChildWhichIsA("ProximityPrompt", true)
 			if prompt then
 				prompt.Enabled = mine
+			end
+		end
+		local rail = unit:FindFirstChild("Rail")
+		if rail then
+			for _, d in rail:GetDescendants() do
+				if d:IsA("ProximityPrompt") then
+					d.Enabled = mine
+				end
 			end
 		end
 	end

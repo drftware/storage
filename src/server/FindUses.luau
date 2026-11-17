@@ -71,7 +71,11 @@ local function stampOf(model: Model): Use.Stamp?
 	)
 end
 
-function FindUses.new(): Brix.System
+export type FindUsesSystem = Brix.System & {
+	wearLit: (self: any, player: Player, model: Model, key: string) -> (),
+}
+
+function FindUses.new(): FindUsesSystem
 	local connections: { Brix.SignalConnection } = {}
 	local leaving: RBXScriptConnection? = nil
 	local last: { [Player]: number } = {} -- each player's last press that took, os.clock
@@ -493,6 +497,30 @@ function FindUses.new(): Brix.System
 	end
 
 	local system = { name = "FindUses" }
+
+	-- A find put on `player`'s head off their clothes rail (S5-03f2b, D-316): its Wear press stamped
+	-- on its `model` as a press from the hand is, so every screen plays its knock and its lamp's
+	-- click and lights it; at home it never runs down (D-259).
+	function system.wearLit(_: any, player: Player, model: Model, key: string)
+		local row = Use.Rows[key]
+		if not (row and row.verb == Head.Verb) then
+			return
+		end
+		local pressed, left, count = Use.press(row, nil, 0, Finds.durations(key))
+		if not pressed then
+			return
+		end
+		if atHome(player) then
+			left = Use.Forever
+		end
+		last[player] = os.clock()
+		model:SetAttribute(Use.KeyAttribute, key)
+		model:SetAttribute(Use.StateAttribute, pressed :: Use.State)
+		model:SetAttribute(Use.LeftAttribute, Use.encode(left))
+		model:SetAttribute(Use.CountAttribute, count)
+		model:SetAttribute(Use.AtAttribute, Workspace:GetServerTimeNow()) -- last: the stamp is whole
+		CollectionService:AddTag(model, Use.Tag)
+	end
 
 	function system.start(_: any, context: Brix.Context)
 		local s = (context.registry:get("slots") :: any) :: Slots.Slots? -- any: the registry's

@@ -50,6 +50,14 @@ nowhere else.
   castors past the mirror, a hat shelf on top, three oak hangers on a graphite bar, a shoe rack.
   My defaults to judge: it stands on the mirror's wall further in, 0.7 studs past the mirror (or
   nearer the door, or on the other wall); its size (4.5 across, 5.2 tall) beside you.
+  **Wearing from it** (S5-03f2b, D-316; seen in Play on the A16,
+  `docs/art/S5-03f2b-worn-mirror-a16.jpg`). With a hard hat in your save (on the Server,
+  `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "HardHat")`), walk up to the
+  rail: the hat stands on its top shelf. Press Wear: listen for its knock and the lamp's click,
+  then turn to the mirror. Press Hang up over the empty shelf: a glint at your head, the knock,
+  the hat back on the rail. Say: the hat on the rail the right size (it stands at the size you
+  wear it, so the brim overhangs the shelf a little), and whether it wants to lift off and settle
+  back with motion (ROADMAP polish, "The rail's motion").
 - [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
   window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
   Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a

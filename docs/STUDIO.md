@@ -3030,3 +3030,8 @@ verified: a doc page, Studio, or "untested".
   tagged as a keeper at first. Squeeze or press soon after taking the find, or stand your own
   Mannequin (`StandMannequin`, asleep at (0, 0, -656)) and expect it to catch you.
 - `screen_capture` timed out twice in Play with the display asleep: read state instead.
+- **Pressing a world button from the MCP** (S5-03f2b, Nov 17): a Client `execute_luau` that calls
+  `prompt:InputHoldBegin()`, waits a beat and calls `prompt:InputHoldEnd()` fires the server's
+  `Triggered` as a real press does (the player must be in its reach and it must be Enabled on
+  that screen). Gui buttons still need `user_mouse_input`.
+

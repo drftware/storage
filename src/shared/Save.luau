@@ -100,6 +100,9 @@ export type Format = {
 	decode: (self: any, version: number, stored: unknown) -> (Data?, string?),
 }
 
+-- what you wear goes on your clothes rail, never the shelf (S5-03f2b, D-316)
+local Rail = require("./Home/Rail")
+
 local Save = {}
 
 -- The key a player's save sits under, by their UserId, and the UserId back from a key (Roblox
@@ -166,8 +169,9 @@ end
 -- book's finds page stamped `now` for any name never stamped before. Each also lands on the first
 -- empty spot of the shelf's first `spots` (D-284: a home's shelf, 6 in a small unit), new, or a
 -- kind never owned if it was stamped just now; with the shelf full it stays in `finds` alone (the
--- job box, S5-03c2), its lid marked as new as the newest find that went in (D-287). Returns the
--- names stamped for the first time, in order, each once.
+-- job box, S5-03c2), its lid marked as new as the newest find that went in (D-287). A find you
+-- wear never goes on the shelf: it stands on your clothes rail (D-316), counted in the box. Returns
+-- the names stamped for the first time, in order, each once.
 function Save.keep(data: Data, names: { string }, now: number, spots: number?): { string }
 	local fresh: { string } = {}
 	for _, name in names do
@@ -178,7 +182,7 @@ function Save.keep(data: Data, names: { string }, now: number, spots: number?): 
 			table.insert(fresh, name)
 		end
 		local level = if kind then Save.Fresh.Kind else Save.Fresh.New
-		if not Save.shelve(data, name, level, spots or 0) then
+		if Rail.row(name) or not Save.shelve(data, name, level, spots or 0) then
 			data.boxFresh = math.max(data.boxFresh, level)
 		end
 	end
@@ -202,6 +206,20 @@ function Save.shelve(data: Data, name: string, fresh: number, spots: number): nu
 		end
 	end
 	return nil
+end
+
+-- Lifts every find you wear off the shelf (D-316: a save from before the rail kept the hard hat
+-- there), so it's in the box and stands on your rail. How many it lifted.
+function Save.unshelve(data: Data): number
+	local lifted = 0
+	for _, spot in data.shelf do
+		if spot.find ~= "" and Rail.row(spot.find) then
+			spot.find = ""
+			spot.fresh = Save.Fresh.Seen
+			lifted += 1
+		end
+	end
+	return lifted
 end
 
 -- What you may have set out in your home (D-308): each find you own, less those standing on your

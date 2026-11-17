@@ -8005,3 +8005,37 @@ you own on it and makes pressing one wear it.
   as the shelf does. Arrange's fixed footprints gain it on the floor and on that wall.
 - **Seen in Studio Play on the A16, Nov 17** (`docs/art/S5-03f2a-rail-a16.jpg`): in all 12
   homes, beside the mirror at phone size, in first person.
+
+## D-316 · 2026-11-17 · Wearing from the rail: Wear and Hang up, the hat out of your box (S5-03f2b)
+
+The moment (the home doc's idea 23, Lethal Company's suit rack): walk up to your rail, press the
+hard hat and you're wearing it, its knock and its lamp's click; turn to the mirror and it's on
+you. Press again and it hangs back up.
+
+- **The rail shows what's in your box** (`Home/Rail`, `Rails`): each kind you own that you wear
+  (today the hard hat and its Gold, anything `Head.fit` knows) has a place on its row, the hat
+  shelf's middle first, then either side; a copy stands there while one of it is in your job box
+  (`Save.boxed`), at the size you wear it (1.7), as worn (its battery pack left off), its lamp to
+  the room, lights off. A visitor sees it too. The box's panel still lists it: one pool, two
+  views, so nothing is ever counted twice.
+- **What you wear never goes on the shelf**: `Save.keep` skips the shelf for it, and a save that
+  already had the hat on the shelf has it lifted off as it loads (`Save.unshelve`), so it stands
+  on the rail. Tested in `tests/rail.spec`.
+- **Wear makes it from your box onto your head** (`Slots:boxToHead`), marked as from your box as
+  a take to hand is (D-293): the save isn't written, the rail's copy goes at once, and it's taken
+  up into a climb (D-251), recalled if you leave, as any find out of your box. Its press is
+  stamped as Wear from the hand is (`FindUses:wearLit`): every screen plays its knock and click
+  and lights it, for good at home (D-259). Only with your head free.
+- **Hang up puts it back** (`Slots:hangUp`): off your head in a glint (as a find going back into
+  the box at a leave), its knock on the rail, standing there again. Only a worn find out of your
+  own box: a hat picked up on a floor isn't yours to hang until a gate keeps it.
+- **One press a place, shown only to you** (HomeCards, as the switch and the box are): Wear while
+  it stands and your head is free, Hang up while you wear that kind from your box, nothing
+  otherwise (no refusal text: the press just isn't there). The server checks each one: rate
+  (3 a second, 4 at once), not caught, your home, your root within 11 studs of the place (reach 7
+  plus slack), and what the place offers now, never the button's words. A two-second sweep
+  catches what no signal tells (a hat sold from the box).
+- **Seen in Studio Play on the A16, Nov 17** (`docs/art/S5-03f2b-worn-mirror-a16.jpg`): the hat
+  on the rail with Wear; pressed, on your head and lit, Hang up over the empty shelf, yourself
+  in the hat in the mirror; Hang up, back on the rail, Wear again; no errors.
+
