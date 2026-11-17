@@ -3158,3 +3158,16 @@ verified: a doc page, Studio, or "untested".
   the crops shows which frames moved. There's no PIL or ImageMagick here; `sips` crops and scales.
 - **Arrange keeps its tab between opens**, so it opens straight onto the front tab if you left it
   there.
+
+## Furniture out of the job box, seen on the A16 (S5-03g4c2, Nov 17)
+
+- **The job box's prompt never shows while Studio isn't drawing**: `InputHoldBegin`/`End` did
+  nothing (no `PromptShown`) until `caffeinate -d -u -t 600 &` and Studio brought forward; then
+  the first try opened it. The button is the `JobBoxButton` attachment on a spot part in the
+  unit, not under the JobBox model.
+- **Arrange's × is the cancel** (the lifted thing slides back); **Put away** is the pill left of
+  Place (gui about (491, 242) on the A16, tapped at x + 47). The panel's cards and its Set out
+  sit where Take does: Pallet's card at gui (167, 131), its Set out at (167, 169).
+- A burst capture started before the MCP tap ran early: the tap's call takes a second or more to
+  land, so start the burst about 2.5 s ahead, as the two-second note above says.
+

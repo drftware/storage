@@ -28,8 +28,15 @@
 	(`gold`), so a save written at any moment holds the four or the Gold, never both or neither.
 	The screen counts the four off its card and deals the Gold's (`made`). A Gold sells at five
 	times its find's price; it doesn't come out into your hands or onto the shelf yet.
+
+	Furniture in the box (S5-03g4c2, D-337): the counter's pieces you own and haven't set out
+	(`Furniture.boxed`) come with the list, dealt first, a card a piece (`pieces`), keyed by the
+	name they're set out under so a piece is never a find. A floor piece's only verb is Set out
+	(`settable`), which opens Arrange holding it; no sale, no hand, no shelf. Wall and ceiling
+	pieces wait for their lights (g4d). They show under All and in a search, never under a rarity.
 ]]
 local Chip = require("../Finds/Chip")
+local Furniture = require("./Furniture")
 local Gold = require("./Gold")
 local Grades = require("../Grades")
 
@@ -251,6 +258,7 @@ export type Card = {
 	count: number,
 	gold: boolean?,
 	base: string?,
+	piece: string?, -- a piece of the counter's furniture: its id (S5-03g4c2); its grade means nothing
 }
 -- What the screen needs from a find's catalog row (Tools.Catalog): its name and grade.
 export type Row = { name: string, grade: Grades.Grade?, find: boolean? }
@@ -351,6 +359,32 @@ function BoxPanel.cards(finds: { [string]: number }, catalog: { [string]: Row })
 	return out
 end
 
+-- The furniture in the box (S5-03g4c2): a card each piece with one at least, in the counter's order
+-- (`Furniture.Pieces`), keyed by its placed name ("CampBed:Furniture", never a find's).
+function BoxPanel.pieces(furniture: { [string]: number }): { Card }
+	local out: { Card } = {}
+	for _, p in Furniture.Pieces do
+		local n = furniture[p.id]
+		if type(n) == "number" and n >= 1 then
+			table.insert(out, {
+				key = Furniture.placed(p.id),
+				name = p.name,
+				grade = "Common",
+				count = math.floor(n),
+				piece = p.id,
+			})
+		end
+	end
+	return out
+end
+
+-- Whether the panel offers Set out for `card`: a piece that stands on the floor. Wall and ceiling
+-- pieces come with their lights (S5-03g4d); a find is never set out from here.
+function BoxPanel.settable(card: Card): boolean
+	local p = if card.piece then Furniture.byId(card.piece) else nil
+	return p ~= nil and p.stands == "Floor"
+end
+
 -- Whether the panel offers to make `card` Gold: four or more of a find that can be, not a Gold.
 function BoxPanel.offers(card: Card, row: Row?): boolean
 	return card.gold ~= true and card.count >= Gold.Need and Gold.can(row)
@@ -395,7 +429,7 @@ end
 
 -- Whether `card` is shown for the search `text` and the rarity `grade` (nil: every rarity).
 function BoxPanel.match(card: Card, text: string, grade: Grades.Grade?): boolean
-	if grade and card.grade ~= grade then
+	if grade and (card.grade ~= grade or card.piece) then
 		return false
 	end
 	local want = plain(BoxPanel.search(text))
@@ -417,7 +451,9 @@ end
 function BoxPanel.grades(cards: { Card }): { Grades.Grade }
 	local have: { [string]: true } = {}
 	for _, card in cards do
-		have[card.grade] = true
+		if not card.piece then
+			have[card.grade] = true
+		end
 	end
 	local out: { Grades.Grade } = {}
 	for _, grade in Grades.Names do
@@ -458,6 +494,7 @@ BoxPanel.Words = table.freeze({
 	shelf = "Shelf",
 	sell = "Sell", -- with its price after it: "Sell $4"
 	gold = "Gold", -- four of one find into one Gold
+	setOut = "Set out", -- a piece of furniture out of the box and into Arrange (S5-03g4c2)
 })
 -- Taking one out (S5-03c2b2): tap a card and it lifts and glows, its verbs over its name; Take, and
 -- its picture flies out of the panel into a free one of your hands (the three wells over the

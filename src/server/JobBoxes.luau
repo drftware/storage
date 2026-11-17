@@ -39,7 +39,8 @@
 	sale from the moment it's made, so the autosave, a leave or a shutdown write it too, and a crash
 	before any of them undoes the whole sale, never half. The list sent as the lid opens carries
 	the holder's cash, so the panel shows it from the start, and how many of each are cracked
-	(`BoxPanel.cracked`): a cracked one sells first, at half, one off `chipped` (S5-03c3a2).
+	(`BoxPanel.cracked`): a cracked one sells first, at half, one off `chipped` (S5-03c3a2), and
+	the furniture in the box (`Furniture.boxed`, S5-03g4c2), which the panel lists to set out.
 
 	Making a Gold (S5-03c3b, D-298): Gold is the fourth way, through the same checks and rate limit,
 	for a find that can be made Gold (Home.Gold: not a Secret). Four of it in the box are struck
@@ -54,6 +55,7 @@ local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
+local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Save = require(ReplicatedStorage.Shared.Save)
 local FrontOffice = require(script.Parent.FrontOffice)
@@ -148,7 +150,19 @@ function JobBoxes.new(): Brix.System
 			local free = if data then Save.free(data, spots) else 0
 			local cash = if data then data.cash else 0
 			local cracked = if data then BoxPanel.cracked(data.chipped, boxed) else {}
-			listRemote:FireClient(player, box.model, BoxPanel.list(boxed), free, cash, cracked)
+			-- the furniture in the box (D-336), by piece id: owned less set out (S5-03g4c2)
+			local pieces = if data
+				then Furniture.boxed(data.furniture, Save.placedCounts(data))
+				else {}
+			listRemote:FireClient(
+				player,
+				box.model,
+				BoxPanel.list(boxed),
+				free,
+				cash,
+				cracked,
+				pieces
+			)
 		end
 	end
 

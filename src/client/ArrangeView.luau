@@ -20,6 +20,12 @@
 	tray is the server's count of your box (`Arrange.BoxRemote`), sent as Arrange opens and after
 	every move.
 
+	Furniture (S5-03g4c2, D-337): the counter's pieces in your box sit first in the tray, their
+	painted art in warm wood rims, and lift out of it as a find does. The job box's Set out comes
+	here through `hold`: Arrange rises with the piece already lifted out of the box, gliding down
+	to the floor's middle under your thumb, green where it fits. Set down, it lands with a deeper
+	knock than a find's; tapped where it stands, it lifts, moves, turns or goes back to the box.
+
 	Only the lifted find steps (its follow, while it's lifted); everything else is tweens.
 ]]
 local CollectionService = game:GetService("CollectionService")
@@ -39,8 +45,11 @@ local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
 local BoxPanel = require(ReplicatedStorage.Shared.Home.BoxPanel)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local FreeCursor = require(script.Parent.FreeCursor)
+local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
+local FurnitureTab = require(script.Parent.FurnitureTab)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Grades = require(ReplicatedStorage.Shared.Grades)
+local Home = require(ReplicatedStorage.Shared.Home)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local LooksTab = require(script.Parent.LooksTab)
@@ -67,6 +76,7 @@ local LAND = TweenInfo.new(Feel.Land, Enum.EasingStyle.Quad, Enum.EasingDirectio
 local BACK = TweenInfo.new(Feel.Back, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local FILL = TweenInfo.new(Feel.Fill, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local HONEY = Color3.fromRGB(247, 201, 120) -- the limit bar's fill: warm, the home's own light
+local WOOD = Color3.fromRGB(205, 160, 112) -- a piece of furniture's rim, as the job box draws it
 
 -- A button pressed: the job box panel's click.
 local PRESS: Arrange.Sound = {
@@ -85,6 +95,11 @@ local REFUSE: Arrange.Sound = {
 	volume = BoxPanel.Click.volume,
 	pitch = (BoxPanel.Click.pitch or 1) * 0.62,
 }
+
+-- A piece of furniture set down: the find's knock, lower and fuller, a heavy thing on concrete.
+local THUD: Arrange.Sound = table.clone(Arrange.Knock)
+THUD.pitch = (Arrange.Knock.pitch or 1) * 0.68
+THUD.volume = (Arrange.Knock.volume or 0.5) * 1.3
 
 local STILL = "ArrangeStill"
 local BODY = "ArrangeBody"
@@ -187,7 +202,9 @@ end
 
 local ArrangeView = {}
 
-function ArrangeView.new(need: FreeCursor.Need): Brix.System
+-- The system, and `hold`: opens Arrange holding a piece of furniture from your box by its id,
+-- rising from `from` (the job box) when given (S5-03g4c2).
+function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, from: CFrame?) -> ())
 	local me = Players.LocalPlayer
 	local connections: { RBXScriptConnection } = {}
 	local unitWatch: { [Instance]: RBXScriptConnection } = {}
@@ -612,14 +629,47 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		lift(id, id, name, ghost, model)
 	end
 
-	-- Lifts a find out of the box, under screen point `at`.
-	local function liftBoxed(key: string, at: Vector2)
+	-- The floor spot nearest its middle where `l` fits, in rings of grid steps outward; the middle
+	-- itself when none does (it shows red, and the thumb takes it from there).
+	local function freeSpot(r: Arrange.Room, l: Lifted): Brix.PlacementPose?
+		local first = settle(r, l, "Floor", 0, 0)
+		local area = areaOf(r, "Floor")
+		if not (first and area) then
+			return first
+		end
+		local step = Arrange.Step
+		local reach = math.ceil(math.max(area.width, area.depth) / 2 / step)
+		for ring = 0, reach do
+			for i = -ring, ring do
+				for j = -ring, ring do
+					if math.max(math.abs(i), math.abs(j)) == ring then
+						local pose = settle(r, l, "Floor", i * step, j * step)
+						if pose and r.placements:check(l.id, l.shape, pose) == nil then
+							return pose
+						end
+					end
+				end
+			end
+		end
+		return first
+	end
+
+	-- Lifts a find, or a piece of furniture by its placed name, out of the box: under screen point
+	-- `at`, or from `from` (the job box, for the panel's Set out) down onto the floor's middle.
+	local function liftBoxed(key: string, at: Vector2?, from: CFrame?)
 		if full then
 			return -- the room holds all it can: the card dims and won't lift
 		end
 		local r = room
-		local base = Gold.base(key)
-		local ghost = if r then Tools.clone(base or key, CFrame.identity) else nil
+		local piece = Furniture.ofPlaced(key)
+		local template = if piece then Home.template() else nil
+		local base = if piece then nil else Gold.base(key)
+		local ghost: Model? = nil
+		if r and piece and template and Home.has(template, piece.id) then
+			ghost = Home.piece(template, piece.id, CFrame.identity, Workspace)
+		elseif r and not piece then
+			ghost = Tools.clone(base or key, CFrame.identity)
+		end
 		if not (r and ghost) then
 			return
 		end
@@ -630,15 +680,21 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			return r.placements:poseOf(each) ~= nil
 		end)
 		local camera = Workspace.CurrentCamera
-		if camera then -- it rises out of the tray toward the room
+		if from then -- it rises out of the job box
+			ghost:PivotTo(from + Vector3.yAxis * 1.5)
+		elseif camera and at then -- it rises out of the tray toward the room
 			local ray = camera:ScreenPointToRay(at.X, at.Y)
 			ghost:PivotTo(CFrame.new(ray.Origin + ray.Direction * 6))
 		end
 		lift(key, id, key, ghost, nil)
-		aimAt(at)
+		if at then
+			aimAt(at)
+		end
 		local l = lifted
 		if l and not l.pose then -- over nothing it fits: start it on the floor's middle
-			local pose = settle(r, l, "Floor", 0, 0)
+			-- out of the job box with no thumb on it: the free spot nearest the middle, so it
+			-- arrives green (S5-03g4c2)
+			local pose = if from then freeSpot(r, l) else settle(r, l, "Floor", 0, 0)
 			if pose then
 				setPose(r, l, pose)
 			end
@@ -747,7 +803,7 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		t.Completed:Once(function()
 			cf:Destroy()
 			if l.ghost.Parent then
-				play(Arrange.Knock, sounds())
+				play(if Furniture.ofPlaced(l.name) then THUD else Arrange.Knock, sounds())
 				local stand = Arrange.frameOn(r, pose.on)
 				puff(if stand then Arranged.pose(stand, pose.x, pose.y, pose.turn) else at)
 				TweenService
@@ -919,7 +975,11 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 	end
 
 	-- Rebuilds the tray's cards from the box's counts, rarest first.
-	local function fillTray(counts: { [string]: number }, dimmedBefore: boolean)
+	local function fillTray(
+		counts: { [string]: number },
+		dimmedBefore: boolean,
+		pieces: { [string]: number }
+	)
 		local s = list
 		if not s then
 			return
@@ -928,8 +988,22 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			c:Destroy()
 		end
 		table.clear(cards)
-		for i, card in BoxPanel.cards(counts, Tools.Catalog :: any) do -- any: its rows carry more than Row
-			if not Tools.template(card.base or card.key) then
+		local template = Home.template()
+		-- the furniture first, floor pieces only (the lit ones wait for g4d), then the finds
+		local dealt: { BoxPanel.Card } = {}
+		for _, card in BoxPanel.pieces(pieces) do
+			if BoxPanel.settable(card) then
+				table.insert(dealt, card)
+			end
+		end
+		for _, card in BoxPanel.cards(counts, Tools.Catalog :: any) do -- any: its rows carry more than Row
+			table.insert(dealt, card)
+		end
+		for i, card in dealt do
+			local piece = card.piece
+			if piece and not (template and Home.has(template, piece)) then
+				continue -- the place lacks its art: nothing to stand
+			elseif not piece and not Tools.template(card.base or card.key) then
 				continue -- not in the place yet: nothing to stand
 			end
 			local b = Instance.new("TextButton")
@@ -942,7 +1016,10 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			corner(b, UDim.new(0, 12))
 			local rim = Instance.new("UIStroke")
 			local rgb = Grades.Colours[card.grade]
-			rim.Color = if rgb then Color3.fromRGB(rgb[1], rgb[2], rgb[3]) else RIM
+			rim.Color = if piece
+				then WOOD
+				elseif rgb then Color3.fromRGB(rgb[1], rgb[2], rgb[3])
+				else RIM
 			rim.Thickness = 2
 			rim.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 			rim.Parent = b
@@ -950,7 +1027,11 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			vp.BackgroundTransparency = 1
 			vp.Size = UDim2.fromScale(1, 1)
 			vp.Parent = b
-			ToolPicture.draw(vp, card.key)
+			if piece then
+				FurnitureTab.picture(vp, piece)
+			else
+				ToolPicture.draw(vp, card.key)
+			end
 			if card.count > 1 then
 				local badge = Instance.new("TextLabel")
 				badge.BackgroundTransparency = 1
@@ -1011,8 +1092,9 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		end
 	end
 
-	-- The box's counts, then how many finds are set out of the most the home holds.
-	local function onBox(counts: unknown, out: unknown, limit: unknown)
+	-- The box's counts, then how many finds are set out of the most the home holds, then the
+	-- furniture in the box by piece id (D-336).
+	local function onBox(counts: unknown, out: unknown, limit: unknown, pieces: unknown)
 		local read = BoxPanel.read(counts)
 		if not (read and open) then
 			return
@@ -1030,7 +1112,7 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		then
 			showMeter(out, limit)
 		end
-		fillTray(read, before)
+		fillTray(read, before, BoxPanel.read(pieces) or {})
 	end
 
 	----------------------------------------------------------------------------------------------
@@ -1929,7 +2011,24 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		return math.abs(p.X) <= h.X and math.abs(p.Z) <= h.Z and math.abs(p.Y) <= h.Y + 2
 	end
 
-	return {
+	-- The job box's Set out (S5-03g4c2): Arrange rises on the finds' tab with the piece lifted out
+	-- of the box, gliding down to the floor's middle. Nothing outside your home, for a piece that
+	-- isn't a floor piece, or while something's already lifted.
+	local function hold(piece: string, from: CFrame?)
+		local p = Furniture.byId(piece)
+		if not (running and p and p.stands == "Floor") or lifted or not (open or standingIn()) then
+			return
+		end
+		if onTab ~= FINDS then
+			showTab(FINDS, false)
+		end
+		openNow()
+		if open then
+			liftBoxed(Furniture.placed(piece), nil, from)
+		end
+	end
+
+	local system: Brix.System = {
 		name = "ArrangeView",
 		start = function(_: any)
 			running = true
@@ -2006,6 +2105,7 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			end
 		end,
 	}
+	return system, hold
 end
 
 return ArrangeView

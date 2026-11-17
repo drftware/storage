@@ -90,6 +90,8 @@ local keeperSounds, keeperHeard = KeeperSounds.new()
 local toolView, myHand = ToolView.new(needCursor, kick)
 local wrapView, lay = WrapView.new(myHand, kick)
 local findUseView, findUse = FindUseView.new(myHand)
+-- the job box's Set out opens Arrange holding that piece of furniture (S5-03g4c2)
+local arrangeView, holdPiece = ArrangeView.new(needCursor)
 -- the button's presses with a tool or find in hand other than the horn: each answers on your
 -- screen first (the wrap laid, the lantern clicking on)
 local presses: { [string]: () -> boolean } = { [Wrap.Key] = lay }
@@ -132,9 +134,9 @@ local host = Brix.Host.new({
 		{ slot = "tryOnView", system = TryOnView.new() },
 		{ slot = "shelfView", system = ShelfView.new() },
 		{ slot = "jobBoxView", system = JobBoxView.new() },
-		{ slot = "boxPanelView", system = BoxPanelView.new(needCursor) },
+		{ slot = "boxPanelView", system = BoxPanelView.new(needCursor, holdPiece) },
 		-- lift, drag and set down your finds in your home (S5-03e3a)
-		{ slot = "arrangeView", system = ArrangeView.new(needCursor) },
+		{ slot = "arrangeView", system = arrangeView },
 		-- a friend's find set out drops into place with a knock (S5-03e3b)
 		{ slot = "settleView", system = SettleView.new() },
 		-- a home's new paper or floor rolling round the room on every screen (S5-03g2b)

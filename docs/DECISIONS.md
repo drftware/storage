@@ -8581,3 +8581,28 @@ Animal Crossing's furniture from your pockets).
 - Seen in Studio Play (`ArrangeTest`): set out at (-4, 6) beside the rug after one overlap
   refused, drawn in Unit1 in its canvas and aluminium, saved, re-laid from the save, turned in
   place, put back, in the box again. Not yet seen by a second client (`OWNER.md` after g4c2).
+
+## D-337 Bought furniture comes out of the job box into Arrange (S5-03g4c2, 2026-11-17)
+
+The moment it serves: home from the counter you open your job box, the pallet is there first,
+in its own colours; Set out, the lid shuts and Arrange rises with the pallet already lifted out
+of the box onto a free spot, green; you slide it onto the rug and it lands with a knock (The
+Sims' and Bloxburg's build mode; Animal Crossing's furniture from your pockets).
+- **The furniture is dealt first** in the job box, before the finds: few, big, and newly bought,
+  so they're never buried under forty finds. A rim of warm wood (D-263), not a rarity's colour;
+  no rarity chip counts them, a search finds them. Their picture is the counter card's art,
+  still, from the front corner (`FurnitureTab.picture`).
+- **One verb, Set out**, for a floor piece: no sale, no hand, no shelf (furniture isn't carried).
+  It shuts the lid and opens Arrange holding the piece (`ArrangeView`'s `hold`); the piece
+  leaves the box only when it's set down, so closing Arrange leaves it there.
+- **It arrives green**: with no thumb on it, it starts on the free spot nearest the floor's
+  middle, searched in rings of grid steps, never red under nothing.
+- **Arrange's tray lists the floor pieces too**, first, so a piece put back is set out again
+  without leaving Arrange. Wall and ceiling pieces wait for g4d: the panel lists them, without
+  Set out; the tray leaves them out.
+- **A deeper knock** for a piece set down (the find's knock at 0.68 pitch, louder): a heavy thing
+  on concrete.
+- The job box's list remote carries the furniture in the box as its seventh value.
+- Seen in Studio Play on the Galaxy A16: a pallet bought through the counter's remote, set out,
+  saved across a rejoin, lifted by a tap and put back; the camp bed arriving green.
+

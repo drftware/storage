@@ -317,6 +317,42 @@ do
 	ok(fresh[1].key == "NightLight:Gold" and fresh[2].key == "Teddy", "in its place by name")
 end
 
+do -- the furniture in the box (S5-03g4c2): a card a piece, in the counter's order, Set out for floor pieces
+	local pieces =
+		BoxPanel.pieces({ CampBed = 1, MilkCrate = 2, NeonSign = 1, Chair = 3, Pallet = 0 })
+	ok(#pieces == 3, "three pieces: an unknown id and none of one are left out")
+	ok(
+		pieces[1].piece == "MilkCrate" and pieces[1].count == 2,
+		"the crate first, as the counter lists it"
+	)
+	ok(
+		pieces[2].piece == "CampBed" and pieces[3].piece == "NeonSign",
+		"then the bed, then the moon"
+	)
+	ok(pieces[1].key == "MilkCrate:Furniture", "keyed by its placed name, never a find's")
+	ok(
+		pieces[3].key ~= "NeonSign" and pieces[3].name == "Neon moon",
+		"the moon isn't the find NeonSign"
+	)
+	ok(
+		BoxPanel.settable(pieces[2]) and not BoxPanel.settable(pieces[3]),
+		"a bed sets out; the moon waits"
+	)
+	local finds = BoxPanel.cards({ Teddy = 1, Crown = 1 }, catalog)
+	ok(not BoxPanel.settable(finds[1]), "a find is never set out from the panel")
+	local all = table.clone(pieces)
+	for _, card in finds do
+		table.insert(all, card)
+	end
+	local grades = BoxPanel.grades(all)
+	ok(#grades == 2, "the pieces add no rarity chip")
+	ok(#BoxPanel.shown(all, "", "Common") == 1, "a rarity shows finds only")
+	ok(#BoxPanel.shown(all, "bed", nil) == 1, "the search finds the camp bed")
+	ok(BoxPanel.took(all, "CampBed:Furniture") ~= nil and #all == 4, "one set out: its card goes")
+	local read = BoxPanel.read({ CampBed = 1 })
+	ok(read ~= nil and read.CampBed == 1, "the box's pieces read as a list")
+end
+
 print(`boxpanel: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

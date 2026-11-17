@@ -2712,7 +2712,7 @@ Done when players watch the results to the end and change their perks between cl
         saying it's in your box; one you can't afford dims its price, with no popup. The server
         answers each buy on `FurnitureBought` after the save's write: "busy" and "save" need a
         gentle settle (the coins never tick for those); a "notStocked" means the week turned.
-      - [ ] **S5-03g4c Bought furniture in the job box and set out with Arrange**, split (too big
+      - [x] **S5-03g4c Bought furniture in the job box and set out with Arrange**, split (too big
         for one session):
         - [x] **S5-03g4c1 The server sets it out** (D-336; seen in Studio Play through
           `ArrangeTest`, `docs/art/S5-03g4c-camp-bed.jpg`): a floor piece set out under its
@@ -2723,12 +2723,20 @@ Done when players watch the results to the end and change their perks between cl
           Wall and ceiling pieces are refused ("notYet") until g4d. The box remote now sends the
           furniture in the box as a fourth value. Before it, the counter's pictures were white:
           the furniture got its paints (D-335).
-        - [ ] **S5-03g4c2 The box and Arrange on screen**: the job box's panel lists each piece in
-          the box (the box remote's fourth value) with its picture (the painted art, as the
-          counter's tab draws it) and a Set out verb, no sale; Set out opens Arrange holding it
-          (`what` = `Furniture.placed(id)`), the lifted piece green or red as a find is, Turn
-          as finds turn; let down, it lands with a knock; a piece tapped in the room lifts and
-          Put back sends it to the box. Wall and ceiling pieces listed without Set out.
+        - [x] **S5-03g4c2 The box and Arrange on screen** (D-337; seen in Studio Play on the A16,
+          `docs/art/S5-03g4c2-*.jpg`): the job box lists the furniture first, its painted art in
+          warm wood rims; a floor piece's one verb is Set out, which shuts the lid and opens
+          Arrange holding it, risen out of the box onto the nearest free spot, green; it lands
+          with a deeper knock than a find's. Arrange's tray lists floor pieces too; one set out
+          lifts by a tap, moves, turns, and Put away sends it back. Wall and ceiling pieces are
+          listed without Set out. Seen: a pallet bought at the counter, set out on the rug, there
+          after a rejoin, put back.
+      - [ ] **S5-03g4c3 A find on a piece's top** (the moment: the pallet set down as a coffee
+        table and your lava lamp stood on it; Bloxburg's tabletop items, Animal Crossing's things
+        on tables): a floor piece with tops (`Specs.Tops`: the crate, the pallet, the folding
+        table, the steel shelf's top tier) offers a top a find stands on, as a find with a top
+        does (`Spots.shape`'s `top`, at the art's height); riders follow it when it moves, go back
+        to the box with it. The shelf's lower tiers and seats wait.
       - [ ] **S5-03g4d The lit pieces**: the string lights hang from the ceiling by their
         origin, the neon moon from a wall like a name card; their Neon parts Neon in `Colour`,
         clear parts Glass (`Specs.Glows`), their one light made only near you as the neon

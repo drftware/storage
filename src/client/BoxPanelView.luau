@@ -42,6 +42,12 @@
 	flies down onto its card, dealt beside the four (`BoxPanel.made`), which pops in with a chink.
 	The server's answer is needed by the flash: refused, or none by then, and the four fly back
 	onto their card, quietly.
+
+	Furniture in the box (S5-03g4c2, D-337): the counter's pieces you own and haven't set out come
+	first, each its painted art turning still in its card (FurnitureTab.picture), rimmed in warm
+	wood. A floor piece's one verb is Set out: the lid shuts, the panel falls with it, and Arrange
+	rises with the piece already in your hands (`hold`, ArrangeView's). Wall and ceiling pieces lift
+	but offer nothing yet (S5-03g4d).
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -52,6 +58,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Cash = require(ReplicatedStorage.Shared.Cash)
 local Coins = require(ReplicatedStorage.Shared.Coins)
 local FreeCursor = require(script.Parent.FreeCursor)
+local FurnitureTab = require(script.Parent.FurnitureTab)
 local Grades = require(ReplicatedStorage.Shared.Grades)
 local Home = require(ReplicatedStorage.Shared.Home)
 local InFlight = require(script.Parent.InFlight)
@@ -76,6 +83,7 @@ local RIM = Color3.fromRGB(106, 138, 147)
 local INK = Lobby.Ink
 local DARK = Color3.fromRGB(24, 22, 20)
 local GOLD = Color3.fromRGB(240, 196, 92) -- money: the Sell button's fill and your cash's figure
+local WOOD = Color3.fromRGB(205, 160, 112) -- a piece of furniture's rim: warm, the home's own (D-263)
 
 local RISE = TweenInfo.new(JobBox.Lid.Open, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local POP = TweenInfo.new(0.26, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
@@ -208,7 +216,11 @@ end
 
 local BoxPanelView = {}
 
-function BoxPanelView.new(need: FreeCursor.Need): Brix.System
+-- `hold` opens Arrange holding a piece of furniture by its id (ArrangeView's, S5-03g4c2).
+function BoxPanelView.new(
+	need: FreeCursor.Need,
+	hold: (piece: string, from: CFrame?) -> ()
+): Brix.System
 	local connections: { RBXScriptConnection } = {}
 	local watching: { RBXScriptConnection } = {} -- the open box's lid and its leaving
 	local gui: ScreenGui? = nil
@@ -256,6 +268,8 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	local sellPop: UIScale
 	local goldButton: TextButton
 	local goldPop: UIScale
+	local setOutButton: TextButton -- a piece of furniture's one verb (S5-03g4c2)
+	local setOutPop: UIScale
 	local goldShine: Tween
 	local purse: Frame -- your cash, over the panel's top right corner
 	local purseText: TextLabel
@@ -418,6 +432,20 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	end
 
 	local function paintVerbs()
+		local furniture = picked ~= nil and picked.card.piece ~= nil
+		setOutButton.Visible = furniture
+		sellButton.Visible = not furniture
+		if furniture then -- furniture: Set out, alone, where Take sits
+			takeButton.Visible, shelfButton.Visible, goldButton.Visible = false, false, false
+			verbs.Position = UDim2.fromScale(0.05, 0.5)
+			verbs.Size = UDim2.fromScale(0.9, 0.45)
+			setOutButton.Position = UDim2.fromScale(0, 0.53)
+			setOutButton.Size = UDim2.fromScale(1, 0.47)
+			if goldShine.PlaybackState == Enum.PlaybackState.Playing then
+				goldShine:Pause()
+			end
+			return
+		end
 		-- a Gold comes out to your hand and your shelf as any find does (S5-03c3b3)
 		local both = free - pending(nil, BoxPanel.Ways.Shelf) > 0
 		local offer = false
@@ -528,7 +556,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		TweenService:Create(s.rim, GLOW, { Thickness = BoxPanel.Glow, Transparency = 0 }):Play()
 		paintVerbs()
 		verbs.Parent = s.frame
-		verbs.Visible = true
+		verbs.Visible = not s.card.piece or BoxPanel.settable(s.card) -- a lit piece waits (g4d)
 		verbsPop.Scale = 0.6
 		TweenService:Create(verbsPop, POP, { Scale = 1 }):Play()
 		play(1.1)
@@ -577,7 +605,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	end
 
 	local function makeCard(card: BoxPanel.Card, order: number): Shown
-		local colour = if card.gold then GILT else colourOf(card.grade)
+		local colour = if card.piece then WOOD elseif card.gold then GILT else colourOf(card.grade)
 		local frame = Instance.new("Frame")
 		frame.Name = card.key
 		frame.LayoutOrder = order
@@ -607,7 +635,11 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		picture.LightColor = Color3.fromRGB(255, 240, 220)
 		picture.LightDirection = Vector3.new(-0.4, -1, -0.6)
 		picture.Parent = frame
-		ToolPicture.draw(picture, card.key)
+		if card.piece then
+			FurnitureTab.picture(picture, card.piece)
+		else
+			ToolPicture.draw(picture, card.key)
+		end
 
 		local name = Instance.new("TextLabel")
 		name.Name = "Name"
@@ -773,7 +805,8 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		finds: { [string]: number },
 		spots: number,
 		cash: number,
-		chipped: { [string]: number }
+		chipped: { [string]: number },
+		pieces: { [string]: number }
 	)
 		if box then
 			close()
@@ -798,7 +831,10 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		local mine = generation
 		grade = nil
 		search.Text = ""
-		all = BoxPanel.cards(finds, Tools.Catalog :: any) -- any: its rows carry more than Row
+		all = BoxPanel.pieces(pieces) -- the furniture first: few, and big (S5-03g4c2)
+		for _, card in BoxPanel.cards(finds, Tools.Catalog :: any) do -- any: its rows carry more than Row
+			table.insert(all, card)
+		end
 		for i, card in all do
 			table.insert(shown, makeCard(card, i))
 		end
@@ -1683,6 +1719,25 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		end
 	end
 
+	-- Set out (S5-03g4c2): the press pops, the lid shuts and the panel falls with it as Arrange rises
+	-- with the piece in your hands. It leaves the box only when it's set down.
+	local function setOut()
+		local s = picked
+		local id = if s then s.card.piece else nil
+		if not (s and id and BoxPanel.settable(s.card)) or show then
+			return
+		end
+		spring(setOutPop)
+		play(1.2)
+		local folder = ReplicatedStorage:FindFirstChild(BoxPanel.RemoteFolder)
+		local remote = folder and folder:FindFirstChild(BoxPanel.CloseRemote)
+		if remote and remote:IsA("RemoteEvent") then
+			remote:FireServer()
+		end
+		local model = box
+		hold(id, if model then model:GetPivot() else nil) -- it rises out of the box
+	end
+
 	local function askClose()
 		spring(closePop)
 		play(0.8)
@@ -1893,6 +1948,10 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		shelfRim.Parent = shelfButton
 		shelfPop = Instance.new("UIScale")
 		shelfPop.Parent = shelfButton
+		setOutButton = verb("SetOut", BoxPanel.Words.setOut, WOOD, DARK)
+		setOutButton.Visible = false
+		setOutPop = Instance.new("UIScale")
+		setOutPop.Parent = setOutButton
 		-- Gold, on top while the card holds four: gold, a slow shine crossing it now and then
 		goldButton = verb("Gold", BoxPanel.Words.gold, Color3.new(1, 1, 1), DARK)
 		goldButton.Visible = false
@@ -2038,6 +2097,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 			end)
 		)
 		table.insert(connections, goldButton.Activated:Connect(makeGold))
+		table.insert(connections, setOutButton.Activated:Connect(setOut))
 		-- your hands follow your slots while the panel is up
 		for i = 1, Carry.Slots do
 			table.insert(
@@ -2096,9 +2156,17 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 					connections,
 					-- any: a remote's arguments, checked here
 					remote.OnClientEvent:Connect(
-						function(model: any, finds: any, spots: any, cash: any, chipped: any)
+						function(
+							model: any,
+							finds: any,
+							spots: any,
+							cash: any,
+							chipped: any,
+							pieces: any
+						)
 							local list = BoxPanel.read(finds)
 							local broken = BoxPanel.read(chipped) or {}
+							local furniture = BoxPanel.read(pieces) or {}
 							local n = if type(spots) == "number" and spots == spots
 								then math.clamp(math.floor(spots), 0, 99)
 								else 0
@@ -2106,7 +2174,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 								then math.max(math.floor(cash), 0)
 								else 0
 							if typeof(model) == "Instance" and model:IsA("Model") and list then
-								openFor(model, list, n, money, broken)
+								openFor(model, list, n, money, broken, furniture)
 							end
 						end
 					)

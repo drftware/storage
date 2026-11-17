@@ -106,6 +106,28 @@ local function label(parent: Instance, name: string, colour: Color3): TextLabel
 end
 
 -- Piece `id`'s parts' box in its own frame, from Specs (its middle and half its diagonal).
+-- Piece `id`'s parts, painted as the template holds them, cloned into `viewport`: no lights,
+-- scripts or sounds. Nothing when the place lacks its art.
+local function dress(viewport: ViewportFrame, template: Model, id: string)
+	if not Home.has(template, id) then
+		return
+	end
+	local names: { string } = Specs.Pieces[id] or {}
+	for _, name in names do
+		local found = template:FindFirstChild(name, true)
+		if found and found:IsA("BasePart") then
+			local p = found:Clone()
+			p.Anchored = true
+			for _, d in p:GetDescendants() do
+				if d:IsA("Light") or d:IsA("LuaSourceContainer") or d:IsA("Sound") then
+					d:Destroy()
+				end
+			end
+			p.Parent = viewport
+		end
+	end
+end
+
 local function bounds(id: string): (Vector3, number)
 	local lo, hi = Vector3.one * math.huge, -Vector3.one * math.huge
 	local names: { string } = Specs.Pieces[id] or {}
@@ -121,6 +143,30 @@ local function bounds(id: string): (Vector3, number)
 		return Vector3.new(0, 1, 0), 1.5
 	end
 	return (lo + hi) / 2, (hi - lo).Magnitude / 2
+end
+
+-- Piece `id` drawn still in `viewport` as its counter card shows it, seen from the front corner
+-- (S5-03g4c2: the job box's card and Arrange's tray). Lit as the card is; framed to fill it.
+function FurnitureTab.picture(viewport: ViewportFrame, id: string)
+	viewport.Ambient = Color3.fromRGB(165, 155, 145)
+	viewport.LightColor = Color3.fromRGB(255, 236, 210)
+	viewport.LightDirection = Vector3.new(-0.5, -1, 0.6)
+	local template = Home.template()
+	if template then
+		dress(viewport, template, id)
+	end
+	local camera = Instance.new("Camera")
+	camera.FieldOfView = CAMERA_FOV
+	camera.Parent = viewport
+	viewport.CurrentCamera = camera
+	local centre, radius = bounds(id)
+	local a, tilt = math.rad(-35), math.rad(Shop.PieceTilt)
+	local dir = Vector3.new(math.sin(a), 0, -math.cos(a))
+	local dist = radius / math.sin(math.rad(CAMERA_FOV / 2)) * 1.04
+	camera.CFrame = CFrame.lookAt(
+		centre + (dir * math.cos(tilt) + Vector3.yAxis * math.sin(tilt)) * dist,
+		centre
+	)
 end
 
 function FurnitureTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
@@ -379,20 +425,8 @@ function FurnitureTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 		camera.FieldOfView = CAMERA_FOV
 		camera.Parent = viewport
 		viewport.CurrentCamera = camera
-		if template and Home.has(template, piece.id) then
-			for _, name in piece.parts do
-				local found = template:FindFirstChild(name, true)
-				if found and found:IsA("BasePart") then
-					local p = found:Clone()
-					p.Anchored = true
-					for _, d in p:GetDescendants() do
-						if d:IsA("Light") or d:IsA("LuaSourceContainer") or d:IsA("Sound") then
-							d:Destroy()
-						end
-					end
-					p.Parent = viewport
-				end
-			end
+		if template then
+			dress(viewport, template, piece.id)
 		end
 		local centre, radius = bounds(piece.id)
 
