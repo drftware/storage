@@ -148,9 +148,15 @@ function Kit.prepare(model: Model, set: string, name: string, emissive: string?)
 		part.Transparency = if spec.Clear then CLEAR else 0
 		local look = part:FindFirstChildOfClass("SurfaceAppearance")
 		if look then
+			local tint = find.Tint
 			look.AlphaMode = if spec.Clear
 				then Enum.AlphaMode.Transparency
+				elseif tint and tint.Part == spec.Name then Enum.AlphaMode.TintMask
 				else Enum.AlphaMode.Overlay
+			if tint and tint.Part == spec.Name then
+				-- as found: the mask's lightened texels tinted back to the base colour (S2)
+				look.Color = tint.Rest
+			end
 			if lit[spec.Name] and emissive and find.Glow then
 				look.EmissiveMaskContent = Content.fromUri(emissive)
 				look.EmissiveTint = find.Glow.Tint

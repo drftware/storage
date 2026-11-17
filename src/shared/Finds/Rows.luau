@@ -2209,6 +2209,48 @@ local Rows: { Game.Row } = {
 			toy = true,
 		},
 	},
+	{
+		key = "ColourGooBall",
+		set = "Squishies",
+		judged = false,
+		name = "Colour-change goo ball",
+		grade = "Rare",
+		worth = 40,
+		grip = { 0, 0.12, 0 },
+		heft = 0.06,
+		size = "Small",
+		pickUp = {
+			id = "rbxassetid://9117373366",
+			from = 0.4,
+			length = 0.4,
+			volume = 0.75,
+			pitch = 1.3,
+		},
+		drop = {
+			id = "rbxassetid://9117373366",
+			from = 0.4,
+			length = 0.4,
+			volume = 0.6,
+			pitch = 0.95,
+		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9114519462",
+						from = 0,
+						length = 0.6,
+						volume = 0.5,
+						pitch = 0.84,
+					},
+				},
+			},
+			toy = true,
+		},
+	},
 }
 
 return Rows

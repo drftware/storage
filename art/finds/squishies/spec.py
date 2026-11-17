@@ -575,6 +575,41 @@ OOZE = [
 ]
 
 
+# --- The colour-change goo ball (S2) ------------------------------------------------------------
+# References (README): the heat-reactive 2.5 in goo balls sold in 2026, the goo ball above with a
+# thermochromic skin: the warmth of your hand shifts its colour where you held it, and the first
+# shade slowly comes back as it cools; sold as blue to pink, pink to purple, yellow to orange. Its
+# skin is a satin TPR, drier and duller than the goo ball's wet one, and where it warmed the new
+# colour fades into the old over a few millimetres. Ours is sky blue that warms to orchid (the
+# goo ball's neon pink stays its own), the goo ball's ball and squeeze (`GOOBALL`, `OOZE`).
+COLOURBALL = dict(
+    base="#55B4E2",    # sky blue as it's found, cool
+    warm="#E058D2",    # orchid where a warm finger pressed: far from the blue in hue, as bright,
+    #                    so the prints read on a phone under the unit's warm bulb
+    rough=0.3,         # satin: a soft, wide highlight, not the goo ball's wet one
+    # the prints, where the five presses dent it (between the blisters): a finger's pad lying up
+    # the ball, thumb first; each its half width and half height and how far above the waist its
+    # middle sits (degrees on the ball), uneven as a real grip is
+    fingers=[(16.0, 28.0, -6.0), (13.0, 36.0, 3.0), (13.5, 40.0, 5.0), (13.0, 36.0, 2.0),
+             (11.5, 29.0, -3.0)],
+    soft=4.5,          # degrees over which a print's edge fades into the blue: the heat spreading
+    crease=0.25,       # how much of the warmth a finger's joint creases miss (thin cool lines)
+    dust=0.3, seed=67.0,
+)
+
+# The colour, as a share of warm: the warmth blooms in the prints as the fingers close, holds
+# while they're held, then the blue creeps back slowly once they let go (seconds, share[, style,
+# way]): the moment is your fingerprints showing up and fading away.
+WARM = [
+    (0.0, 0.0),
+    (0.12, 0.0),                      # the fingers close first
+    (0.7, 1.0, "Quad", "Out"),        # the prints bloom in
+    (1.6, 1.0),                       # held, and a moment after
+    (6.2, 0.0, "Sine", "InOut"),      # then slowly cool back to blue (a toy is squeezed again
+    #                                   only once its press is over: longer kept you waiting)
+]
+
+
 # --- The game rows (F-G1f, D-265; art/finds/PIPELINE.md) ----------------------------------------
 # What the game deals and plays for each find, in the order the deal lists them. art/finds/rows.py
 # (plain Python: `scripts/art.sh rows`, and every export) writes them into
@@ -741,5 +776,19 @@ GAME = [
         pickUp=pitched(SOFT, 1.3),
         drop=pitched(SOFT, 0.95, 0.6),
         press=squeeze(pitched(SQUELCH, 0.75, 0.55)),  # "oozes between your fingers": slow, wet
+    ),
+    dict(
+        key="ColourGooBall",
+        catalog="Colour-change goo ball",
+        name="Colour-change goo ball",
+        grade="Rare",
+        worth=40,
+        grip=(0, 0.12, 0),  # round the ball
+        heft=0.06,
+        size="Small",
+        pickUp=pitched(SOFT, 1.3),
+        drop=pitched(SOFT, 0.95, 0.6),
+        # "changes colour where your fingers pressed": the goo ball's squelch, a touch drier
+        press=squeeze(pitched(SQUELCH, 0.84, 0.5)),
     ),
 ]

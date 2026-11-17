@@ -2817,8 +2817,95 @@ GOO_BALL = kit.Find(
     dust=GO["dust"], seed=GO["seed"], texels=1000,
 )
 
+# --- The colour-change goo ball (S2) ------------------------------------------------------------
+# The goo ball's ball and squeeze with a heat-reactive skin of our own (README): sky blue, satin;
+# where the five fingers press (the dents between the blisters) their warmth turns it orchid in
+# finger-shaped prints, soft at the edge, with the joints' creases left cool, and once let go the
+# blue slowly creeps back. A Roblox skin's colour can't follow its bones, so the prints are its
+# tint mask (kit.Find's `tint`, docs/STUDIO.md "Colour where pressed"): the game tints the mask
+# from blue to orchid by the Squeeze's `tint` track.
+
+CC = K.COLOURBALL
+
+
+def cc_prints(L):
+    """The five finger-shaped prints (0 to 1): a capsule up the ball over each dent, its edge
+    fading over `soft`, the core mottled where the warmth is uneven, and the joints' creases left
+    cool (two on a finger, one on the thumb)."""
+    nb = L.nb
+    rad = math.radians
+    zc = mm(GO_ZC)
+    th = nb.math("ARCTAN2", L.y, L.x)
+    flat = nb.math("SQRT", nb.add(nb.mul(L.x, L.x), nb.mul(L.y, L.y)))
+    ph = nb.math("ARCTAN2", nb.sub(L.z, zc), flat)
+    lat = nb.cos(ph)
+    soft = rad(CC["soft"])
+    out = None
+    for k, (w, h, mid) in enumerate(CC["fingers"]):
+        w, h, mid = rad(w), rad(h), rad(mid)
+        thk = GO_FRONT + (k + 0.5) * 2 * math.pi / GO["presses"]
+        d_th = nb.sub(th, thk)
+        across = nb.mul(nb.math("ARCTAN2", nb.sin(d_th), nb.cos(d_th)), lat)
+        up = nb.sub(ph, mid)
+        spine = nb.math("MAXIMUM", nb.sub(nb.absf(up), h - w), 0.0)
+        d = nb.math("SQRT", nb.add(nb.mul(across, across), nb.mul(spine, spine)))
+        m = nb.inv(nb.ss(d, w - soft, w + soft * 0.6))
+        joints = (0.0,) if k == 0 else (-0.3, 0.32)
+        for j in joints:
+            line = nb.inv(nb.ss(nb.absf(nb.sub(up, j * h)), rad(0.5), rad(1.8)))
+            m = nb.mul(m, nb.inv(nb.mul(line, CC["crease"])))
+        out = m if out is None else nb.mx(out, m)
+    # uneven warmth: a little patchy inside, as a real print is
+    patchy = nb.ss(L.noise(25.0, 7, detail=2), 0.3, 0.7)
+    return nb.mul(out, nb.add(0.86, nb.mul(patchy, 0.14)))
+
+
+def cc_look(L, f):
+    nb = L.nb
+    plug = L.k(GO_PLUG)
+    r = CC["rough"]
+    # the skin: sky-blue satin TPR, its colour a touch deeper where the wall runs thick, a fine
+    # crinkle a little duller and a faint grain (the goo ball's skin, drier)
+    C = Coat(L, hexc(CC["base"]), r)
+    C.paint(nb.mul(nb.ss(L.noise(5.0, 1, detail=2), 0.45, 0.75), 0.3), hexc("#479FD3"), r + 0.03)
+    C.paint(nb.mul(nb.ss(L.noise(14.0, 2, detail=2), 0.55, 0.75), 0.25), hexc("#6AC3EC"), r - 0.02)
+    crinkle = nb.ss(L.noise(120.0, 3, stretch=(1.0, 1.0, 2.6), detail=4), 0.63, 0.69)
+    C.paint(nb.mul(crinkle, 0.35), hexc("#4AA8DA"), r + 0.1, height=-0.22)
+    grain = nb.ss(L.noise(1400.0, 4, detail=1), 0.42, 0.78)
+    C.paint(grain, height=0.05)
+    # stretched thinnest where the blisters rise: lighter and smoother (goo_look)
+    th = nb.math("ARCTAN2", L.y, L.x)
+    u = nb.cos(nb.mul(nb.sub(th, GO_FRONT), float(GO["presses"])))
+    bulge = nb.pw(nb.mul(nb.add(u, 1.0), 0.5), 1.5)
+    s = nb.absf(nb.div(nb.sub(L.z, mm(GO_ZC)), mm(GO_R)))
+    q = nb.inv(nb.pw(nb.mn(nb.div(s, math.sin(GO_REACH)), 1.0), 2.0))
+    C.paint(nb.mul(nb.mul(bulge, nb.mul(q, q)), 0.7), hexc("#86D3F3"), r - 0.08)
+    C.paint(plug, hexc("#4BA6D8"), r + 0.06)
+    C.finish(f.dust, grime=0.25)
+    # where it warms: the tint's mask (kit.Find `tint`), after the dust so dust doesn't warm
+    C.alpha = cc_prints(L)
+    return C.surface(bump_dist=mm(0.12), bump=0.45)
+
+
+CC_DUR = round(max(GO_DUR, K.WARM[-1][0] + 0.4), 2)
+
+COLOUR_GOO_BALL = kit.Find(
+    "ColourGooBall",
+    [kit.Part("Body", go_body, bones=GO_BONES)],
+    cc_look,
+    motions={
+        # the goo ball's squeeze, and the warmth of the fingers blooming in their prints and
+        # slowly cooling back to blue
+        "Squeeze": dict(duration=CC_DUR, tracks=GO_TRACKS + [("Body", "tint", K.WARM)],
+                        focus=(0.0, 0.0, mm(GO_ZC)), distance=0.95, view=(-0.9, -1.8, 1.0)),
+    },
+    tint=dict(part="Body", base=CC["base"], warm=CC["warm"]),
+    dust=CC["dust"], seed=CC["seed"], texels=1000,
+)
+
 FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE, JUMBO_STRAWBERRY, CAPYBARA,
-         PAPER_SQUISHY, GEL_BEAD_BALL, GLITTER_GOO_BALL, GALAXY_GOO_BALL, GOO_BALL]
+         PAPER_SQUISHY, GEL_BEAD_BALL, GLITTER_GOO_BALL, GALAXY_GOO_BALL, GOO_BALL,
+         COLOUR_GOO_BALL]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)

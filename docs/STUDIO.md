@@ -88,6 +88,18 @@ verified: a doc page, Studio, or "untested".
   AlphaMode Transparency** (L-07b, Open Cloud upload, 2026-11-10); without that link it arrives in
   Overlay, as every earlier import did.
 
+- **Colour where pressed: `SurfaceAppearance.Color` and AlphaMode `TintMask`** (Studio Edit,
+  S2a, Nov 17). Verified: `Enum.AlphaMode` has Overlay, Transparency, TintMask and Opaque;
+  `SurfaceAppearance.Color` (Color3, white by default) can be written by any script
+  (`ReflectionService` lists no write capability for it, as for `EmissiveStrength`; the maps'
+  `...Content` are plugin-only). Seen in an Edit capture: Color multiplies the colour map (a pink
+  ball tinted green went dark green; in Overlay with alpha 1 it tints the whole part), and in
+  TintMask the map's alpha is how much it tints (the tea light's wire, alpha 1, went fully red;
+  its glass, alpha about 0.15, only a little, and turned opaque). So a find's colour can change
+  in places with one mesh and no transparency: paint the mask in the alpha, lighten those texels
+  by what the rest tint takes off, and tween the Color (kit.Find `tint`, D-303). A Gold has no
+  SurfaceAppearance (`Gold.gild`), so it never tints. `screen_capture` timed out three times in
+  Edit here; the macOS window capture below worked at once.
 - **Glow on a textured find** (Studio Edit, F-01, Nov 15): a SurfaceAppearance has
   `EmissiveMaskContent`, `EmissiveStrength` (default 1) and `EmissiveTint`. A boombox copy given
   its own colour map as the mask glowed only where the map was light (the chrome handle and

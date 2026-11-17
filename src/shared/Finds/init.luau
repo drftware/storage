@@ -169,6 +169,15 @@ local function shine(
 			end
 		end
 	end
+	-- a colour that changes where it was pressed (the colour-change goo ball's prints): its
+	-- tint from Rest to Warm; a Gold has no SurfaceAppearance, so it never warms
+	local tint = find.Tint
+	local warm = if tint then values[tint.Part] else nil
+	local tinted = if tint then parts[tint.Part] else nil
+	local skin = if tinted then tinted:FindFirstChildOfClass("SurfaceAppearance") else nil
+	if tint and warm and warm.tint and skin then
+		skin.Color = tint.Rest:Lerp(tint.Warm, warm.tint)
+	end
 	for i, spec in find.Lights do
 		local part = parts[spec.Part]
 		local at = if part then part:FindFirstChild(`Light{i}`) else nil

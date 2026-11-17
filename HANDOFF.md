@@ -25,6 +25,8 @@ github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` y
   in Play: `ServerStorage.StudioCrack:Invoke(player, "BlobLamp")` (Studio-only, JobBoxes), then
   shut and reopen the job box. The test save: cash 476, one Blob lamp (whole), Gold Teddies.
 - Stage only your own paths; the find run commits its own `art/finds/` and `src/shared/Finds/`.
+- Find art: S2a built the colour-change goo ball's art and colour trick (D-303), not yet seen
+  in Play; next S2b (`art/finds/WAVES.md`'s Next line).
 
 ## Next task: S5-03d2 Taking finds up, wired on the server
 The moment: you bring your lamp up, get caught on floor 3, and your friend grabs it and sprints

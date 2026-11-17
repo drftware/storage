@@ -2946,8 +2946,11 @@ actions themselves and dealing the new finds on floors are later game tickets.
   last four are the third run's S1 to S4 (`art/finds/WAVES.md`). S1a (Nov 17): the goo ball's
   art and game row, a neon-pink goo-filled ball that bulges out between five fingers on bones
   and slowly comes back. S1b (Nov 17): its skin wet and glossy, lighter where the blisters
-  stretch; ticked, imported and seen in Play (dealt, taken, squeezed, its squelch). Next S2, the
-  colour-change goo ball.
+  stretch; ticked, imported and seen in Play (dealt, taken, squeezed, its squelch). S2a (Nov 17,
+  D-303): the colour-change goo ball's trick proven in Studio (a tint mask in its skin) and its
+  art and row: sky blue, orchid fingerprints that bloom as you squeeze and cool back; not ticked,
+  imported or seen in Play. Next S2b (judge the full sheets, tick, import, Play). Polish: a
+  squishy squeezed again before its press is over (the colour ball's fade could then run 8 s).
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**
 - [ ] **F-08 Boxes and tins.**

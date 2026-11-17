@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** S2 (the colour-change goo ball, from photos to playable through PIPELINE.md; S1 the
-goo ball is done and seen in Play). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
+**Next:** S2b (the colour-change goo ball: judge its full sheets, tick it, import it, see it in
+Play; S2a built its art, row and colour trick, D-303). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
 V5a to V5f are done and seen in Play (Nov 17), but for V5e2.
 
 ## The third run's plan (owner's brief, Nov 16 night)
@@ -120,6 +120,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Jumbo slow-rise strawberry (`JumboStrawberry`) | The dent takes ten seconds to rise back · Squeeze | works: squeezed, a dent that slowly rises back, its own sound (V1) | Uncommon · 18 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; no dent seen in hand (bones, V1b); Nov 17, V1b: pressed in hand, its dent bones 0.047 studs down in hand and in your view's copy, rising back slowly |
 | Squishy capybara (`Capybara`) | A tiny, happy sigh · Squeeze | works: squeezed, squashes in hand (to 0.79), its orange moves, a sigh (V1) | Rare · 55 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its orange moves a little; its body stays still in hand (V1b); Nov 17, V1b: pressed in hand, squashed to 0.79 of its height in hand and in your view's copy, its root still in the hand |
 | Galaxy goo ball (`GalaxyGooBall`) | Stars drift and swirl inside · Squeeze | works: squeezed, squashes in hand (to 0.71), its insides move, its own sound (V1) | Legendary · 350 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its insides move; its body stays still in hand (V1b); Nov 17, V1b: pressed in hand, squashed to 0.71 of its height in hand and in your view's copy, its root still in the hand |
+| Colour-change goo ball (`ColourGooBall`) | Changes colour where your fingers pressed · Squeeze (quiet; the squishy craze itself) | built, not yet seen in Play: squeezed, the goo ball's ooze, and five orchid fingerprints bloom on its sky-blue skin and cool back over 4.6 s (S2a, D-303); not ticked or imported | Rare · 40 · floor 1 up ✓ (its row) | |
 | Goo ball (`GooBall`) | Oozes between your fingers and slowly comes back · Squeeze (quiet; the squishy craze itself) | works: squeezed, five blisters ooze out between your fingers on bones and slowly come back, its own squelch; quiet (S1) | Common · 3 · floor 1 up ✓ | Nov 17, S1b: dealt (`DevBox`, seed 7, floor 1's Unit107: "held a find, the GooBall in its box"), taken from its box into slot 1, pressed in hand twice, stamped On: its bones out to 0.017 studs and turned up to 35 degrees at 1.2 s, back by 4.5 s, the same in your view's copy; its squelch from 0.07 s; not banked, no monster in reach (it's quiet) |
 | Boombox (`Boombox`, bedroom set) | Loud music wherever you leave it, monsters come to look; at home it plays your tapes · Play, a noise (R.E.P.O.'s music box) | works (V5a, D-286): its key clacks, 80s electro 15 s, the case thumping each beat and swaying from its handle, lures every 2 s, 130 studs, in hand or where you leave it; the tapes wait on the home chain | Uncommon · 25 · floor 1 up ✓ | Nov 17, V5a: given (GiveFind), pressed in hand: the key dipped it to 0.975, then it swelled to 1.04 every 0.53 s, swaying up to 3 degrees and hopping 0.035 studs from the handle, the same in your view's copy; the song from 0.36 s; the Mannequin 56 studs off woke, came and caught me ("lured 8 times (130 studs)"). Again, dropped 2.5 s in and me lifted away: the song carried on from where it was (10.6 s into the recording), the case thumping on the floor; the Mannequin went to it and stood looking |
 | Small box TV (`Television`, bedroom set) | At home: it plays your tapes and films · Play (Animal Crossing's records) | waits on the home chain | Uncommon · 22 · floor 1 up ✓ | |
@@ -247,6 +248,31 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, S2a (the colour-change goo ball's trick and art; not ticked, imported or seen in
+  Play; S2b next).** **The trick, proven in Studio Edit** (STUDIO.md "Colour where pressed",
+  D-303): `SurfaceAppearance.Color` is writable by any script and multiplies the colour map; in
+  AlphaMode TintMask the map's alpha says how much. **Kit** (`kit.Find(..., tint=dict(part,
+  base, warm))`): the look sets `C.alpha` to the mask (after `finish`, so dust doesn't warm);
+  the bake keeps the alpha in the Color PNG and lightens masked texels by what Rest takes off
+  (`tints()`); the export links the alpha so the importer keeps it; the previews multiply as
+  Roblox does; a motion's `tint` channel (0 to 1) drives it; the Luau gets `Tint = { Part, Rest,
+  Warm }`. **Game:** `Art.Track` has `tint`, `Art.Find` has `Tint`; `Kit.import` sets that
+  part's AlphaMode TintMask and Color Rest; `Finds` `shine` writes Color each posed frame.
+  **Art:** `ColourGooBall` reuses `go_body` and `GO_BONES`, sky blue `#55B4E2` satin, orchid
+  `#E058D2` prints (`cc_prints`: five capsules over the dents, thumb wider, creases, mottled);
+  its Squeeze is the goo ball's tracks plus `("Body", "tint", WARM)`, 6.6 s (a toy can't be
+  squeezed again till its press ends, so the fade is 4.6 s). Row: Rare, 40, `pitched(SQUELCH,
+  0.84, 0.5)`; `Finds/Order.luau` has it. Its first quick sheets showed thin, striped prints;
+  widened and softened, judged on a second quick squeeze sheet; full sheets rendered at the end,
+  not yet looked at. **For S2b:** look at `art/sheets/colourgooball-*.png` (front, held, unit,
+  squeeze, gold); tick its Squishies line (`Nov 17, S2b`), `scripts/art.sh rows`, the deal's
+  fingerprint (PIPELINE.md step 5); `git checkout` the set's other FBX, then `lune run
+  scripts/upload_art`; import in Edit (`import("Squishies", {"ColourGooBall"})` from a clone of
+  `Shared`) and check the template's SurfaceAppearance is TintMask with Color Rest and the ball
+  plain blue (if the prints show warm, the alpha didn't survive the upload); Play: `DevBox` =
+  `ColourGooBall`, open, take, squeeze in hand, read `SurfaceAppearance.Color` going to Warm
+  and back (on your view's copy and the server's), capture the prints; fill its A1 row.
 
 - **Nov 17, S1b (the goo ball finished, imported and seen in Play; S2 next).** Its skin was
   matte (a rubber ball): now wet and glossy, roughness 0.17 (the crinkle 0.3, so it breaks the

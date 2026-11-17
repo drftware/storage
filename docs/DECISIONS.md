@@ -7700,3 +7700,26 @@ where a crewmate died stays on the moon unless someone carries it back).
   could leave both holding it. Both are written in the same server step, so the window is tiny.
 - **Split** (context): d1 these rules, pure and tested; d2 wires them in Slots and GatePay; d3
   sees it in Studio Play.
+
+## D-303 · 2026-11-17 · Colour where you pressed: a tint mask in the skin, not a second shell (S2a)
+
+- **The moment:** you squeeze the colour-change goo ball and your fingerprints bloom orchid on its
+  sky-blue skin, then slowly cool back to blue (the catalog: "changes colour where your fingers
+  pressed"; the real heat-reactive goo balls do it with your hand's warmth).
+- **How:** the ball's one skinned MeshPart keeps its own SurfaceAppearance in AlphaMode TintMask.
+  The colour map's alpha holds five finger-shaped prints where the squeeze's fingers dent it;
+  those texels are baked lighter by exactly what the rest tint takes off, so as found the ball is
+  plain blue, and the game tweens `SurfaceAppearance.Color` from Rest to Warm by the Squeeze's
+  `tint` track (kit.Find `tint`; Finds' `shine` writes it each frame of the press, as it writes
+  glow). Verified in Studio (STUDIO.md, "Colour where pressed").
+- **Why not the others:** a second shell over the skin doubles the triangles, needs the same
+  bones and draws in the transparent pass; Decals project flat and don't follow bones;
+  EditableImage painting needs the place's API setting, memory on low-end phones and a per-frame
+  upload. The tint is one Color3 a frame for the press's few seconds, no new parts.
+- **The fade is 4.6 s** (the whole press 6.6 s): a toy is pressed again only once its press is
+  over (`Use.toy`), so a longer fade kept you waiting to squeeze again. A re-squeeze that warms
+  it mid-fade is ROADMAP polish.
+- **Colours:** sky blue to orchid, a real pair's look (blue to pink) kept clear of the goo ball's
+  neon pink. Built, not yet seen in Play: S2b imports it (the alpha must survive the FBX upload:
+  check the template's ColorMap tints only the prints) and plays it.
+

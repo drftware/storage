@@ -53,6 +53,8 @@ export type Track = {
 	-- turn: degrees about its Axis; move: studs along it; glow: 0 to 1 lit; scale: times its size
 	-- about its pivot (near 0: hide it, a MeshPart can't be size 0); stretch: times as tall up
 	-- the find's Y and 1/sqrt as wide about its pivot, squash and stretch keeping its volume.
+	-- tint: 0 to 1, its SurfaceAppearance's Color from the find's Tint.Rest to Tint.Warm where
+	-- its colour map's alpha says (AlphaMode TintMask: the colour-change goo ball's prints).
 	-- The travel channels move a part over the floor and lean it (the RC car driving off, its
 	-- chassis on its springs, the tin bird hopping), in its parent's frame: x, y and z in studs
 	-- along the find's X, Y (up) and Z, then yaw, pitch and roll in degrees about its Y, X and Z
@@ -64,6 +66,7 @@ export type Track = {
 		| "glow"
 		| "scale"
 		| "stretch"
+		| "tint"
 		| "x"
 		| "y"
 		| "z"
@@ -103,6 +106,9 @@ export type Find = {
 	Bones: { Bone }?, -- what bends its parts in places, if anything does
 	Glow: { Part: string, Strength: number, Tint: Color3 }?, -- the part with the emissive mask,
 	-- its SurfaceAppearance.EmissiveStrength when on, and EmissiveTint
+	-- The part whose colour changes where its mask says (the colour-change goo ball's prints):
+	-- its SurfaceAppearance (AlphaMode TintMask) tinted Rest as found, Warm at `tint` 1
+	Tint: { Part: string, Rest: Color3, Warm: Color3 }?,
 	Lights: { Light },
 	Motions: { [string]: Motion },
 	Drive: Drive?,

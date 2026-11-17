@@ -99,7 +99,8 @@ class Find:
     its motions. `glow` says which parts carry the emissive mask and how they light."""
 
     def __init__(self, name, parts, look, lights=(), motions=None, glow=None, big=False,
-                 dust=0.6, seed=0.0, notes="", texels=None, lit=None, drive=None, cage=None):
+                 dust=0.6, seed=0.0, notes="", texels=None, lit=None, drive=None, cage=None,
+                 tint=None):
         self.name, self.parts, self.look, self.lights = name, parts, look, list(lights)
         self.motions = motions or {}
         self.glow = glow or {}
@@ -117,6 +118,12 @@ class Find:
         # find of small pieces packed close (the gel bead ball's beads), whose rays from CAGE out
         # start inside the next piece and bake its surface onto this one; REACH scales with it
         self.cage = cage or CAGE
+        # a find whose colour changes where it was pressed (the colour-change goo ball, S2):
+        # dict(part, base, warm), two '#RRGGBB'. Its look's alpha says where (the prints); the
+        # game tints that part's SurfaceAppearance (AlphaMode TintMask, docs/STUDIO.md "Colour
+        # where pressed") from Rest to Warm by the part's `tint` channel (0 to 1). A tint can only
+        # darken, so the bake lightens the masked texels by as much as Rest takes off again.
+        self.tint = tint or {}
         self.by = {p.name: p for p in parts}
         self.clear = any(p.clear for p in parts)
         self.alone = any(p.alone for p in parts)
@@ -381,7 +388,8 @@ def stage_textures(find, set_dir):
                   "visible_volume_scatter", "visible_shadow"):
             setattr(o, v, False)
     res = {}
-    chans = ("col", "rough", "metal", "glow", "ao", "normal", "cover") + (("alpha",) if find.clear else ())
+    chans = (("col", "rough", "metal", "glow", "ao", "normal", "cover")
+             + (("alpha",) if find.clear or find.tint else ()))
     for k in chans:
         img = bpy.data.images.new(f"{find.name}_{k}", size, size, alpha=True, float_buffer=True)
         img.colorspace_settings.name = "Non-Color"
@@ -418,8 +426,13 @@ def stage_textures(find, set_dir):
     rough, metal, glow = res["rough"][..., 0], res["metal"][..., 0], res["glow"][..., 0]
     os.makedirs(os.path.dirname(tex(find, set_dir, "x")), exist_ok=True)
     # a clear part's alpha rides in the colour map (what AlphaMode Transparency reads); every
-    # other texel is solid
-    alpha = np.clip(res["alpha"][..., :1], 0, 1) if find.clear else None
+    # other texel is solid. A tinted find's alpha is its mask (AlphaMode TintMask): its texels
+    # are lightened by what the Rest tint takes off, exactly, wherever the mask is partly on
+    plain = col
+    alpha = np.clip(res["alpha"][..., :1], 0, 1) if find.clear or find.tint else None
+    if find.tint:
+        rest = np.array(tints(find)[0], dtype=np.float32)
+        col = col / (1.0 - alpha + alpha * rest)
     rgba = lambda c: c if alpha is None else np.concatenate([c, alpha], axis=2)  # noqa: E731
     ub.write_png(tex(find, set_dir, "Color"), ub.q8(rgba(ub.to_srgb(np.clip(col, 0, 1)))))
     ub.write_png(tex(find, set_dir, "Normal"), ub.q8(res["normal"][..., :3]))
@@ -430,16 +443,18 @@ def stage_textures(find, set_dir):
     ub.write_png(find.out(set_dir, f"{find.name}_cover.png"), ub.q8(covered.astype(np.float32)))
     # Gold: solid gold that keeps the find's detail: its light and dark (wear, grime, dust) shade
     # the gold, the polish follows its roughness, and whatever lights up stays as it was.
-    lum = col @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
+    lum = plain @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
     ref = max(float(np.percentile(lum[covered], 90)), 1e-3)
     shade = np.clip(0.5 + 0.5 * lum / ref, 0.35, 1.05)[..., None]
     # anything that glows at all stays itself (the bulb's glass, the night-light's whole shade),
     # not just its brightest middle, or a dim edge turns half gold in blotches
     lit = np.clip(glow * 20.0, 0, 1)[..., None]
-    if alpha is not None:
+    if alpha is not None and find.clear:
         # and glass stays glass: a gold jar you can't see the candle through isn't a jar
         lit = np.maximum(lit, np.clip((1.0 - alpha) * 20.0, 0, 1))
-    gcol = np.array(GOLD, dtype=np.float32) * shade * (1 - lit) + col * lit
+    gcol = np.array(GOLD, dtype=np.float32) * shade * (1 - lit) + plain * lit
+    if not find.clear:
+        rgba = lambda c: c  # noqa: E731  (a tinted find's Gold has no mask: a Gold doesn't warm)
     grough = (0.14 + 0.4 * rough) * (1 - lit[..., 0]) + rough * lit[..., 0]
     gmetal = 1.0 - lit[..., 0] * (1 - metal)
     ub.write_png(tex(find, set_dir, "GoldColor"), ub.q8(rgba(ub.to_srgb(np.clip(gcol, 0, 1)))))
@@ -450,6 +465,15 @@ def stage_textures(find, set_dir):
 
 
 # --- materials for export and previews ----------------------------------------------------
+
+def tints(find):
+    """A tinted find's Rest and Warm tints (linear RGB): each its colour over the brighter of
+    the two, channel by channel, so both are 1 or less and the masked texels, painted that
+    brighter colour, show the base colour under Rest and the warm one under Warm."""
+    base, warm = hexc(find.tint["base"]), hexc(find.tint["warm"])
+    top = [max(a, b, 1e-4) for a, b in zip(base, warm)]
+    return (tuple(a / m for a, m in zip(base, top)), tuple(b / m for b, m in zip(warm, top)))
+
 
 def material(find, set_dir, preview=False, gold=False, clear=False, inside=False):
     """The baked maps on a Principled BSDF (what Roblox's importer reads). A preview material
@@ -477,6 +501,17 @@ def material(find, set_dir, preview=False, gold=False, clear=False, inside=False
     nb.put(bsdf.inputs["Normal"], nm.outputs["Normal"])
     if clear:
         nb.links.new(col.outputs["Alpha"], bsdf.inputs["Alpha"])
+    elif find.tint and not gold:
+        if preview:
+            # what TintMask does in Roblox: the colour times the tint, as far as the mask says,
+            # the tint from Rest to Warm by the part's `tint`
+            rest, warm = tints(find)
+            t = nb.mixc(nb.objattr("tint"), nb.rgb(rest), nb.rgb(warm))
+            k = nb.mixc(col.outputs["Alpha"], nb.rgb((1.0, 1.0, 1.0)), t)
+            nb.put(bsdf.inputs["Base Color"], nb.mixc(1.0, col.outputs["Color"], k, "MULTIPLY"))
+        else:
+            # the mask must reach Roblox in the colour map: linked, the importer keeps it
+            nb.links.new(col.outputs["Alpha"], bsdf.inputs["Alpha"])
     if preview and os.path.exists(tex(find, set_dir, "Emissive")):
         em = img("Emissive", True)
         tint = find.glow.get("tint", (255, 200, 140))
@@ -614,6 +649,7 @@ def pose(find, objs, values, lights=None):
         delta[p.name] = D @ L
         objs[p.name].matrix_world = delta[p.name] @ Matrix.Translation(p.pivot)
         objs[p.name]["glow"] = values.get((p.name, "glow"), objs[p.name].get("glow", 0.0))
+        objs[p.name]["tint"] = values.get((p.name, "tint"), objs[p.name].get("tint", 0.0))
         if p.bones:
             rig = objs[p.name].children[0]
             for b in p.bones:
@@ -955,6 +991,12 @@ def write_luau(set_name, finds, rows, path):
             t = g.get("tint", (255, 200, 140))
             L.append(f"\t\tGlow = {{ Part = \"{f.name}_{g['part']}\", Strength = {g['strength']}, "
                      f"Tint = Color3.fromRGB({t[0]}, {t[1]}, {t[2]}) }},")
+        if f.tint:
+            c3 = lambda c: "Color3.new({:.4f}, {:.4f}, {:.4f})".format(  # noqa: E731
+                *(float(v) for v in ub.to_srgb(np.array(c))))
+            rest, warm = tints(f)
+            L.append(f"\t\tTint = {{ Part = \"{f.name}_{f.tint['part']}\", Rest = {c3(rest)}, "
+                     f"Warm = {c3(warm)} }},")
         L.append("\t\tLights = {")
         root = f.parts[0].pivot
         for lt in f.lights:

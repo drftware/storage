@@ -454,3 +454,35 @@ lighter and smoother where the blisters rise (the squeeze's own bulge shape, rou
 between the fingers): a Roblox skin can't change colour as a bone moves, so it is baked,
 faint at rest and showing as each blister swells into the light. Judged beside the gel bead,
 glitter and galaxy balls held and in a unit: its shine sits with the clear balls' gloss.
+
+## Colour-change goo ball (S2a, Nov 17)
+
+`ColourGooBall` (prefix `cc_`/`CC`; the goo ball's `go_body` and bones, kinds 38 and 39; spec
+`COLOURBALL`, `WARM`). Rare, 40, "Squeeze: it changes colour where your fingers pressed".
+
+**References** (looked at, not saved). The heat-reactive 2.5 in goo balls sold in 2026:
+needoh.org/color-changing (the goo ball "with a heat-reactive twist": your hands' warmth shifts
+its colour and the first shade slowly returns as it cools; blue to pink, pink to purple, yellow
+to orange), ToyWiz's 2.5 in colour-change listings (toywiz.com, "the groovy glob color change"),
+and a retailer's photo of one held and squeezed (sensorykidsplay.com.au, "Schylling Colour
+Changing ... Stress Ball 5"): a sky-blue satin ball in a fist, and squeezed, hot pink where it
+warmed, fading into the blue over several millimetres. The goo ball's references for its shape
+and squeeze.
+
+**Size.** The goo ball's: 64 mm across (2.5 in), 0.25 studs.
+
+**Tells.** Plain sky blue and satin as found (drier than the goo ball's wet pink, no mark);
+squeezed, five orchid fingerprints bloom up the dents where the fingers pressed, the thumb's
+wider and shorter, each finger's two joint creases faintly cooler, the edges soft; they hold a
+moment and slowly cool back to blue.
+
+**How the colour changes** (D-303): the skin's tint mask (kit.Find `tint`): the prints are the
+colour map's alpha, their texels baked lighter so the Rest tint (Roblox `SurfaceAppearance.Color`
+in AlphaMode TintMask) brings them back to blue; the Squeeze's `tint` track takes the tint to
+Warm. The previews multiply the same way, so the sheets show what Roblox will.
+
+**Judged** (quick sheets, twice): the first prints were thin purple stripes cut into four by the
+creases; widened (a finger pad 26 degrees across), the orchid brighter, the creases fainter.
+At rest the prints don't show at all (the rest tint is exact). Full sheets rendered at the end of
+S2a, not yet looked at: S2b judges them.
+
