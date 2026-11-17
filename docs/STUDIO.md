@@ -2734,3 +2734,16 @@ verified: a doc page, Studio, or "untested".
   other windows. Judge by state (`PromptShown`, attributes, `Sound.Played`) and leave the look
   to the owner.
 
+- **The ground floor, measured** (S5-03a2c, Nov 17, Play, Galaxy A16 simulator, every home lit,
+  doors down): from the spawn facing the cars, 160,336 triangles in 81 draws (144,616 in 77 with
+  the drums hidden); the twelve home fronts were 60k of it, the six cars 51k, the furnishings
+  35k, the room's mesh 6k (found by setting each group's `Transparency` to 1 on the Client and
+  reading `Stats.RenderBreakdown.Opaque`). Per front: curtain 1,266, mechanism frame 1,123,
+  hardware 837, bottom bar 760, drum 473, casing 300. Lights: count `Light`s with `Enabled` and
+  `Brightness > 0` on the Client (43 before, 31 after). The table is in D-271.
+- **`LocalTransparencyModifier = 1` on a Client keeps a part out of the drawn triangles**
+  (S5-03a2c): the twelve drums and head plates left the spawn view's count at once. It's the way
+  to hide a world part from one screen without touching its `Transparency`, which scripts like
+  RollUpDoor own.
+- **`Humanoid:MoveTo` gives up after 8 s** (S5-03a2c): `MoveToFinished` fires false and the body
+  stops where it got to. Time a longer walk in legs, or from where it stopped.

@@ -6960,3 +6960,41 @@ by the door and the light eases off (Animal Crossing's house lights; a real room
   `ACROSS_THE_FLOOR` (90 studs, between the duck's squeak and the cymbals) every 2 seconds.
   Precedent: R.E.P.O.'s music box and the cymbal monkey's lure (the catalog's Wind row). The
   loudness is a default for the owner to feel (OWNER.md).
+
+## D-271 · 2026-11-17 · The ground floor weighed for a phone (S5-03a2c)
+
+The moment: on a cheap phone the calm ground floor runs smooth from the spawn to your home and on
+to a car, with every home lit.
+
+- **The caps:** the GDD's tech plan gives no numbers ("cap awake monsters and real light
+  instances for low-end Android"; real lights near the camera, a glow farther out). The climb's
+  default is 6 real lights (D-015), which the ground floor can't keep with every home lit (far
+  homes read as grey holes, D-262). So its own default, until the owner says otherwise: the
+  room's 6 unshadowed fills, the 12 home bulbs, the porch and the cars as on the climb; anything
+  else throws real light only near you. Triangles: no heavier than a climb floor's busiest view
+  (61k to 112k measured, `docs/STUDIO.md`).
+- **Measured** in Studio Play on the Galaxy A16 simulator (685x338), every home lit, doors down:
+
+  | Spot | Before | After |
+  |---|---|---|
+  | Spawn, facing the cars | 43 lights, 160,336 tris, 81 draws | 31 lights, 144,616 tris, 77 draws |
+  | In home 1, facing its door | 43 lights, 17,684 tris, 29 draws | 33 lights, 17,684 tris, 29 draws |
+  | In front of the cars | 43 lights, 61,124 tris, 40 draws | 31 lights, 61,124 tris, 40 draws |
+
+  Studio drew 15 frames a second at every spot, before and after (its window was in the
+  background, the throttle in `docs/STUDIO.md`), and its render CPU time was about 3 ms a frame
+  throughout, so a phone's frame rate is the owner's to see (`OWNER.md`). The run from the
+  spawn to the front of a car is 136 studs, 8.5 s at walking speed.
+- **Trimmed, nothing warm cut:** the floor lamps throw real light only in the two homes nearest
+  a point just ahead of you, within 32 studs (`Home.FloorLamp.Near`, `Reach`), coming and going
+  over 0.4 s; every shade keeps its glow, so no home reads dark (UnitLight's near-bulb pattern).
+  A front's drum and head plates (`Home.InsideOnly`: 1,310 triangles each, above the doorway
+  behind the front wall) are drawn only on a screen whose camera is in that home or within 2
+  studs of its doorway (`LocalTransparencyModifier`, HomeLights).
+- **Still over the triangle default at the spawn:** the six cars are 51k (8.5k each, the climb's
+  Elevator), the twelve fronts 44k (curtain, mechanism frame, bottom bar: all seen) and the
+  furnishings 35k (24 plants, benches, planters, the carts). The cars' hidden parts are next
+  (S5-03a2d); the plants and the fronts stay.
+- **Not chosen:** fewer fills (they are the room's warmth and cast no shadow); the home bulbs
+  near-only (D-262); the cars' lamps' shadows or keypad glows (the cars are the climb's, left
+  as they are by this ticket).

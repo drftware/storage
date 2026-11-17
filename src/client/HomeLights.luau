@@ -9,6 +9,9 @@
 	  ceiling lamp and the floor lamp warm up together, or fade, over Home.Switch.Ease: a calm,
 	  clean light, never the climb bulb's stutter.
 	- Shut in with it off, the unit is dark: the hall's light is kept out by BehindDoors.
+	- A phone's budget (S5-03a2c): only the floor lamps nearest you throw real light
+	  (Home.FloorLamp.Near), easing in and out; the rest glow. A front's drum and head plates
+	  (Home.InsideOnly) are drawn only while the camera is in that home.
 
 	A unit that streams in shows as it's set, with no click. Only lamps easing are stepped. The
 	ceiling lamp is lit through UnitLight (a home's bulb), so it carries HallLight's tag and
@@ -23,6 +26,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Home = require(ReplicatedStorage.Shared.Home)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
+local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
 local UnitLight = require(ReplicatedStorage.Shared.UnitLight)
 
 -- One home's light on this screen.
@@ -34,6 +38,14 @@ type Shown = {
 	click: Sound?,
 	lights: { PointLight }, -- the floor lamp's
 	shades: { BasePart }, -- the floor lamp's shade, glowing a little when lit
+	hidden: { BasePart }, -- Home.InsideOnly's parts, drawn only while the camera is inside
+	room: CFrame?, -- the inside's middle on the floor, looking in from the door (nil: no hiding)
+	half: Vector3, -- the inside's half width (X) and half depth plus InsideMargin (Z)
+	inside: boolean?, -- whether the camera was inside at the last pick
+	floorAt: Vector3?, -- the floor lamp's shade, for nearness
+	near: boolean, -- its floor lamp is one of the nearest: it throws real light here
+	real: number, -- 0 to 1: how much of that real light shows, easing toward `near`
+	distance: number, -- from the camera's lead point, at the last pick
 	on: boolean,
 	from: number,
 	to: number,
@@ -50,16 +62,24 @@ local HomeLights = {}
 function HomeLights.new(): Brix.System
 	local shown: { [Model]: Shown } = {}
 	local easing: { [Shown]: true } = {}
+	local fading: { [Shown]: true } = {} -- floor lamps gaining or losing their real light
+	local ranked: { Shown } = {} -- reused each time the nearest floor lamps are picked
+	local untilPick = 0
 	local connections: { RBXScriptConnection } = {}
 	local random = Random.new()
+
+	local function floorLight(s: Shown)
+		local brightness = Home.FloorLamp.Brightness * s.level * s.real
+		for _, light in s.lights do
+			light.Brightness = brightness
+			light.Enabled = brightness > 0
+		end
+	end
 
 	local function draw(s: Shown, level: number)
 		s.level = level
 		UnitLight.light(s.lamp, level, true)
-		for _, light in s.lights do
-			light.Brightness = Home.FloorLamp.Brightness * level
-			light.Enabled = level > 0
-		end
+		floorLight(s)
 		for _, shade in s.shades do
 			shade.Color = Home.Paint.LampShade:Lerp(Home.FloorLamp.Glow, level)
 		end
@@ -103,6 +123,82 @@ function HomeLights.new(): Brix.System
 		easing[s] = true
 	end
 
+	local function byNearness(a: Shown, b: Shown): boolean
+		return a.distance < b.distance
+	end
+
+	-- Shows each front's inside-only parts to a camera inside it, and gives real light to the
+	-- floor lamps nearest a point just ahead of the camera.
+	local function pick()
+		local camera = Workspace.CurrentCamera
+		if not camera then
+			return
+		end
+		local view = camera.CFrame
+		local look = view.LookVector * Vector3.new(1, 0, 1)
+		local from = view.Position
+			+ (if look.Magnitude > 1e-3 then look.Unit * UnitLight.NearLead else Vector3.zero)
+		table.clear(ranked)
+		for _, s in shown do
+			local room = s.room
+			if room then
+				local at = room:PointToObjectSpace(view.Position)
+				local inside = math.abs(at.X) <= s.half.X and math.abs(at.Z) <= s.half.Z
+				if inside ~= s.inside then
+					s.inside = inside
+					for _, p in s.hidden do
+						p.LocalTransparencyModifier = if inside then 0 else 1
+					end
+				end
+			end
+			local floorAt = s.floorAt
+			if floorAt then
+				-- a lamp already lit keeps it until another is clearly nearer
+				s.distance = (floorAt - from).Magnitude
+					- (if s.near then UnitLight.NearMargin else 0)
+				if s.distance <= Home.FloorLamp.Reach then
+					table.insert(ranked, s)
+				end
+			end
+		end
+		table.sort(ranked, byNearness)
+		for _, s in shown do
+			local near = false
+			for i = 1, math.min(Home.FloorLamp.Near, #ranked) do
+				if ranked[i] == s then
+					near = true
+					break
+				end
+			end
+			if near ~= s.near then
+				s.near = near
+				fading[s] = true
+			end
+		end
+	end
+
+	-- The inside's frame and half size, from where the door stands and the lamp hangs (the lamp
+	-- is over the inside's middle) and the lobby slot's inside box; nil off the lobby.
+	local function roomOf(unit: Model, lamp: BasePart): (CFrame?, Vector3)
+		local number = unit:GetAttribute("LobbySlot")
+		local slot: LobbySpecs.Slot? = nil
+		for _, each in LobbySpecs.Slots do
+			if each.Number == number then
+				slot = each
+			end
+		end
+		local door = unit:GetPivot().Position
+		local middle = Vector3.new(lamp.Position.X, door.Y, lamp.Position.Z)
+		local inward = (middle - door) * Vector3.new(1, 0, 1)
+		if not slot or inward.Magnitude < 1 then
+			return nil, Vector3.zero
+		end
+		local size, out = slot.Inside.Size, slot.Out
+		local width = if math.abs(out[1]) > 0.5 then size[3] else size[1]
+		local half = Vector3.new(width / 2, 0, inward.Magnitude + Home.InsideMargin)
+		return CFrame.lookAt(middle, middle + inward), half
+	end
+
 	local function add(inst: Instance)
 		-- a tagged template in ReplicatedStorage is no unit (docs/STUDIO.md)
 		if not inst:IsA("Model") or shown[inst] or not inst:IsDescendantOf(Workspace) then
@@ -126,7 +222,13 @@ function HomeLights.new(): Brix.System
 			c.Parent = plate
 			click = c
 		end
-		local lights, shades = {}, {}
+		local lights, shades, hidden = {}, {}, {}
+		for _, name in Home.InsideOnly do
+			local p = inst:FindFirstChild(name)
+			if p and p:IsA("BasePart") then
+				table.insert(hidden, p)
+			end
+		end
 		for _, d in inst:GetDescendants() do
 			if d:IsA("PointLight") and d:HasTag(Home.LampTag) then
 				table.insert(lights, d)
@@ -137,6 +239,7 @@ function HomeLights.new(): Brix.System
 			end
 		end
 		local t = if toggle and toggle:IsA("BasePart") then toggle else nil
+		local room, half = roomOf(inst, lamp)
 		local s: Shown
 		s = {
 			unit = inst,
@@ -146,6 +249,14 @@ function HomeLights.new(): Brix.System
 			click = click,
 			lights = lights,
 			shades = shades,
+			hidden = hidden,
+			room = room,
+			half = half,
+			inside = nil,
+			floorAt = if shades[1] then shades[1].Position else nil,
+			near = false,
+			real = 0,
+			distance = 0,
 			on = false,
 			from = 0,
 			to = 0,
@@ -157,6 +268,7 @@ function HomeLights.new(): Brix.System
 		}
 		shown[inst] = s
 		follow(s, true)
+		untilPick = 0 -- pick now, so a home streaming in beside you is whole from its first frame
 	end
 
 	local function remove(inst: Instance)
@@ -166,7 +278,11 @@ function HomeLights.new(): Brix.System
 			if s.click then
 				s.click:Destroy()
 			end
+			for _, p in s.hidden do
+				p.LocalTransparencyModifier = 0
+			end
 			easing[s] = nil
+			fading[s] = nil
 			shown[inst :: any] = nil
 		end
 	end
@@ -197,6 +313,22 @@ function HomeLights.new(): Brix.System
 				draw(s, s.from + (s.to - s.from) * k)
 				if s.t >= 1 then
 					easing[s] = nil
+				end
+			end
+			untilPick -= dt
+			if untilPick <= 0 then
+				untilPick = UnitLight.NearSeconds
+				pick()
+			end
+			for s in fading do
+				local target = if s.near then 1 else 0
+				local d = dt / Home.FloorLamp.Fade
+				s.real = if target > s.real
+					then math.min(target, s.real + d)
+					else math.max(target, s.real - d)
+				floorLight(s)
+				if s.real == target then
+					fading[s] = nil
 				end
 			end
 		end,

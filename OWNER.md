@@ -40,6 +40,10 @@ nowhere else.
      white ceiling on wood beams, oak plank floors, a deep red runner down the middle to the
      cars. Look at `art/sheets/lobby-spawn.png`, `lobby-unit.png` and `lobby-inside.png`.
   10. A home's light starts on, and anyone may flip its switch until homes have owners (D-268).
+  11. The ground floor's phone budget (D-271): the climb's 6 real lights can't hold with every
+      home lit, so the floor keeps 31 (33 in a home), 7 of them shadowed (the 6 cars' lamps and
+      the porch). Its busiest view, the spawn's, is 145k triangles against a climb floor's 61k
+      to 112k; the cars' 51k is the next cut (S5-03a2d). Say if a phone of yours stutters there.
 - [ ] **Walk into your home** (S5-03a2b3 and b4, D-268; seen in Studio Play by me, the switch
   pressed with T and with a tap on the A16 simulator, but I couldn't take a single picture, so
   how it looks is yours). Press Play, or publish and play on a phone (Galaxy A16):
@@ -50,6 +54,10 @@ nowhere else.
   3. Inside by the door, look at the switch (its button shows only while it's on screen) and
      press Switch (T, or tap): a click, the rocker rocks, the light eases off. Pull the door
      down with it off: is it dark? Is the switch easy to find when you turn round to leave?
+  4. On a phone, walk from the spawn down past the homes to a car (D-271): does it stay smooth?
+     With a few doors up, does a floor lamp's warm pool ease in as you come near and out as you
+     go, never popping? Does any home look dark from the lobby? Look up at your own door from
+     inside: the drum and its head plates over the doorway should be there.
 - [ ] **Walk the new ground floor** (S5-03a2a, D-262; seen in Studio Play by me, not on a
   phone). Press Play in Studio (or publish and play on your phone, Galaxy A16 or similar):
   1. You load in just inside the glass door, facing the six cars 150 studs away, twelve roll-up

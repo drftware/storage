@@ -77,7 +77,20 @@ Home.FloorLamp = {
 	Brightness = 0.9,
 	Range = 10, -- the rug and the beanbag, not the far wall
 	Glow = Color3.fromHex("#FFF1D8"), -- the shade lit from inside (Neon is too hot on a phone)
+	-- A phone draws a floor lamp's real light only in the homes nearest you (S5-03a2c, the GDD's
+	-- cap on real lights): the two nearest a point just ahead of the camera, within Reach. The
+	-- rest keep their shades' glow; their 10-stud pool only shows from in or at a home's door.
+	Near = 2,
+	Reach = 32, -- studs: from your doorway, your lamp and your neighbour's
+	Fade = 0.4, -- seconds a lamp's real light takes to come or go, so the pick never pops
 }
+
+-- The parts of a home's front only its insides see (S5-03a2c): the drum the door rolls onto and
+-- its head plates and axle, above the doorway behind the front wall. A screen draws them only
+-- while its camera is in that home or within InsideMargin studs out of its doorway: from the
+-- lobby all twelve were 16k of the spawn view's 160k triangles, every one behind a wall.
+Home.InsideOnly = { "Drum", "Hardware" }
+Home.InsideMargin = 2
 
 -- The seats (Roblox Seats): where you sit, in a piece's own frame (its front toward -Z), each
 -- turned so you face out the way the piece does. Studs: x, seat's top, z; Turn about Y in degrees.

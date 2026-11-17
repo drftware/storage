@@ -2359,14 +2359,22 @@ Done when players watch the results to the end and change their perks between cl
           click played, both lamps went out), and on the Galaxy A16 simulator a tap on the drawn
           button flipped it. Every seat sits you facing out. The look at phone size waits on the
           owner (captures timed out all session).
-      - [ ] **S5-03a2c The ground floor weighed for a phone** (after the new look): up to 25 real lights (6 fills,
-        12 home bulbs, 6 car lamps, the porch) and the room's 87,446 triangles plus twelve M
-        fronts and six cars, weighed at Galaxy A16 size against the GDD tech plan's caps;
-        trimmed where they pass (fewer fills, a front's hidden parts); the run from the spawn
-        to a car timed (under 15 s); the carts, cars and trips unchanged.
+      - [x] **S5-03a2c The ground floor weighed for a phone** (D-271): measured in Studio Play on
+        the Galaxy A16 simulator, every home lit. Real lights 43 down to 31 (33 in a home): only
+        the two floor lamps nearest you throw real light, easing in and out, the rest glowing.
+        The spawn view 160k triangles down to 145k: a front's drum and head plates are drawn
+        only from inside that home. The run from the spawn to a car is 8.5 s. Nothing warm was
+        cut. Left over the triangle default: the cars' 51k (below).
+      - [ ] **S5-03a2d The cars' hidden triangles** (D-271): the six cars are 51k of the spawn
+        view's 145k, 8.5k each. Find the parts nobody sees from the ground floor and draw them
+        only where they're seen, as the fronts' drums are. The cars are the climb's Elevator,
+        so the climb is checked too. After a3, by the owner's order.
     - [ ] **S5-03a3 A unit each**: a unit for each player as they join (12; a plots system
       built in Brix first, D-252), your name over your door, doors open by default, pulled down
-      keeping everyone out with a locked rattle, spare units padlocked.
+      keeping everyone out with a locked rattle, spare units padlocked. Split if it won't fit:
+      **a3a** Brix's plots system (in `../engine`, by its AGENTS.md, then the pin moves);
+      **a3b** the game's homes on it (the name, the doors, the switch the owner's only, D-263;
+      ShutIn's depth for a home).
   - [ ] **F-G1b4a The hard hat on your head** (its own ticket in Step 4's finds; the owner put
     it here, Nov 16).
   - [ ] **S5-03b The mirror test** (ideas 21, 22): one mirror in a unit, built as D-259 says,
