@@ -801,6 +801,13 @@ def mirror_frame(at):
             @ Matrix.Rotation(math.radians(-K.HOME.MIRROR_LEAN), 4, "X"))
 
 
+def rail_frame(at):
+    """Where a unit's clothes rail stands (Specs.Rail): along the mirror's wall, past it, turned as
+    the mirror is so its front looks across the unit."""
+    x, y = K.HOME.rail_at()
+    return at @ Matrix.Translation((x, y, 0.0)) @ Matrix.Rotation(math.radians(-90), 4, "Z")
+
+
 def turned(x, y, turn, at=None):
     m = Matrix.Translation((x, y, 0.0)) @ Matrix.Rotation(math.radians(turn), 4, "Z")
     return at @ m if at is not None else m
@@ -849,6 +856,7 @@ def home_fronts(coll, pieces):
         if n in SHUT:
             continue
         place(coll, pieces["Mirror"], mirror_frame(at))
+        place(coll, pieces["Rail"], rail_frame(at))
         for kind, (x, y), turn in K.HOME.STARTER:
             place(coll, pieces[kind], turned(x, y, turn, at))
             if kind == "FloorLamp":
@@ -984,6 +992,11 @@ def stage_renders(only=None):
                           tuple(at @ Vector((9.0, 12.5, 3.0))), 18.0, 0.4))
             shots.append(("mirror-close", tuple(at @ Vector((6.2, 10.0, 4.4))),
                           tuple(at @ Vector((9.4, 12.5, 4.6))), 24.0, 0.4))
+            # the clothes rail past it (S5-03f2a), from the rug and close up
+            shots.append(("rail", tuple(at @ Vector((1.0, 8.0, 4.8))),
+                          tuple(at @ Vector((8.9, 15.5, 2.8))), 18.0, 0.4))
+            shots.append(("rail-close", tuple(at @ Vector((4.6, 14.0, 4.4))),
+                          tuple(at @ Vector((8.9, 17.0, 2.9))), 20.0, 0.4))
     for name, loc, target, lens, ex in shots:
         if only and name not in only:
             continue

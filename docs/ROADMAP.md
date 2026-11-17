@@ -2545,15 +2545,20 @@ Done when players watch the results to the end and change their perks between cl
         at 88 degrees; now 60, seen). A friend's find set out drops in with a knock
         (SettleView; needs two players, OWNER.md). `docs/art/S5-03e3b-*`.
         S5-03e (Arrange) is done.
-  - [ ] **S5-03f The mirror and the clothes rail** (ideas 21 to 24), split four ways:
+  - [ ] **S5-03f The mirror and the clothes rail** (ideas 21 to 24), split five ways:
     - [x] **S5-03f1 The mirror's real frame** (D-314): a moulded oak frame mitred round the glass,
       the glass's bevelled edge catching the light, felt pads under its foot and on its top's
       back, leaning so the pads just touch the wall; built the unit's way in `art/home`, in every
       home. `art/sheets/lobby-mirror*.png`, `docs/art/S5-03f1-*`.
-    - [ ] **S5-03f2 The clothes rail** (idea 23; Lethal Company's suit rack): a rolling oak and
-      steel garment rail beside the mirror, everything you can wear hanging on it; press one to
-      wear it, with the find's own sound (the hard hat's knock and its lamp's click), press again
-      to hang it back. Art the unit's way first.
+    - [x] **S5-03f2a The clothes rail's art** (idea 23, D-315): a rolling oak garment rail past
+      the mirror in every home, three rows for what you wear (hats on its top shelf, clothes on
+      oak hangers from its graphite bar, shoes on its rack), castors under it; built the unit's
+      way in `art/home`; seen in Play on the A16. `art/sheets/lobby-rail*.png`,
+      `docs/art/S5-03f2a-*`.
+    - [ ] **S5-03f2b Wearing from the rail** (idea 23; Lethal Company's suit rack): everything you
+      own that you can wear hangs on its row (`Specs.Rail`); press one and you're wearing it, with
+      the find's own sound (the hard hat's knock and its lamp's click), and see it in the mirror;
+      press again to hang it back. Server-owned, validated and rate-limited.
     - [ ] **S5-03f3 Nothing worn or switched on runs down at home** (idea 23's rule): the hard
       hat's minute starts only once you're on a climb.
     - [ ] **S5-03f4 Wrap colours tried on** (idea 24): seen on you in the mirror for a few

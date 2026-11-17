@@ -41,10 +41,11 @@ Rug (512², baked colours), HomeDoor (1024², the DoorKit's layout, tinted).
 | Shelf, ShelfBack | Wood, Plaster | 372, 12 | the shelf (S5-03c1a, D-284): oak, six cubbies, a cream back |
 | JobBox, JobBoxLid, JobBoxFittings, JobBoxRunners | Plaster, Plaster, plain, Wood | 760, 308, 432, 88 | the job box (S5-03c2a1, D-287): an open steel chest and its tray lid (the game paints them dusty blue), graphite handles, hasp and piano hinge, oak runners; the lid hinges on `Specs.JobBox.Hinge` |
 | MirrorFrame, MirrorBevel, MirrorPads | Wood, plain, plain | 124, 32, 176 | the mirror (S5-03f1, D-314): a moulded oak frame mitred round the glass (`ring`), the glass's bevelled edge, felt pads; where it stands and its glass are `Specs.Mirror` |
+| Rail, RailHangers, RailSteel, RailWheels | Wood, Wood, plain, plain | 660, 324, 636, 144 | the clothes rail (S5-03f2a, D-315): oak posts on castors, a shoe rack, a hat shelf with a gallery, oak hangers on a graphite bar; numbers `GARMENT*` in `home_spec.py` (`RAIL` there is the wall's paint rail); where it stands and its rows are `Specs.Rail` |
 
-Home.fbx: 12,968 triangles in 34 parts (with the mirror, uploaded in place, S5-03f1). Sheets (drawn by `art/lobby`): `lobby-home.png` (your
+Home.fbx: 15,576 triangles in 38 parts (with the clothes rail, uploaded in place, S5-03f2a). Sheets (drawn by `art/lobby`): `lobby-home.png` (your
 unit from the floor), `lobby-nook.png` (a bench and a planter), `lobby-unit.png`,
-`lobby-inside.png`, `lobby-spawn.png`.
+`lobby-inside.png`, `lobby-spawn.png`, `lobby-mirror*.png`, `lobby-rail*.png`.
 
 ## Into Studio (S5-03a2b3, D-268)
 

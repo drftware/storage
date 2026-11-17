@@ -144,12 +144,16 @@ function Arrange.slot(n: number): LobbySpecs.Slot?
 	return slotOf[n]
 end
 
--- What's fixed in every home besides its starter pieces: the round lamp in the ceiling, and the
--- mirror leaning on the right wall (its glass on the wall, its foot on the floor).
+-- What's fixed in every home besides its starter pieces: the round lamp in the ceiling, the
+-- mirror leaning on the right wall (its glass on the wall, its foot on the floor), and the
+-- clothes rail standing past it on that wall (D-315; turned as the mirror is, so its length runs
+-- along the wall and its depth across the floor).
 Arrange.Fixed = (function(): { Spots.Fixed }
 	local lamp = HomeSpecs.Parts.Lamp
 	local m = HomeSpecs.Mirror
 	local wide, tall = m.Size[1], m.Size[2]
+	local r = HomeSpecs.Rail
+	local long, high, deep = r.Size[1], r.Size[2], r.Size[3]
 	return {
 		{
 			id = "Lamp",
@@ -166,6 +170,14 @@ Arrange.Fixed = (function(): { Spots.Fixed }
 			depth = tall,
 		},
 		{ id = "MirrorFoot", on = "Floor", at = m.At, width = 1.5, depth = wide },
+		{
+			id = "Rail",
+			on = "RightWall",
+			at = { r.At[1], high / 2, r.At[3] },
+			width = long,
+			depth = high,
+		},
+		{ id = "RailFoot", on = "Floor", at = r.At, width = deep, depth = long },
 	}
 end)()
 

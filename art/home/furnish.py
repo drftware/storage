@@ -9,6 +9,9 @@ its footprint on the floor, its front toward -y (home_spec.py).
     Beanbag                     the starter beanbag, slumped, a dent where you sit (Fabric)
     FloorLamp, LampShade        the starter floor lamp: an oak stem, a fabric drum shade (Wood,
                                 Fabric; the game lights it)
+    Rail, RailHangers,          the clothes rail by the mirror: oak posts, shoe rack and hat shelf,
+    RailSteel, RailWheels       oak hangers, a graphite bar, hooks and castors (Wood, Wood, plain,
+                                plain; D-315)
 """
 
 import math
@@ -493,12 +496,113 @@ def mirror_pads():
 BUILDERS.update({"MirrorFrame": mirror_frame, "MirrorBevel": mirror_bevel,
                  "MirrorPads": mirror_pads})
 
+
+def rail_posts():
+    """The rail's four posts' middles (x, y), at its corners."""
+    long_, deep, _ = K.GARMENT
+    px, py = long_ / 2 - K.GARMENT_POST / 2, deep / 2 - K.GARMENT_POST / 2
+    return [(sx * px, sy * py) for sx in (-1, 1) for sy in (-1, 1)]
+
+
+def rail():
+    """The rail's oak (D-315): four posts on castors, a frame round their feet with the shoe
+    rack's slats across it, a stretcher across each end at the bar's height that the bar runs
+    into, and the hat shelf's board on top with a gallery rail along its back."""
+    m = Mesh("Rail")
+    long_, deep, top = K.GARMENT
+    t = K.GARMENT_POST
+    foot, frame, slat = K.GARMENT_RACK
+    over, board, gallery = K.GARMENT_TOP
+    bar, _ = K.GARMENT_BAR
+    hx, hy = long_ / 2, deep / 2
+    for i, (x, y) in enumerate(rail_posts()):
+        wood_box(m, (x - t / 2, y - t / 2, foot), (x + t / 2, y + t / 2, top), 3 + i, bevel=0.02)
+    for sy in (-1, 1):  # the long rails, front and back, between the posts' feet
+        y0, y1 = sorted((sy * (hy - t), sy * hy))
+        wood_box(m, (-hx + t, y0, foot), (hx - t, y1, frame), 7, bevel=0.015)
+    for sx in (-1, 1):  # the end rails at the feet, and the stretchers the bar runs into
+        x0, x1 = sorted((sx * (hx - t), sx * hx))
+        wood_box(m, (x0, -hy + t, foot), (x1, hy - t, frame), 8, bevel=0.015)
+        wood_box(m, (x0, -hy + t, bar - 0.1), (x1, hy - t, bar + 0.1), 9, bevel=0.015)
+    for i, y in enumerate((-0.42, 0.0, 0.42)):  # the shoe rack's slats, end rail to end rail
+        wood_box(m, (-hx + t / 2, y - 0.13, frame), (hx - t / 2, y + 0.13, frame + slat), 10 + i,
+                 bevel=0.012)
+    wood_box(m, (-hx - over, -hy - over, top), (hx + over, hy + over, top + board), 2,
+             bevel=0.025)
+    wood_box(m, (-hx - over + 0.04, hy + over - 0.1, top + board),
+             (hx + over - 0.04, hy + over, top + board + gallery), 5, bevel=0.02)
+    return m
+
+
+def hanger_path(x):
+    """One hanger's loop at `x` along the bar: its shoulders arched from the hook down to their
+    tips, round to the bar its trousers fold over, and back."""
+    half, peak, drop, _ = K.GARMENT_HANGER
+    bar, _ = K.GARMENT_BAR
+    z0 = bar - peak
+    pts = [(x, half * u, z0 - drop * u * u) for u in (-1.0, -0.66, -0.33, 0.0, 0.33, 0.66, 1.0)]
+    low = z0 - drop - 0.12
+    return pts + [(x, half * 0.88, low), (x, -half * 0.88, low)]
+
+
+def rail_hangers():
+    """The oak hangers (D-315), a closed dowel loop each, hung side on from the bar."""
+    m = Mesh("RailHangers")
+    *_, r = K.GARMENT_HANGER
+    half = K.GARMENT_HANGER[0]
+    for i, x in enumerate(K.GARMENT_HANGERS):
+        lo, hi = (x - r, -half - r, 3.0), (x + r, half + r, 5.0)
+        geo.sweep(m, hanger_path(x), r, segs=6, mapper=wood_uv(1, lo, hi, 6 + i),
+                  closed_path=True)
+    return m
+
+
+def rail_steel():
+    """The rail's soft graphite steel: the hanging bar and its collars at the stretchers, a hook
+    over the bar for each hanger, and under each post a castor's swivel plate and fork."""
+    m = Mesh("RailSteel")
+    long_, _, _ = K.GARMENT
+    foot = K.GARMENT_RACK[0]
+    bar, br = K.GARMENT_BAR
+    wr, ww = K.GARMENT_WHEEL
+    inner = long_ / 2 - K.GARMENT_POST
+    geo.cylinder(m, "x", (0.0, 0.0, bar), br, 2 * inner + 0.1, segs=12)
+    for sx in (-1, 1):
+        geo.cylinder(m, "x", (sx * (inner - 0.02), 0.0, bar), br * 2.0, 0.04, segs=12)
+    hook = br + 0.035
+    peak = bar - K.GARMENT_HANGER[1]
+    for x in K.GARMENT_HANGERS:
+        arc = [(x, hook * math.cos(a), bar + hook * math.sin(a))
+               for a in (math.radians(d) for d in (180, 140, 100, 60, 20, -20, -50))]
+        geo.sweep(m, [(x, 0.0, peak), (x, -hook * 0.8, bar - 0.12)] + arc, 0.018, segs=6)
+    for x, y in rail_posts():
+        geo.box(m, (x - 0.12, y - 0.12, foot - 0.04), (x + 0.12, y + 0.12, foot))
+        geo.box(m, (x - 0.07, y - 0.08, 2 * wr), (x + 0.07, y + 0.08, foot - 0.04))
+        for sy in (-1, 1):  # the fork's cheeks either side of the wheel, down to its axle
+            y0, y1 = sorted((y + sy * (ww / 2 + 0.005), y + sy * (ww / 2 + 0.03)))
+            geo.box(m, (x - 0.06, y0, wr - 0.04), (x + 0.06, y1, 2 * wr))
+    return m
+
+
+def rail_wheels():
+    """The castors' rubber wheels, one under each post, rolling along the rail's length."""
+    m = Mesh("RailWheels")
+    wr, ww = K.GARMENT_WHEEL
+    for x, y in rail_posts():
+        geo.cylinder(m, "y", (x, y, wr), wr, ww, segs=10)
+    return m
+
+
+BUILDERS.update({"Rail": rail, "RailHangers": rail_hangers, "RailSteel": rail_steel,
+                 "RailWheels": rail_wheels})
+
 TEXSET = {"Pot": "Plaster", "Plant": "Leaf", "Bench": "Wood", "Planter": "Plaster",
           "PlanterSeat": "Wood", "PlanterPlants": "Leaf", "Rug": "Rug", "Beanbag": "Fabric",
           "FloorLamp": "Wood", "LampShade": "Fabric", "Shelf": "Wood", "ShelfBack": "Plaster",
           "JobBox": "Plaster", "JobBoxLid": "Plaster", "JobBoxFittings": None,
           "JobBoxRunners": "Wood", "MirrorFrame": "Wood", "MirrorBevel": None,
-          "MirrorPads": None}
+          "MirrorPads": None, "Rail": "Wood", "RailHangers": "Wood", "RailSteel": None,
+          "RailWheels": None}
 
 
 def meshes():

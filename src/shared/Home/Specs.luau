@@ -29,6 +29,7 @@ local Specs = {
 		Shelf = { "Shelf", "ShelfBack" },
 		JobBox = { "JobBox", "JobBoxLid", "JobBoxFittings", "JobBoxRunners" },
 		Mirror = { "MirrorFrame", "MirrorBevel", "MirrorPads" },
+		Rail = { "Rail", "RailHangers", "RailSteel", "RailWheels" },
 	} :: { [string]: { string } },
 	-- A unit's starter set (D-263): each piece's origin in the unit's frame, turned about Y
 	-- (degrees, 0 with its front toward the door).
@@ -67,6 +68,19 @@ local Specs = {
 		Glass = { -0.000, 3.180, -0.030 } :: Vec,
 		GlassSize = { 2.400, 5.600 } :: Vec,
 		Size = { 3.080, 6.320 } :: Vec,
+	},
+	-- The clothes rail (D-315): its middle on the floor in the unit's frame, turned as the
+	-- mirror is. In the Rail piece's frame: Size, the whole rail across, tall and deep; Shelf,
+	-- the hat shelf's top; Bar, the hanging bar's middle; Rack, the shoe rack's top; Hangers,
+	-- each hanger's middle along the bar (its hook over it).
+	Rail = {
+		At = { -8.945, 0.000, 17.000 } :: Vec,
+		Turn = -90,
+		Size = { 4.520, 5.210, 1.620 } :: Vec,
+		Shelf = 5.070,
+		Bar = 4.300,
+		Rack = 0.680,
+		Hangers = { 1.250, -0.000, -1.250 } :: { number },
 	},
 	-- Each MeshPart's box as imported (its centre is its CFrame in its frame).
 	Parts = {
@@ -196,6 +210,26 @@ local Specs = {
 			Triangles = 176,
 		},
 		Pot = { Size = { 1.720, 1.600, 1.720 }, Centre = { -0.000, 0.800, 0.000 }, Triangles = 236 },
+		Rail = {
+			Size = { 4.520, 4.770, 1.620 },
+			Centre = { -0.000, 2.825, 0.000 },
+			Triangles = 660,
+		},
+		RailHangers = {
+			Size = { 2.570, 0.360, 1.213 },
+			Centre = { -0.000, 3.950, 0.000 },
+			Triangles = 324,
+		},
+		RailSteel = {
+			Size = { 4.480, 4.280, 1.580 },
+			Centre = { -0.000, 2.270, 0.000 },
+			Triangles = 636,
+		},
+		RailWheels = {
+			Size = { 4.563, 0.340, 1.440 },
+			Centre = { -0.000, 0.170, 0.000 },
+			Triangles = 144,
+		},
 		Rug = { Size = { 8.000, 0.040, 6.000 }, Centre = { -0.000, 0.025, 0.000 }, Triangles = 12 },
 		Shelf = {
 			Size = { 7.460, 5.490, 1.600 },

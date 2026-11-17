@@ -45,6 +45,11 @@ nowhere else.
   round the picture, felt pads under it and on its top's back against the wall. Look at it at
   phone size from the rug and close up. Say: warm and real, or not; the frame wider or slimmer
   (0.28 studs of oak), the bevel brighter or quieter.
+  **The clothes rail beside it** (S5-03f2a, D-315; seen in Play on the A16,
+  `docs/art/S5-03f2a-rail-a16.jpg`, sheets `art/sheets/lobby-rail*.png`): a rolling oak rail on
+  castors past the mirror, a hat shelf on top, three oak hangers on a graphite bar, a shoe rack.
+  My defaults to judge: it stands on the mirror's wall further in, 0.7 studs past the mirror (or
+  nearer the door, or on the other wall); its size (4.5 across, 5.2 tall) beside you.
 - [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
   window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
   Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a

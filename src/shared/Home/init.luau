@@ -58,6 +58,9 @@ Home.Paint = {
 	-- picture; the felt it stands on a soft brown.
 	Bevel = Color3.fromHex("#DCE4E6"),
 	Felt = Color3.fromHex("#5A4E44"),
+	-- The clothes rail's castors (D-315): a soft dark rubber; its bar and hooks are the
+	-- job box's graphite steel.
+	Rubber = Color3.fromHex("#2B2826"),
 }
 local TINTED: { [string]: Color3 } = {
 	Facade = Home.Paint.Facade,
@@ -78,6 +81,8 @@ local PLAIN: { [string]: { material: Enum.Material, colour: Color3 } } = {
 	JobBoxFittings = { material = Enum.Material.Metal, colour = Home.Paint.Fittings },
 	MirrorBevel = { material = Enum.Material.SmoothPlastic, colour = Home.Paint.Bevel },
 	MirrorPads = { material = Enum.Material.Fabric, colour = Home.Paint.Felt },
+	RailSteel = { material = Enum.Material.Metal, colour = Home.Paint.Fittings },
+	RailWheels = { material = Enum.Material.SmoothPlastic, colour = Home.Paint.Rubber },
 }
 
 -- The home front's own parts, set into a unit in place of the M's facade and frame.
@@ -164,6 +169,7 @@ local SOLID: { [string]: boolean } = {
 	JobBox = true,
 	JobBoxLid = true,
 	MirrorFrame = true,
+	Rail = true,
 }
 
 local function vec(v: { number }): Vector3
@@ -382,6 +388,18 @@ function Home.mirror(template: Model, unit: Model, face: CFrame): Model
 	model.WorldPivot = foot
 	model.Parent = unit
 	return model
+end
+
+-- The clothes rail (Specs.Rail, S5-03f2a, D-315) in `unit`, whose doorway's outer face is `face`:
+-- a rolling oak garment rail along the mirror's wall past it, its front toward the room, from the
+-- place's Home `template`. Nil when the template predates it.
+function Home.rail(template: Model, unit: Model, face: CFrame): Model?
+	if not Home.has(template, "Rail") then
+		return nil
+	end
+	local r = Specs.Rail
+	local at = face * CFrame.new(vec(r.At)) * CFrame.Angles(0, math.rad(r.Turn), 0)
+	return Home.piece(template, "Rail", at, unit)
 end
 
 return Home

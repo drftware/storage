@@ -73,6 +73,22 @@ MIRROR_IN = 12.5         # its foot's middle, this far in from the doorway; acro
                          # where its top pads just touch the left wall (mirror_at)
 PARTITION = 0.25         # the units' side walls, thick (art/lobby/spec.py), the wall it leans on
                          # (inside a cubby, clear of its sides, its board above and its back)
+# The clothes rail (S5-03f2a, D-315): a rolling oak garment rail beside the mirror, three rows for
+# what you wear: hats on its top shelf, clothes on hangers from its steel bar, shoes on its rack.
+GARMENT = (4.4, 1.5, 4.95)  # the oak frame: long (post to post, outside), deep, the posts' tops
+GARMENT_POST = 0.16         # the four oak posts, square
+GARMENT_TOP = (0.06, 0.12, 0.14)  # the hat shelf's board: past the posts all round, thick; its
+                         # gallery rail along the back, tall above the board (hats stay on)
+GARMENT_BAR = (4.3, 0.055)  # the steel hanging bar: its middle's height, its radius
+GARMENT_RACK = (0.44, 0.62, 0.06)  # the posts' feet (the castors' tops), the bottom frame's top,
+                         # the shoe rack's slats on it, thick
+GARMENT_WHEEL = (0.17, 0.1)  # each castor's rubber wheel: radius, wide
+GARMENT_HANGERS = (-1.25, 0.0, 1.25)  # the oak hangers on the bar, along it from its middle
+GARMENT_HANGER = (0.58, 0.2, 0.18, 0.035)  # a hanger: half its shoulders' span, how far its peak
+                         # hangs under the bar, how far its shoulders drop to their tips, its
+                         # dowel's radius
+GARMENT_IN = 17.0           # its middle, this far in from the doorway, past the mirror on the same
+GARMENT_OFF = 0.12          # wall; across, its back this far off that wall's face
 
 
 def shelf_spots():
@@ -121,7 +137,8 @@ PIECES = {"Plant": ("Pot", "Plant"), "Bench": ("Bench",), "Planter": ("Planter",
           "PlanterPlants"), "Rug": ("Rug",), "Beanbag": ("Beanbag",),
           "FloorLamp": ("FloorLamp", "LampShade"), "Shelf": ("Shelf", "ShelfBack"),
           "JobBox": ("JobBox", "JobBoxLid", "JobBoxFittings", "JobBoxRunners"),
-          "Mirror": ("MirrorFrame", "MirrorBevel", "MirrorPads")}
+          "Mirror": ("MirrorFrame", "MirrorBevel", "MirrorPads"),
+          "Rail": ("Rail", "RailHangers", "RailSteel", "RailWheels")}
 
 
 def mirror_box():
@@ -145,6 +162,12 @@ def mirror_at():
     pad_back, pad_top = MIRROR_DEPTH / 2 + MIRROR_FEET, tall - 0.1
     reach = pad_top * math.sin(lean) + pad_back * math.cos(lean)
     return (SLOT[0] / 2 - PARTITION / 2 - reach, MIRROR_IN)
+
+
+def rail_at():
+    """Where the rail's middle stands in the unit frame (x across, y in): along the mirror's wall,
+    its back GARMENT_OFF off the wall's face. Turned as the mirror is, its front looks across the unit."""
+    return (SLOT[0] / 2 - PARTITION / 2 - GARMENT_OFF - GARMENT[1] / 2 - GARMENT_TOP[0], GARMENT_IN)
 
 
 def b2r(v):
@@ -221,6 +244,24 @@ def write_luau(path, parts, switch, toggle, lamp):
           f"\t\tGlass = {lua_vec(b2r((0.0, mirror_glass_y(), mid)))} :: Vec,",
           f"\t\tGlassSize = {{ {gw:.3f}, {gh:.3f} }} :: Vec,",
           f"\t\tSize = {{ {wide:.3f}, {tall:.3f} }} :: Vec,",
+          "\t},",
+          "\t-- The clothes rail (D-315): its middle on the floor in the unit's frame, turned as the",
+          "\t-- mirror is. In the Rail piece's frame: Size, the whole rail across, tall and deep; Shelf,",
+          "\t-- the hat shelf's top; Bar, the hanging bar's middle; Rack, the shoe rack's top; Hangers,",
+          "\t-- each hanger's middle along the bar (its hook over it).",
+          "\tRail = {"]
+    rx, ry = rail_at()
+    long_, deep, posts = GARMENT
+    over, board, gallery = GARMENT_TOP
+    bar, _ = GARMENT_BAR
+    _, rack, slat = GARMENT_RACK
+    L += [f"\t\tAt = {lua_vec(b2r((rx, ry, 0.0)))} :: Vec,",
+          "\t\tTurn = -90,",
+          f"\t\tSize = {{ {long_ + 2 * over:.3f}, {posts + board + gallery:.3f}, {deep + 2 * over:.3f} }} :: Vec,",
+          f"\t\tShelf = {posts + board:.3f},",
+          f"\t\tBar = {bar:.3f},",
+          f"\t\tRack = {rack + slat:.3f},",
+          "\t\tHangers = { " + ", ".join(f"{-x:.3f}" for x in GARMENT_HANGERS) + " } :: { number },",
           "\t},"]
     L += [
           "\t-- Each MeshPart's box as imported (its centre is its CFrame in its frame).",

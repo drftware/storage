@@ -7979,3 +7979,29 @@ furniture, the first thing you check your hat in. The test's frame was plain par
 - **Seen in Studio Play on the A16, Nov 17** (`docs/art/S5-03f1-*.jpg`): the oak frame at phone
   size, you facing out of it, the shelf, the floor lamp and the ceiling lamp behind you. The hard
   hat in it was not checked again (the copies' maths didn't change; D-283's look stands).
+
+## D-315 · 2026-11-17 · The clothes rail: a rolling oak garment rail past the mirror (S5-03f2a)
+
+The moment (the home doc's idea 23, Lethal Company's suit rack): beside your mirror stands a
+rail with everything you can wear on it; you take one off it, put it on and turn to the mirror.
+S5-03f2 was split: this part builds the rail and stands it in every home; S5-03f2b hangs what
+you own on it and makes pressing one wear it.
+
+- **The look** (D-263's calm home, the shelf's and the mirror's oak): four square oak posts on
+  rubber castors (it rolls, a garment rail's tell), a frame round their feet with three slats
+  across it for shoes, a stretcher across each end at the bar's height, a soft graphite steel
+  bar between them (the job box's steel), three oak hangers hung side on from steel hooks, and
+  an oak hat shelf on top with a low gallery rail along its back. 4.52 across, 5.21 tall, 1.62
+  deep; 1,764 triangles in `Rail`, `RailHangers` (Wood), `RailSteel` and `RailWheels` (plain).
+  `art/home/furnish.py`, numbers `GARMENT*` in `home_spec.py` (`RAIL` there is the wall's paint
+  rail). Sheets `art/sheets/lobby-rail*.png`.
+- **Three rows, one per kind of thing you wear:** hats on the shelf, clothes on the hangers,
+  shoes on the rack, so the skates and slippers and the clothing still to come each have a row
+  without the rail changing. The hard hat is the only worn find today (D-277). `Specs.Rail`
+  gives f2b each row's height (`Shelf` 5.07, `Bar` 4.3, `Rack` 0.68) and the hangers' places.
+- **Where it stands:** along the mirror's wall past it, its middle 17 studs in from the doorway
+  (the mirror's is 12.5, so 0.7 studs between them), its back 0.12 off the wall, turned as the
+  mirror is so its front looks across the room. My default (OWNER.md). It stops you as one box,
+  as the shelf does. Arrange's fixed footprints gain it on the floor and on that wall.
+- **Seen in Studio Play on the A16, Nov 17** (`docs/art/S5-03f2a-rail-a16.jpg`): in all 12
+  homes, beside the mirror at phone size, in first person.
