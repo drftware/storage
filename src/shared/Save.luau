@@ -39,9 +39,9 @@
 	  its `form` and a row for each find out (its id, `Spots.id`: the find's name and a number, and
 	  where it stands). A find set out is still yours and still in `finds`; it's simply not in the
 	  job box (`boxed` takes it off, as it does the shelf's), so it's never counted twice.
-	- `looks`: your home's paint, paper, floor and floor colour (S5-03g2b, D-326), and your door's
-	  colour (S5-03g3a, D-329), ids from `Home.Specs.Looks` (`Home.Looks`); a new home's are the
-	  first of each list.
+	- `looks`: your home's paint, paper, floor and floor colour (S5-03g2b, D-326), your door's
+	  colour (S5-03g3a, D-329), ids from `Home.Specs.Looks` (`Home.Looks`), and your name card's
+	  style (S5-03g3b, D-331), an id from `Home.Specs.Cards`; a new home's are the first of each.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -644,6 +644,56 @@ function Save.format(brix: any): Format
 		}),
 	})
 
+	-- Version 11 (S5-03g3b, Nov 17): version 10 plus your name card's style, an id from
+	-- Home.Specs.Cards.
+	local eleventh = Schema.shape({
+		cash = Schema.number({ min = 0, integer = true }),
+		finds = Schema.map(name, count),
+		sealed = Schema.map(name, count),
+		stamps = Schema.shape({
+			finds = Schema.map(name, stamped),
+			sealed = Schema.map(name, stamped),
+			keepers = Schema.map(name, stamped),
+		}),
+		bestFloor = Schema.number({ min = 0, integer = true }),
+		purchases = Schema.list(name),
+		recipients = Schema.map(name, name),
+		bought = Schema.map(name, count),
+		spares = Schema.map(name, count),
+		wraps = Schema.map(name, stamped),
+		wornWrap = Schema.string({ maxLength = 64 }),
+		shelf = Schema.list(
+			Schema.shape({
+				find = Schema.string({ maxLength = 64 }),
+				fresh = Schema.number({ min = 0, max = 2, integer = true }),
+			}),
+			{ maxCount = Save.ShelfMost }
+		),
+		boxFresh = Schema.number({ min = 0, max = 2, integer = true }),
+		chipped = Schema.map(name, count),
+		placed = Schema.shape({
+			form = Schema.number({ min = 1, max = 1000, integer = true }),
+			rows = Schema.list(
+				Schema.shape({
+					id = where,
+					on = where,
+					x = Schema.number({ min = -500, max = 500 }),
+					y = Schema.number({ min = -500, max = 500 }),
+					turn = Schema.number({ min = -360, max = 360 }),
+				}),
+				{ maxCount = Save.PlacedMost }
+			),
+		}),
+		looks = Schema.shape({
+			paint = look,
+			paper = look,
+			floor = look,
+			floorColour = Schema.string({ maxLength = 32 }),
+			door = look,
+			card = look,
+		}),
+	})
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -823,6 +873,16 @@ function Save.format(brix: any): Format
 					local after = table.clone(old)
 					after.looks = table.clone(old.looks)
 					after.looks.door = Looks.start().door -- the clay door it always had
+					return after
+				end,
+			},
+			{
+				schema = eleventh,
+				-- any: a version 10 save as Brix hands it over, already checked against `tenth`
+				migrate = function(old: any): any
+					local after = table.clone(old)
+					after.looks = table.clone(old.looks)
+					after.looks.card = Looks.start().card -- the stencilled steel every home had
 					return after
 				end,
 			},

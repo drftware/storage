@@ -2672,11 +2672,22 @@ Done when players watch the results to the end and change their perks between cl
           its second row), the camera swung round to face the door from 13.4 studs in, the limit
           bar risen away, finds in the room not lifted on this tab. Seen in Play on the A16 (open
           door; the coil rolls), pictures `docs/art/S5-03g3a2-*.jpg`.
-      - [ ] **S5-03g3b The name card plates.** The chosen style's parts (`Specs.Cards`) replace
-        the lobby's plain card plate over each door (`art/lobby/build.py signs()` drops its unit
-        cards); the name is written on `Face` in its `Font` (Font.fromName) and `Ink`; the neon's
-        tube goes Neon in `Glow`, its name gets a glow stroke and a light (`CardLight`) on the
-        wall; the spray (Holding.Card) still lands the name.
+      - [ ] **S5-03g3b The name card plates**, in two:
+        - [x] **S5-03g3b1 The style saved and its plate over the door** (D-331): `looks.card` (save
+          version 11, the stencil for older saves), a sixth kind for `PickLook` (Starter styles
+          only until g3c), the id on the unit (`Looks.CardAttribute`). The lobby's plain plates are
+          gone (`signs()`, Lobby.fbx re-uploaded in place); the server hangs each home's style
+          (`CardPlate.hang`, from the home template's card parts) and moves the writing onto
+          its face in its font and ink; a spare home wears the blank stencil. Seen in Play on the
+          A16: the stencil with the name close up and from mid-floor, and the painted, chalk and
+          neon plates hung from the server down the row. Pictures `docs/art/S5-03g3b1-*.jpg`.
+        - [ ] **S5-03g3b2 The neon lit**: its name in a glow stroke (UIStroke in `Glow`,
+          LightInfluence 0 so the tube's letters glow), the tube Neon (done in g3b1) and a light
+          on the wall (`Specs.CardLight`, range 9) thrown only near you, as the floor lamps' are
+          (`Home.FloorLamp.Near`, D-271), so a hall of neon cards stays inside the A16's light
+          budget; from across the floor the neon reads as the brightest thing on the wall.
+        Polish (g3b): a new style's plate swapping in plays (the old one down, the new one up,
+        a clunk) instead of snapping; names are small from mid-floor at A16 size (`OWNER.md`).
       - [ ] **S5-03g3c Choosing a card's style** in the paint tab: Starter styles free, Cash and
         Robux ones shown as not yours yet (a small coin or Robux mark on the chip, never a popup);
         a tap on one you don't own does nothing until the counter sells it (the store's rules).

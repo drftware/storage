@@ -20,6 +20,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Arranged = require(script.Parent.Home.Arranged)
+local CardPlate = require(script.Parent.Home.CardPlate)
 local Boarding = require(script.Boarding)
 local Boxes = require(script.Parent.Boxes)
 local Cart = require(script.Parent.Cart)
@@ -93,6 +94,9 @@ Lobby.Dropped = { "WallLeft", "WallRight", "WallBack", "Floor", "Top" }
 -- reads from the door on a phone even where the hall lights don't reach it.
 Lobby.Ink = Color3.fromRGB(236, 231, 216)
 Lobby.InkLight = 0.35 -- the SurfaceGuis' LightInfluence: 0 glows, 1 is lit only by the room
+-- How far a home's writing face (Specs.Cards' Unit rows) stands off the wall over its door: the
+-- old plain plate's face (art/lobby/spec.py unit_card). The chosen plate hangs on the wall (D-331).
+Lobby.CardDepth = 0.185
 Lobby.Words = { Name = "EVERKEEP SELF STORAGE", Carts = "CARTS" } :: { [string]: string }
 
 -- The room's light. The hall lights hang only over the cars (the climb's edge stays there) and
@@ -418,12 +422,17 @@ function Lobby.lay(pivot: CFrame, parent: Instance): Laid?
 		slotOf[slot.Card] = slot.Number
 	end
 	local cards: { [number]: TextLabel } = {}
+	local homeTemplate = Home.template()
 	for _, c in Specs.Cards do
 		local words = if c.Name:sub(1, 3) == "Bay" then c.Name:sub(4) else Lobby.Words[c.Name]
 		local p = card(pivot, c, words or "", dressing)
 		local number = slotOf[c.Name]
 		if number then
 			p:SetAttribute(Home.CardSlot, number)
+			p:SetAttribute(CardPlate.WallAttribute, p.CFrame * CFrame.new(0, 0, Lobby.CardDepth))
+			if homeTemplate then
+				CardPlate.hang(p, nil, homeTemplate) -- blank on the Starter stencil until held
+			end
 			p:AddTag(Home.CardTag)
 			cards[number] = p:FindFirstChildWhichIsA("TextLabel", true) :: TextLabel
 		end

@@ -55,7 +55,7 @@ ok(matsFloor.set == "FloorMatting" and matsFloor.colour == "#3D3B39", "matting w
 -- The remote's ask: type and length first.
 ok(Looks.ask("paper", "Leaves") == "paper", "a fair ask")
 ok(Looks.ask("door", "Clay") == "door", "a door colour is a fair ask")
-ok(Looks.ask("card", "Neon") == nil, "card styles aren't picked here yet")
+ok(Looks.ask("card", "Neon") == "card", "a card style is a fair ask (the pick judges it)")
 ok(Looks.ask("paper", 4) == nil and Looks.ask(nil, "Leaves") == nil, "wrong types refused")
 ok(Looks.ask("paper", string.rep("a", 33)) == nil and Looks.ask("paper", "") == nil, "lengths")
 
@@ -99,6 +99,28 @@ ok(Looks.encode(mustard) == Looks.encode(start), "the room's look carries no doo
 local withDoor = Looks.decode(Looks.encode(sage), "Plum") :: Looks.Chosen
 ok(withDoor.door == "Plum" and withDoor.floorColour == "Sage", "decoded with the unit's door")
 ok((Looks.decode(Looks.encode(sage)) :: Looks.Chosen).door == "Clay", "no door: clay")
+
+-- The name card's style (S5-03g3b, D-331): the stencil to start; only Starter styles picked
+-- until the counter sells the rest; apart from the room's look, as the door is.
+ok(start.card == "Stencil", "a new home's card is stencilled steel")
+ok(Looks.pick(start, "card", "Neon") == nil, "a Robux card isn't picked from the paint tab")
+ok(Looks.pick(start, "card", "Chalk") == nil, "a cash card isn't picked before it's sold")
+ok(Looks.pick(start, "card", "Mustard") == nil, "a door colour isn't a card style")
+ok((Looks.pick(start, "card", "Stencil") :: Looks.Chosen).card == "Stencil", "the stencil picked")
+local chalked = table.clone(start)
+chalked.card = "Chalk"
+ok(not Looks.same(chalked, start), "a card style tells two looks apart")
+ok(Looks.tidy(table.clone(chalked)).card == "Chalk", "an owned card style kept")
+local gone = table.clone(start)
+gone.card = "Gone"
+ok(Looks.tidy(gone).card == "Stencil", "a dropped card style goes back to the stencil")
+ok(Looks.encode(chalked) == Looks.encode(start), "the room's look carries no card")
+ok(
+	(Looks.decode(Looks.encode(sage), "Plum", "Neon") :: Looks.Chosen).card == "Neon",
+	"decoded card"
+)
+ok((Looks.decode(Looks.encode(sage)) :: Looks.Chosen).card == "Stencil", "no card: the stencil")
+ok(Looks.cardOf("Neon") ~= nil and Looks.cardOf("Gone") == nil, "card styles by id")
 
 -- The colour's roll down the slats (slat 1 at the foot): top first, the coil's with the top,
 -- an open door's coil round from its outside wrap; every slat turned by the roll's end.

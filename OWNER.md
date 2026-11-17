@@ -117,12 +117,13 @@ nowhere else.
 - [ ] **Should any paint, paper or floor cost cash?** (S5-03g2b1, D-326.) My default: all free,
   since a home is the calm reward for climbing and no price was agreed. Say which, if any, should
   be bought (and for how much) and I'll gate them at the counter.
-- [ ] **Your name card's four styles** (S5-03g1b, D-322; art only, not in the game until
-  S5-03g3). Open `art/sheets/home-cards.png` on your phone: along the top, each style over a door
-  from the floor; below, the four from down the hall and from across the floor. Look for: can you
-  read every name from across the floor, and does the neon one make you want it? My defaults, say
-  which to change: stencilled steel (slate blue, cream letters) is every home's; a painted board
-  (forest green, cream pinstripe) and a chalkboard in oak are for cash; neon (pink) is for Robux.
+- [ ] **Your name card's four styles** (S5-03g1b, D-322; in the game since S5-03g3b1, D-331).
+  Play on a phone, take your home and walk out: your name is on the stencilled steel plate over
+  your door, every spare home has a blank one. Walk to the middle of the floor and look back. Look
+  for: can you read your name from there (on the A16 it's small, the size the old plain plate's
+  was; say if the plates should be bigger), and does the neon one make you want it (pictures
+  `docs/art/S5-03g3b1-*.jpg`; the neon's glow comes next)? My defaults, say which to change:
+  stencilled steel is every home's; the painted board and the chalkboard for cash; neon for Robux.
 - [ ] **The counter's furniture** (S5-03g1c1 and c2, D-323, D-324; art only, not in the game
   until S5-03g4). Open `art/sheets/home-furniture.png` on your phone: top left, a milk crate, a
   pallet coffee table, a folding table and a steel shelf by a person for scale; top right, a

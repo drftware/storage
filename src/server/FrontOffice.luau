@@ -21,10 +21,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local CardPlate = require(ReplicatedStorage.Shared.Home.CardPlate)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local Doors = require(script.Parent.Doors)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
+local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local Prompts = require(script.Parent.Prompts)
@@ -189,6 +191,21 @@ function FrontOffice.new(): FrontOffice
 				local c = wireSwitch(unit)
 				if c then
 					table.insert(switches, c)
+				end
+			end
+			-- each home's name card on the plate its holder chose (D-331), the stencil when spare
+			local template = Home.template()
+			for n, unit in l.units do
+				local label = l.cards[n]
+				local card = label and label:FindFirstAncestorWhichIsA("BasePart")
+				if card and template then
+					local plate: BasePart, kit: Model = card, template
+					table.insert(
+						switches,
+						unit:GetAttributeChangedSignal(Looks.CardAttribute):Connect(function()
+							CardPlate.hang(plate, unit:GetAttribute(Looks.CardAttribute), kit)
+						end)
+					)
 				end
 			end
 			-- a home each, nearest the spawn first

@@ -510,16 +510,8 @@ def signs():
             geo.box(m, (lo_x, yy - 0.05, z - 0.05), (hi_x, yy + 0.05, z + 0.05), raw)
     for xx in (cx - cw / 2 + 0.3, cx + cw / 2 - 0.3):
         geo.box(m, (xx - 0.05, -D, cz - 0.05), (xx + 0.05, -D + so, cz + 0.05), raw)
-    # a name card over each unit's door, off the R-panel on standoffs as the bays' numbers are
-    kw, kh, kz = K.CARD
-    for _, side, y in K.slots():
-        x0, x1 = sorted((side * (W2 - off), side * (W2 - off - t)))
-        geo.box(m, (x0, y - kw / 2, kz - kh / 2), (x1, y + kw / 2, kz + kh / 2), trim, bevel=0.02)
-        s0, s1 = sorted((side * W2, side * (W2 - off)))
-        for sy in (-1, 1):
-            for sz in (-1, 1):
-                cy, cz2 = y + sy * (kw / 2 - 0.3), kz + sz * (kh / 2 - 0.3)
-                geo.box(m, (s0, cy - 0.05, cz2 - 0.05), (s1, cy + 0.05, cz2 + 0.05), raw)
+    # no plate over a unit's door: the game hangs the name card style its holder chose there
+    # (art/home/cards.py, Home.CardPlate, D-331)
     return m
 
 

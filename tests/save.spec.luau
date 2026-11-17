@@ -75,9 +75,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 10.
+-- A new player: nothing yet, at version 11.
 do
-	ok(format:latest() == 10, "the save is at version 10")
+	ok(format:latest() == 11, "the save is at version 11")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -98,8 +98,9 @@ do
 	ok(
 		fresh.looks.paint == "WarmWhite"
 			and fresh.looks.floor == "Boards"
-			and fresh.looks.door == "Clay",
-		"a new home is warm white on boards behind a clay door"
+			and fresh.looks.door == "Clay"
+			and fresh.looks.card == "Stencil",
+		"a new home is warm white on boards behind a clay door, its name stencilled"
 	)
 	ok(fresh ~= format:fresh(), "each new save is its own table")
 	local stored, problem = format:encode(fresh)
@@ -111,7 +112,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(10, stored)
+	local back, decodeProblem = format:decode(11, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -307,6 +308,19 @@ do
 			and #nine.placed.rows == 1,
 		`version 9 loads with its look and a clay door ({nineProblem})`
 	)
+	-- Version 10 as the DataStore holds it (Nov 17): a mustard door; its card as it was.
+	local v10 = table.clone(v9)
+	v10.looks = table.clone(v9.looks)
+	v10.looks.door = "Mustard"
+	local ten, tenProblem = format:decode(10, v10)
+	ok(
+		ten ~= nil
+			and ten.looks.door == "Mustard"
+			and ten.looks.paper == "Leaves"
+			and ten.looks.card == "Stencil"
+			and #ten.placed.rows == 1,
+		`version 10 loads with its door and the stencilled card ({tenProblem})`
+	)
 	local dressed = format:fresh()
 	dressed.looks = {
 		paint = "Sage",
@@ -314,17 +328,19 @@ do
 		floor = "Carpet",
 		floorColour = "Rose",
 		door = "Mustard",
+		card = "Chalk",
 	}
 	local kept = format:encode(dressed)
-	local dressedBack = format:decode(10, kept)
+	local dressedBack = format:decode(11, kept)
 	ok(
 		dressedBack ~= nil
 			and dressedBack.looks.paper == "Leaves"
 			and dressedBack.looks.floorColour == "Rose"
-			and dressedBack.looks.door == "Mustard",
-		"a home's look and its door are kept"
+			and dressedBack.looks.door == "Mustard"
+			and dressedBack.looks.card == "Chalk",
+		"a home's look, its door and its card are kept"
 	)
-	local newer, newerProblem = format:decode(11, v1)
+	local newer, newerProblem = format:decode(12, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 
@@ -441,7 +457,7 @@ do
 	Save.chip(data, { "Teddy" })
 	ok(data.chipped.Teddy == nil, "a find you don't keep is never marked cracked")
 	local stored = format:encode(data)
-	local back = format:decode(10, stored)
+	local back = format:decode(11, stored)
 	ok(back ~= nil and back.chipped.OilLamp == 2, "the cracks are saved")
 end
 
@@ -466,7 +482,7 @@ do
 	ok(Save.placedName("Floor") == nil and Save.placedName("#3") == nil, "an area is no find")
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `what's set out can be stored ({problem})`)
-	local back = format:decode(10, stored)
+	local back = format:decode(11, stored)
 	ok(back ~= nil and #back.placed.rows == 2 and back.placed.rows[2].turn == 45, "set out, saved")
 	data.placed.rows[1].x = 0 / 0
 	local nan = format:encode(data)

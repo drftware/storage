@@ -8422,3 +8422,27 @@ it mustard from the top down.
 - **Open, the hall doesn't see your colour.** An open door is rolled up behind the header, so from
   across the floor your home shows its name card, not its door. Left as it is (your door stays
   open while you're on the floor); whether it should shut when you walk away waits on `OWNER.md`.
+
+## D-331 Your name card's plate hung over your door, the style saved (S5-03g3b1, 2026-11-17)
+
+The moment: you walk out across the floor and your name is over your door on the plate you
+chose, your friends' on theirs. Precedent: Bloxburg's and Adopt Me's house signs, Animal
+Crossing's mailbox styles (D-322).
+- **Saved with the looks, carried apart from the room's.** `looks.card` (save version 11; an
+  older save gets the stencil every home had), a sixth `PickLook` kind, the id on the unit in
+  `Looks.CardAttribute` ("LookCard"), never in `encode`, as the door's is (D-329). Only Starter
+  styles are picked until the counter sells the rest (S5-03g3c).
+- **The server hangs the plate, not each screen.** FrontOffice watches each home's unit and
+  `CardPlate.hang` (src/shared/Home) clones the style's parts from the home template onto the wall over the
+  door, paints them (the mapped plate takes `Paint` through its Overlay map; bolts, screws, chalk,
+  backing and tube take a material and colour), and moves the writing face onto the plate's
+  `Face` in its font and ink. Every screen sees the same plate, and the client's spray still
+  lands the name on it. The writing part keeps its wall frame (`CardWall`), so a plate can be
+  swapped any number of times.
+- **The lobby's plain plates are gone.** `signs()` no longer builds a card over each door (they
+  sat exactly where the stencil hangs), so a spare home wears the blank stencilled steel plate,
+  and a home let go goes back to it, its name fading off as before.
+- **What it looks like on the A16:** close up the stencil reads well, cream Oswald on the dark
+  slate plate; from mid-floor (40 studs) the name is small, the size the plain plate's was; from
+  the far wall (100 studs) the plates are dark bars. The neon's tube already reads from far
+  off; its glow stroke and light are g3b2.

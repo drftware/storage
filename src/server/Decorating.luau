@@ -24,6 +24,9 @@
 	every screen rolls the colour down the slats (LooksView, RollUpDoor.paint), and the server
 	paints the door itself `Looks.DoorAfter` seconds on (`Home.paintDoor`), on its own timer, so a
 	door pick never restarts a wall's wipe. A home let go goes back to clay.
+
+	The name card's style goes the same way (D-331): its id in `Looks.CardAttribute`, from which
+	the server hangs that plate over the door (CardPlate); a home let go takes the blank stencil.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -64,6 +67,7 @@ local ATTRIBUTES = {
 	Looks.WornAttribute,
 	Looks.FrameAttribute,
 	Looks.DoorAttribute,
+	Looks.CardAttribute,
 }
 
 local function vec(v: { number }): Vector3
@@ -210,6 +214,7 @@ function Decorating.new(): DecoratingSystem
 		dress(home)
 		Home.paintDoor(unit, Color3.fromHex(Looks.doorOf(home.chosen.door)))
 		unit:SetAttribute(Looks.DoorAttribute, home.chosen.door) -- before the tag: no roll on a join
+		unit:SetAttribute(Looks.CardAttribute, home.chosen.card)
 		unit:SetAttribute(Looks.FrameAttribute, frame)
 		unit:SetAttribute(Looks.Attribute, Looks.encode(home.chosen))
 		CollectionService:AddTag(unit, Looks.Tag)
@@ -233,6 +238,10 @@ function Decorating.new(): DecoratingSystem
 		end
 		home.chosen = after
 		data.looks = table.clone(after) -- the autosave and the leave keep it
+		if after.card ~= before.card then
+			home.unit:SetAttribute(Looks.CardAttribute, after.card) -- the plate over the door
+			return ""
+		end
 		if after.door ~= before.door then
 			home.unit:SetAttribute(Looks.DoorAttribute, after.door) -- every screen rolls it
 			if home.doorPending then

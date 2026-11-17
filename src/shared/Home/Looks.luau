@@ -12,6 +12,10 @@
 	screen rolls the new colour down the slats (`rollShare`, `DoorRoll`); the server paints the
 	door itself `DoorAfter` seconds on, once every roll is done.
 
+	The name card over the door is the hall's too (S5-03g3b, D-331): its style's id (`Specs.Cards`)
+	rides on the unit as the door's does (`CardAttribute`), and the server hangs that style's plate
+	over the door (CardPlate). Only the Starter styles can be picked until the counter sells the rest.
+
 	A pick isn't instant. The server stamps the new look on the unit (`Attribute`, its start in
 	`SinceAttribute`) and dresses the home's panels `Wipe` seconds later (`WornAttribute` then
 	says so), while every screen near grows the new look over the old (LooksView): the walls from
@@ -29,8 +33,9 @@ export type Chosen = {
 	floor: string,
 	floorColour: string,
 	door: string,
+	card: string,
 }
-export type Kind = "paint" | "paper" | "floor" | "floorColour" | "door"
+export type Kind = "paint" | "paper" | "floor" | "floorColour" | "door" | "card"
 -- What one surface wears: its set's swatch (`Specs.Swatches`) and the part's colour (hex, or ""
 -- for white: a baked set's colour is its own).
 export type Wear = { set: string, colour: string }
@@ -44,6 +49,7 @@ Looks.WornAttribute = "LookWorn" -- `encode` of what its panels wear now
 Looks.FrameAttribute = "LookFrame" -- the unit's frame (CFrame), for the screens' wipes
 Looks.Tag = "HomeLook" -- a held home's unit, with the attributes above
 Looks.DoorAttribute = "LookDoor" -- on a held home's unit: its door's colour id
+Looks.CardAttribute = "LookCard" -- on a held home's unit: its name card's style id
 Looks.Folder = "Looks" -- its panels, in the unit
 -- How long a new look takes to cross the room: long enough to watch it travel round you, short
 -- enough that the next tap of a picker isn't kept waiting.
@@ -71,6 +77,11 @@ local function find<T>(list: { T }, id: string): T?
 	return nil
 end
 
+-- Name card style `id`, or nil for one not offered.
+function Looks.cardOf(id: string): Specs.CardStyle?
+	return find(Specs.Cards, id)
+end
+
 -- The colour (hex) of door colour `id`, or the start's clay for one not offered.
 function Looks.doorOf(id: string): string
 	local door = find(Specs.Looks.Doors, id) or Specs.Looks.Doors[1]
@@ -96,6 +107,7 @@ function Looks.start(): Chosen
 		floor = floor.Id,
 		floorColour = firstColour(floor),
 		door = Specs.Looks.Doors[1].Id,
+		card = Specs.Cards[1].Id,
 	}
 end
 
@@ -114,10 +126,12 @@ function Looks.tidy(chosen: Chosen): Chosen
 			then chosen.floorColour
 			else firstColour(f),
 		door = if find(Specs.Looks.Doors, chosen.door) then chosen.door else start.door,
+		card = if find(Specs.Cards, chosen.card) then chosen.card else start.card,
 	}
 end
 
-local KINDS = { paint = true, paper = true, floor = true, floorColour = true, door = true }
+local KINDS =
+	{ paint = true, paper = true, floor = true, floorColour = true, door = true, card = true }
 
 -- A remote's (kind, id), checked for type and length only: a kind of look and a short id.
 function Looks.ask(kind: unknown, id: unknown): (Kind?, string?)
@@ -150,6 +164,12 @@ function Looks.pick(chosen: Chosen, kind: Kind, id: string): Chosen?
 			return nil
 		end
 		after.door = id
+	elseif kind == "card" then
+		local style = find(Specs.Cards, id)
+		if not (style and style.Sold == "Starter") then
+			return nil -- the rest wait for the counter (S5-03g3c)
+		end
+		after.card = id
 	elseif kind == "floor" then
 		local floor = Looks.floorOf(id)
 		if not floor then
@@ -169,13 +189,14 @@ function Looks.pick(chosen: Chosen, kind: Kind, id: string): Chosen?
 	return after
 end
 
--- Whether two looks are the same, door and all.
+-- Whether two looks are the same, door and card and all.
 function Looks.same(a: Chosen, b: Chosen): boolean
 	return a.paint == b.paint
 		and a.paper == b.paper
 		and a.floor == b.floor
 		and a.floorColour == b.floorColour
 		and a.door == b.door
+		and a.card == b.card
 end
 
 -- The room's look (walls and floor) as the unit carries it; the door goes on its own.
@@ -183,8 +204,9 @@ function Looks.encode(chosen: Chosen): string
 	return `{chosen.paint}|{chosen.paper}|{chosen.floor}|{chosen.floorColour}`
 end
 
--- A room's look from `encode`, with the unit's `door` (its `DoorAttribute`; clay when there's none).
-function Looks.decode(text: unknown, door: unknown?): Chosen?
+-- A room's look from `encode`, with the unit's `door` (its `DoorAttribute`; clay when there's none)
+-- and `card` (its `CardAttribute`; the stencil when there's none).
+function Looks.decode(text: unknown, door: unknown?, card: unknown?): Chosen?
 	if type(text) ~= "string" then
 		return nil
 	end
@@ -198,6 +220,7 @@ function Looks.decode(text: unknown, door: unknown?): Chosen?
 		floor = floor,
 		floorColour = colour,
 		door = if type(door) == "string" then door else Specs.Looks.Doors[1].Id,
+		card = if type(card) == "string" then card else Specs.Cards[1].Id,
 	}
 end
 

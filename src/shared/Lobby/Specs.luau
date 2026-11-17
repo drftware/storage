@@ -501,9 +501,9 @@ local Specs = {
 			Triangles = 896,
 		},
 		Signs = {
-			Size = { 120.000, 7.700, 156.000 },
-			Centre = { -0.000, 9.400, -78.000 },
-			Triangles = 1792,
+			Size = { 106.800, 7.700, 156.000 },
+			Centre = { 6.600, 9.400, -78.000 },
+			Triangles = 688,
 		},
 		Storefront = {
 			Size = { 24.000, 9.880, 4.100 },
