@@ -323,9 +323,102 @@ def shelf_back():
 
 BUILDERS.update({"Shelf": shelf, "ShelfBack": shelf_back})
 
+
+def band(m, x, y, z0, z1, proud, mapper, bevel):
+    """A band `proud` of a box's four sides (half-sizes x, y), from z0 to z1: strips only, so
+    nothing shows inside an open box."""
+    geo.box(m, (-x - proud, -y - proud, z0), (x + proud, -y + 0.01, z1), mapper, bevel=bevel)
+    geo.box(m, (-x - proud, y - 0.01, z0), (x + proud, y + proud, z1), mapper, bevel=bevel)
+    for sx in (-1, 1):
+        a, b = sorted((sx * (x - 0.01), sx * (x + proud)))
+        geo.box(m, (a, -y, z0), (b, y, z1), mapper, bevel=bevel)
+
+
+def jobbox():
+    """The job box's steel body (D-287): an open chest of folded sheet on the runners, two ribs
+    pressed round it, a kick band at its foot and a stamped plate on its front. Painted (Plaster:
+    the stipple reads as powder coat)."""
+    m = Mesh("JobBox")
+    L, D, H, _, run = K.JOBBOX
+    t, x, y, z0, z1 = K.JOBBOX_WALL, L / 2, D / 2, run, run + H
+    pu = plaster_uv(2.0)
+    geo.box(m, (-x, -y, z0), (x, -y + t, z1), pu, bevel=0.02)              # front
+    geo.box(m, (-x, y - t, z0), (x, y, z1), pu, bevel=0.02)                # back
+    for sx in (-1, 1):                                                     # the ends
+        a, b = sorted((sx * x, sx * (x - t)))
+        geo.box(m, (a, -y + t, z0), (b, y - t, z1), pu, bevel=0.02)
+    geo.box(m, (-x + t, -y + t, z0), (x - t, y - t, z0 + 0.14), pu)       # its floor
+    for r0 in (0.55, 1.25):                                                # the pressed ribs
+        band(m, x, y, z0 + r0, z0 + r0 + 0.12, 0.025, pu, 0.012)
+    band(m, x, y, z0, z0 + 0.14, 0.03, pu, 0.015)                         # the kick band
+    geo.box(m, (-0.8, -y - 0.02, z0 + 0.82), (0.8, -y, z0 + 1.1), pu, bevel=0.01)  # the plate
+    return m
+
+
+def jobbox_lid():
+    """The lid: a tray of the same steel over the body's top edge, a raised panel pressed in its
+    top, the hasp's tab hanging from its front's middle."""
+    m = Mesh("JobBoxLid")
+    L, D, H, lid, run = K.JOBBOX
+    t, p, s = K.JOBBOX_WALL, K.JOBBOX_LIP, K.JOBBOX_SKIRT
+    x, y = L / 2 + p, D / 2 + p
+    z0, z1 = run + H - s, run + H + lid
+    pu = plaster_uv(2.0)
+    geo.box(m, (-x, -y, z1 - t), (x, y, z1), pu, bevel=0.035)              # the top
+    geo.box(m, (-x, -y, z0), (x, -y + t, z1 - t), pu, bevel=0.015)         # its skirt: front
+    geo.box(m, (-x, y - t, z0), (x, y, z1 - t), pu, bevel=0.015)           # back
+    for sx in (-1, 1):                                                     # ends
+        a, b = sorted((sx * x, sx * (x - t)))
+        geo.box(m, (a, -y + t, z0), (b, y - t, z1 - t), pu, bevel=0.015)
+    geo.box(m, (-x + 0.4, -y + 0.35, z1), (x - 0.4, y - 0.35, z1 + 0.04), pu, bevel=0.025)  # panel
+    geo.box(m, (-0.17, -y - 0.03, z0 - 0.26), (0.17, -y, z0 + 0.06), pu, bevel=0.012)  # hasp tab
+    return m
+
+
+def jobbox_fittings():
+    """The body's graphite steel: a folding handle hanging at each end on two brackets, the hasp's
+    staple through the lid's tab, and the piano hinge along the back on the lid's hinge line."""
+    m = Mesh("JobBoxFittings")
+    L, D, H, _, run = K.JOBBOX
+    pm = geo.map_floor(1.0)  # plain: the game paints it
+    p, s = K.JOBBOX_LIP, K.JOBBOX_SKIRT
+    x, y, top = L / 2, D / 2, run + H
+    zb = top - 0.5                     # the handles' pivots, under the lid's skirt
+    for sx in (-1, 1):
+        for sy in (-1, 1):             # the brackets
+            a, b = sorted((sx * x, sx * (x + 0.12)))
+            geo.box(m, (a, sy * 0.55 - 0.08, zb - 0.1), (b, sy * 0.55 + 0.08, zb + 0.1), pm, bevel=0.02)
+        h = sx * (x + 0.08)
+        geo.sweep(m, [(h, -0.55, zb), (sx * (x + 0.13), -0.5, zb - 0.38),
+                      (sx * (x + 0.13), 0.5, zb - 0.38), (h, 0.55, zb)], 0.045, segs=8, mapper=pm)
+    geo.box(m, (-0.11, -y - 0.02, top - s - 0.3), (0.11, -y, top - s - 0.06), pm, bevel=0.01)
+    zs = top - s - 0.17               # the staple, out through the tab's slot
+    geo.sweep(m, [(-0.06, -y, zs), (-0.06, -y - p - 0.1, zs), (0.06, -y - p - 0.1, zs),
+                  (0.06, -y, zs)], 0.024, segs=6, mapper=pm)
+    hx, hy, hz = K.jobbox_hinge()
+    geo.cylinder(m, "x", (hx, hy - 0.01, hz), 0.045, L - 0.2, segs=10, mapper=pm)
+    geo.box(m, (-x + 0.1, y, hz - 0.2), (x - 0.1, y + p - 0.015, hz + 0.01), pm)  # its leaf
+    return m
+
+
+def jobbox_runners():
+    """The two oak runners the box stands on, along its length under its front and back."""
+    m = Mesh("JobBoxRunners")
+    L, D, _, _, run = K.JOBBOX
+    for sy, col in ((-1, 3), (1, 5)):
+        a, b = sorted((sy * (D / 2 - 0.12), sy * (D / 2 - 0.55)))
+        wood_box(m, (-L / 2 + 0.1, a, 0.0), (L / 2 - 0.1, b, run), col, bevel=0.03)
+    return m
+
+
+BUILDERS.update({"JobBox": jobbox, "JobBoxLid": jobbox_lid, "JobBoxFittings": jobbox_fittings,
+                 "JobBoxRunners": jobbox_runners})
+
 TEXSET = {"Pot": "Plaster", "Plant": "Leaf", "Bench": "Wood", "Planter": "Plaster",
           "PlanterSeat": "Wood", "PlanterPlants": "Leaf", "Rug": "Rug", "Beanbag": "Fabric",
-          "FloorLamp": "Wood", "LampShade": "Fabric", "Shelf": "Wood", "ShelfBack": "Plaster"}
+          "FloorLamp": "Wood", "LampShade": "Fabric", "Shelf": "Wood", "ShelfBack": "Plaster",
+          "JobBox": "Plaster", "JobBoxLid": "Plaster", "JobBoxFittings": None,
+          "JobBoxRunners": "Wood"}
 
 
 def meshes():

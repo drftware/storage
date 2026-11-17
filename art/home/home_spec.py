@@ -76,16 +76,38 @@ def shelf_spots():
     return out
 
 
+# The job box (S5-03c2a, D-287): the steel job-site box that holds every find you own, its steel
+# powder-coated a calm dusty blue (the game's paint over the Plaster set's stipple, which reads as
+# powder coat), graphite handles and hasp, on two oak runners. The body is an open chest, the lid a
+# tray over its top edge, hinged along the back so its front swings up.
+JOBBOX = (4.4, 2.2, 2.0, 0.42, 0.28)  # the body: long, deep, tall above the runners; the lid's
+                                      # height above the body's top; the oak runners' height
+JOBBOX_WALL = 0.08       # the body's and the lid's steel, thick (so an open lid shows a real edge)
+JOBBOX_LIP = 0.06        # how far the lid stands proud of the body all round
+JOBBOX_SKIRT = 0.12      # how far the lid's skirt comes down over the body's top edge
+
+
+def jobbox_hinge():
+    """The lid's hinge line's middle, in the piece's frame: the back skirt's outer foot, so the
+    lid swings up and back clear of the body. The game turns the lid about x through here."""
+    L, D, H, lid, run = JOBBOX
+    return (0.0, D / 2 + JOBBOX_LIP, run + H - JOBBOX_SKIRT)
+
+
 # Where each piece of a unit's starter set stands, in the unit frame (x, y in from the doorway),
 # turned about z in degrees (0: its front toward the door). From the doorway: the rug in the
-# middle, the beanbag on its far left corner facing you, the lamp glowing behind it.
+# middle, the beanbag on its far left corner facing you, the lamp glowing behind it. The job box
+# stands against the left wall beside the shelf, facing into the room (my default, OWNER.md), its
+# back 0.8 studs off the wall so its lid opens upright clear of it.
 STARTER = (("Rug", (0.0, 9.5), 0.0), ("Beanbag", (-2.3, 10.6), -22.0),
-           ("FloorLamp", (-5.4, 12.8), 0.0), ("Shelf", (0.0, 15.2), 0.0))
+           ("FloorLamp", (-5.4, 12.8), 0.0), ("Shelf", (0.0, 15.2), 0.0),
+           ("JobBox", (-7.9, 17.6), 90.0))
 
 # Each furnishing's parts: a game piece is these MeshParts standing on one origin.
 PIECES = {"Plant": ("Pot", "Plant"), "Bench": ("Bench",), "Planter": ("Planter", "PlanterSeat",
           "PlanterPlants"), "Rug": ("Rug",), "Beanbag": ("Beanbag",),
-          "FloorLamp": ("FloorLamp", "LampShade"), "Shelf": ("Shelf", "ShelfBack")}
+          "FloorLamp": ("FloorLamp", "LampShade"), "Shelf": ("Shelf", "ShelfBack"),
+          "JobBox": ("JobBox", "JobBoxLid", "JobBoxFittings", "JobBoxRunners")}
 
 
 def b2r(v):
@@ -145,6 +167,10 @@ def write_luau(path, parts, switch, toggle, lamp):
     L += ["\t\t} :: { Vec },",
           f"\t\tRoom = {{ {rx:.3f}, {ry:.3f}, {rz:.3f} }} :: Vec,",
           "\t},",
+          "\t-- The job box (D-287): its lid's hinge line's middle in the JobBox piece's frame; the lid",
+          "\t-- (JobBoxLid) turns about X through it, a positive turn lifting its front.",
+          f"\tJobBox = {{ Hinge = {lua_vec(b2r(jobbox_hinge()))} :: Vec }},"]
+    L += [
           "\t-- Each MeshPart's box as imported (its centre is its CFrame in its frame).",
           "\tParts = {"]
     for name in sorted(parts):

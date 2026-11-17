@@ -27,6 +27,7 @@ local Specs = {
 		Beanbag = { "Beanbag" },
 		FloorLamp = { "FloorLamp", "LampShade" },
 		Shelf = { "Shelf", "ShelfBack" },
+		JobBox = { "JobBox", "JobBoxLid", "JobBoxFittings", "JobBoxRunners" },
 	} :: { [string]: { string } },
 	-- A unit's starter set (D-263): each piece's origin in the unit's frame, turned about Y
 	-- (degrees, 0 with its front toward the door).
@@ -35,6 +36,7 @@ local Specs = {
 		{ Kind = "Beanbag", At = { 2.300, 0.000, 10.600 }, Turn = -22.0 },
 		{ Kind = "FloorLamp", At = { 5.400, 0.000, 12.800 }, Turn = 0.0 },
 		{ Kind = "Shelf", At = { -0.000, 0.000, 15.200 }, Turn = 0.0 },
+		{ Kind = "JobBox", At = { 7.900, 0.000, 17.600 }, Turn = 90.0 },
 	} :: { Placed },
 	-- The shelf (D-284): each spot's middle on its board in the Shelf piece's frame, left to
 	-- right facing it, bottom row first; Room, the box a find is fitted into there (across,
@@ -50,6 +52,9 @@ local Specs = {
 		} :: { Vec },
 		Room = { 2.000, 2.000, 1.300 } :: Vec,
 	},
+	-- The job box (D-287): its lid's hinge line's middle in the JobBox piece's frame; the lid
+	-- (JobBoxLid) turns about X through it, a positive turn lifting its front.
+	JobBox = { Hinge = { -0.000, 2.160, 1.160 } :: Vec },
 	-- Each MeshPart's box as imported (its centre is its CFrame in its frame).
 	Parts = {
 		Beanbag = {
@@ -106,6 +111,26 @@ local Specs = {
 			Size = { 9.195, 1.520, 1.380 },
 			Centre = { -0.007, 8.960, 1.110 },
 			Triangles = 1004,
+		},
+		JobBox = {
+			Size = { 4.460, 2.000, 2.260 },
+			Centre = { -0.000, 1.280, 0.000 },
+			Triangles = 760,
+		},
+		JobBoxFittings = {
+			Size = { 4.750, 0.845, 2.469 },
+			Centre = { -0.000, 1.780, -0.040 },
+			Triangles = 432,
+		},
+		JobBoxLid = {
+			Size = { 4.520, 0.840, 2.350 },
+			Centre = { -0.000, 2.320, -0.015 },
+			Triangles = 308,
+		},
+		JobBoxRunners = {
+			Size = { 4.200, 0.280, 1.960 },
+			Centre = { -0.000, 0.140, 0.000 },
+			Triangles = 88,
 		},
 		Lamp = {
 			Size = { 2.200, 0.160, 2.200 },

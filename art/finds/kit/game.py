@@ -21,6 +21,18 @@ def pitched(s, pitch, volume=None):
     return sound(s["id"], s["from"], s["length"], s["volume"] if volume is None else volume, pitch)
 
 
+def slowing(s, at, stop, fade):
+    """`s` slowing as a music box's spring runs down, its pitch held as a real box's comb holds
+    it (F-G1e5f): full speed until `at` seconds in, then its speed falling as (1 - s) ** `fade`
+    to nothing at `stop`, the curve the toy's own turning runs down on. Its length becomes what
+    of the recording that plays, so the tune runs out as the toy stops (`Use.through`)."""
+    heard = at + (stop - at) / (fade + 1)
+    out = dict(s)
+    out["length"] = round(heard * s.get("pitch", 1), 4)
+    out["slows"] = {"at": at, "stop": stop, "fade": fade}
+    return out
+
+
 # --- Taking it and dropping it -------------------------------------------------------------
 # Pro Sound Effects' "Keys In Padlock 1": a clink, metal or glass taken in a hand
 CLINK = sound("rbxassetid://9116175991", 0, 0.5, 0.7)
@@ -104,7 +116,7 @@ EEK = sound("rbxassetid://9125994570", 0, 0.28, 0.7, 1.9)
 # pitched up into a small bellows' reedy note.
 WHISTLE = sound("rbxassetid://9117259114", 0.18, 0.3, 0.45, 1.5)
 # The tin carousel's tune: APM's "Music Box 6" (31.8 s, a real music box, playing from 0.05 s
-# without a gap), as long as it turns. Its slowing as the spring runs down is ROADMAP polish.
+# without a gap), as long as it turns; its row slows it with the top (`slowing`, its RIDE).
 CAROUSEL_TUNE = sound("rbxassetid://9043210085", 0.05, 15.5, 0.8)
 
 # One press, one noise (F-G1e3), measured in Studio (AudioAnalyzer: loudness and the spectrum's

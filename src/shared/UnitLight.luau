@@ -103,6 +103,10 @@ UnitLight.Home = table.freeze({
 	Colour = Color3.fromRGB(255, 214, 168),
 	GlassLit = Color3.fromRGB(255, 240, 220), -- its diffuser lit: a soft cream disc
 	GlassDark = Color3.fromRGB(214, 208, 196), -- off: white plastic in shadow, not a dead bulb
+	-- Studs the light hangs under the lamp (S5-03c2a): from the glass itself it met the ceiling
+	-- edge-on and left it near black beyond the lamp; from here the ceiling catches it, warm to
+	-- the walls, as a real room's ceiling catches the light off its floor.
+	Drop = 3,
 })
 
 -- Whether `glass` is a home's bulb (UnitLight.Home).
@@ -111,17 +115,25 @@ function UnitLight.isHome(glass: BasePart): boolean
 end
 
 local function lightOf(glass: BasePart): PointLight
-	local found = glass:FindFirstChildWhichIsA("PointLight")
+	local found = glass:FindFirstChildWhichIsA("PointLight", true)
 	if found then
 		return found
 	end
 	local light = Instance.new("PointLight")
 	local home = UnitLight.isHome(glass)
+	local parent: Instance = glass
+	if home then
+		local at = Instance.new("Attachment")
+		at.Name = "LightAt"
+		at.Parent = glass
+		at.WorldCFrame = CFrame.new(glass.Position - Vector3.new(0, UnitLight.Home.Drop, 0))
+		parent = at
+	end
 	light.Color = if home then UnitLight.Home.Colour else UnitLight.Colour
 	light.Range = if home then UnitLight.Home.Range else UnitLight.Range
 	light.Shadows = UnitLight.Shadows and not home
 	light:AddTag(HallLight.Tag)
-	light.Parent = glass
+	light.Parent = parent
 	return light
 end
 

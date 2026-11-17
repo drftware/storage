@@ -1657,8 +1657,13 @@ local Rows: { Game.Row } = {
 					sound = {
 						id = "rbxassetid://9043210085",
 						from = 0.05,
-						length = 15.5,
+						length = 12.0,
 						volume = 0.8,
+						slows = {
+							at = 9.5,
+							stop = 15.5,
+							fade = 1.4,
+						},
 					},
 				},
 			},

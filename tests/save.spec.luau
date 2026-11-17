@@ -43,6 +43,7 @@ local function played(): Save.Data
 		{ find = "", fresh = Save.Fresh.Seen },
 		{ find = "Teddy", fresh = Save.Fresh.Kind },
 	}
+	data.boxFresh = Save.Fresh.New
 	return data
 end
 
@@ -66,9 +67,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 5.
+-- A new player: nothing yet, at version 6.
 do
-	ok(format:latest() == 5, "the save is at version 5")
+	ok(format:latest() == 6, "the save is at version 6")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -83,6 +84,7 @@ do
 		"a new player owns no wrap colours and wears the plain film"
 	)
 	ok(#fresh.shelf == 0, "a new player's shelf is empty")
+	ok(fresh.boxFresh == Save.Fresh.Seen, "a new player's job box is quiet")
 	ok(fresh ~= format:fresh(), "each new save is its own table")
 	local stored, problem = format:encode(fresh)
 	ok(stored ~= nil and problem == nil, `a new save can be stored ({problem})`)
@@ -93,7 +95,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(5, stored)
+	local back, decodeProblem = format:decode(6, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -215,7 +217,31 @@ do
 		four ~= nil and four.wornWrap == "wrapBlue" and four.finds.Teddy == 1 and #four.shelf == 0,
 		`version 4 loads with its wrap and an empty shelf ({fourProblem})`
 	)
-	local newer, newerProblem = format:decode(6, v1)
+	-- Version 5 as the DataStore holds it (Nov 17): finds on the shelf, one still new.
+	local v5 = {
+		cash = 7,
+		finds = { Teddy = 2 },
+		sealed = {},
+		stamps = { finds = { Teddy = 1794700100 }, sealed = {}, keepers = {} },
+		bestFloor = 3,
+		purchases = {},
+		recipients = {},
+		bought = {},
+		spares = {},
+		wraps = {},
+		wornWrap = "",
+		shelf = { { find = "Teddy", fresh = 1 }, { find = "", fresh = 0 } },
+	}
+	local five, fiveProblem = format:decode(5, v5)
+	ok(
+		five ~= nil
+			and #five.shelf == 2
+			and five.shelf[1].find == "Teddy"
+			and five.shelf[1].fresh == Save.Fresh.New
+			and five.boxFresh == Save.Fresh.Seen,
+		`version 5 loads with its shelf and a quiet job box ({fiveProblem})`
+	)
+	local newer, newerProblem = format:decode(7, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 
@@ -234,6 +260,9 @@ do
 			and data.shelf[2].fresh == Save.Fresh.New,
 		"the first teddy is a new kind, the second only new, and the boombox finds the shelf full"
 	)
+	ok(data.boxFresh == Save.Fresh.Kind, "the boombox went in the job box, a kind never owned")
+	ok(Save.open(data) == Save.Fresh.Kind, "opening the box finds the new kind in it")
+	ok(data.boxFresh == Save.Fresh.Seen and Save.open(data) == Save.Fresh.Seen, "then it's quiet")
 	ok(Save.seen(data, 1) and data.shelf[1].fresh == Save.Fresh.Seen, "walking up marks it seen")
 	ok(not Save.seen(data, 1), "a spot is seen once")
 	ok(not Save.seen(data, 5), "a spot past the shelf is never seen")
@@ -245,6 +274,9 @@ do
 	)
 	Save.keep(data, { "Boombox" }, 300)
 	ok(#data.shelf == 2 and data.finds.Boombox == 2, "with no spots given, nothing lands")
+	ok(data.boxFresh == Save.Fresh.New, "it goes in the job box, only new: a kind you own")
+	Save.keep(data, { "Teddy" }, 400, 2)
+	ok(data.boxFresh == Save.Fresh.New, "the box stays as new as the newest that went in")
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a save with a shelf can be stored ({problem})`)
 	local full = Save.fresh()

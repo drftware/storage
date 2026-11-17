@@ -25,6 +25,7 @@ local Specs = require(script.Specs)
 local Home = {}
 Home.Specs = Specs
 Home.Holding = require(script.Holding)
+Home.JobBox = require(script.JobBox)
 
 -- A home's name card over its door (Lobby lays it, FrontOffice letters its holder's name on it,
 -- HomeCards sprays the name on): the card's part carries this tag and its slot's number.
@@ -46,6 +47,10 @@ Home.Paint = {
 	Sparkle = Color3.fromHex("#FFE296"), -- a new find's glints: the kept glint's warm gold
 	Word = Color3.fromHex("#FFF6E2"), -- the "New" over a kind never owned: warm white
 	WordEdge = Color3.fromHex("#B5684E"), -- its outline: the door's clay, so it reads on cream
+	-- The job box's powder coat (D-287): a dusty blue, calm beside the sage and the clay door, and
+	-- the gold sparkle reads on it. Its handles, hasp and hinge a soft graphite steel.
+	JobBox = Color3.fromHex("#6A8A93"),
+	Fittings = Color3.fromHex("#4A4E52"),
 }
 local TINTED: { [string]: Color3 } = {
 	Facade = Home.Paint.Facade,
@@ -55,9 +60,12 @@ local TINTED: { [string]: Color3 } = {
 	Beanbag = Home.Paint.Beanbag,
 	LampShade = Home.Paint.LampShade,
 	ShelfBack = Home.Paint.ShelfBack,
+	JobBox = Home.Paint.JobBox,
+	JobBoxLid = Home.Paint.JobBox,
 }
 -- Imported with no map: the game gives them their look.
-local PLAIN: { [string]: boolean } = { Switch = true, SwitchToggle = true, Lamp = true }
+local PLAIN: { [string]: boolean } =
+	{ Switch = true, SwitchToggle = true, Lamp = true, JobBoxFittings = true }
 
 -- The home front's own parts, set into a unit in place of the M's facade and frame.
 Home.FrontParts = { "Facade", "FacadeBack", "Casing", "Frame", "Switch", "SwitchToggle", "Lamp" }
@@ -147,6 +155,8 @@ local SOLID: { [string]: boolean } = {
 	Beanbag = true,
 	FloorLamp = true,
 	Shelf = true,
+	JobBox = true,
+	JobBoxLid = true,
 }
 
 local function vec(v: { number }): Vector3
@@ -204,8 +214,13 @@ function Home.prepare(model: Model): (Model, number)
 			if look then
 				look:Destroy()
 			end
-			p.Material = Enum.Material.SmoothPlastic
-			p.Color = if name == "Lamp" then Color3.fromRGB(214, 208, 196) else Home.Paint.Switch
+			p.Material = if name == "JobBoxFittings"
+				then Enum.Material.Metal
+				else Enum.Material.SmoothPlastic
+			p.Color = if name == "Lamp"
+				then Color3.fromRGB(214, 208, 196)
+				elseif name == "JobBoxFittings" then Home.Paint.Fittings
+				else Home.Paint.Switch
 		end
 		-- flat things and things up high shade nothing that matters; the lamp's glow casts none
 		if name == "Rug" or name == "Lamp" or name == "Switch" or name == "SwitchToggle" then
@@ -278,9 +293,10 @@ function Home.has(template: Model, kind: string): boolean
 	return true
 end
 
--- One furnishing (Specs.Pieces: Plant, Bench, Planter, Rug, Beanbag, FloorLamp, Shelf) standing at `at`,
--- its front looking the way `at` does, in a Model named for it: its meshes (the solid ones collide
--- as boxes), its Seats, and the floor lamp's light (tagged LampTag, off until a screen lights it).
+-- One furnishing (Specs.Pieces: Plant, Bench, Planter, Rug, Beanbag, FloorLamp, Shelf, JobBox)
+-- standing at `at`, its front looking the way `at` does, in a Model named for it: its meshes (the
+-- solid ones collide as boxes), its Seats, the floor lamp's light (tagged LampTag, off until a
+-- screen lights it), and the job box tagged JobBox.Tag (its lid swings on every screen).
 function Home.piece(template: Model, kind: string, at: CFrame, parent: Instance): Model
 	local names = Specs.Pieces[kind]
 	assert(names, `Home: no piece {kind}`)
@@ -318,6 +334,8 @@ function Home.piece(template: Model, kind: string, at: CFrame, parent: Instance)
 		light.Enabled = false
 		light:AddTag(Home.LampTag)
 		light.Parent = shade
+	elseif kind == "JobBox" then
+		model:AddTag(Home.JobBox.Tag)
 	end
 	model.WorldPivot = at
 	model.Parent = parent

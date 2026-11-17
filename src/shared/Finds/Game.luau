@@ -8,14 +8,20 @@
 
 local Grades = require("../Grades")
 
+-- A tune that slows as a music box's spring runs down, its pitch held as a real box's comb holds
+-- it (F-G1e5f): full speed until `at` seconds into its step, then its speed falls as
+-- (1 - s) ^ `fade` across to nothing at `stop` (`Use.pace`, `Use.through`).
+export type Slows = { at: number, stop: number, fade: number }
+
 -- A sound a step plays as it starts (the Catalog's Sound: an id, where in the recording, how
--- long, how loud, its pitch).
+-- long, how loud, its pitch), and how it slows if it does.
 export type Sound = {
 	id: string,
 	from: number,
 	length: number,
 	volume: number,
 	pitch: number?,
+	slows: Slows?,
 }
 
 export type Step = {

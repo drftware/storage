@@ -2,52 +2,51 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 236 (finds on the shelf, sparkling, D-285) · **Checks:** green for
-this work (in a worktree; the checkout is red only from another session's half-done
-`src/shared/Finds/*` and `Tools/*`) · **Git:** `main`, committed, not pushed (`origin` is
-github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` yet (push Brix first, OWNER.md).
+**Updated:** 2026-11-17, session 237 (the job box built, D-287) · **Checks:** green · **Git:**
+`main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `482368f`,
+NOT on Brix's `origin` yet (push Brix first, OWNER.md).
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
   only) is built a ROADMAP piece a session (S5-03): ground floor, fronts, starter sets, switch,
-  a home each as you join (D-275), the hard hat on your head (D-277, D-283), the mirror (D-280),
-  the oak shelf (D-284) and now finds standing on it (D-285).
-- S5-03c1b (D-285), verified in Studio Play: the new Home.fbx is uploaded and imported (the
-  place's `Props.Home` has the Shelf). `Shelves` (server) stands each save `shelf` spot's find
-  in the home's `Starter.Shelf`, fitted (`Home/Shelf.fit`), lights off, tagged `ShelfFind`;
-  `ShelfView` twinkles new ones, plays your walk-up (tink; a never-owned kind chimes, turns,
-  shows "New") and fires `ShelfSeen`, which the server checks and marks seen. Seen: six finds
-  landing, the walk-up, all six seen on the server, still there after a rejoin. Captures:
-  `docs/art/S5-03c1b-from-door.jpg`, `-walk-up.jpg`. Not seen at Galaxy A16 size (OWNER.md).
-- Dev path: `ServerStorage.ShelfTest:Invoke(player, key)` (Studio) keeps a find as a gate does.
-- Save version 5 (`Save.luau`): `shelf` spots `{ find, fresh }`; `Save.keep` leaves a find in
-  `finds` alone when the shelf is full: that's the job box's (S5-03c2a).
-- Find art (third find run): the boombox plays and the teddy hugs, seen in Play (V5a, D-286).
-  Next there: V5f, the carousel's tune slowing as it runs down (`art/finds/WAVES.md`).
+  a home each (D-275), the hard hat (D-277, D-283), the mirror (D-280), the oak shelf with finds
+  standing on it (D-284, D-285), and now the job box, built but not yet in the place (D-287).
+- S5-03c2a1 (D-287), passes checks, untested in Studio: `art/home/furnish.py` builds the box
+  (JobBox, JobBoxLid, JobBoxFittings, JobBoxRunners; `Specs.JobBox.Hinge`), in the Starter set
+  against the left wall by the shelf (look sheet `art/sheets/lobby-inside.png`). Home.fbx is
+  exported, NOT uploaded or imported: until it is, `Home.has` skips the box with one warning and
+  `JobBoxes` wires none. Save version 6 adds `boxFresh` (`Save.keep` raises it with the shelf
+  full; `Save.open` clears it). `JobBoxes` (server: Open/Close on E for the holder, `Lid` and
+  `Fresh` attributes, shuts on walking 14 studs off) follows Shelves' new `laid` signal;
+  `JobBoxView` (client) swings the lid by `JobBox.angle`, creaks, clunks, sparkles.
+- The ceiling: the home bulb's light now hangs 3 studs under the lamp (`UnitLight.Home.Drop`) so
+  the plaster ceiling catches it; nothing re-captured yet (the old dark one is
+  `docs/art/S5-03c1b-from-door.jpg`).
+- Dev path: `ServerStorage.ShelfTest:Invoke(player, key)` (Studio) keeps a find as a gate does;
+  the seventh with a six-spot shelf goes in the box.
+- Find art (third find run): the carousel's tune slows with its top, pitch held (V5f, D-288),
+  seen in Play. Next there: V5d, the Old lamp holding a Mannequin (`art/finds/WAVES.md`).
 
-## Next task: S5-03c2a The job box
-The moment: the shelf's full, you keep one more at the gate, and when you come home the job box's
-lid sparkles; press Open and the lid swings up with a soft steel creak. Precedent: Animal
-Crossing's house storage, Fortnite's locker marks (what's new shows until you look).
-1. Read the home doc's job box idea (docs tools; search the heading text "job box"); its "What
-   you decided (Nov 16)" wins. ROADMAP says the steel job-site box, calm (D-263).
-2. Art the unit's way: `art/home/furnish.py` a `jobbox` piece, body and lid as separate parts
-   (the lid hinges), in `Specs.Pieces` and the `Starter` set (my default spot: against a side
-   wall near the shelf; an OWNER.md line). `scripts/art.sh`, then upload and import as c1b did
-   (`lune run scripts/upload_art Home`; LoadAsset, `Home.prepare`, replace `Props.Home`).
-3. Save version 6: a flag that a kept find went in the box since you last opened it (set in
-   `Save.keep` when `Save.shelve` returns nil; a migration; `tests/save.spec`).
-4. Server: the box's Open button for its holder only; opening lifts the lid, clears the flag.
-   Client: the lid twinkles while the flag is set (ShelfView's sparkle), the creak on open.
-5. Studio Play: `ShelfTest` six finds then a seventh; come home, capture at half scale to
-   `docs/art/S5-03c2a-*.jpg`. Split again in ROADMAP if it won't fit.
+## Next task: S5-03c2a2 The job box, in Studio
+The moment: the shelf's full, you keep one more, and when you come home the job box's lid
+sparkles; press Open and the lid swings up with a soft steel creak.
+1. Upload and import: `lune run scripts/upload_art Home` (same asset id), then in Edit LoadAsset,
+   `Home.prepare`, replace `ReplicatedStorage.Props.Home` (art/home/README.md "Into Studio"; c1b
+   did it). Check Output for the `Home:` warning gone.
+2. Play: ShelfTest six finds, then a seventh. From the doorway the lid twinkles. Open: the lid
+   swings up eased (88 degrees, clear of the wall), creak, twinkle bursts off. Close: it falls
+   with a clunk. Open and walk away: it shuts. Stop and Play: the box is quiet.
+3. Capture at half scale: `docs/art/S5-03c2a-from-door.jpg` (the ceiling: warm past the lamp now?)
+   and `-open.jpg`. If the ceiling is still dark, tune `UnitLight.Home.Drop` and `Range`, then the
+   UnitTops paint (`Lobby.Paint.UnitTops`); if the sounds are wrong, swap them in `Home/JobBox`.
+4. Tick it in ROADMAP, update OWNER.md's "Open your job box" to what was seen.
 **Acceptance:** check green; in Studio Play the seventh find makes the lid twinkle; Open lifts it
-and the twinkle stops; after a rejoin the box is quiet.
-**Read first:** ROADMAP S5-03c2a; D-284 and D-285; `art/home/furnish.py` (`shelf`);
-`art/home/README.md`; `src/shared/Save.luau` (`keep`, `shelve`, version 5); `src/server/Shelves.luau`.
+and the twinkle stops; Close drops it; after a rejoin the box is quiet; the ceiling reads warm.
+**Read first:** ROADMAP S5-03c2a2; D-287; art/home/README.md "Into Studio";
+`src/server/JobBoxes.luau`; `src/client/JobBoxView.luau`; `src/shared/Home/JobBox.luau`.
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03c2b the panel, c3 selling; S5-03d-h; S5-03a2d the cars' hidden triangles; F-G1b4a2 the
+1. S5-03c2b the panel (the lid lifts as it slides in, the slam as it closes), c3 selling; S5-03d-h; S5-03a2d the cars' hidden triangles; F-G1b4a2 the
    headlamp's beam (ROADMAP Step 4); F-G1b4b the hat spent (start its minute when a hat worn at
    home leaves the ground floor).
 2. F-G1b5 waits for its art. Brix: ENG-25b's two-client run (OWNER.md's home test covers it).
@@ -62,8 +61,6 @@ and the twinkle stops; after a rejoin the box is quiet.
    (S5-03a2b4). A spare home lifted from inside stays unpadlocked until held and left (D-275).
    The worn hat's first-Wear dark screen (STUDIO.md). After a respawn under a held camera,
    Roblox never re-hid your body in first person (D-282).
-8. Another session's find work is uncommitted in the shared checkout (`src/shared/Finds/*`,
-   `OneMesh.luau`, `Tools/*`, two specs) and turns the check red until it lands.
 
 ## Kickoff for the next agent
 ```text

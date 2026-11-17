@@ -39,8 +39,9 @@ Rug (512², baked colours), HomeDoor (1024², the DoorKit's layout, tinted).
 | Rug, Beanbag | Rug, Fabric | 12, 360 | the starter rug and beanbag |
 | FloorLamp, LampShade | Wood, Fabric | 288, 192 | the starter floor lamp |
 | Shelf, ShelfBack | Wood, Plaster | 372, 12 | the shelf (S5-03c1a, D-284): oak, six cubbies, a cream back |
+| JobBox, JobBoxLid, JobBoxFittings, JobBoxRunners | Plaster, Plaster, plain, Wood | 760, 308, 432, 88 | the job box (S5-03c2a1, D-287): an open steel chest and its tray lid (the game paints them dusty blue), graphite handles, hasp and piano hinge, oak runners; the lid hinges on `Specs.JobBox.Hinge` |
 
-Home.fbx: 11,048 triangles in 27 parts (with the shelf; not yet uploaded, S5-03c1b). Sheets (drawn by `art/lobby`): `lobby-home.png` (your
+Home.fbx: 12,636 triangles in 31 parts (with the job box; not yet uploaded, S5-03c2a2). Sheets (drawn by `art/lobby`): `lobby-home.png` (your
 unit from the floor), `lobby-nook.png` (a bench and a planter), `lobby-unit.png`,
 `lobby-inside.png`, `lobby-spawn.png`.
 

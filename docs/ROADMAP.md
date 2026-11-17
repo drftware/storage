@@ -2405,9 +2405,15 @@ Done when players watch the results to the end and change their perks between cl
       sparkles until you walk up (a soft tink, the sparkle bursts and stops), a never-owned kind
       chimes, turns once slowly and shows "New"; the server checks you're near before marking it
       seen. Seen in Studio Play at Galaxy A16 size and captured; stays after a rejoin.
-    - [ ] **S5-03c2a The job box** (split for context): its art the unit's way in `art/home`
-      (the steel job-site box, calm, D-263), in every home's starter set; a find kept with the
-      shelf full goes in it and its lid sparkles until you open it. Seen in Studio Play, captured.
+    - [x] **S5-03c2a1 The job box, built** (D-287): its art the unit's way in `art/home` (a
+      dusty-blue powder-coated job-site box on oak runners, graphite handles, hasp and hinge), in
+      every home's starter set against the left wall by the shelf; save version 6 (`boxFresh`);
+      `JobBoxes` (Open/Close for the holder, closes when they walk away), `JobBoxView` (the lid's
+      eased swing, creak, clunk, sparkle, the chime for a new kind). The home bulb's light hangs
+      3 studs under the lamp so the ceiling catches it. Passes checks, untested in Studio.
+    - [ ] **S5-03c2a2 The job box, in Studio** (split for context): upload and import Home.fbx,
+      ShelfTest six finds then a seventh, see the lid sparkle, Open, Close, walk away, rejoin;
+      judge the ceiling from the door; capture to `docs/art/S5-03c2a-*.jpg`; tune what's off.
     - [ ] **S5-03c2b The job box's panel**: press it: the panel (each kind once, x2, search,
       rarity filters), take a find into your hands or onto a free shelf spot.
     - [ ] **S5-03c3 Selling and Gold** from the panel.

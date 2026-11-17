@@ -281,7 +281,10 @@ nowhere else.
   3. Wind the **tin bird**: three little hops, then two whistled notes, five times. Do the notes
      sound like a tin bird's bellows, not a referee's whistle?
   4. Wind the **carousel** and set it down: it turns and plays its music box tune for 15
-     seconds. The tune doesn't slow as it runs down yet (ROADMAP polish). Loudness defaults
+     seconds. Since Nov 17 (V5f, D-288) the tune slows with the top over its last six seconds,
+     its notes held at their pitch, and dies away as it stops. I could only measure it, not
+     hear it: does the slowing tune sound like a real box running down, not warbly or smeared?
+     If it does, the fix is lowering `Use.SlowHeld` or cutting the tune into notes. Loudness defaults
      chosen: the robot and bird carry 90 studs (as the teeth), the mouse and carousel 60 (down
      the hall, as the duck). Right?
 - [ ] **Try (F-G1e5a, built Nov 17, D-286; seen in Studio Play Nov 17, V5a, not on a phone):**

@@ -27,6 +27,7 @@ local Use = {}
 -- A find's press and what it plays: the types are `Finds/Game`'s, beside the game rows they're
 -- written in.
 export type Sound = Game.Sound
+export type Slows = Game.Slows
 export type Step = Game.Step
 export type Row = Game.Press
 
@@ -243,6 +244,9 @@ end
 Use.JoinLong = 2
 -- Less than this left of a tune (seconds) isn't worth starting: it would only blip.
 Use.JoinLeft = 0.5
+-- A slowing tune's pitch is held down to this share of full speed (two pitch shifters at their
+-- octave each); slower than that it fades as it slows, the last note dying away as the toy stops.
+Use.SlowHeld = 0.25
 
 -- Seconds after a press in state `state` that its step `n` starts (`Frame.step`); nil for a
 -- step of `out` or none.
@@ -262,7 +266,10 @@ end
 -- or nil for a click (shorter than `JoinLong`) or a tune nearly over (`JoinLeft`).
 function Use.join(sound: Sound, into: number): Sound?
 	local pitch = sound.pitch or 1
-	local gone = math.max(into, 0) * pitch -- seconds of the recording already played
+	local slows = sound.slows
+	into = math.max(into, 0)
+	-- seconds of the recording already played
+	local gone = (if slows then Use.through(slows, into) else into) * pitch
 	if sound.length / pitch < Use.JoinLong or (sound.length - gone) / pitch < Use.JoinLeft then
 		return nil
 	end
@@ -272,7 +279,37 @@ function Use.join(sound: Sound, into: number): Sound?
 		length = sound.length - gone,
 		volume = sound.volume,
 		pitch = sound.pitch,
+		-- slowing on from where it is, on its own clock from now
+		slows = if slows
+			then { at = slows.at - into, stop = slows.stop - into, fade = slows.fade }
+			else nil,
 	}
+end
+
+-- A slowing tune's speed `t` seconds into its step, as a share of full speed: 1 until it starts
+-- to run down, then (1 - s) ^ fade across the run-down, 0 once stopped.
+function Use.pace(slows: Slows, t: number): number
+	if t <= slows.at then
+		return 1
+	elseif t >= slows.stop then
+		return 0
+	end
+	return (1 - (t - slows.at) / (slows.stop - slows.at)) ^ slows.fade
+end
+
+-- Seconds of a slowing tune's recording it has played `t` seconds into its step (at pitch 1):
+-- the sum of its pace from 0 to `t`. A joined tune's run-down may have begun before its own 0.
+function Use.through(slows: Slows, t: number): number
+	local span = slows.stop - slows.at
+	local k = slows.fade + 1
+	local function upTo(u: number): number
+		if u <= slows.at then
+			return u
+		end
+		local s = math.min((u - slows.at) / span, 1)
+		return slows.at + span * (1 - (1 - s) ^ k) / k
+	end
+	return upTo(math.max(t, 0)) - upTo(0)
 end
 
 -- The step numbered `n` in a frame (`Frame.step`): the press's steps, then `out`'s; nil for 0.

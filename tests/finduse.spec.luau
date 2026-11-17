@@ -458,6 +458,53 @@ do
 			"carousel: in place"
 		)
 		ok(carousel.toy == true and carousel.on[2].sound ~= nil, "carousel: plays its tune, again")
+		-- its tune slows as the spring runs down (F-G1e5f), on the curve its top turns by
+		-- (art/finds/windups/spec.py's RIDE): full speed, then (1 - s) ^ fade to nothing
+		local tune = carousel.on[2].sound :: Use.Sound
+		local slows = tune.slows
+		ok(slows ~= nil, "carousel: its tune slows")
+		if slows then
+			local d = durations("TinCarousel")
+			ok(slows.stop <= d.Play and slows.at < slows.stop, "carousel: slows before it stops")
+			ok(Use.pace(slows, 1) == 1 and Use.pace(slows, slows.at) == 1, "carousel: full speed")
+			local mid = (slows.at + slows.stop) / 2
+			ok(near(Use.pace(slows, mid), 0.5 ^ slows.fade), "carousel: half way down")
+			ok(Use.pace(slows, slows.stop) == 0, "carousel: stopped with the top")
+			ok(near(Use.through(slows, 4), 4), "carousel: the recording at full speed")
+			local whole = slows.at + (slows.stop - slows.at) / (slows.fade + 1)
+			ok(near(Use.through(slows, slows.stop + 3), whole), "carousel: no more after the stop")
+			-- the recording runs out as the top stops, not before and not cut off
+			ok(near(tune.length, whole * (tune.pitch or 1)), "carousel: the tune ends as it stops")
+			-- walked up to as it runs down: joined where the tune is, slowing on from there
+			local into = slows.at + 1.5
+			local j = Use.join(tune, into)
+			ok(j ~= nil, "carousel: joined as it slows")
+			if j and j.slows then
+				local js = j.slows
+				ok(
+					near(j.from, tune.from + Use.through(slows, into)),
+					"carousel: joined where it is"
+				)
+				ok(near(Use.pace(js, 0), Use.pace(slows, into)), "carousel: joined at its pace")
+				ok(
+					near(Use.pace(js, 2), Use.pace(slows, into + 2)),
+					"carousel: slowing on as it was"
+				)
+				ok(
+					near(
+						Use.through(js, 2),
+						Use.through(slows, into + 2) - Use.through(slows, into)
+					),
+					"carousel: the joined tune's recording, from where it was joined"
+				)
+				ok(
+					near(Use.through(js, 99), tune.length - (j.from - tune.from)),
+					"carousel: to its end"
+				)
+			else
+				ok(false, "carousel: the joined tune slows")
+			end
+		end
 	end
 end
 

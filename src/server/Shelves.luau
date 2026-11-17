@@ -37,6 +37,12 @@ type Standing = { shelf: Model, finds: { [number]: Model } }
 
 local Shelves = {}
 
+export type ShelvesSystem = Brix.System & {
+	-- Fires each time a player's home finds are laid from their save (it loaded, they were handed
+	-- a home, a gate or the test hook kept finds for them): the job box follows it (JobBoxes).
+	laid: Brix.Signal<Player>,
+}
+
 local SPOTS = HomeSpecs.Shelf.Spots
 local ROOM = HomeSpecs.Shelf.Room
 
@@ -96,7 +102,8 @@ local function stand(key: string, at: CFrame): Model?
 	return model
 end
 
-function Shelves.new(): Brix.System
+function Shelves.new(): ShelvesSystem
+	local laidSignal = Brix.Signal.new() :: Brix.Signal<Player>
 	local standing: { [Player]: Standing } = {}
 	local signals: { Brix.SignalConnection } = {}
 	local connections: { RBXScriptConnection } = {}
@@ -169,6 +176,7 @@ function Shelves.new(): Brix.System
 				end
 			end
 		end
+		laidSignal:fire(player)
 	end
 
 	-- Seen(spot): `player` walked up to the new find on their shelf's spot `spot`.
@@ -205,6 +213,7 @@ function Shelves.new(): Brix.System
 
 	return {
 		name = "Shelves",
+		laid = laidSignal,
 		start = function(_: any, context: Brix.Context)
 			local registry = context.registry
 			-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)

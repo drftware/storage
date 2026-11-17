@@ -11,7 +11,8 @@
 	(`Finds.joints`: a find in a hand is part of a character, so no part is ever moved). Only a
 	find whose frame moves is posed again: a lantern held lit holds still and costs nothing. A
 	step's sound plays at the find as the step starts, never for a find just come into view, but a
-	tune (the boombox's song) is joined where it is (`Use.join`).
+	tune (the boombox's song) is joined where it is (`Use.join`). A slowing tune (the carousel's)
+	keeps its pitch as it slows, stepped each frame while it plays (`Sound.slows`, `Use.pace`).
 
 	Your own find in hand is drawn twice: the real one in your character (what friends see) and
 	your view's copy near your eye (`ToolView`); your copy plays the same frame and carries the
@@ -110,11 +111,24 @@ export type Api = {
 	can: (key: string) -> boolean,
 }
 
+-- A slowing tune playing: its Sound, the two pitch shifters that hold its pitch as it slows (a
+-- real music box's comb keeps its notes as the spring runs down), and when it started.
+type Slowing = {
+	sound: Sound,
+	shifts: { PitchShiftSoundEffect },
+	slows: Use.Slows,
+	pitch: number,
+	volume: number,
+	at: number, -- os.clock() as it started
+}
+
 local FindUseView = {}
 
 function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 	local connections: { RBXScriptConnection } = {}
 	local entries: { [Model]: Entry } = {}
+	-- slowing tunes playing (`Sound.slows`, the carousel's), stepped each frame until they stop
+	local slowing: { Slowing } = {}
 	local rankIn = 0
 	local lastPress = -math.huge
 
@@ -345,6 +359,45 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		return e.bent
 	end
 
+	-- A step's sound at `body`: most play once and go; a slowing tune is stepped until it stops.
+	local function play(sound: Use.Sound, body: BasePart)
+		local slows = sound.slows
+		if not slows then
+			Tools.play(sound, body, Use.Reach)
+			return
+		end
+		local snd = Tools.sound(sound, body, Use.Reach)
+		local shifts: { PitchShiftSoundEffect } = {}
+		for i = 1, 2 do
+			local shift = Instance.new("PitchShiftSoundEffect")
+			shift.Octave = 1
+			shift.Priority = i
+			shift.Enabled = false
+			shift.Parent = snd
+			shifts[i] = shift
+		end
+		snd.TimePosition = sound.from
+		snd:Play()
+		table.insert(slowing, {
+			sound = snd,
+			shifts = shifts,
+			slows = slows,
+			pitch = sound.pitch or 1,
+			volume = sound.volume,
+			at = os.clock(),
+		})
+	end
+
+	-- Whether a tune `id` is playing on `body` already.
+	local function playing(body: BasePart, id: string): boolean
+		for _, c in body:GetChildren() do
+			if c:IsA("Sound") and c.SoundId == id and c.IsPlaying then
+				return true
+			end
+		end
+		return false
+	end
+
 	-- A step's sound as it starts, at the find.
 	local function hear(e: Entry, stamp: Use.Stamp, step: number, elapsed: number)
 		if e.heardState ~= stamp.state or e.heardAt ~= stamp.at then
@@ -364,8 +417,10 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 					then Use.join(s.sound, elapsed - started)
 					else nil
 				local body = Tools.body(e.model)
-				if joined and body then
-					Tools.play(joined, body, Use.Reach)
+				-- unless it is still playing here: a drop can carry this screen's own copy from
+				-- the hand to the floor, its tune going on under it
+				if joined and body and not playing(body, joined.id) then
+					play(joined, body)
 				end
 			end
 		end
@@ -377,7 +432,7 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		local sound = s and s.sound
 		local body = Tools.body(e.model)
 		if sound and body then
-			Tools.play(sound, body, Use.Reach)
+			play(sound, body)
 		end
 	end
 
@@ -476,6 +531,27 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		local eye = if camera then camera.CFrame.Position else Vector3.zero
 		local now = Workspace:GetServerTimeNow()
 		local clock = os.clock()
+		-- each slowing tune at its pace now, its pitch held by its shifters, fading out below what
+		-- they can hold; gone once it has stopped (or its find has)
+		for i = #slowing, 1, -1 do
+			local s = slowing[i]
+			local t = clock - s.at
+			if t > s.slows.stop + 0.5 or s.sound.Parent == nil then
+				s.sound:Destroy()
+				slowing[i] = slowing[#slowing]
+				slowing[#slowing] = nil
+				continue
+			end
+			local pace = Use.pace(s.slows, t)
+			local hold = 1 / math.max(pace, Use.SlowHeld)
+			local first = math.min(hold, 2)
+			s.sound.PlaybackSpeed = s.pitch * pace
+			s.sound.Volume = s.volume * math.min(pace / Use.SlowHeld, 1)
+			s.shifts[1].Octave = first
+			s.shifts[1].Enabled = hold > 1.001
+			s.shifts[2].Octave = hold / first
+			s.shifts[2].Enabled = hold > 2.001
+		end
 		for model, e in entries do
 			-- your press refused (no word in time) and never tagged: back to how it was
 			if
@@ -581,6 +657,10 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		for model in entries do
 			drop(model)
 		end
+		for _, s in slowing do
+			s.sound:Destroy()
+		end
+		table.clear(slowing)
 	end
 
 	return system :: any, api -- any: a plain Brix system built field by field

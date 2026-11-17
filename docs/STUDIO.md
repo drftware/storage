@@ -2842,3 +2842,18 @@ verified: a doc page, Studio, or "untested".
   parts with the neighbours' units in; skip them. Not yet seen on screen: whether a
   ViewportFrame bigger than its SurfaceGui is cut to the glass, and how SurfaceAppearance, Neon
   and layered clothing draw in it (OWNER.md's mirror test says what to look at).
+
+## A slowing tune, measured in Play (F-G1e5f, Nov 17)
+
+- **Dropping a find can keep the same model on your screen.** `ToolDrop` in Studio Play moved the
+  client's own `HeldTool` to `Workspace.Tools.TinCarousel` as the same instance, its tune's Sound
+  still playing under it, while `FindUseView` saw a new entry and joined the tune again: two
+  copies 0.3 s apart. A tune already playing on the find's body is no longer joined (D-288).
+- **Holding a pitch while slowing:** `PlaybackSpeed` lowers pitch and tempo together; a
+  `PitchShiftSoundEffect`'s `Octave` (0.5 to 2) raises it back. Two on one Sound (`Priority` 1
+  and 2) multiply, so the pitch holds down to a quarter speed. `PlaybackLoudness` reads the
+  recording before `Volume`, and rose at speed 0 with the volume at 0: silent, not a bug.
+- **Measuring it:** `GiveFind` "TinCarousel", Client `Remotes.ToolUse:FireServer()`, then sample
+  the Sound whose `SoundId` is the tune's every 0.5 s (`TimePosition`, `PlaybackSpeed`, `Volume`,
+  its two shifters' `Octave`). A tune starts about 0.25 s behind its step (loading), so it ends
+  0.25 s of recording short of its region: harmless.

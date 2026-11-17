@@ -27,6 +27,10 @@
 	  till you walk up), or a kind you'd never owned (it chimes and turns as well). What's on the
 	  shelf is counted in `finds` too: the shelf shows finds you own, never more of one than you
 	  have.
+	- `boxFresh`: how new what went into your home's job box since you last opened it is (S5-03c2a,
+	  D-287), as `Fresh`: seen when nothing did; new, or a kind you'd never owned. A find kept with
+	  the shelf full goes in the box (it holds every find in `finds`), and its lid sparkles till you
+	  open it.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -69,6 +73,7 @@ export type Data = {
 	wraps: Stamps,
 	wornWrap: string,
 	shelf: { Spot },
+	boxFresh: number,
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -107,6 +112,7 @@ function Save.fresh(): Data
 		wraps = {},
 		wornWrap = "",
 		shelf = {},
+		boxFresh = 0,
 	}
 end
 
@@ -120,7 +126,8 @@ Save.ShelfMost = 24
 -- book's finds page stamped `now` for any name never stamped before. Each also lands on the first
 -- empty spot of the shelf's first `spots` (D-284: a home's shelf, 6 in a small unit), new, or a
 -- kind never owned if it was stamped just now; with the shelf full it stays in `finds` alone (the
--- job box, S5-03c2). Returns the names stamped for the first time, in order, each once.
+-- job box, S5-03c2), its lid marked as new as the newest find that went in (D-287). Returns the
+-- names stamped for the first time, in order, each once.
 function Save.keep(data: Data, names: { string }, now: number, spots: number?): { string }
 	local fresh: { string } = {}
 	for _, name in names do
@@ -130,7 +137,10 @@ function Save.keep(data: Data, names: { string }, now: number, spots: number?): 
 			data.stamps.finds[name] = math.max(0, math.floor(now))
 			table.insert(fresh, name)
 		end
-		Save.shelve(data, name, if kind then Save.Fresh.Kind else Save.Fresh.New, spots or 0)
+		local level = if kind then Save.Fresh.Kind else Save.Fresh.New
+		if not Save.shelve(data, name, level, spots or 0) then
+			data.boxFresh = math.max(data.boxFresh, level)
+		end
 	end
 	return fresh
 end
@@ -162,6 +172,14 @@ function Save.seen(data: Data, i: number): boolean
 	end
 	spot.fresh = Save.Fresh.Seen
 	return true
+end
+
+-- You opened your job box (D-287): what went in is seen, its lid quiet again. Returns how new it
+-- was (Save.Fresh), so opening it on a kind you'd never owned can chime.
+function Save.open(data: Data): number
+	local was = data.boxFresh
+	data.boxFresh = Save.Fresh.Seen
+	return was
 end
 
 -- Cash earned (S1-12, the coins left at a climb's end): `cash` more in `data.cash`, whole and never
@@ -276,6 +294,34 @@ function Save.format(brix: any): Format
 		),
 	})
 
+	-- Version 6 (S5-03c2a, Nov 17): version 5 plus how new what went into the job box since you
+	-- last opened it is (Save.Fresh).
+	local sixth = Schema.shape({
+		cash = Schema.number({ min = 0, integer = true }),
+		finds = Schema.map(name, count),
+		sealed = Schema.map(name, count),
+		stamps = Schema.shape({
+			finds = Schema.map(name, stamped),
+			sealed = Schema.map(name, stamped),
+			keepers = Schema.map(name, stamped),
+		}),
+		bestFloor = Schema.number({ min = 0, integer = true }),
+		purchases = Schema.list(name),
+		recipients = Schema.map(name, name),
+		bought = Schema.map(name, count),
+		spares = Schema.map(name, count),
+		wraps = Schema.map(name, stamped),
+		wornWrap = Schema.string({ maxLength = 64 }),
+		shelf = Schema.list(
+			Schema.shape({
+				find = Schema.string({ maxLength = 64 }),
+				fresh = Schema.number({ min = 0, max = 2, integer = true }),
+			}),
+			{ maxCount = Save.ShelfMost }
+		),
+		boxFresh = Schema.number({ min = 0, max = 2, integer = true }),
+	})
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -348,6 +394,27 @@ function Save.format(brix: any): Format
 						wraps = old.wraps,
 						wornWrap = old.wornWrap,
 						shelf = {},
+					}
+				end,
+			},
+			{
+				schema = sixth,
+				-- any: a version 5 save as Brix hands it over, already checked against `fifth`
+				migrate = function(old: any): any
+					return {
+						cash = old.cash,
+						finds = old.finds,
+						sealed = old.sealed,
+						stamps = old.stamps,
+						bestFloor = old.bestFloor,
+						purchases = old.purchases,
+						recipients = old.recipients,
+						bought = old.bought,
+						spares = old.spares,
+						wraps = old.wraps,
+						wornWrap = old.wornWrap,
+						shelf = old.shelf,
+						boxFresh = 0,
 					}
 				end,
 			},

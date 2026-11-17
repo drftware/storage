@@ -730,7 +730,8 @@ FINDS = (((-5.5, 24.0, 0.0), "Medium", 12.0), ((-3.2, 25.2, 0.0), "Small", -8.0)
 # The sheets' paints for the home's kit (the game's are b3's): the front's wall the room's sage,
 # its inside the units' warm white, a clay door, cream pots, a stone planter, a mustard beanbag.
 HOME_TINT = {"Facade": TINT["Walls"], "FacadeBack": TINT["UnitWallsLeft"], "HomeDoor": "#B5684E",
-             "Pot": "#E9E2D3", "Planter": "#D8CCB6", "Beanbag": "#B98A3C", "LampShade": "#F1E8D6"}
+             "Pot": "#E9E2D3", "Planter": "#D8CCB6", "Beanbag": "#B98A3C", "LampShade": "#F1E8D6",
+             "JobBox": "#6A8A93", "JobBoxLid": "#6A8A93"}
 
 
 def home_texsets():

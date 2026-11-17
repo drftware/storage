@@ -6,9 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V5f (ROADMAP F-G1e5f, the carousel's tune slows as it runs down), then V5's pieces d,
-b, c, e in that order. V5a (the boombox's Play and the teddy's Hug) is done and seen in Play (Nov
-17, V5a).
+**Next:** V5d (ROADMAP F-G1e5d, the Old lamp holds a Mannequin while it lies lit), then V5's
+pieces b, c, e in that order. V5a (the boombox and the teddy) and V5f (the carousel's tune slows
+as it runs down) are done and seen in Play (Nov 17, V5a; Nov 17, V5f).
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -45,7 +45,7 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
    the defaults OWNER.md names: the cord's whirr, the motor's hum).
 6. **V4 The siren car** (done Nov 17: V4a built it; V4b saw it in Play and set the wail's start): it rolls as the die-cast car does, its beacon spins and lights the hall,
    and its wail lures.
-7. **V5 onwards** (V5a done Nov 17: the boombox and the teddy): whatever else A1 finds missing that isn't at home only.
+7. **V5 onwards** (V5a done Nov 17: the boombox and the teddy; V5f done Nov 17: the carousel's tune slows): whatever else A1 finds missing that isn't at home only.
 8. **S1 to S4 The last four squishies**, each from photos to playable through PIPELINE.md, its
    first proof: S1 the goo ball (oozes between your fingers and slowly comes back, on bones);
    S2 the colour-change goo ball (changes colour where pressed: find the way that holds up in
@@ -109,7 +109,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Pull-string cowboy doll (`CowboyDoll`) | It says one of six lines · Pull, a noise | works: pulled, its cord whirs home and clacks in, heard 60 studs (V3b); its voice waits on the owner | Rare · 45 · floor 1 up ✓ | Nov 17, V3b: given, pulled in hand: the cord out 0.74 studs by 0.5 s and creeping home by 3 s in hand and in your view's copy; the whirr from 0.67 s, the clack at 3.06 s; "made its noise (60 studs)" (no monster in reach) |
 | Singing fish plaque (`SingingFish`) | Its head turns and it sings · Press, a noise | works: pressed, it clicks, its motors hum, the head swings out and back with two knocks, heard 60 studs (V3b); its song waits on the owner | Rare · 50 · floor 1 up ✓ | Nov 17, V3b: given, pressed in hand: the click at 0.09 s, the hum from 0.35 s, the head out about 74 degrees from 1.5 to 5.5 s in hand and in your view's copy, knocks at 5.95 and 6.08 s; "made its noise (60 studs)" (no monster in reach) |
 | Clockwork tin bird (`TinBird`) | It hops and whistles · Wind | works: wound, set down, hops off in threes, two whistled notes at each stop, lures every 2 s where it is, 90 studs (V2b) | Epic · 140 · floor 1 up ✓ | Nov 17, V2b: given, pressed: wound, ten notes in five pairs (3.2 s to 11.3 s); it stopped 2.1 s in on open floor (a hop read as a wall, fixed, D-272), then pressed again: hopped 0.78 studs, rising 0.2, laid at its end |
-| Wind-up tin carousel (`TinCarousel`) | It turns and plays a tune · Wind | works: wound in hand, turns and plays its music box tune 15.5 s, lures every 2 s, 60 studs (V2b); the tune's slowing as it runs down is ROADMAP polish | Epic · 200 · floor 1 up ✓ | Nov 17, V2b: given, pressed, set down: its wind, then its tune 1 s later; its turning and its own lure not watched apart (the bird was luring too, and the Mannequin caught me 13 s on) |
+| Wind-up tin carousel (`TinCarousel`) | It turns and plays a tune · Wind | works: wound in hand, turns and plays its music box tune 15.5 s, lures every 2 s, 60 studs (V2b); the tune slows with the top over its last 6 s, its pitch held, and dies away as it stops (V5f, D-288) | Epic · 200 · floor 1 up ✓ | Nov 17, V2b: given, pressed, set down: its wind, then its tune 1 s later; its turning and its own lure not watched apart (the bird was luring too, and the Mannequin caught me 13 s on). Nov 17, V5f: given, wound in hand: the tune from 2.0 s at full speed to 11.5 s, then slowing (0.88 at 12 s, 0.47 at 14, 0.21 at 15.5) with its shifters holding the pitch (1.13 up to 2 × 2), fading from 15.5 s, silent and still at 17.5 s, 11.8 s of the recording played; dropped at 12.5 s: one tune on, slowing on the floor ("lured 9 times (60 studs)"); not heard by ear |
 | Stress ball with a face (`StressBall`) | Its eyes bulge out · Squeeze (quiet; the squishy craze itself) | works: squeezed, squashes in hand (to 0.66), its eyes bulge, its own sound (V1) | Common · 2 · floor 1 up ✓ | Nov 17, P1b: dealt (seed 7, floor 1, Unit104), taken, banked; no press yet (V1); Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its eyes bulge; its body stays still in hand (V1b); Nov 17, V1b: pressed in hand, squashed to 0.66 of its height in hand and in your view's copy, its root still in the hand |
 | Squishy butter stick (`ButterStick`) | A dent that slowly fills back in · Squeeze | works: squeezed, a dent that slowly fills back in, its own sound (V1) | Common · 4 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; no dent seen in hand (bones, V1b); Nov 17, V1b: pressed in hand, its dent bone 0.033 studs down and slowly back, seen in a frozen copy of the held stick (the tablespoon marks dip into it), the same in your view's copy |
 | Mochi bun (`MochiBun`) | A soft puff of a sound · Squeeze | works: squeezed, squashes in hand (to 0.57) and puffs back, its own sound (V1) | Common · 4 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; no squash in hand (its one part is its root, V1b); Nov 17, V1b: pressed in hand, squashed to 0.57 of its height in hand and in your view's copy, its root still in the hand |
@@ -246,6 +246,21 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, V5f (the carousel's tune slows; seen in Play; V5d next).** No recording of a music
+  box running down turned up (`search_asset`: "music box winding down", "slowing down"), so a
+  tempo change that keeps the pitch (D-288). A step's sound can carry `slows = { at, stop, fade }`
+  (`kit/game.py`'s `slowing(s, at, stop, fade)`, which also sets its length to what of the
+  recording plays); the carousel's comes from its `RIDE`, so the tune and the top share one curve.
+  `FindUseView` steps a slowing Sound each frame while it plays: `PlaybackSpeed` at `Use.pace`, two
+  `PitchShiftSoundEffect`s holding the pitch down to `Use.SlowHeld` (a quarter), fading below.
+  **Fixed in passing:** a drop can carry your own copy to the floor as the same model, its tune
+  still playing, and V5a's join then started a second copy (seen: two tunes 0.3 s apart); a tune
+  already playing on the find is no longer joined. **Seen in Play:** A1's table. Output: only the
+  known lines, plus the home chain's "no JobBox" (its job box mid-build). **Not done:** by ear
+  (OWNER.md, the wind-ups' feel test). **For V5d:** STUDIO.md's "A found light holding a
+  Mannequin, from the MCP" is the recipe; `Use.litUntil` reads only a press's stamp (D-234), and
+  the Old lamp is found lit with no press: start from where `FindUses`/`Keepers` read `litUntil`.
 
 - **Nov 17, V5a (the boombox and the teddy; seen in Play; V5f next).** A one-mesh find's press is
   written by hand in `src/shared/Finds/OneMesh.luau` (its pivot as plain numbers, its motions in

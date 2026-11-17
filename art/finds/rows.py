@@ -35,7 +35,8 @@ ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "grip", "he
 NEEDED = ["key", "catalog", "name", "grade", "worth", "grip", "heft", "size", "pickUp", "drop"]
 PRESS = ["verb", "on", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down", "walks"]
 STEP = ["motion", "loop", "sound", "hit", "cues", "lands"]
-SOUND = ["id", "from", "length", "volume", "pitch"]
+SOUND = ["id", "from", "length", "volume", "pitch", "slows"]
+SLOWS = ["at", "stop", "fade"]
 
 
 def fail(msg):
@@ -107,7 +108,11 @@ def ordered(d, order):
 
 def sound(where, s):
     check_keys(where, s, SOUND)
-    return ordered(s, SOUND)
+    out = ordered(s, SOUND)
+    if "slows" in out:
+        check_keys(where + ".slows", out["slows"], SLOWS)
+        out["slows"] = ordered(out["slows"], SLOWS)
+    return out
 
 
 def step(where, s):

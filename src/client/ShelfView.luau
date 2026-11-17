@@ -50,8 +50,8 @@ local function fresh(model: Model): number
 	return if type(f) == "number" then f else Save.Fresh.Seen
 end
 
--- The slow twinkle on a new find.
-local function sparkle(spot: Attachment): ParticleEmitter
+-- The slow twinkle on a new find (or, on a part, over its surface: the job box's lid, JobBoxView).
+local function sparkle(spot: Attachment | BasePart): ParticleEmitter
 	local p = Instance.new("ParticleEmitter")
 	p.Name = "ShelfSparkle"
 	p.Texture = GLINT
@@ -112,6 +112,8 @@ local function word(s: Shown)
 		end
 	end)
 end
+
+ShelfView.sparkle = sparkle
 
 function ShelfView.new(): Brix.System
 	local shown: { [Model]: Shown } = {}

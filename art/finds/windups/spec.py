@@ -897,6 +897,7 @@ from game import (  # noqa: E402
     WHISTLE,
     WIND,
     pitched,
+    slowing,
     squeeze,
 )
 
@@ -1238,7 +1239,14 @@ GAME = [
         # cymbal monkey's lure, quieter)
         press=dict(
             verb="Wind",
-            on=[dict(motion="Wind", sound=WIND), dict(motion="Play", sound=CAROUSEL_TUNE)],
+            # its tune slows with the top as the spring runs down, as a real music box's does
+            on=[
+                dict(motion="Wind", sound=WIND),
+                dict(
+                    motion="Play",
+                    sound=slowing(CAROUSEL_TUNE, RIDE["steady"], RIDE["stop"], RIDE["fade"]),
+                ),
+            ],
             noise="Play",
             heard=DOWN_THE_HALL,
             lure=2,

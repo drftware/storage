@@ -106,13 +106,16 @@ function HomeCards.new(): HomeCards
 		}
 	end
 
-	-- A home's switch button, shown only to its holder.
+	-- A home's own buttons, the switch's and the job box's (JobBoxes), shown only to its holder.
 	local function showSwitch(unit: Model)
-		local spot = unit:FindFirstChild("SwitchSpot")
-		local prompt = spot and spot:FindFirstChildWhichIsA("ProximityPrompt", true)
-		if prompt then
-			local me = Players.LocalPlayer
-			prompt.Enabled = me ~= nil and unit:GetAttribute(Door.HolderAttribute) == me.UserId
+		local me = Players.LocalPlayer
+		local mine = me ~= nil and unit:GetAttribute(Door.HolderAttribute) == me.UserId
+		for _, name in { "SwitchSpot", Home.JobBox.Spot } do
+			local spot = unit:FindFirstChild(name)
+			local prompt = spot and spot:FindFirstChildWhichIsA("ProximityPrompt", true)
+			if prompt then
+				prompt.Enabled = mine
+			end
 		end
 	end
 

@@ -7348,3 +7348,35 @@ home stands on your shelf, sparkling. Precedents: Animal Crossing's museum, Fort
   or more (a tune: the song, the carousel's, the siren's wail) is joined from where it is now for
   a find first seen part way through; a click never is. Seen in Play: dropped 2.5 s in, the song
   carried on from 10.6 s in its recording.
+
+
+## D-287 · 2026-11-17 · The job box: a calm steel box that takes what the shelf can't (S5-03c2a1)
+
+The home doc's idea 9 (one box holds every find you own) and idea 7 (its lid sparkles when finds
+went in). Precedents: Resident Evil's item box, Animal Crossing's house storage, Fortnite's locker
+marks (what's new shows until you look).
+
+- **The look (D-263):** a job-site box, as the doc says, but powder-coated a dusty blue
+  (`#6A8A93`, the Plaster set's stipple reads as powder coat), on two oak runners, graphite
+  handles, hasp and piano hinge: calm beside the sage and the clay door, and the gold sparkle reads
+  on it. 4.4 studs long, 2.2 deep, 2.7 tall with its lid; four parts (body, lid, fittings,
+  runners), 1,588 triangles. The body is an open chest and the lid a tray, so an open box shows a
+  real inside and a real edge.
+- **Where (my default, `OWNER.md`):** against the left wall as you walk in, beside the shelf,
+  facing the room; its back 0.8 studs off the wall so its lid opens to 88 degrees clear of it.
+- **The save (version 6):** `boxFresh`, how new what went into the box since you last opened it is
+  (Save.Fresh). `Save.keep` raises it when the shelf is full; `Save.open` clears it and says what
+  it was, so opening on a kind you'd never owned chimes.
+- **The server (`JobBoxes`) owns two attributes on the box:** `Fresh` (from the holder's save,
+  following each of Shelves' lays through its new `laid` signal) and `Lid` (0 shut; up, 1 plus
+  what it found: one attribute, so no screen sees the lid up without it). Open (E) is the holder's
+  alone, as the switch is, and turns to Close; the lid shuts when the holder walks 14 studs away,
+  leaves, or the home changes hands.
+- **Every screen (`JobBoxView`):** the lid swings about its hinge (`JobBox.angle`, tested): up over
+  1.1 s eased, with Pro Sound Effects' heavy metal creak quiet and a touch higher; down falling
+  over 0.42 s with a mailbox flap's clack pitched to a heavier lid and a 2.5-degree kick. The
+  shelf's twinkle spreads over the lid while something new is in it and bursts off as it opens.
+- **The ceiling (the owner wanted it warm):** the home bulb's PointLight met the plaster ceiling
+  edge-on from the lamp's glass and left it near black past the lamp. It now hangs 3 studs under
+  the lamp (`UnitLight.Home.Drop`), so the ceiling catches it. Untested in Studio.
+- **Split** (context): c2a1 this, passing checks; c2a2 the upload, import and Studio Play check.
