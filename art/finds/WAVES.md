@@ -261,6 +261,8 @@ Newest first. What the next session needs to know: kit changes, traps, what's ha
   (OWNER.md, the wind-ups' feel test). **For V5d:** STUDIO.md's "A found light holding a
   Mannequin, from the MCP" is the recipe; `Use.litUntil` reads only a press's stamp (D-234), and
   the Old lamp is found lit with no press: start from where `FindUses`/`Keepers` read `litUntil`.
+  (My code, specs, this note and STUDIO.md went in with the home chain's commit 4f3cc6a, which
+  took the shared index while I was staging; my ROADMAP tick, D-288 and CODEMAP lines follow it.)
 
 - **Nov 17, V5a (the boombox and the teddy; seen in Play; V5f next).** A one-mesh find's press is
   written by hand in `src/shared/Finds/OneMesh.luau` (its pivot as plain numbers, its motions in

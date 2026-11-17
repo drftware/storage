@@ -2810,8 +2810,13 @@ actions themselves and dealing the new finds on floors are later game tickets.
         lights do (D-234 reads only a press's stamp).
       - [ ] **F-G1e5e Fragile:** the oil lamp and the glass lamp chip to half their worth when
         dropped hard (R.E.P.O.'s valuables).
-      - [ ] **F-G1e5f The carousel's tune slows as it runs down** (F-G1e2b left it): a
-        recording of a box running down, or a tempo change that keeps the pitch.
+      - [x] **F-G1e5f The carousel's tune slows as it runs down** (Nov 17, V5f; seen in Studio
+        Play, not heard on a phone; D-288): no recording of a box running down was found, so a
+        tempo change that keeps the pitch: the tune's speed follows the top's own run-down
+        (`RIDE`: full to 9.5 s, then (1 - s) ^ 1.4 to nothing at 15.5 s), two pitch shifters
+        hold its notes down to a quarter speed, then it fades as the top stops. A tune joined
+        part way slows on from where it is; a drop that carries your own copy to the floor no
+        longer plays the tune twice (the boombox's too).
   - [x] **F-G1f Each find's game row comes from its art (the run's P1; Nov 17).** `art/finds/PIPELINE.md`
     (photos to playable in one ticket); each kit find's grade, worth, floors, verb, the verb's
     numbers and sounds in its art spec; the export generates the catalog rows beside

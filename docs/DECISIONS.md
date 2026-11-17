@@ -7380,3 +7380,26 @@ marks (what's new shows until you look).
   edge-on from the lamp's glass and left it near black past the lamp. It now hangs 3 studs under
   the lamp (`UnitLight.Home.Drop`), so the ceiling catches it. Untested in Studio.
 - **Split** (context): c2a1 this, passing checks; c2a2 the upload, import and Studio Play check.
+
+
+## D-288 · 2026-11-17 · The carousel's tune slows as its spring runs down, keeping its pitch (F-G1e5f, V5f)
+
+- **The moment.** You wind the tin carousel and it turns and plays; over its last six seconds the
+  top slows and the tune slows with it, note by note, at the same pitch, the last note dying away
+  as the top stops. You hear the lure ending before you see it.
+- **Precedent.** The verb is the catalog's Wind (R.E.P.O.'s music box, the monkey's lure, D-233);
+  the slowing is how a real music box runs down: the cylinder turns slower, the comb's teeth keep
+  their pitch. The art's top already turned down on that curve (`RIDE`).
+- **How.** No recording of a box running down turned up (`search_asset`), so a tempo change that
+  keeps the pitch. A step's sound may carry `slows = { at, stop, fade }` (`Finds/Game`): full
+  speed to `at`, then (1 - s) ^ `fade` to nothing at `stop`, the art spec's own numbers
+  (`slowing(CAROUSEL_TUNE, RIDE[...])` in `windups/spec.py`, so one source); its length is what
+  of the recording that plays (`Use.through`), 12.0 s over 15.5. The client steps it each frame
+  while it plays (`FindUseView`'s `slowing`): `PlaybackSpeed` at the pace (`Use.pace`), two
+  `PitchShiftSoundEffect`s (each up to an octave) hold its pitch down to `Use.SlowHeld` (a
+  quarter speed), and below that it fades as it slows. Nothing else is stepped.
+- **Joined part way** (`Use.join`): the tune's place in the recording by `through`, its slowing
+  shifted to its own clock. A drop can carry your own copy from hand to floor as the same model
+  (seen in Play), so its tune plays on; a tune already playing on the find is never joined again
+  (this also kept the boombox's song from doubling).
+- **Untested by ear:** the shifters' quality at two octaves (OWNER.md, the wind-ups' feel test).
