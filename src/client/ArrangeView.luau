@@ -115,6 +115,8 @@ local SLOP = 14
 -- The tray's height with the finds in it, and how far under the screen's foot it slides away:
 -- far enough that its tabs, standing on its top edge, go with it.
 local TRAY = 92
+-- The tray's tabs, left to right: the finds, the room's looks, your front (S5-03g3a2).
+local FINDS, ROOM, FRONT = 1, 2, 3
 local AWAY = 190
 
 -- A find lifted off the floor or out of the tray, as a ghost the finger drags.
@@ -216,12 +218,17 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 	local placeButton: TextButton? = nil
 	local awayButton: TextButton? = nil
 	local cards: { [string]: TextButton } = {}
-	-- The paint tab (LooksTab), the tray's two tabs (the finds, the looks), which one shows (kept
-	-- between opens), and where each tab's things rest in the tray (they slide in to there).
-	local looksTab: LooksTab.Tab? = nil
+	-- The tray's three tabs (FINDS, ROOM: the paint tab, FRONT: your door; LooksTab's pages),
+	-- which one shows (kept between opens), and where each tab's things rest in the tray (they
+	-- slide in to there).
+	local roomTab: LooksTab.Tab? = nil
+	local frontTab: LooksTab.Tab? = nil
 	local tabs: { TextButton } = {}
-	local onLooks = false
+	local onTab = FINDS
 	local listAt, looksAt = UDim2.new(), UDim2.new()
+	-- What moves the camera now (the ease over the room, its swing between tabs, the ease back):
+	-- a new move stops it, so two never fight over the camera.
+	local moving: Tween? = nil
 	-- The limit bar: how many finds are set out of the most the home holds (the server's count,
 	-- sent with the box), and whether that's all (then a card in the tray won't lift).
 	local meter: Frame? = nil
@@ -1055,6 +1062,66 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		return CFrame.lookAt(eye, look)
 	end
 
+	-- The camera on the front tab: near the back of the room, a little over head height, facing
+	-- the door; the doorway's head and an open door's coil in view above the tray (S5-03g3a2).
+	local function front(r: Arrange.Room): CFrame
+		local c, s = r.centre, r.size
+		local door, floor = c.Z - s.Z / 2, c.Y - s.Y / 2
+		local back = math.min(Feel.FrontBack, s.Z - 1)
+		local eye = r.face * Vector3.new(c.X, floor + Feel.FrontEye, door + back)
+		local look = r.face * Vector3.new(c.X, floor + Feel.FrontAim, door)
+		return CFrame.lookAt(eye, look)
+	end
+
+	local function stopMoving()
+		local m = moving
+		moving = nil
+		if m then
+			m:Cancel()
+		end
+	end
+
+	-- Where a camera at `cf` stands in the room's frame, and its heading and tilt (radians).
+	local function heading(cf: CFrame, face: CFrame): (Vector3, number, number)
+		local l = face:ToObjectSpace(cf)
+		local look = l.LookVector
+		return l.Position, math.atan2(-look.X, -look.Z), math.asin(math.clamp(look.Y, -1, 1))
+	end
+
+	-- Swings the camera from where it is to `goal` over `Feel.Rise`: its place, heading and tilt
+	-- eased apart, so the half turn from the dollhouse corner round to the door never rolls the
+	-- picture over, as one tween of the whole CFrame would.
+	local function swing(r: Arrange.Room, goal: CFrame)
+		local camera = Workspace.CurrentCamera
+		if not camera then
+			return
+		end
+		stopMoving()
+		local face = r.face
+		local p0, y0, t0 = heading(camera.CFrame, face)
+		local p1, y1, t1 = heading(goal, face)
+		local turn = (y1 - y0 + math.pi) % (2 * math.pi) - math.pi -- the short way round
+		if math.abs(turn) > math.pi - 0.05 then
+			turn = math.pi -- a half turn: always round by the left, never a shudder between ways
+		end
+		local value = Instance.new("NumberValue")
+		value.Changed:Connect(function(a: number)
+			camera.CFrame = face
+				* CFrame.new(p0:Lerp(p1, a))
+				* CFrame.Angles(0, y0 + turn * a, 0)
+				* CFrame.Angles(t0 + (t1 - t0) * a, 0, 0)
+		end)
+		local tween = TweenService:Create(value, RISE, { Value = 1 })
+		tween.Completed:Once(function()
+			value:Destroy()
+			if moving == tween then
+				moving = nil
+			end
+		end)
+		moving = tween
+		tween:Play()
+	end
+
 	-- The faint grid on the floor, a line each `Feel.Grid` studs from its edges.
 	local function makeGrid(r: Arrange.Room): Part?
 		local f = r.frames.Floor
@@ -1169,42 +1236,72 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		end
 	end
 
-	-- Shows the tray's finds or its looks: the tray grows or shrinks to fit, the tab's things slide
-	-- in from its side (the looks pop in chip by chip), and the tab you're on lights up.
-	local function showTab(looks: boolean, eased: boolean)
-		local changed = looks ~= onLooks
-		onLooks = looks
+	-- Where the limit bar rests on tab `n`: over the room, or up off the screen on the front tab,
+	-- where it would cover the door's coil and has no finds to count (-60 still peeks into the
+	-- top bar's strip, which the gui doesn't own but draws over).
+	local function meterAt(n: number): UDim2
+		return UDim2.new(0.5, 0, 0, if n == FRONT then -120 else 20)
+	end
+
+	-- The tray's height on tab `n`.
+	local function trayHeight(n: number): number
+		return if n == ROOM
+			then LooksTab.Heights.room
+			elseif n == FRONT then LooksTab.Heights.front
+			else TRAY
+	end
+
+	-- Shows tab `n` of the tray: the tray grows or shrinks to fit, the tab's things slide in from
+	-- the side it lies on (the looks pop in chip by chip), and the tab you're on lights up. The
+	-- front tab swings the camera round to face your door, the others back over the room.
+	local function showTab(n: number, eased: boolean)
+		local was = onTab
+		local changed = n ~= was
+		onTab = n
 		pending = nil
-		local t, s, lt = tray, list, looksTab
+		local t, s = tray, list
+		local pages: { [number]: GuiObject? } = {
+			[FINDS] = s,
+			[ROOM] = if roomTab then roomTab.root else nil,
+			[FRONT] = if frontTab then frontTab.root else nil,
+		}
 		if t then
-			local size = UDim2.new(1, -28, 0, if looks then LooksTab.Height else TRAY)
+			local size = UDim2.new(1, -28, 0, trayHeight(n))
 			if eased then
 				TweenService:Create(t, QUICK, { Size = size }):Play()
 			else
 				t.Size = size
 			end
 		end
-		if s then
-			s.Visible = not looks
-		end
-		if lt then
-			lt.root.Visible = looks
+		for i = FINDS, FRONT do
+			local page = pages[i]
+			if page then
+				page.Visible = i == n
+			end
 		end
 		if eased and changed then
-			local coming: GuiObject? = if looks then (if lt then lt.root else nil) else s
-			local at = if looks then looksAt else listAt
+			local coming = pages[n]
+			local at = if n == FINDS then listAt else looksAt
 			if coming then
-				coming.Position = at + UDim2.fromOffset(if looks then 28 else -28, 0)
+				coming.Position = at + UDim2.fromOffset(if n > was then 28 else -28, 0)
 				TweenService:Create(coming, QUICK, { Position = at }):Play()
 			end
-			if looks and lt then
+			local lt = if n == ROOM then roomTab elseif n == FRONT then frontTab else nil
+			if lt then
 				lt.reveal()
 			end
 		end
-		-- The tab you're on wears the white ring a worn look's chip does; the other stays solid
-		-- enough that the wallpaper's pattern doesn't muddy its icon (S5-03g2b3).
+		local r, m = room, meter
+		if open and r and changed and (n == FRONT or was == FRONT) then
+			swing(r, if n == FRONT then front(r) else view(r))
+			if m then -- the limit bar counts finds: it rises off the top while you face the door
+				TweenService:Create(m, RISE, { Position = meterAt(n) }):Play()
+			end
+		end
+		-- The tab you're on wears the white ring a worn look's chip does; the others stay solid
+		-- enough that the wallpaper's pattern doesn't muddy their icons (S5-03g2b3).
 		for i, b in tabs do
-			local on = (i == 2) == looks
+			local on = i == n
 			local icon = b:FindFirstChild("Icon")
 			local edge = b:FindFirstChildOfClass("UIStroke")
 			local faded = if on then 0 else 0.35
@@ -1232,6 +1329,17 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		end
 	end
 
+	-- Whose look and door the paint and front tabs show and ring (nil: none, while closed).
+	local function attachTabs(u: Model?)
+		local a, b = roomTab, frontTab
+		if a then
+			a.attach(u)
+		end
+		if b then
+			b.attach(u)
+		end
+	end
+
 	local function openNow()
 		local camera = Workspace.CurrentCamera
 		if open or not camera then
@@ -1251,7 +1359,14 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		showButton(false)
 		savedCamera = camera.CFrame
 		camera.CameraType = Enum.CameraType.Scriptable
-		TweenService:Create(camera, RISE, { CFrame = view(r) }):Play()
+		stopMoving()
+		local rise = TweenService:Create(
+			camera,
+			RISE,
+			{ CFrame = if onTab == FRONT then front(r) else view(r) }
+		)
+		moving = rise
+		rise:Play()
 		grid = makeGrid(r)
 		local d, t, m = doneButton, tray, meter
 		if d then
@@ -1260,18 +1375,15 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		if m then
 			m.Visible = true
 			m.Position = UDim2.new(0.5, 0, 0, -60)
-			TweenService:Create(m, RISE, { Position = UDim2.new(0.5, 0, 0, 20) }):Play()
+			TweenService:Create(m, RISE, { Position = meterAt(onTab) }):Play()
 		end
 		if t then
 			t.Visible = true
-			t.Size = UDim2.new(1, -28, 0, if onLooks then LooksTab.Height else TRAY)
+			t.Size = UDim2.new(1, -28, 0, trayHeight(onTab))
 			t.Position = UDim2.new(0.5, 0, 1, AWAY)
 			TweenService:Create(t, RISE, { Position = UDim2.new(0.5, 0, 1, -10) }):Play()
 		end
-		local lt = looksTab
-		if lt then
-			lt.attach(home) -- its rings follow the home's look while you arrange
-		end
+		attachTabs(home) -- their rings follow the home's look and door while you arrange
 		local ask = remote(Arrange.BoxRemote)
 		if ask then
 			ask:FireServer()
@@ -1289,10 +1401,7 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		open = false
 		pending = nil
 		dragInput = nil
-		local lt = looksTab
-		if lt then
-			lt.attach(nil)
-		end
+		attachTabs(nil)
 		still(false)
 		body(false)
 		me:SetAttribute(Tools.StowAttribute, nil) -- the wheel comes back up
@@ -1304,8 +1413,10 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		local camera = Workspace.CurrentCamera
 		if camera then
 			local back = savedCamera
+			stopMoving()
 			if back then
 				local t = TweenService:Create(camera, RISE, { CFrame = back })
+				moving = t
 				t.Completed:Once(function()
 					if not open then
 						camera.CameraType = Enum.CameraType.Custom
@@ -1544,8 +1655,9 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		list = s
 		listAt = s.Position
 
-		-- The paint tab's papers, paints, floors and floor colours (LooksTab), in the same tray.
-		local lt = LooksTab.new(t, {
+		-- The paint tab's papers, paints, floors and floor colours, and the front tab's door
+		-- colours (LooksTab's two pages), in the same tray.
+		local host: LooksTab.Host = {
 			press = press,
 			pick = function(kind: Looks.Kind, id: string)
 				local r = remote(Looks.Remote)
@@ -1554,16 +1666,18 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 				end
 			end,
 			rim = RIM,
-		})
-		looksTab = lt
+		}
+		local lt = LooksTab.new(t, host, "room")
+		roomTab = lt
+		frontTab = LooksTab.new(t, host, "front")
 		looksAt = lt.root.Position
 
 		-- The tray's tabs on its top edge, at the left: the finds (the Arrange button's four
-		-- squares) and the looks (a fan of paint chips). They ride with the tray. Bloxburg's build
-		-- mode tabs.
-		for i = 1, 2 do
+		-- squares), the looks (a fan of paint chips) and your front (a little roll-up door). They
+		-- ride with the tray. Bloxburg's build mode tabs.
+		for i = FINDS, FRONT do
 			local tab = Instance.new("TextButton")
-			tab.Name = if i == 1 then "FindsTab" else "LooksTab"
+			tab.Name = if i == FINDS then "FindsTab" elseif i == ROOM then "LooksTab" else "FrontTab"
 			tab.Text = ""
 			tab.AutoButtonColor = false
 			tab.AnchorPoint = Vector2.new(0, 1)
@@ -1585,7 +1699,7 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			icon.Position = UDim2.fromScale(0.5, 0.5)
 			icon.Size = UDim2.fromOffset(36, 32)
 			icon.Parent = tab
-			if i == 1 then
+			if i == FINDS then
 				for j, at in { { -6, 6 }, { 6, 6 }, { -6, -6 }, { 7, -8 } } do
 					local sq = Instance.new("Frame")
 					sq.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -1596,19 +1710,21 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 					corner(sq, UDim.new(0, 2))
 					sq.Parent = icon
 				end
-			else
+			elseif i == ROOM then
 				LooksTab.icon(icon, PANEL)
+			else
+				LooksTab.frontIcon(icon, PANEL)
 			end
 			tab.Activated:Connect(function()
 				press(tab)
 				if not lifted then
-					showTab(i == 2, true)
+					showTab(i, true)
 				end
 			end)
 			tab.Parent = t
 			tabs[i] = tab
 		end
-		showTab(onLooks, false)
+		showTab(onTab, false)
 
 		-- What you do with the lifted find: a corner cluster under the right thumb (the tray slides
 		-- away while a find is lifted, so the whole room shows). Place where the jump button sits,
@@ -1698,8 +1814,8 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		end
 		local at = Vector2.new(input.Position.X, input.Position.Y)
 		local l = lifted
-		if l and l.asking then
-			return
+		if (l and l.asking) or (not l and onTab == FRONT) then
+			return -- facing the door, the room's finds aren't to hand: they lift from the others
 		end
 		local model = pickAt(at)
 		if model and (not l or model ~= l.original) then
@@ -1716,12 +1832,12 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 	local function changed(input: InputObject)
 		local p = pending
 		if p then
-			local moving = input == p.input
+			local dragged = input == p.input
 				or (
 					input.UserInputType == Enum.UserInputType.MouseMovement
 					and p.input.UserInputType == Enum.UserInputType.MouseButton1
 				)
-			if moving then
+			if dragged then
 				local at = Vector2.new(input.Position.X, input.Position.Y)
 				local d = at - p.start
 				if -d.Y > SLOP and -d.Y > math.abs(d.X) then

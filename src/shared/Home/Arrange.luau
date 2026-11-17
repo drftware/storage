@@ -65,6 +65,15 @@ Arrange.Feel = table.freeze({
 	In = 1.5,
 	-- Where it looks: this far into the room from its middle (fraction of the depth), on the floor.
 	Look = 0.15,
+	-- The front tab's camera (S5-03g3a2), facing the door from inside: this far back from the
+	-- doorway (studs, kept a stud off the back wall), this high off the floor (a little over a
+	-- player's head), looking at the doorway this high. On the Galaxy A16 that sets the 8-stud
+	-- door from its foot to its coil between the tray and the screen's top (the limit bar rises
+	-- away on this tab), and keeps the camera in front of the starter shelf (Unit1's stands 14.4
+	-- back).
+	FrontBack = 13.4,
+	FrontEye = 6.3,
+	FrontAim = 4.5,
 	-- The lifted find rides this high over where it would stand (studs), and settles in this long
 	-- (seconds) when it lands; it follows the finger this quickly (seconds to close half the gap).
 	Hover = 0.6,

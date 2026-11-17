@@ -100,12 +100,20 @@ nowhere else.
   chips take the new paint's colour; a new floor's colours pop in where the old ones were. Is the
   tray (two rows, about 40% of the screen's height) too tall over the room on your phone? With a
   friend standing in your home, they see the same roll. Stop and Play: it's still up.
-- [ ] **Your door's colour gets its own tab** (S5-03g3a, D-329; my default, nothing to test
-  yet). The eight door colours don't fit beside the floors on a phone, and a third row would cover
-  over half the screen. So Arrange gets a third tab, "your front": one row of door colours (later a
-  second for your name card's style), and the camera turns round to face your door while you're on
-  it. Tap a colour and the door turns from the top down in half a second with a roller's squish;
-  the whole hall sees it. Say if you'd rather have a third row, or the door somewhere else.
+- [ ] **Your front: the third tab on Arrange** (S5-03g3a2, D-329, D-330; seen in Studio Play on
+  the A16 with the door open). In your home, tap Arrange, then the little door tab (third, on the
+  tray's top edge). Look for: the camera swinging round from the corner to face your door (no
+  jolt, never tipping over), the limit bar rising away, one row of eight door colours with yours
+  ringed. Tap Mustard: the coil over the open doorway turns mustard and the ring moves. Now shut
+  the door (Close at the doorway), open Arrange's door tab again and tap a colour: the door should
+  turn from the top down, its foot just above the tray. Tap the finds tab: it swings back. On
+  this tab a tap on a find in the room does nothing (finds lift from the other two tabs). Say if
+  you'd rather have a third row, or the door somewhere else. Pictures: `docs/art/S5-03g3a2-*.jpg`.
+- [ ] **Should your door shut when you walk away from your home?** (S5-03g3a2, D-330.) The hall
+  sees your colour only on a shut door: an open one is rolled up behind the header, so from across
+  the floor your unit shows its name card and the room, not the colour
+  (`docs/art/S5-03g3a2-across-the-floor.jpg`). My default: leave it as it is (open while you're on
+  the floor). Say if it should roll down a few seconds after you step out, as a neighbour's does.
 - [ ] **Should any paint, paper or floor cost cash?** (S5-03g2b1, D-326.) My default: all free,
   since a home is the calm reward for climbing and no price was agreed. Say which, if any, should
   be bought (and for how much) and I'll gate them at the counter.

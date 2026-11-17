@@ -3124,3 +3124,20 @@ verified: a doc page, Studio, or "untested".
   LuckiestGuy, PatrickHand, Nunito Regular. Blender renders them from the same files (`font_file`
   in `art/home/build.py`), so a look sheet shows the game's own letters.
 - There's no stencil family: the stencil card is Oswald Bold on the plate.
+
+## The front tab on the A16 (S5-03g3a2, Nov 17)
+
+- **A home is 20 wide, 29.75 deep and 10 high** (`Arrange.room` on Unit1: centre (0, 5, 15.125) in
+  the room's frame, the doorway at z 0.25 and 8 studs wide). Its starter shelf stands in the
+  middle, 14.4 to 16 back: a camera put further back than that sits inside it.
+- **The tray's tabs move with its height.** Their top is 50 points over the tray's: gui y 128 on
+  the finds tab (tray 92 tall), 154 on the front tab (66 tall). A tap at the old height misses.
+- **A gui at y -60 still shows in the top bar's 58-point strip** (the ScreenGui doesn't ignore the
+  inset but draws over it): park a thing at -120 to have it gone.
+- **A window capture of Studio when it isn't the front app can be a stale frame** (here, the limit
+  bar where it had been 30 seconds before). Bring it forward with osascript first.
+- **A burst of `screencapture -l` jpgs runs about 10 a second**: 40 to 50 in a background loop
+  started just before a `user_mouse_input` tap catch a 0.5 to 0.7 second swing or roll; `md5` of
+  the crops shows which frames moved. There's no PIL or ImageMagick here; `sips` crops and scales.
+- **Arrange keeps its tab between opens**, so it opens straight onto the front tab if you left it
+  there.

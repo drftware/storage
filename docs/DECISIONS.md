@@ -8395,3 +8395,30 @@ Mustard and your roll-up door turns from the top down as you watch; the hall see
   280. The Arrange camera looks away from the door, so a "your front" tab turns it round to face
   the door, and the name card styles (S5-03g3c) take that tab's second row. Bloxburg's build mode
   has a tab per part of the house.
+
+## D-330 Your front: a tab that turns the camera to face your door (S5-03g3a2, 2026-11-17)
+
+Bloxburg's build mode has a tab per part of the house; this is the door's. The moment: on Arrange
+you tap the little door tab, the camera swings round to face your door, and a tap on Mustard rolls
+it mustard from the top down.
+- **One tab module, two pages.** `LooksTab` takes a page ("room" or "front"): the front page is one
+  row of the eight door dots, ringed from the unit's `LookDoor` and watching it, so the ring moves
+  when the server takes the pick; the same `PickLook` remote, kind "door". The tray is 66 points
+  tall on it; g3c's card styles go in its second row.
+- **The camera stands near the room's middle, not a third of the way in.** The home is 29.75 deep
+  with an 8-stud door, so a third of the way (10 studs) can't fit the door and its coil above the
+  tray on the A16. 13.4 studs from the doorway at 6.3 high, looking at the doorway 4.5 up, fits it
+  from the foot (at the tray's edge) to the coil, and stays in front of the starter shelf (14.4
+  back). Kept a stud off the back wall for smaller homes (S5-03h).
+- **A swing, not a tween.** One tween of the camera's CFrame between the dollhouse corner (steeply
+  down) and the door view (a half turn away) slerps round a tilted axis and rolls the picture. The
+  swing eases its place, heading and tilt apart (the heading the short way, a half turn always by
+  the left), so the walls stay upright all the way round. Everything that moves the camera on
+  Arrange (the ease in, the swing, the ease out) stops the one before.
+- **The limit bar rises away on the front tab.** It counts finds and sat over the coil, the part
+  that rolls on an open door. It goes to -120: at -60 it still peeks into the top bar's strip.
+- **Finds don't lift on the front tab.** Facing the door, the room is seen low and edge on; a tap
+  in the room does nothing there, and the finds lift from the other two tabs as before.
+- **Open, the hall doesn't see your colour.** An open door is rolled up behind the header, so from
+  across the floor your home shows its name card, not its door. Left as it is (your door stays
+  open while you're on the floor); whether it should shut when you walk away waits on `OWNER.md`.

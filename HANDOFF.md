@@ -2,47 +2,48 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 271 (S5-03g3a1, the door's colour saved, painted and rolled) ·
+**Updated:** 2026-11-17, session 272 (S5-03g3a2, your front: a third tab on Arrange) ·
 **Checks:** green · **Git:** `main`, committed, not pushed (`origin` drftware/storage); Brix
 pinned at `7f25310`, NOT on Brix's `origin` yet.
 
 ## State
 - The home (D-259; Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools only)
-  is built a ROADMAP piece a session (S5-03). A door's colour is saved (`looks.door`, save version
-  10), picked through `PickLook` ("door"), and rolls down the slats on every screen (D-329), seen
-  in Play on the A16 simulator from the hall. There's no button for it yet: that's the Next task.
-- Rojo is connected: Studio's scripts are the working tree's. The A16 is set from the shell
-  (STUDIO.md, "Picking the A16 from the shell"); if taps time out, `caffeinate -u -t 3`.
+  is built a ROADMAP piece a session (S5-03). Arrange has three tabs: finds, the room's looks, and
+  your front (D-330): the camera swings round to face your door, one row of eight door dots, the
+  roll down the slats the answer. Seen in Play on the A16 with the door open (the coil rolls); the
+  shut door from the front tab and whether a door should shut as you leave wait on `OWNER.md`.
+- Rojo is connected. The A16 is set from the shell (STUDIO.md, "Picking the A16 from the shell");
+  if taps time out, `caffeinate -u -t 3`; bring Studio to the front before a window capture.
 - Test save: cash 478, HardHat on the rail, Green worn; Unit1 (frame at 60, 0, 478) in Sage,
-  Daisies and a Rose carpet, its door Rose. Its door opens when you arrive.
+  Daisies, a Rose carpet, its door Mint, open when you arrive. Arrange reopens on its last tab.
 - Stage only your own paths (the find run's `art/finds/`, `src/shared/Finds/` and hunks stay).
 
-## Next task: S5-03g3a2 Your front, a third tab
-The moment: on Arrange you tap the little door tab, the camera swings round to face your door, and
-a tap on Mustard rolls it mustard from the top down with a squish. Bloxburg's build mode tabs.
-1. Read ArrangeView's tabs (`showTab`, the `for i = 1, 2` tab loop near line 1563, `view`,
-   `openNow`) and LooksTab's `row`, `chip`, `refresh`, `attach`.
-2. LooksTab: a page argument ("room" or "front"); the front page is one row of the eight door
-   dots (`Specs.Looks.Doors`), ringed from the unit's `Looks.DoorAttribute` (watch it too);
-   `current` learns "door". Its height `ROW + PAD * 2` (66). Leave room for g3c's second row.
-3. ArrangeView: three tabs (finds, room, front); `onLooks` becomes a tab number; the front tab's
-   icon a small roll-up door (a rounded frame with three slat lines) in clay.
-4. The camera: on the front tab it eases (RISE) to face the door from inside (from about a third
-   of the room back, a little over head height, looking at the doorway's head so the coil shows
-   when open), and back to `view(r)` on the other tabs. Lifting a find stays as it is.
-5. Play on the A16 (see STUDIO.md: an execute_luau's Scriptable camera is reset after the call):
-   open Arrange, the front tab, tap two colours with the door shut and open; walk out and judge
-   it from across the floor. Capture to `docs/art/`.
-**Acceptance:** check green; three tabs fit the tray's top edge; the front tray is one row; the
-camera turns to the door and back with no snap; the door rolls on a tap and the ring moves; no
-text.
-**Read first:** ROADMAP S5-03g3a2; D-329; `src/client/LooksTab.luau`; `src/client/ArrangeView.luau`
-(lines 1040-1060, 1170-1290, 1540-1615); `src/shared/Home/Looks.luau` (top 90 lines).
+## Next task: S5-03g3b The name card plates
+The moment: you walk out of your home and across the floor, and over your door is your name on
+the card you picked (a stencilled steel plate to start), lit and lettered like a shop front, not
+the lobby's plain plate. Animal Crossing's house sign; Bloxburg's plot name.
+1. Read ROADMAP S5-03g3b and D-322; see what the lobby's plain plate is (`signs()` in
+   `art/lobby/build.py`) and how HomeCards writes and sprays the name on it now.
+2. Split g3b in ROADMAP if it won't fit (likely g3b1 the style saved, the Starter plate up with
+   the name; g3b2 the neon's tube, glow stroke and `CardLight`).
+3. Save the card's style with the looks (`looks.card`, save version 11, an older save's is the
+   Starter style), its id on the unit like the door's (a `Looks` attribute apart from `encode`),
+   picked through `PickLook` kind "card" (only Starter styles until g3c's store rules).
+4. Every screen dresses each held home's card from `Specs.Cards`: the style's parts over the door
+   in place of the plain plate, the name on `Face` in its `Font` and `Ink`; the spray
+   (`Holding.Card`) still lands the name; a home let go goes back to the plain plate.
+5. Play on the A16: walk out and judge it from across the floor and from the next door; capture
+   to `docs/art/`.
+**Acceptance:** check green; a held home's card is its style's plate with the name readable from
+across the floor at A16 size; the spray still lands a new name; a save from version 10 loads
+with the Starter style; no text that explains a rule.
+**Read first:** ROADMAP S5-03g3b; D-322; `src/client/HomeCards.luau`; `art/lobby/build.py`
+`signs()` (line 489); `src/shared/Home/Specs.luau` `Cards` (line 258); `art/home/cards.py` top.
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03g3b name card plates, g3c choosing a card's style (the front tab's second row; the store's
-   rules: not-owned marked, never a popup), g4 (furniture at the counter, the glows near only;
-   neon's light budget on the A16), h; S5-03d4 across the trip (unblocked); S5-03a2d the cars'
+1. S5-03g3c choosing a card's style (the front tab's second row; the store's rules: not-owned
+   marked, never a popup), g4 (furniture at the counter, the glows near only; neon's light budget
+   on the A16), h; S5-03d4 across the trip (unblocked); S5-03a2d the cars'
    hidden triangles; F-G1b4a2 the headlamp's beam; F-G1b4b the hat spent.
 2. The looks' polish (ROADMAP under g2b2 and g2b3): the sheet a shade darker than the panel at the
    hand-over; the mirror keeping the room's old look (re-copy on `LookWorn`); the floor's wipe

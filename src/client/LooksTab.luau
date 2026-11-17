@@ -13,6 +13,10 @@
 	and the ring moves when the unit's `Looks.Attribute` changes. No words. ArrangeView hosts it in
 	its tray, beside the finds.
 
+	The same tab, on its "front" page, is your door's colours (S5-03g3a2, D-330): one row of dots,
+	the door's id read from the unit's `Looks.DoorAttribute`, the roll down the slats the answer
+	(RollUpDoor.paint). The name card styles (S5-03g3c) are to take that page's second row.
+
 	Chips are ImageLabels of the colour maps LooksView fetches once a home is near, not
 	ViewportFrames: twelve 3D views in a tray cost a low-end phone a frame each, and a flat map at
 	46 px reads the pattern as well.
@@ -26,6 +30,7 @@ local LooksView = require(script.Parent.LooksView)
 local Specs = require(ReplicatedStorage.Shared.Home.Specs)
 
 -- What the tab needs from the screen hosting it.
+export type Page = "room" | "front" -- the room's walls and floor, or your door from the hall
 export type Host = {
 	press: (button: GuiObject) -> (), -- the button's pop and soft click
 	pick: (kind: Looks.Kind, id: string) -> (), -- asks the server for the look
@@ -51,8 +56,8 @@ local DOT = 44 -- a paint's or floor colour's dot
 local ROW = 54 -- a row's height: room round a chip for its ring
 local GAP = 6 -- between chips: eight paints and four papers fit a Galaxy A16's tray
 local PAD = 6 -- above and below the rows
--- The tray's height on this tab.
-LooksTab.Height = ROW * 2 + PAD * 2
+-- The tray's height on each page: the room's two rows, the front's one (g3c adds its second).
+LooksTab.Heights = table.freeze({ room = ROW * 2 + PAD * 2, front = ROW + PAD * 2 })
 
 local RING = Color3.new(1, 1, 1) -- what the home wears
 local QUICK = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -82,6 +87,8 @@ local function current(chosen: Looks.Chosen, kind: Looks.Kind): string
 		return chosen.paper
 	elseif kind == "floor" then
 		return chosen.floor
+	elseif kind == "door" then
+		return chosen.door
 	end
 	return chosen.floorColour
 end
@@ -127,9 +134,45 @@ function LooksTab.icon(into: GuiObject, edge: Color3)
 	end
 end
 
-function LooksTab.new(tray: Frame, host: Host): Tab
+-- The front tab's icon, into a 36 by 32 frame: a little roll-up door in the start's clay, three
+-- slat lines across it in `edge`, and the bar along its foot.
+function LooksTab.frontIcon(into: GuiObject, edge: Color3)
+	local door = Instance.new("Frame")
+	door.AnchorPoint = Vector2.new(0.5, 0.5)
+	door.Position = UDim2.fromOffset(18, 16)
+	door.Size = UDim2.fromOffset(24, 24)
+	door.BackgroundColor3 = Color3.fromHex(Specs.Looks.Doors[1].Colour)
+	door.BorderSizePixel = 0
+	corner(door, UDim.new(0, 4))
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = edge
+	stroke.Thickness = 1.5
+	stroke.Parent = door
+	for i = 1, 3 do
+		local slat = Instance.new("Frame")
+		slat.AnchorPoint = Vector2.new(0.5, 0.5)
+		slat.Position = UDim2.fromOffset(12, 6 * i - 1)
+		slat.Size = UDim2.fromOffset(18, 2)
+		slat.BackgroundColor3 = edge
+		slat.BackgroundTransparency = 0.25
+		slat.BorderSizePixel = 0
+		corner(slat, UDim.new(0.5, 0))
+		slat.Parent = door
+	end
+	local bar = Instance.new("Frame") -- the bottom bar: heavier, so it reads as a door's foot
+	bar.AnchorPoint = Vector2.new(0.5, 1)
+	bar.Position = UDim2.fromOffset(12, 22)
+	bar.Size = UDim2.fromOffset(20, 3)
+	bar.BackgroundColor3 = edge
+	bar.BorderSizePixel = 0
+	corner(bar, UDim.new(0.5, 0))
+	bar.Parent = door
+	door.Parent = into
+end
+
+function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 	local root = Instance.new("Frame")
-	root.Name = "Looks"
+	root.Name = if page == "front" then "Front" else "Looks"
 	root.BackgroundTransparency = 1
 	root.Position = UDim2.fromOffset(10, PAD)
 	root.Size = UDim2.new(1, -20, 1, -PAD * 2)
@@ -141,7 +184,7 @@ function LooksTab.new(tray: Frame, host: Host): Tab
 	root.Parent = tray
 
 	local unit: Model? = nil
-	local watch: RBXScriptConnection? = nil
+	local watches: { RBXScriptConnection } = {}
 	local chosen = Looks.start()
 	local built = false
 	local chips: { Chip } = {} -- papers, paints and floors: built once
@@ -255,6 +298,13 @@ function LooksTab.new(tray: Frame, host: Host): Tab
 			return built
 		end
 		built = true
+		if page == "front" then
+			local d = row(1) -- the door's colours (g3c's card styles to go in a row 2 under it)
+			for i, door in Specs.Looks.Doors do
+				table.insert(chips, chip(d, i, "door", door.Id, colour(door.Colour)))
+			end
+			return true
+		end
 		local w, f = row(1), row(2)
 		floors = f
 		local order = 0
@@ -323,7 +373,9 @@ function LooksTab.new(tray: Frame, host: Host): Tab
 	-- Reads the unit's look and shows it: tints, the floor's colours, the rings.
 	local function refresh(eased: boolean)
 		local u = unit
-		local read = if u then Looks.decode(u:GetAttribute(Looks.Attribute)) else nil
+		local read = if u
+			then Looks.decode(u:GetAttribute(Looks.Attribute), u:GetAttribute(Looks.DoorAttribute))
+			else nil
 		chosen = Looks.tidy(read or Looks.start())
 		if not build() then
 			return
@@ -347,15 +399,19 @@ function LooksTab.new(tray: Frame, host: Host): Tab
 	local tab: Tab = {
 		root = root,
 		attach = function(u: Model?)
-			if watch then
-				watch:Disconnect()
-				watch = nil
+			for _, w in watches do
+				w:Disconnect()
 			end
+			table.clear(watches)
 			unit = u
 			if u then
-				watch = u:GetAttributeChangedSignal(Looks.Attribute):Connect(function()
-					refresh(true)
-				end)
+				local name = if page == "front" then Looks.DoorAttribute else Looks.Attribute
+				table.insert(
+					watches,
+					u:GetAttributeChangedSignal(name):Connect(function()
+						refresh(true)
+					end)
+				)
 				refresh(false)
 			end
 		end,

@@ -2667,12 +2667,11 @@ Done when players watch the results to the end and change their perks between cl
           Seen in Studio Play on the A16 simulator from the hall (picked through `LookTest`):
           top first, foot last, then the shut door's one mesh in the new colour. Pictures
           `docs/art/S5-03g3a-*.jpg`.
-        - [ ] **S5-03g3a2 Your front, a third tab** on the Arrange tray (D-329): the eight door
-          dots don't fit beside the floor's row at 685 wide (408 points over 197 spare) and a third
-          row would take 174 of the A16's 280. So a third tab (a little roll-up door icon), one row
-          of door dots (66 points tall), and g3c's card styles take its second row. On this tab the
-          camera eases round from the dollhouse corner to face the door from inside, the coil and
-          doorway in view; back on the other tabs it eases back. The roll is the answer.
+        - [x] **S5-03g3a2 Your front, a third tab** on the Arrange tray (D-329, D-330): a little
+          roll-up door tab, one row of the eight door dots (66 points tall; g3c's card styles take
+          its second row), the camera swung round to face the door from 13.4 studs in, the limit
+          bar risen away, finds in the room not lifted on this tab. Seen in Play on the A16 (open
+          door; the coil rolls), pictures `docs/art/S5-03g3a2-*.jpg`.
       - [ ] **S5-03g3b The name card plates.** The chosen style's parts (`Specs.Cards`) replace
         the lobby's plain card plate over each door (`art/lobby/build.py signs()` drops its unit
         cards); the name is written on `Face` in its `Font` (Font.fromName) and `Ink`; the neon's
