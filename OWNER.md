@@ -28,6 +28,10 @@ nowhere else.
   3. Things you can set out with Arrange: 25 small, 50 medium, 100 large, 150 XL, so a full
      unit runs smoothly on a low-end phone.
   4. Four lamps in a unit cast real light; any more just glow.
+  5. The ground floor is 156 studs deep (the front office was 48), so a new player runs about
+     9 seconds from loading in to the cars, past all 12 units.
+  6. Each unit's door is the climb's 8-wide door, in a unit 20 wide. A 12-wide door would show
+     more of each unit from the floor, but that door's paint still stretches (D-260).
 
 - [ ] **Find the new finds** (F-G1a, D-203; seen in Studio Play by me on floor 1, not on a
   phone): play a climb and open doors. Floor 1 now deals the Nov 15 finds beside the bedroom

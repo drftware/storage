@@ -2305,7 +2305,15 @@ Done when players watch the results to the end and change their perks between cl
     (deeper; six XL unit slots, 20 by 30, down each side wall, their roll-up doors the climb's
     door opening onto the floor; a name card frame over each; a warm bulb inside; the cars'
     wall and bays, front door, counter and cart rack kept), look sheets at phone size,
-    `Lobby/Specs` with each slot's door, inside and name card. a2 laid in the game: load in
+    `Lobby/Specs` with each slot's door, inside and name card. a1 is split (D-260):
+    - [x] **S5-03a1a The ground floor's numbers**: `art/lobby/spec.py` re-laid 156 deep, the
+      front's pieces measured off the front wall, 12 slots (`slots`, `slot_rows`), their gaps,
+      partitions, backs and tops in the colliders, a name card each, 26 hall lights, the
+      Specs writer's `Slots`. Checked by script; `Lobby/Specs.luau` not regenerated yet.
+    - [ ] **S5-03a1b The ground floor's build and sheets**: `build.py` to the new spec, export,
+      sheets, import (HANDOFF has the steps).
+
+    a2 laid in the game: load in
     facing the cars (a new player in a car within 15 s), the carts and their rack, the lights,
     the cars and trips untouched. a3 a unit for each player as they join (12; a plots system
     built in Brix first, D-252), your name over your door, doors open by default, pulled down

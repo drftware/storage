@@ -24,12 +24,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 ELEVATOR_SPEC = os.path.join(ROOT, "art", "elevator", "spec.py")
 
-# --- the room ----------------------------------------------------------------------------------
-# Wide enough for six cars side by side with a post between each, deep enough to kick a cart
-# around while the count runs (L-08e4), and short enough that a new player reaches a car in a
-# few seconds (the GDD's 15-second rule): the spawn is 44 studs from the cars, under 3 s at a run.
+# --- the room: the building's ground floor (D-259) ---------------------------------------------
+# Wide enough for six cars side by side with a post between each. Deep enough for six units down
+# each side wall, their doors facing the open middle, so everyone sees everyone's finds on the way
+# to the cars (Grow a Garden's plots round one open ground). Still short enough that a new player
+# reaches a car well inside the GDD's 15 seconds: the spawn is 150 studs from the cars, about 9.4 s
+# at a run (16 studs a second).
 WIDTH = 120.0            # side wall's face to side wall's face (x from -60 to 60)
-DEPTH = 48.0             # the bay wall's face to the front wall's face (y from -48 to 0)
+DEPTH = 156.0            # the bay wall's face to the front wall's face (y from -156 to 0)
+FRONT = -DEPTH           # the front wall's face: the door, counter, shelves and rack hang off it
 WALL = 0.5               # the bay wall's depth: the elevator's Opening.Wall (checked at export)
 DECK = 14.0              # the deck's underside: the corridor's, so its hall light hangs as tuned
 APRON = 24.0             # concrete outside the front door: the glass shows the porch light's pool on it
@@ -65,6 +68,44 @@ def posts():
     return [(a + b) / 2 for a, b in zip(xs, xs[1:])]
 
 
+# --- the units: six down each side wall, doors facing the open middle (D-259) ----------------
+# Every slot is built at XL, the biggest unit there is; a smaller unit will stand inside it behind
+# partitions (S5-03h), so its walls can move when it grows (the home doc's idea 31). A slot's
+# frame is the climb's unit's (art/unit/spec.py): origin on the floor at the middle of the
+# doorway's outer face, which is the side wall's face; the floor toward -Y; the unit back to +Y.
+# In the gap the side wall leaves, the climb's M unit stands with its walls dropped: its facade,
+# frame and roll-up door, so the door rolls exactly as on a climb (UnitKit, RollUpDoor).
+SLOTS = 6                # per side wall: 12 players on a lobby server, a unit each (D-259)
+SLOT_WIDTH = 20.0        # wall centre to wall centre along the side wall: XL is 20 by 30 (D-259)
+SLOT_DEPTH = 30.0        # the side wall's face to the back wall's centre
+SLOT_BACK = 12.0         # the slot nearest the cars starts this far from the bay wall, clear of
+                         # the striped zones and the landing lights' row
+DOOR_SIZE = "M"          # the unit size whose front stands in each slot's gap
+DOOR_GAP = 12.0          # that unit's facade across (its footprint): the side wall leaves it open
+UNIT_WALL = 10.0         # the units' walls and the corridor's cap (checked at export)
+UNIT_FACADE = 0.25       # the side wall's thickness, the corridor's (checked)
+HANG = 10.0 - 0.22       # a unit's bulb hangs from its top's middle channel (corridor CHANNEL_DROP)
+CARD = (6.0, 1.4, 11.4)  # the name card over each door, on the R-panel above the cap: width,
+                         # height, middle's height (between the cap at 10 and the deck at 14)
+
+
+def slot_ys():
+    """Each slot's middle along a side wall (y), from the front toward the cars."""
+    return [-SLOT_BACK - SLOT_WIDTH * (SLOTS - 0.5 - k) for k in range(SLOTS)]
+
+
+def slots():
+    """Every unit slot: (number, side, y). Side -1 is the left wall as you face the cars, +1 the
+    right. Units 1 to 6 run down the left wall from the front, 7 to 12 down the right."""
+    return [(k + 1 + (SLOTS if side > 0 else 0), side, y)
+            for side in (-1, 1) for k, y in enumerate(slot_ys())]
+
+
+def slot_lines():
+    """Where the partitions between slots stand along each side wall (y), front to back."""
+    return [-SLOT_BACK - SLOT_WIDTH * k for k in range(SLOTS, -1, -1)]
+
+
 # --- the front: a glass storefront round the double door --------------------------------------
 STORE = (-12.0, 12.0)    # the storefront's ends across the front wall
 DOOR = 4.0               # each leaf's width: the double door is 8 wide, its meeting stiles at x 0
@@ -81,26 +122,27 @@ SIDE_MULLIONS = (-8.0, 8.0)  # the sidelights' middle mullions
 # --- the counter: to the left as you come in, facing into the room --------------------------
 COUNTER_FACE = -51.0     # its customer face's x
 COUNTER_DEPTH = 2.4
-COUNTER_Y = (-42.0, -28.0)
+COUNTER_Y = (FRONT + 6.0, FRONT + 20.0)
 COUNTER_TOP = 3.4        # a shop counter's height on an R15 avatar (eyes at about 4.6)
 COUNTER_SLAB = 0.15
 COUNTER_LIP = 0.2        # the top's overhang on the customer side
 COUNTER_KICK = 0.5
-REGISTER = (-52.25, -32.0)  # the till's middle on the counter (x, y)
-BELL = (-51.45, -36.2)      # the service bell's
+REGISTER = (-52.25, FRONT + 16.0)  # the till's middle on the counter (x, y)
+BELL = (-51.45, FRONT + 11.8)      # the service bell's
 
 # --- the shop's shelves on the left wall behind the counter ----------------------------------
 SHELF_DEPTH = 2.0
-SHELF_RUNS = ((-44.0, -35.25), (-34.75, -26.0))   # two steel shelving units, end to end
+SHELF_RUNS = ((FRONT + 4.0, FRONT + 12.75), (FRONT + 13.25, FRONT + 22.0))  # two units, end to end:
+                                                   # unit 1's partition stands 2 past them
 SHELF_LEVELS = (0.3, 2.25, 4.2, 6.15, 8.1)         # each deck's top; the top one is the cap
 SHELF_POST = 0.12
 SHELF_DECK = 0.06
-NAME_SIGN = (-35.0, 9.0, 16.0, 1.3)  # the Everkeep sign over the shelves: y middle, z, w, h
+NAME_SIGN = (FRONT + 13.0, 9.0, 16.0, 1.3)  # the Everkeep sign over the shelves: y middle, z, w, h
 
 # --- the cart rack: to the right of the door against the front wall ------------------------
 RACK_X = (18.0, 36.0)    # its ends; a divider every RACK_PITCH between
 RACK_PITCH = 3.0         # one slot per platform cart (a 2.2 x 4.3 deck, L-08e4)
-RACK_Y = (-47.5, -42.8)  # how deep a slot is: the hoops' feet
+RACK_Y = (FRONT + 0.5, FRONT + 5.2)  # how deep a slot is: the hoops' feet
 RACK_H = 1.8             # the hoops' top rail
 RACK_PIPE = 0.07
 RACK_RAIL_Z = 1.0        # the back rail joining the hoops
@@ -116,15 +158,18 @@ def joist_xs():
 
 
 def fixtures():
-    """Where the hall lights hang (x, y): a row over the cars' landings, a row down the room's
-    middle, one over the counter and one over the cart rack."""
+    """Where the hall lights hang (x, y): a row over the cars' landings; one before every unit,
+    9 off its wall, lighting its door and name card; pairs down the open middle; one over the
+    counter and one over the cart rack."""
     xs = bay_xs()
-    out = [(x, -9.0) for x in xs] + [(x, -27.0) for x in xs[1:-1]]
-    out += [(-51.0, -35.0), (27.0, -40.0)]
+    out = [(x, -9.0) for x in xs]
+    out += [(side * (WIDTH / 2 - 9.0), y) for side in (-1, 1) for y in slot_ys()]
+    out += [(x, y) for y in (-32.0, -72.0, -112.0) for x in (-21.0, 21.0)]
+    out += [(-51.0, FRONT + 13.0), (27.0, FRONT + 8.0)]
     return out
 
 
-SPAWN = (0.0, -42.0)     # where you load in: just inside the door, facing the cars
+SPAWN = (0.0, FRONT + 6.0)  # where you load in: just inside the door, facing the cars
 
 # --- the shelves' stock: moving boxes the game clones from the boxes kit -----------------------
 BOX_SIZE = {"Small": (1.2, 1.6, 1.2), "Medium": (1.8, 1.8, 1.6)}  # deep, along the shelf, tall: label out
@@ -168,11 +213,10 @@ def colliders():
     w, d, o = WIDTH / 2, DEPTH, OUTER
     top = DECK + 0.6
     ow, oh = OPENING[0] / 2, OPENING[1]
+    sw = w + SLOT_DEPTH  # the units' back walls' centres
     out = [
-        ("Floor", (-w - o, -d - APRON, -1.0), (w + o, WALL, 0.0)),
+        ("Floor", (-sw - o, -d - APRON, -1.0), (sw + o, WALL, 0.0)),
         ("Ceiling", (-w - o, -d - o, top), (w + o, WALL, top + 1.0)),
-        ("WallLeft", (-w - o, -d - o, 0.0), (-w, WALL, top)),
-        ("WallRight", (w, -d - o, 0.0), (w + o, WALL, top)),
         ("WallFront", (-w, -d - o, 0.0), (w, -d, top)),
         ("CounterBody", (COUNTER_FACE - COUNTER_DEPTH, COUNTER_Y[0], 0.0),
          (COUNTER_FACE + COUNTER_LIP, COUNTER_Y[1], COUNTER_TOP)),
@@ -184,6 +228,25 @@ def colliders():
         out.append((f"BayWall{i // 2}", (edges[i], 0.0, 0.0), (edges[i + 1], WALL, top)))
     for i, x in enumerate(xs):
         out.append((f"OverBay{i + 1}", (x - ow, 0.0, oh), (x + ow, WALL, top)))
+    # the side walls: whole between the units' gaps and over each gap above the units' walls (the
+    # unit standing in a gap brings its own colliders); a partition on every slot line, a back wall
+    # behind every slot, and the slots' closed tops
+    g, t = DOOR_GAP / 2, 0.15
+    for side, name in ((-1, "Left"), (1, "Right")):
+        x0, x1 = sorted((side * w, side * (w + o)))
+        edges = [-d - o] + [e for y in slot_ys() for e in (y - g, y + g)] + [WALL]
+        for i in range(0, len(edges), 2):
+            out.append((f"Wall{name}{i // 2}", (x0, edges[i], 0.0), (x1, edges[i + 1], top)))
+        for n, s, y in slots():
+            if s == side:
+                out.append((f"OverUnit{n}", (x0, y - g, UNIT_WALL), (x1, y + g, top)))
+        b0, b1 = sorted((side * w, side * sw))
+        for i, y in enumerate(slot_lines()):
+            out.append((f"Partition{name}{i}", (b0, y - t, 0.0), (b1, y + t, UNIT_WALL)))
+        lines = slot_lines()
+        c0, c1 = sorted((side * (sw - t), side * (sw + t)))
+        out.append((f"UnitBacks{name}", (c0, lines[0], 0.0), (c1, lines[-1], UNIT_WALL)))
+        out.append((f"UnitTops{name}", (b0, lines[0], UNIT_WALL), (b1, lines[-1], UNIT_WALL + 0.3)))
     for i, (y0, y1) in enumerate(SHELF_RUNS):
         out.append((f"Shelves{i + 1}", (-w, y0, 0.0), (-w + SHELF_DEPTH, y1, SHELF_LEVELS[-1])))
     out.append(("CartRack", (RACK_X[0] - RACK_PIPE, RACK_Y[0] - RACK_PIPE, 0.0),
@@ -207,6 +270,27 @@ def cards():
     cz, cw, ch = CART_SIGN
     out.append(("Carts", ((RACK_X[0] + RACK_X[1]) / 2, -DEPTH + SIGN_OFF + PLATE_T + 0.005, cz),
                 (cw - 0.3, ch - 0.25), (0, 1, 0)))
+    for n, side, y in slots():
+        out.append((f"Unit{n}", unit_card(side, y), (CARD[0] - 0.3, CARD[1] - 0.3), (-side, 0, 0)))
+    return out
+
+
+def unit_card(side, y):
+    """The middle of a unit's name card face (Blender): over its door, on the R-panel's standoffs."""
+    return (side * (WIDTH / 2 - PLATE_OFF - PLATE_T - 0.005), y, CARD[2])
+
+
+def slot_rows():
+    """What the game needs of each unit slot, Blender frame: number, side, the door point (the
+    doorway's outer face, on the floor), the way out of the unit, the inside box (lo, hi) and the
+    bulb's hang point."""
+    w, f = WIDTH / 2, UNIT_FACADE
+    out = []
+    for n, side, y in slots():
+        lo_x, hi_x = sorted((side * (w + f), side * (w + SLOT_DEPTH)))
+        inside = ((lo_x, y - SLOT_WIDTH / 2, 0.0), (hi_x, y + SLOT_WIDTH / 2, UNIT_WALL))
+        bulb = (side * (w + f + (SLOT_DEPTH - f) / 2), y, HANG)
+        out.append((n, side, (side * w, y, 0.0), (-side, 0, 0), inside, bulb))
     return out
 
 
@@ -226,6 +310,8 @@ def write_luau(path, parts, slots):
         "export type Box = { Name: string, Centre: Vec, Size: Vec }",
         "export type Card = { Name: string, Centre: Vec, Size: { number }, Facing: Vec }",
         "export type Stock = { Kind: string, At: Vec, Turn: number }",
+        "export type Slot = { Number: number, Side: string, Door: Vec, Out: Vec, Inside: Box, Card: string,",
+        "\tBulb: Vec }",
         "",
         "local Specs = {",
         "\t-- The room inside: wall to wall across (X), the bay wall's face to the front wall's (Z), and",
@@ -256,7 +342,21 @@ def write_luau(path, parts, slots):
     for name, c, (w, h), n in cards():
         L.append(f"\t\t{{ Name = \"{name}\", Centre = {lua_vec(b2r(c))}, Size = {{ {w:.2f}, {h:.2f} }}, "
                  f"Facing = {lua_vec(b2r(n), 0)} }},")
-    L += ["\t} :: { Card },", "\t-- Each MeshPart's box as imported (its centre is its CFrame in the lobby's frame).",
+    L += ["\t} :: { Card },",
+          "\t-- The units down the side walls, one a player (D-259): 1 to 6 down the left wall from the",
+          "\t-- front, 7 to 12 down the right. Door: the doorway's outer face on the floor, where the",
+          f"\t-- {DOOR_SIZE} unit's front stands (walls dropped), looking Out onto the floor. Inside: the XL box",
+          "\t-- inside its walls. Card: its name card in Cards. Bulb: where the unit's bulb hangs.",
+          "\tSlots = {"]
+    for n, side, door, out_dir, (lo, hi), bulb in slot_rows():
+        c = [(lo[i] + hi[i]) / 2 for i in range(3)]
+        s = [hi[i] - lo[i] for i in range(3)]
+        L.append(f"\t\t{{ Number = {n}, Side = \"{'Left' if side < 0 else 'Right'}\", "
+                 f"Door = {lua_vec(b2r(door))}, Out = {lua_vec(b2r(out_dir), 0)},")
+        L.append(f"\t\t\tInside = {{ Name = \"Unit{n}\", Centre = {lua_vec(b2r(c))}, "
+                 f"Size = {lua_vec((s[0], s[2], s[1]))} }},")
+        L.append(f"\t\t\tCard = \"Unit{n}\", Bulb = {lua_vec(b2r(bulb))} }},")
+    L += ["\t} :: { Slot },", "\t-- Each MeshPart's box as imported (its centre is its CFrame in the lobby's frame).",
           "\tParts = {"]
     for name in sorted(parts):
         r = parts[name]

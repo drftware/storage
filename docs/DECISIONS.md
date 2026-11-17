@@ -6645,3 +6645,24 @@ change it. The design doc's "The lobby" and "Your unit" sections link it.
 
 Starting guesses (`OWNER.md`): shelf spots 6, 10, 16, 24 and placed things 25, 50, 100, 150 for
 small to XL; 4 lamps cast real light in a unit, the rest glow.
+
+## D-260 · 2026-11-16 · The ground floor's numbers: 156 deep, a unit's front standing in each gap (S5-03a1a)
+
+The home's ground floor (D-259) is laid out in `art/lobby/spec.py`. Six XL slots (20 by 30) down
+each side wall, the nearest the cars 12 studs off the bay wall, so the room runs 156 deep and the
+spawn, just inside the door, is 150 studs from the cars: about 9.4 s at a run, well inside the
+GDD's 15. Everything at the front (counter, shelves, rack, door, spawn) is now measured off the
+front wall (`FRONT`), so it moves with the depth. Units 1 to 6 run down the left wall from the
+front, 7 to 12 down the right.
+
+- **Each slot's front is the climb's M unit with its walls dropped**, standing in a 12-wide gap
+  the side wall leaves, as units stand in the corridor's walls: its facade, frame and roll-up
+  door come with it, so the door rolls, slams and locks exactly as on a climb (RollUpDoor). The
+  lobby builds the rest: the partitions, back walls, closed tops, floor and the inside of the
+  front wall either side of the gap. Not chosen: a door built into the lobby's mesh (it wouldn't
+  roll) or a new XL unit model (12 more full units' triangles for walls the lobby shares).
+- **The 8-wide M door**, not the L's 12: it's in the game and checked, and the L's paint
+  stretches 1.46 times. A wider door shows more of a unit from the floor (`OWNER.md`).
+- **Split S5-03a1** into the numbers (a1a, this) and the build and sheets (a1b), because the
+  session ran out of room. `Lobby/Specs.luau` stays the front office's until a1b exports and
+  imports the new mesh together, so today's lobby keeps working.

@@ -8,6 +8,10 @@ left, the cart rack to the right of the door. Built from code in Blender 5.2 the
 sets, and the deck, joists and walls are the corridor kit's own pieces, so the front office is
 plainly the same building as the halls.
 
+**Being re-laid as the ground floor** (D-259, D-260): `spec.py` already holds the new numbers
+(156 deep, 12 unit slots down the side walls); `build.py`, the sheets and this page still show the
+48-deep front office until S5-03a1b.
+
 | | |
 |---|---|
 | ![spawn](../sheets/lobby-spawn.png) | ![bay](../sheets/lobby-bay.png) |
