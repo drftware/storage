@@ -858,11 +858,15 @@ RIDE = dict(
 # (0 to 1); size where it sits in your view; `press` its one press (Finds/Use's row).
 from game import (  # noqa: E402
     ACROSS_THE_FLOOR,
+    CAROUSEL_TUNE,
     CLACK,
     CLANG,
+    CLANK,
     CLASH,
     CLINK,
     CRUNCH,
+    DOWN_THE_HALL,
+    EEK,
     HOLLOW,
     MUSIC_BOX,
     PLASTIC,
@@ -872,6 +876,7 @@ from game import (  # noqa: E402
     SOFT,
     SQUEAK,
     TIN,
+    WHISTLE,
     WIND,
     pitched,
     squeeze,
@@ -1014,6 +1019,22 @@ GAME = [
         size="Small",
         pickUp=pitched(SLAP, 1.6, 0.55),
         drop=pitched(TIN, 1.75, 0.55),
+        # "It zips off and squeaks wherever it stops": wound and set down, it zips away on its
+        # wheels, slows as the spring gives out, stalls, rocks onto its nose and squeaks there;
+        # monsters down the hall keep turning to where it is now; at a wall its wheels buzz on
+        press=dict(
+            verb="Wind",
+            on=[
+                dict(motion="Wind", sound=WIND),
+                dict(motion="Zip", hit=dict(part="WindupMouse_Body", channel="pitch", sound=EEK)),
+            ],
+            noise="Zip",
+            heard=DOWN_THE_HALL,
+            lure=2,
+            toy=True,
+            down=True,
+            walks=True,
+        ),
     ),
     dict(
         key="WalkingRobot",
@@ -1026,6 +1047,23 @@ GAME = [
         size="Small",
         pickUp=pitched(SLAP, 1.35),
         drop=pitched(TIN, 1.35),
+        # "It clanks off in a straight line for 15 seconds": wound and set down, it walks off a
+        # clank each footfall, and every monster across the floor keeps turning to where it is
+        # now; a wall stops it going, not stamping (R.E.P.O.'s music box; the monkey's lure)
+        press=dict(
+            verb="Wind",
+            on=[
+                dict(motion="Wind", sound=WIND),
+                dict(motion="Walk",
+                     hit=dict(part="WalkingRobot_Body", channel="pitch", sound=CLANK)),
+            ],
+            noise="Walk",
+            heard=ACROSS_THE_FLOOR,
+            lure=2,
+            toy=True,
+            down=True,
+            walks=True,
+        ),
     ),
     dict(
         key="FarmSpinner",
@@ -1074,6 +1112,22 @@ GAME = [
         size="Small",
         pickUp=pitched(CLINK, 1.6),
         drop=pitched(TIN, 1.85, 0.55),
+        # "It hops and whistles": wound and set down, it hops off in threes and whistles two
+        # notes at each stop, lower and slower as it runs down; monsters across the floor keep
+        # turning to where it is now
+        press=dict(
+            verb="Wind",
+            on=[
+                dict(motion="Wind", sound=WIND),
+                dict(motion="Hop", hit=dict(part="TinBird_Beak", sound=WHISTLE)),
+            ],
+            noise="Hop",
+            heard=ACROSS_THE_FLOOR,
+            lure=2,
+            toy=True,
+            down=True,
+            walks=True,
+        ),
     ),
     dict(
         key="TinCarousel",
@@ -1086,5 +1140,16 @@ GAME = [
         size="Medium",
         pickUp=pitched(CLANG, 1.3),
         drop=pitched(TIN, 1.0),
+        # "It turns and plays a tune": wound where it stands, it turns and plays its music box
+        # tune until the spring runs down, and monsters down the hall keep coming to it (the
+        # cymbal monkey's lure, quieter)
+        press=dict(
+            verb="Wind",
+            on=[dict(motion="Wind", sound=WIND), dict(motion="Play", sound=CAROUSEL_TUNE)],
+            noise="Play",
+            heard=DOWN_THE_HALL,
+            lure=2,
+            toy=True,
+        ),
     ),
 ]

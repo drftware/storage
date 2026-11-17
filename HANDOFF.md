@@ -14,8 +14,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   plates are drawn only from inside that home. Run from the spawn to a car: 8.5 s.
 - Still over the triangle default (a climb floor's 61k-112k): the cars' 51k, ticketed as
   S5-03a2d after a3. A phone's frame rate is the owner's (Studio draws 15 fps in the background).
-- Find art: another session works in this checkout; its uncommitted files (art/finds,
-  Finds/Rows, finduse spec) are theirs.
+- Find art (third find run): V2 done (D-272): the robot, mouse, tin bird and carousel wind up
+  and play, seen in Play; a hop no longer reads as a wall. Next: V3, the kazoo, drum, spinner,
+  doll and fish (ROADMAP F-G1e3; `art/finds/WAVES.md`).
 
 ## Next task: S5-03a3 A unit each (Brix's plots system first, D-252)
 The moment: you load in and one of the twelve homes is yours, your name over its door, its door

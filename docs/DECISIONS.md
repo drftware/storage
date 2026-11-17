@@ -6998,3 +6998,24 @@ to a car, with every home lit.
 - **Not chosen:** fewer fills (they are the room's warmth and cast no shadow); the home bulbs
   near-only (D-262); the cars' lamps' shadows or keypad glows (the cars are the climb's, left
   as they are by this ticket).
+
+## D-272 Wind and go for the rest: the robot, mouse, tin bird and carousel (F-G1e2b, Nov 17, V2b)
+
+- **Only their rows.** Each is a `press` in `art/finds/windups/spec.py` on V2a's verb (D-270):
+  wound, set down (`down`), walking on at a wall (`walks`), luring every 2 s from where it is
+  (`lure=2`). The robot clanks on each footfall (its body's nod, `WalkingRobot_Body` pitch, 44
+  beats), the bird whistles on each opening of its beak (`TinBird_Beak` turn: five whistles of
+  two notes), the mouse squeaks where it stalls (its body's rock onto its nose, `WindupMouse_Body`
+  pitch: two rocks big enough, so two squeaks, "eek-eek"). The carousel plays in place (no
+  `down`): its tune is its Play step's sound, its lure the cymbal monkey's.
+- **Loudness, a default for the owner (OWNER.md):** the robot's clanking and the bird's whistle
+  carry 90 studs (`ACROSS_THE_FLOOR`, as the teeth); the mouse's squeak and the carousel's music
+  box 60 (`DOWN_THE_HALL`, as the duck).
+- **Sounds (all measured in Studio, `kit/game.py`):** `CLANK` (Pro Sound Effects' robot footstep,
+  pitched up), `EEK` (the duck's squeak, higher), `WHISTLE` (a pealess whistle's burst, pitched
+  up), `CAROUSEL_TUNE` (APM's "Music Box 6", 15.5 s). The tune slowing as the spring runs down is
+  ROADMAP polish: `PlaybackSpeed` would drop its pitch too, and a music box keeps its pitch.
+- **A hop is no wall.** The server's path walk cast along the root's whole step, so the tin bird's
+  first landing pointed the ray down into the floor and read as a wall: it stopped 2.1 s in, on
+  open floor. It now casts only the step's going over the floor (`FindUses`); the bird hops its
+  0.78 studs.

@@ -221,6 +221,19 @@ nowhere else.
      under the cymbals) the right reach, or should they carry further or less?
   4. Face a wall from 2 studs and wind them: they walk into it and keep chattering against it,
      staying put, until they run down.
+- [ ] **Try (F-G1e2b, built Nov 17, D-272; seen in Studio Play, not on a phone):** the robot,
+  mouse, tin bird and carousel. Same setup as the teeth above, `GiveFind` each in turn.
+  1. Wind the **robot** facing down the hall: it sets off with a clank each footfall, slowing
+     over 15 seconds. Does a clank land on every step?
+  2. Wind the **mouse** 5 studs from a wall: it zips into the wall, its wheels buzzing on there,
+     and squeaks twice where its run stalls ("eek-eek" as it rocks onto its nose). One squeak or
+     two? Its whirr as it runs is silent today: should it have one?
+  3. Wind the **tin bird**: three little hops, then two whistled notes, five times. Do the notes
+     sound like a tin bird's bellows, not a referee's whistle?
+  4. Wind the **carousel** and set it down: it turns and plays its music box tune for 15
+     seconds. The tune doesn't slow as it runs down yet (ROADMAP polish). Loudness defaults
+     chosen: the robot and bird carry 90 studs (as the teeth), the mouse and carousel 60 (down
+     the hall, as the duck). Right?
 - [ ] **Try (F-G1b3b, built Nov 16, D-234; seen in Studio Play, not on a phone):** drop a lit
   lantern to stop the Mannequin.
   1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),

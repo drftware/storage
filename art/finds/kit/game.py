@@ -92,12 +92,27 @@ SIGH = sound("rbxassetid://9117408118", 0, 0.8, 0.7, 1.2)
 # The chattering teeth's every snap (F-G1e2): the hard plastic clack (`CLACK`), higher and cut
 # short, as their plastic jaws slam shut seven times a second.
 SNAP = sound("rbxassetid://9119728830", 0.15, 0.2, 0.5, 2.2)
+# The robot's every footfall (F-G1e2b): Pro Sound Effects' "Robot Footsteps Single Walks Hollow
+# Metal Ringy 2" (31.2 s; its first step lands at 0.15 s and rings to 0.45 s, measured in Studio),
+# one hollow metal step, pitched up into a small tin foot's clank.
+CLANK = sound("rbxassetid://9125818638", 0.14, 0.22, 0.45, 2.0)
+# The wind-up mouse's squeak where it stalls and rocks onto its nose: the duck's squeak
+# (`SQUEAK`), higher and cut short, a mouse's eek.
+EEK = sound("rbxassetid://9125994570", 0, 0.28, 0.7, 1.9)
+# The tin bird's every whistled note: Pro Sound Effects' "Pealess Whistle Referee Fox 40 7"
+# (0.63 s: a weak burst, then a strong one from 0.2 s to 0.5 s, measured), the strong burst
+# pitched up into a small bellows' reedy note.
+WHISTLE = sound("rbxassetid://9117259114", 0.18, 0.3, 0.45, 1.5)
+# The tin carousel's tune: APM's "Music Box 6" (31.8 s, a real music box, playing from 0.05 s
+# without a gap), as long as it turns. Its slowing as the spring runs down is ROADMAP polish.
+CAROUSEL_TUNE = sound("rbxassetid://9043210085", 0.05, 15.5, 0.8)
 
 # How far along the halls monsters hear a noisy find (studs: a press's `heard`, its loudness,
 # `Use.loudness`). A press with a noise and no `heard` carries as far as the air horn, 130 (the
 # cymbal monkey, the jack).
 DOWN_THE_HALL = 60  # a squeak you can hear down the hall you're in, no further (the duck)
-# a clatter that carries round a corner or two, under the cymbals (the chattering teeth)
+# a clatter that carries round a corner or two, under the cymbals (the chattering teeth, the
+# robot's clanking, the tin bird's whistles)
 ACROSS_THE_FLOOR = 90
 
 

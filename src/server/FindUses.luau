@@ -239,7 +239,9 @@ function FindUses.new(): Brix.System
 			local nextT = math.min(t + PATH_STEP, total)
 			local at = rootAt(nextT) :: CFrame
 			local p = (from * at).Position
-			local step = p - was
+			-- only its going over the floor: a hop's rise and landing (the tin bird) is no wall,
+			-- and a ray pointed down from its feet would meet the floor
+			local step = Vector3.new(p.X - was.X, 0, p.Z - was.Z)
 			-- its nose ahead of its middle: it stops as its nose meets the wall
 			if
 				step.Magnitude > 1e-4

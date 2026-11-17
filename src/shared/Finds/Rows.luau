@@ -1121,6 +1121,41 @@ local Rows: { Game.Row } = {
 			volume = 0.55,
 			pitch = 1.75,
 		},
+		verb = "Wind",
+		press = {
+			verb = "Wind",
+			on = {
+				{
+					motion = "Wind",
+					sound = {
+						id = "rbxassetid://9120219923",
+						from = 0,
+						length = 2.4,
+						volume = 1,
+					},
+				},
+				{
+					motion = "Zip",
+					hit = {
+						part = "WindupMouse_Body",
+						channel = "pitch",
+						sound = {
+							id = "rbxassetid://9125994570",
+							from = 0,
+							length = 0.28,
+							volume = 0.7,
+							pitch = 1.9,
+						},
+					},
+				},
+			},
+			noise = "Zip",
+			heard = 60,
+			lure = 2,
+			toy = true,
+			down = true,
+			walks = true,
+		},
 	},
 	{
 		key = "WalkingRobot",
@@ -1145,6 +1180,41 @@ local Rows: { Game.Row } = {
 			length = 0.9,
 			volume = 0.75,
 			pitch = 1.35,
+		},
+		verb = "Wind",
+		press = {
+			verb = "Wind",
+			on = {
+				{
+					motion = "Wind",
+					sound = {
+						id = "rbxassetid://9120219923",
+						from = 0,
+						length = 2.4,
+						volume = 1,
+					},
+				},
+				{
+					motion = "Walk",
+					hit = {
+						part = "WalkingRobot_Body",
+						channel = "pitch",
+						sound = {
+							id = "rbxassetid://9125818638",
+							from = 0.14,
+							length = 0.22,
+							volume = 0.45,
+							pitch = 2.0,
+						},
+					},
+				},
+			},
+			noise = "Walk",
+			heard = 90,
+			lure = 2,
+			toy = true,
+			down = true,
+			walks = true,
 		},
 	},
 	{
@@ -1245,6 +1315,40 @@ local Rows: { Game.Row } = {
 			volume = 0.55,
 			pitch = 1.85,
 		},
+		verb = "Wind",
+		press = {
+			verb = "Wind",
+			on = {
+				{
+					motion = "Wind",
+					sound = {
+						id = "rbxassetid://9120219923",
+						from = 0,
+						length = 2.4,
+						volume = 1,
+					},
+				},
+				{
+					motion = "Hop",
+					hit = {
+						part = "TinBird_Beak",
+						sound = {
+							id = "rbxassetid://9117259114",
+							from = 0.18,
+							length = 0.3,
+							volume = 0.45,
+							pitch = 1.5,
+						},
+					},
+				},
+			},
+			noise = "Hop",
+			heard = 90,
+			lure = 2,
+			toy = true,
+			down = true,
+			walks = true,
+		},
 	},
 	{
 		key = "TinCarousel",
@@ -1269,6 +1373,34 @@ local Rows: { Game.Row } = {
 			length = 0.9,
 			volume = 0.75,
 			pitch = 1.0,
+		},
+		verb = "Wind",
+		press = {
+			verb = "Wind",
+			on = {
+				{
+					motion = "Wind",
+					sound = {
+						id = "rbxassetid://9120219923",
+						from = 0,
+						length = 2.4,
+						volume = 1,
+					},
+				},
+				{
+					motion = "Play",
+					sound = {
+						id = "rbxassetid://9043210085",
+						from = 0.05,
+						length = 15.5,
+						volume = 0.8,
+					},
+				},
+			},
+			noise = "Play",
+			heard = 60,
+			lure = 2,
+			toy = true,
 		},
 	},
 	{

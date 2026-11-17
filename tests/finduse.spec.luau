@@ -403,6 +403,61 @@ do
 	ok(not Use.luring(lures, 2) and #lures.lures == Use.LuresAtOnce - 1, "a lure that ends stops")
 end
 
+-- Wind and go for the rest (F-G1e2b): the robot clanks a footfall at a time, the mouse squeaks
+-- only where it stalls, the bird whistles two notes at each stop; all three are set down, walk
+-- on at a wall and lure where they are as they go. The carousel plays in place, luring.
+do
+	local function beatsOf(key: string, motion: string): { number }
+		local row = Use.Rows[key]
+		local step = row and row.on[2]
+		local hit = step and step.hit
+		local art = Fixture.kit[key]
+		if not (step and hit and art and step.motion == motion) then
+			return {}
+		end
+		return Use.beats(art.Motions[motion], hit.part, hit.channel)
+	end
+	for key, motion in { WalkingRobot = "Walk", WindupMouse = "Zip", TinBird = "Hop" } do
+		local row = Use.Rows[key]
+		ok(row ~= nil and row.verb == "Wind", `{key}: wound`)
+		if row then
+			ok(row.down == true and row.walks == true, `{key}: set down, and walks on at a wall`)
+			ok(
+				row.noise == motion and row.lure ~= nil and row.toy == true,
+				`{key}: lures as it goes`
+			)
+			ok(row.heard ~= nil and Use.loudness(row) < Use.LureReach, `{key}: under the cymbals`)
+		end
+	end
+	local walk = Fixture.kit.WalkingRobot.Motions.Walk
+	local clanks = beatsOf("WalkingRobot", "Walk")
+	ok(#clanks >= 40 and clanks[1] < 0.3, `robot: a clank each footfall ({#clanks})`)
+	ok(
+		#clanks > 0 and clanks[#clanks] > 14 and clanks[#clanks] < walk.Duration,
+		"robot: to the end"
+	)
+	local squeaks = beatsOf("WindupMouse", "Zip")
+	ok(
+		#squeaks >= 1 and #squeaks <= 2 and squeaks[1] > 5,
+		`mouse: squeaks where it stalls ({#squeaks})`
+	)
+	local notes = beatsOf("TinBird", "Hop")
+	ok(#notes == 10, `bird: five whistles of two notes ({#notes})`)
+	ok(
+		#notes == 10 and notes[2] - notes[1] < 0.4 and notes[3] - notes[2] > 1,
+		"bird: notes in pairs"
+	)
+	local carousel = Use.Rows.TinCarousel
+	ok(carousel ~= nil and carousel.verb == "Wind", "carousel: wound")
+	if carousel then
+		ok(
+			not carousel.down and carousel.noise == "Play" and carousel.lure ~= nil,
+			"carousel: in place"
+		)
+		ok(carousel.toy == true and carousel.on[2].sound ~= nil, "carousel: plays its tune, again")
+	end
+end
+
 -- Wind and go (F-G1e2): the chattering teeth set down chatter off on their own path, a clack
 -- each snap, luring as they go; a wall stops their going forward, not their chattering.
 do

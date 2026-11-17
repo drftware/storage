@@ -2747,3 +2747,10 @@ verified: a doc page, Studio, or "untested".
   RollUpDoor own.
 - **`Humanoid:MoveTo` gives up after 8 s** (S5-03a2c): `MoveToFinished` fires false and the body
   stops where it got to. Time a longer walk in legs, or from where it stopped.
+- **Testing a set-down wind-up, from the MCP** (F-G1e2b, Nov 17): with a Scriptable camera, a
+  `Remotes.ToolUse` press sets the find down along where the camera looks (the mouse and bird);
+  set the camera's CFrame first. The server lays it at its end at once, so its `UseStop` (seconds
+  into the press it met a wall) and `UseFrom` read right after the press. A client
+  `RenderStepped` logger over Sounds under the find's model gives every beat. Anchoring a
+  Mannequin's root to keep it away doesn't hold it: it still came and caught me, which ends the
+  climb and clears the floor; set your own root away instead (V2a's way).

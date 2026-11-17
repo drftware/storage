@@ -2694,7 +2694,7 @@ actions themselves and dealing the new finds on floors are later game tickets.
         all, and the others' bodies stay still while their insides move. Size the root about its
         middle in hand (it can't move: the grip holds it) and find why bones don't bend in hand;
         then see all eleven squash in Play. Ticks F-G1e1.
-    - [ ] **F-G1e2 Wind and go (V2).** The chattering teeth, walking robot, wind-up mouse and
+    - [x] **F-G1e2 Wind and go (V2).** (Nov 17, V2a and V2b) The chattering teeth, walking robot, wind-up mouse and
       tin bird are set down and travel on their own paths, stopping at walls (the toy car's
       way), luring as they go: the lure heard where each one is along its path, not where it
       ends; the mouse's squeak where it stops. The tin carousel plays in place on the monkey's
@@ -2703,8 +2703,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
         find heard where it is along its path; a wind-up `walks` on at a wall; a hit on every
         peak (`Use.beats`); the chattering teeth wound, set down, chattering off with a clack
         each snap, a Mannequin drawn to them. Seen in Play, except the walk at a wall.
-      - [ ] **F-G1e2b The robot, mouse, bird and carousel.** Their rows (and sounds) on V2a's
-        verb; see one walk into a wall and play on. Ticks F-G1e2.
+      - [x] **F-G1e2b The robot, mouse, bird and carousel.** (Nov 17, V2b; D-272) Their rows
+        and sounds on V2a's verb, all four seen in Play: the robot's clanks drew a Mannequin to
+        it, the mouse zipped into a wall and squeaked on there, the bird whistled in pairs (a hop
+        no longer reads as a wall), the carousel's tune. Ticks F-G1e2.
     - [ ] **F-G1e3 One press, one noise (V3).** The kazoo, toy drum, farm-animal spinner,
       cowboy doll and singing fish: each its motion, its sound and a loudness on the jack's
       one-shot noise. The doll and the fish ship the owner's defaults (the cord's whirr, the
@@ -2791,6 +2793,8 @@ actions themselves and dealing the new finds on floors are later game tickets.
   the wall, under the path's stacks. Both read as wedged under the boxes; a fall that stops on
   the stacks would be better.
 
+- **The carousel's tune slows as it runs down (F-G1e2b, D-272):** its music box plays at full
+  speed to the end. A recording of a box running down, or a tempo change that keeps the pitch.
 - **Finds' own sounds (F-G1a):** the Nov 15 finds borrow the tools' and the bedroom set's pick-up
   and drop sounds, pitched (`Tools/Catalog.luau`'s CLINK, TIN and the rest). Glass wants a glass
   clink (the tea light, the firefly jar, the glass lamp), tin a hollow tin knock (the wind-ups),
