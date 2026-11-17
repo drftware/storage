@@ -35,6 +35,10 @@
 	- `chipped`: how many of the finds you keep (`finds`) have cracked glass, by name (F-G1e5e,
 	  D-296: a fragile find dropped hard, `Finds/Chip`): each is worth half. Never more of a name
 	  than you keep; listed only while one or more is.
+	- `placed`: the finds you've set out in your home (S5-03e2, D-308): Brix's Placements saved form,
+	  its `form` and a row for each find out (its id, `Spots.id`: the find's name and a number, and
+	  where it stands). A find set out is still yours and still in `finds`; it's simply not in the
+	  job box (`boxed` takes it off, as it does the shelf's), so it's never counted twice.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -60,6 +64,12 @@ export type Stamps = { [string]: number }
 -- One spot on your home's shelf: the find there by name ("" for none) and how new it is.
 export type Spot = { find: string, fresh: number }
 
+-- One find set out in your home, as Brix's Placements saves it (`Brix.PlacementRow`): its id
+-- (`Spots.id`), the area or find it stands `on`, its middle `x` and `y` there and its `turn`.
+export type PlacedRow = { id: string, on: string, x: number, y: number, turn: number }
+-- Everything set out in your home: Brix's saved form (`Brix.PlacementsSaved`).
+export type Placed = { form: number, rows: { PlacedRow } }
+
 export type Data = {
 	cash: number,
 	finds: Counts,
@@ -79,6 +89,7 @@ export type Data = {
 	shelf: { Spot },
 	boxFresh: number,
 	chipped: Counts,
+	placed: Placed,
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -119,6 +130,7 @@ function Save.fresh(): Data
 		shelf = {},
 		boxFresh = 0,
 		chipped = {},
+		placed = { form = 1, rows = {} },
 	}
 end
 
@@ -127,6 +139,28 @@ end
 Save.Fresh = table.freeze({ Seen = 0, New = 1, Kind = 2 })
 -- The most spots any shelf has (the XL unit's, D-259): what the save holds at most.
 Save.ShelfMost = 24
+-- The most finds any home holds set out (the XL unit's limit, D-259 idea 15): what the save holds
+-- at most. `Spots.Sizes` keeps every size's limit at or under it.
+Save.PlacedMost = 150
+
+-- The name a placed row's id carries (`Spots.id`: "Teddy#2", a Gold's "Teddy:Gold#1"), or nil.
+local function placedName(id: string): string?
+	return string.match(id, "^(.+)#%d+$")
+end
+Save.placedName = placedName
+
+-- How many of each find you've set out in your home, by name (D-308): `boxed` takes them off
+-- what's in the job box.
+function Save.placedCounts(data: Data): Counts
+	local counts: Counts = {}
+	for _, row in data.placed.rows do
+		local name = placedName(row.id)
+		if name then
+			counts[name] = (counts[name] or 0) + 1
+		end
+	end
+	return counts
+end
 
 -- Finds kept at the gate (S1-06): one more of each name in `names` in `data.finds`, and the
 -- book's finds page stamped `now` for any name never stamped before. Each also lands on the first
@@ -170,20 +204,36 @@ function Save.shelve(data: Data, name: string, fresh: number, spots: number): nu
 	return nil
 end
 
--- What's in your job box (S5-03c2b2, D-293): each find you own, less those standing on your shelf
--- and those `out` of the box (in someone's hands or lying somewhere, by name), each name listed only
--- while one or more is in it. What may come out of the box is exactly this, so no more of a find is
--- ever out, on the shelf or in the box than you own.
-function Save.boxed(data: Data, out: Counts): Counts
+-- What you may have set out in your home (D-308): each find you own, less those standing on your
+-- shelf and those `out` of the box (in someone's hands or lying somewhere, by name), each name
+-- listed only while one or more is left. What's set out and what's in the box share it.
+function Save.settable(data: Data, out: Counts): Counts
 	local shelved: Counts = {}
 	for _, spot in data.shelf do
 		if spot.find ~= "" then
 			shelved[spot.find] = (shelved[spot.find] or 0) + 1
 		end
 	end
-	local boxed: Counts = {}
+	local left: Counts = {}
 	for name, count in data.finds do
-		local left = math.floor(count) - (shelved[name] or 0) - math.floor(out[name] or 0)
+		local n = math.floor(count) - (shelved[name] or 0) - math.floor(out[name] or 0)
+		if n >= 1 then
+			left[name] = n
+		end
+	end
+	return left
+end
+
+-- What's in your job box (S5-03c2b2, D-293): each find you own, less those standing on your shelf,
+-- those set out in your home (`placed`, D-308) and those `out` of the box (in someone's hands or
+-- lying somewhere, by name), each name listed only while one or more is in it. What may come out of
+-- the box is exactly this, so no more of a find is ever out, on the shelf, set out or in the box
+-- than you own.
+function Save.boxed(data: Data, out: Counts): Counts
+	local placed = Save.placedCounts(data)
+	local boxed: Counts = {}
+	for name, count in Save.settable(data, out) do
+		local left = count - (placed[name] or 0)
 		if left >= 1 then
 			boxed[name] = left
 		end
@@ -426,6 +476,50 @@ function Save.format(brix: any): Format
 		chipped = Schema.map(name, count),
 	})
 
+	-- Version 8 (S5-03e2, Nov 17): version 7 plus the finds set out in your home, as Brix's
+	-- Placements saves them: ids and area names short, poses finite and bounded (a pose is
+	-- within its area, every area under 50 studs; a turn is kept from 0 to 360).
+	local where = Schema.string({ nonEmpty = true, maxLength = 80 })
+	local eighth = Schema.shape({
+		cash = Schema.number({ min = 0, integer = true }),
+		finds = Schema.map(name, count),
+		sealed = Schema.map(name, count),
+		stamps = Schema.shape({
+			finds = Schema.map(name, stamped),
+			sealed = Schema.map(name, stamped),
+			keepers = Schema.map(name, stamped),
+		}),
+		bestFloor = Schema.number({ min = 0, integer = true }),
+		purchases = Schema.list(name),
+		recipients = Schema.map(name, name),
+		bought = Schema.map(name, count),
+		spares = Schema.map(name, count),
+		wraps = Schema.map(name, stamped),
+		wornWrap = Schema.string({ maxLength = 64 }),
+		shelf = Schema.list(
+			Schema.shape({
+				find = Schema.string({ maxLength = 64 }),
+				fresh = Schema.number({ min = 0, max = 2, integer = true }),
+			}),
+			{ maxCount = Save.ShelfMost }
+		),
+		boxFresh = Schema.number({ min = 0, max = 2, integer = true }),
+		chipped = Schema.map(name, count),
+		placed = Schema.shape({
+			form = Schema.number({ min = 1, max = 1000, integer = true }),
+			rows = Schema.list(
+				Schema.shape({
+					id = where,
+					on = where,
+					x = Schema.number({ min = -500, max = 500 }),
+					y = Schema.number({ min = -500, max = 500 }),
+					turn = Schema.number({ min = -360, max = 360 }),
+				}),
+				{ maxCount = Save.PlacedMost }
+			),
+		}),
+	})
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -541,6 +635,29 @@ function Save.format(brix: any): Format
 						shelf = old.shelf,
 						boxFresh = old.boxFresh,
 						chipped = {},
+					}
+				end,
+			},
+			{
+				schema = eighth,
+				-- any: a version 7 save as Brix hands it over, already checked against `seventh`
+				migrate = function(old: any): any
+					return {
+						cash = old.cash,
+						finds = old.finds,
+						sealed = old.sealed,
+						stamps = old.stamps,
+						bestFloor = old.bestFloor,
+						purchases = old.purchases,
+						recipients = old.recipients,
+						bought = old.bought,
+						spares = old.spares,
+						wraps = old.wraps,
+						wornWrap = old.wornWrap,
+						shelf = old.shelf,
+						boxFresh = old.boxFresh,
+						chipped = old.chipped,
+						placed = { form = 1, rows = {} }, -- nothing set out yet
 					}
 				end,
 			},

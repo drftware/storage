@@ -7812,3 +7812,39 @@ The catalog's mega goo ball (Epic, 120, "both hands, and a deep squelch that car
   60. Its squelch is the goo ball's an octave down, at full volume.
 - **Both hands** (built in S3b): the ladder's `bothHands` rule, Lethal Company's two-handed items
   (no switching slots or picking up while it's in your hands), with a hold of its own in your view.
+
+## D-308 · 2026-11-17 · What's set out is saved with the finds; the home's spots and frames (S5-03e2a)
+
+The moment: you set your lava lamp on the job box and it stays, for you and every friend who walks
+in, after a rejoin too. Bloxburg's build mode (floor, wall and tabletop items), Animal Crossing's
+things on tables.
+- **Saved:** save version 8 holds `placed`, Brix's Placements saved form as it is (`form`, rows of
+  id, on, x, y, turn), bounded so a broken pose is never stored (x and y within 500, turn within a
+  whole turn; the server keeps turns from 0 to 360). A find set out is still yours, in `finds`;
+  `Save.boxed` takes it off the job box as it does the shelf's (`Save.settable`: owned less the
+  shelf and what's in hands, shared by the box and what's set out), so it's never counted twice.
+- **Ids:** a find's name and a number, "Teddy#2", a Gold's "Teddy:Gold#1"; never an area's name.
+- **Spots** (`Home/Spots`, the catalog's spot column, kept out of the find run's `Rows.luau`):
+  Floor, Tabletop (the default), Wall, Ceiling; a footprint from the art's box (`Finds.box`), across
+  by front-to-back, across by up on a wall. My picks, in OWNER.md: the neon sign and the singing
+  fish on a wall, the disco ball on the ceiling, the RC car and skates on the floor only; the TV
+  and the toy drum offer their tops.
+- **The room** is the slot's XL inside box, in the starter set's frame (`face` in `Lobby.lay`:
+  `CFrame.lookAt(door, door + out)`, so +Z runs in from the door): Floor, Ceiling, BackWall,
+  LeftWall, RightWall (the front wall is the door's), plus ShelfTop and JobBoxTop from the
+  starter pieces' top parts (`Home.Specs.Parts`). Until S5-03h builds sizes, everyone arranges
+  the whole room they see, at the small unit's limit of 25; a later shrink leaves what no longer
+  fits out on load, back in the box.
+- **The frames, for e2b and e3:** an area's frame is `CFrame.fromMatrix(origin, across, normal)`;
+  its `y` runs along `normal × across`, which is the frame's -Z, so a pose stands at
+  `A * CFrame.new(x, 0, -y) * CFrame.Angles(0, rad(turn), 0)` (Brix turns x toward y, the same
+  way). A find's own top is that frame lifted by its height (`Spots.topHeight`); a starter
+  piece's is its pivot lifted by `furnitureTop`'s height. Turn 0 faces down `y`: toward the door
+  on the floor and ceiling, out of the shelf's and job box's fronts. Drawn by its spot, its art's
+  box centred on the pose: on a floor or top, upright on the face; on a wall, upright with its
+  back to the wall (`fromMatrix(-T.X, -T.Z)`, its box out by half its depth); from the ceiling,
+  upright, its top on the ceiling (`fromMatrix(-T.X, -T.Y)`, down by half its height).
+- **Loading** trims the saved rows to what you own first (`Spots.owned`), then Brix drops what no
+  longer fits; either way it's back in the box. A save whose form is newer than the server reads is
+  never written over: that home refuses moves (`notYours`) until the server is updated.
+- A find on the job box's lid would hang in the air as the lid opens: in e3 it rides the lid.

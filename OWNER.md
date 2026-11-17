@@ -173,6 +173,11 @@ nowhere else.
      white ceiling on wood beams, oak plank floors, a deep red runner down the middle to the
      cars. Look at `art/sheets/lobby-spawn.png`, `lobby-unit.png` and `lobby-inside.png`.
   10. A home's light starts on, and anyone may flip its switch until homes have owners (D-268).
+  11. Where a find goes when you set it out (D-308, `src/shared/Home/Spots.luau`): the neon
+      sign and the singing fish hang on a wall, the disco ball from the ceiling; the RC car and
+      the skates stand on the floor only; everything else goes on the floor or on a top (the
+      shelf, the job box, the portable TV, the toy drum). Until homes come in sizes (S5-03h)
+      everyone arranges the whole room they see, up to the small unit's 25 finds.
   11. The ground floor's phone budget (D-271): the climb's 6 real lights can't hold with every
       home lit, so the floor keeps 31 (33 in a home), 7 of them shadowed (the 6 cars' lamps and
       the porch). Its busiest view, the spawn's, is 145k triangles against a climb floor's 61k

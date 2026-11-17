@@ -1774,7 +1774,9 @@ verified: a doc page, Studio, or "untested".
   failed rebuild used to leave the last `unit.blend` for the next stage to export. `art.sh` now
   deletes it first for sizes other than M.
 - **luau-lsp 1.70.1 strict:** locals bound from a multi-return widen string-literal unions to
-  `string`; annotate them (`local kind: Motion.Kind, from: number = Motion.decode(...)`).
+  `string`; annotate them (`local kind: Motion.Kind, from: number = Motion.decode(...)`). So
+  does `return if row then row.spot else "Tabletop"` for a union return type, and the local the
+  call's bound to: return each branch plainly and annotate the local (S5-03e2a, `Home/Spots`).
 - **Lune** runs a spec with `lune run tests/<name>.spec` from the repo root; specs require
   modules by relative path.
 - **Lune 0.10.5 can mis-compare inside a loop** (L-06b1, 2026-11-09): `math.abs(a - b) <= f(c) * 10`

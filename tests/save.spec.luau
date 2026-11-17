@@ -45,6 +45,13 @@ local function played(): Save.Data
 	}
 	data.boxFresh = Save.Fresh.New
 	data.chipped.Teddy = 1
+	data.placed = {
+		form = 1,
+		rows = {
+			{ id = "Teddy#1", on = "Floor", x = 2.5, y = -4, turn = 90 },
+			{ id = "Boombox#1", on = "JobBoxTop", x = 0, y = 0, turn = 0 },
+		},
+	}
 	return data
 end
 
@@ -68,9 +75,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 7.
+-- A new player: nothing yet, at version 8.
 do
-	ok(format:latest() == 7, "the save is at version 7")
+	ok(format:latest() == 8, "the save is at version 8")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -87,6 +94,7 @@ do
 	ok(#fresh.shelf == 0, "a new player's shelf is empty")
 	ok(fresh.boxFresh == Save.Fresh.Seen, "a new player's job box is quiet")
 	ok(next(fresh.chipped) == nil, "a new player has nothing cracked")
+	ok(fresh.placed.form == 1 and #fresh.placed.rows == 0, "a new player has nothing set out")
 	ok(fresh ~= format:fresh(), "each new save is its own table")
 	local stored, problem = format:encode(fresh)
 	ok(stored ~= nil and problem == nil, `a new save can be stored ({problem})`)
@@ -97,7 +105,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(7, stored)
+	local back, decodeProblem = format:decode(8, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -255,7 +263,20 @@ do
 			and next(six.chipped) == nil,
 		`version 6 loads with its job box and nothing cracked ({sixProblem})`
 	)
-	local newer, newerProblem = format:decode(8, v1)
+	-- Version 7 as the DataStore holds it (Nov 17): a Teddy cracked; nothing set out yet.
+	local v7 = table.clone(v6)
+	v7.chipped = { Teddy = 1 }
+	local seven, sevenProblem = format:decode(7, v7)
+	ok(
+		seven ~= nil
+			and seven.chipped.Teddy == 1
+			and seven.finds.Teddy == 2
+			and #seven.shelf == 2
+			and seven.placed.form == 1
+			and #seven.placed.rows == 0,
+		`version 7 loads with its cracks and nothing set out ({sevenProblem})`
+	)
+	local newer, newerProblem = format:decode(9, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 
@@ -372,8 +393,39 @@ do
 	Save.chip(data, { "Teddy" })
 	ok(data.chipped.Teddy == nil, "a find you don't keep is never marked cracked")
 	local stored = format:encode(data)
-	local back = format:decode(7, stored)
+	local back = format:decode(8, stored)
 	ok(back ~= nil and back.chipped.OilLamp == 2, "the cracks are saved")
+end
+
+-- Finds set out in your home (S5-03e2, D-308): still yours, never in the box as well, never two;
+-- a broken row is never stored.
+do
+	local data = Save.fresh()
+	data.finds.Teddy = 3
+	data.finds["Teddy:Gold"] = 1
+	data.shelf = { { find = "Teddy", fresh = Save.Fresh.Seen } }
+	data.placed.rows = {
+		{ id = "Teddy#1", on = "Floor", x = 0, y = 0, turn = 0 },
+		{ id = "Teddy:Gold#1", on = "ShelfTop", x = 1, y = 0, turn = 45 },
+	}
+	local counts = Save.placedCounts(data)
+	ok(counts.Teddy == 1 and counts["Teddy:Gold"] == 1, "set out counted by name, a Gold its own")
+	local boxed = Save.boxed(data, { Teddy = 1 })
+	ok(boxed.Teddy == nil, "three teddies: one shelved, one set out, one in hand, none in the box")
+	ok(boxed["Teddy:Gold"] == nil, "the Gold set out is out of the box")
+	ok(data.finds.Teddy == 3, "a find set out is still owned")
+	ok(Save.placedName("Teddy:Gold#12") == "Teddy:Gold", "a Gold's id names the Gold")
+	ok(Save.placedName("Floor") == nil and Save.placedName("#3") == nil, "an area is no find")
+	local stored, problem = format:encode(data)
+	ok(stored ~= nil, `what's set out can be stored ({problem})`)
+	local back = format:decode(8, stored)
+	ok(back ~= nil and #back.placed.rows == 2 and back.placed.rows[2].turn == 45, "set out, saved")
+	data.placed.rows[1].x = 0 / 0
+	local nan = format:encode(data)
+	ok(nan == nil, "a pose that isn't a number is never stored")
+	data.placed.rows[1].x = 0
+	data.placed.rows[1].turn = 720
+	ok(format:encode(data) == nil, "a turn past a whole turn is never stored")
 end
 
 print(`save.spec: {checks - failures}/{checks} passed`)
