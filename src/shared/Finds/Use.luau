@@ -314,6 +314,34 @@ function Use.beats(motion: Art.Motion?, part: string, channel: string?): { numbe
 	return out
 end
 
+-- A sound at a moment into a step's motion (seconds in): a beat of its `hit`, or one of its `cues`.
+export type Cue = { t: number, sound: Sound }
+
+--[[
+	Every sound a step plays after it starts, in time order (`step.sound` plays as it starts): its
+	`hit` on each beat of `motion` (`Use.beats`) and its `cues` (the kazoo's hum once it's at your
+	lips; the spinner's ticks into each notch and then its animal as the arrow stops).
+]]
+function Use.timeline(step: Step, motion: Art.Motion?): { Cue }
+	local out: { Cue } = {}
+	local hit = step.hit
+	if hit then
+		for _, t in Use.beats(motion, hit.part, hit.channel) do
+			table.insert(out, { t = t, sound = hit.sound })
+		end
+	end
+	local cues = step.cues
+	if cues then
+		for _, c in cues do
+			table.insert(out, { t = c.at, sound = c.sound })
+		end
+	end
+	table.sort(out, function(a: Cue, b: Cue)
+		return a.t < b.t
+	end)
+	return out
+end
+
 -- `left` as the attribute carries it.
 function Use.encode(left: number): number
 	return if left == Use.Forever then -1 else left

@@ -858,6 +858,7 @@ RIDE = dict(
 # (0 to 1); size where it sits in your view; `press` its one press (Finds/Use's row).
 from game import (  # noqa: E402
     ACROSS_THE_FLOOR,
+    AS_FAR_AS_THE_HORN,
     CAROUSEL_TUNE,
     CLACK,
     CLANG,
@@ -867,7 +868,9 @@ from game import (  # noqa: E402
     CRUNCH,
     DOWN_THE_HALL,
     EEK,
+    DRUM_HIT,
     HOLLOW,
+    HUM,
     MUSIC_BOX,
     PLASTIC,
     POP,
@@ -938,6 +941,15 @@ GAME = [
         size="Small",
         pickUp=pitched(CLACK, 1.9, 0.6),
         drop=pitched(PLASTIC, 2.1, 0.4),
+        # "Blow: a buzzy note": lifted to your lips, it hums one note as its paper skin buzzes,
+        # and monsters down the hall turn to it (Lethal Company's airhorn, a toy's worth)
+        press=dict(
+            verb="Blow",
+            on=[dict(motion="Blow", cues=[dict(at=0.36, sound=HUM)])],
+            noise="Blow",
+            heard=DOWN_THE_HALL,
+            toy=True,
+        ),
     ),
     dict(
         key="RubberDuck",
@@ -1007,6 +1019,16 @@ GAME = [
         size="Medium",
         pickUp=pitched(SLAP, 1.15),
         drop=pitched(TIN, 0.95),
+        # "Bang: loud": left, right, left, right, then both sticks together, a bang at each hit
+        # as the drum gives under it, and every monster as far as an air horn carries comes to
+        # look (Lethal Company's airhorn)
+        press=dict(
+            verb="Bang",
+            on=[dict(motion="Bang", hit=dict(part="ToyDrum_Body", channel="y", sound=DRUM_HIT))],
+            noise="Bang",
+            heard=AS_FAR_AS_THE_HORN,
+            toy=True,
+        ),
     ),
     dict(
         key="WindupMouse",

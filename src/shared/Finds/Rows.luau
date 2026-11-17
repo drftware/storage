@@ -943,6 +943,30 @@ local Rows: { Game.Row } = {
 			volume = 0.4,
 			pitch = 2.1,
 		},
+		verb = "Blow",
+		press = {
+			verb = "Blow",
+			on = {
+				{
+					motion = "Blow",
+					cues = {
+						{
+							at = 0.36,
+							sound = {
+								id = "rbxassetid://9114898444",
+								from = 2.68,
+								length = 0.92,
+								volume = 0.9,
+								pitch = 0.75,
+							},
+						},
+					},
+				},
+			},
+			noise = "Blow",
+			heard = 60,
+			toy = true,
+		},
 	},
 	{
 		key = "RubberDuck",
@@ -1095,6 +1119,29 @@ local Rows: { Game.Row } = {
 			length = 0.9,
 			volume = 0.75,
 			pitch = 0.95,
+		},
+		verb = "Bang",
+		press = {
+			verb = "Bang",
+			on = {
+				{
+					motion = "Bang",
+					hit = {
+						part = "ToyDrum_Body",
+						channel = "y",
+						sound = {
+							id = "rbxassetid://127450250691379",
+							from = 0,
+							length = 0.4,
+							volume = 0.9,
+							pitch = 1.3,
+						},
+					},
+				},
+			},
+			noise = "Bang",
+			heard = 130,
+			toy = true,
 		},
 	},
 	{

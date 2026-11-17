@@ -74,8 +74,8 @@ type Entry = {
 	dirty: boolean, -- pose again whatever the frame (a part streamed in)
 	glowing: boolean, -- a candidate for real lights
 	shines: boolean, -- it has real lights at all
-	-- each step motion's beats (seconds into it) that sound its `hit`, by motion name
-	beats: { [string]: { number } },
+	-- each step motion's sounds after it starts (its `hit`'s beats, its `cues`), by motion name
+	beats: { [string]: { Use.Cue } },
 	beatStep: number, -- the step and stamp the beats follow, and the next beat to sound
 	beatAt: number,
 	beatNext: number,
@@ -144,11 +144,10 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		if not (row and art) then
 			return nil
 		end
-		local beats: { [string]: { number } } = {}
+		local beats: { [string]: { Use.Cue } } = {}
 		for _, step in row.on do
-			local hit = step.hit
-			if hit then
-				beats[step.motion] = Use.beats(art.Motions[step.motion], hit.part, hit.channel)
+			if step.hit or step.cues then
+				beats[step.motion] = Use.timeline(step, art.Motions[step.motion])
 			end
 		end
 		local e: Entry = {
@@ -306,29 +305,30 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		end
 	end
 
-	-- A step's `hit` on each beat its motion passes, `t` seconds in: never a burst after a hitch,
-	-- and only the beats still to come for a step first seen mid-way.
+	-- A step's sounds on each beat and cue its motion passes, `t` seconds in: never a burst of one
+	-- sound after a hitch, and only the ones still to come for a step first seen mid-way.
 	local function beat(e: Entry, stamp: Use.Stamp, f: Use.Frame)
 		local s = Use.stepAt(e.row, stamp.state, f.step)
-		local hit = s and s.hit
 		local times = s and e.beats[s.motion]
-		if not (s and hit and times and f.motion == s.motion) then
+		if not (s and times and f.motion == s.motion) then
 			return
 		end
 		if e.beatStep ~= f.step or e.beatAt ~= stamp.at then
 			e.beatStep, e.beatAt, e.beatNext = f.step, stamp.at, 1
-			while e.beatNext <= #times and times[e.beatNext] < f.t - 0.05 do
+			while e.beatNext <= #times and times[e.beatNext].t < f.t - 0.05 do
 				e.beatNext += 1
 			end
 		end
-		local due = false
-		while e.beatNext <= #times and times[e.beatNext] <= f.t do
-			e.beatNext += 1
-			due = true
-		end
 		local body = Tools.body(e.model)
-		if due and body then
-			Tools.play(hit.sound, body, Use.Reach)
+		local last: Use.Sound? = nil
+		while e.beatNext <= #times and times[e.beatNext].t <= f.t do
+			local sound = times[e.beatNext].sound
+			e.beatNext += 1
+			-- several due at once (a hitch): each different sound once
+			if body and sound ~= last then
+				Tools.play(sound, body, Use.Reach)
+			end
+			last = sound
 		end
 	end
 

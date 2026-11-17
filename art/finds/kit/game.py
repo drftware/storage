@@ -107,6 +107,15 @@ WHISTLE = sound("rbxassetid://9117259114", 0.18, 0.3, 0.45, 1.5)
 # without a gap), as long as it turns. Its slowing as the spring runs down is ROADMAP polish.
 CAROUSEL_TUNE = sound("rbxassetid://9043210085", 0.05, 15.5, 0.8)
 
+# One press, one noise (F-G1e3), measured in Studio (AudioAnalyzer: loudness and the spectrum's
+# loudest bin every 0.06 s). The kazoo's hum: Pro Sound Effects' "Kazoo Fanfare 3" (4.3 s), its
+# last note, held on one pitch from 2.68 s and swelling at 3.3 s before it stops at 3.6 s, played
+# a little lower so it lasts the kazoo's whole note (1.22 s).
+HUM = sound("rbxassetid://9114898444", 2.68, 0.92, 0.9, 0.75)
+# The toy drum's every hit: "INSTRUMENT Snare Drum" (Creator Store, 0.51 s, the hit in its
+# first 0.05 s), pitched up into a small tin drum's calfskin head and cut before the next hit.
+DRUM_HIT = sound("rbxassetid://127450250691379", 0, 0.4, 0.9, 1.3)
+
 # How far along the halls monsters hear a noisy find (studs: a press's `heard`, its loudness,
 # `Use.loudness`). A press with a noise and no `heard` carries as far as the air horn, 130 (the
 # cymbal monkey, the jack).
@@ -114,6 +123,8 @@ DOWN_THE_HALL = 60  # a squeak you can hear down the hall you're in, no further 
 # a clatter that carries round a corner or two, under the cymbals (the chattering teeth, the
 # robot's clanking, the tin bird's whistles)
 ACROSS_THE_FLOOR = 90
+# a bang as loud as the air horn's blast (`Use.LureReach`): the toy drum
+AS_FAR_AS_THE_HORN = 130
 
 
 def squeeze(s, noisy=False):

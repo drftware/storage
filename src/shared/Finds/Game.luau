@@ -28,6 +28,10 @@ export type Step = {
 	-- turn) peaks on the side it reaches furthest (the cymbal monkey's every clash, as its arms
 	-- swing in; the chattering teeth's every snap, as the body jolts forward), `Use.beats`
 	hit: { part: string, channel: string?, sound: Sound }?,
+	-- sounds at moments into the step's motion (seconds in), for a sound that comes after the
+	-- press starts: the kazoo's hum once it's at your lips, the spinner's animal as its arrow
+	-- stops (`Use.timeline`)
+	cues: { { at: number, sound: Sound } }?,
 }
 
 export type Press = {

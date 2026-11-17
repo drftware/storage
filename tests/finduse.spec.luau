@@ -532,6 +532,48 @@ do
 	ok(base.Root.x == 1 and base.Root.z == nil, "held: the values it came from left alone")
 end
 
+-- One press, one noise (F-G1e3): the kazoo hums once it's at your lips; the drum bangs at each of
+-- its five hits. Each is heard once as it's pressed (the jack's one noise, no lure), its own
+-- loudness, and takes another press once it's done.
+do
+	local kazoo, drum = Use.Rows.Kazoo, Use.Rows.ToyDrum
+	ok(kazoo ~= nil and kazoo.verb == "Blow", "kazoo: blown")
+	ok(drum ~= nil and drum.verb == "Bang", "drum: banged")
+	for key, row in { Kazoo = kazoo, ToyDrum = drum } do
+		local d = durations(key)
+		ok(Use.noiseAt(row, "On", d) == 0, `{key}: heard as it's pressed`)
+		ok(Use.lureUntil(row, "On", d) == nil, `{key}: one noise, not a lure`)
+		ok(row.heard ~= nil and Use.toy(row), `{key}: its own loudness, pressed again`)
+	end
+	ok(Use.loudness(kazoo) < Use.loudness(drum), "kazoo: quieter than the drum")
+	local blow = kazoo.on[1]
+	local hum = Use.timeline(blow, Fixture.kit.Kazoo.Motions.Blow)
+	ok(#hum == 1 and math.abs(hum[1].t - 0.36) < 1e-6, "kazoo: its hum once it's at your lips")
+	ok(
+		#hum == 1 and hum[1].sound.length / (hum[1].sound.pitch or 1) > 1.1,
+		"kazoo: the hum lasts its note"
+	)
+	local bang = drum.on[1]
+	local hits = Use.timeline(bang, Fixture.kit.ToyDrum.Motions.Bang)
+	ok(#hits == 5, `drum: a bang each hit ({#hits})`)
+	ok(#hits == 5 and hits[1].t > 0.2 and hits[1].t < 0.3, "drum: the first hit lands")
+	ok(#hits == 5 and hits[5].t - hits[4].t > 0.5, "drum: then both sticks, after a gap")
+	-- a cue and a hit at once, in time order
+	local both = Use.timeline(
+		{
+			motion = "Bang",
+			hit = bang.hit,
+			cues = { { at = 0.5, sound = blow.cues and blow.cues[1].sound or bang.hit.sound } },
+		} :: any,
+		Fixture.kit.ToyDrum.Motions.Bang
+	)
+	local sorted = #both == 6
+	for i = 2, #both do
+		sorted = sorted and both[i].t >= both[i - 1].t
+	end
+	ok(sorted, "a step's cues and beats in time order")
+end
+
 print(`finduse: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

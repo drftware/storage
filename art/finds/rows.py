@@ -34,7 +34,7 @@ ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "grip", "he
        "pickUp", "drop", "verb", "press"]
 NEEDED = ["key", "catalog", "name", "grade", "worth", "grip", "heft", "size", "pickUp", "drop"]
 PRESS = ["verb", "on", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down", "walks"]
-STEP = ["motion", "loop", "sound", "hit"]
+STEP = ["motion", "loop", "sound", "hit", "cues"]
 SOUND = ["id", "from", "length", "volume", "pitch"]
 
 
@@ -119,6 +119,12 @@ def step(where, s):
         check_keys(where + ".hit", out["hit"], ["part", "channel", "sound"])
         out["hit"] = ordered({**out["hit"], "sound": sound(where, out["hit"]["sound"])},
                              ["part", "channel", "sound"])
+    if "cues" in out:
+        cues = []
+        for i, c in enumerate(out["cues"]):
+            check_keys(f"{where}.cues[{i + 1}]", c, ["at", "sound"])
+            cues.append({"at": c["at"], "sound": sound(where, c["sound"])})
+        out["cues"] = cues
     return out
 
 
