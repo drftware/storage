@@ -3014,7 +3014,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
   row's `bothHands`), imported and seen in Play (dealt, taken, switching refused, squeezed, a
   Mannequin woken). S4a (Nov 17): the squishy cake slice's art and row (Rare, 45: a 5 in rainbow
   layer slice, rosettes and a cherry; pressed, the cream lines push out of both cut sides on 47
-  bones in bands); not ticked, imported or seen in Play. Next S4b. Polish: friends' arms round a hugged find
+  bones in bands); not ticked, imported or seen in Play. S4b (Nov 17): the rosettes rebuilt to
+  bake clean (rings turning with the swirl), the cherry dropped (the owner), ticked, imported and
+  seen in Play (dealt, squeezed in hand, the cream 7 mm out, its squish). S1 to S4 done; L1 (the
+  14 at phone size) ticks F-05. Polish: friends' arms round a hugged find
   (`Joints`, as `HornView` raises the horn arm); the mega goo ball banked at the gate. Polish: a squishy squeezed
   again before its press is over (the colour ball's fade could then run 8 s).
 - [ ] **F-06 Plush.**

@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** S4b (the squishy cake slice: look at its full sheets, tick it, import it and see it in
-Play; S4a's note has where it stands). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
+**Next:** L1 (the 14 squishies in Studio at phone size, with the glitter and galaxy balls' glitter
+hexes and the galaxy ball's glow; it ticks F-05). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
 V5a to V5f are done and seen in Play (Nov 17), but for V5e2.
 
 ## The third run's plan (owner's brief, Nov 16 night)
@@ -53,7 +53,8 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
    S2a and S2b: a tint mask in its skin, D-303, seen in Play); S3 the mega
    goo ball (Epic, takes both hands; done Nov 17, S3a and S3b: hugged at your chest, D-310, seen in
    Play); S4 the squishy cake slice (frosting squishes out of the
-   side).
+   side; done Nov 17, S4a and S4b: the cream lines push out on bones in bands, seen in Play; the
+   owner dropped its cherry).
 9. **L1 The 14 squishies in Studio at phone size**, with the glitter and galaxy balls' glitter
    hexes (they read as big pale squares up close) and the galaxy ball's glow. Ticks F-05.
 10. **Q1 Everything in Studio Play.** A dev command that deals a chosen find into the nearest
@@ -125,6 +126,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Colour-change goo ball (`ColourGooBall`) | Changes colour where your fingers pressed · Squeeze (quiet; the squishy craze itself) | works: squeezed, the goo ball's ooze, and five orchid fingertip prints bloom on its sky-blue skin and cool back over 4.6 s (S2a, S2b, D-303); quiet | Rare · 40 · floor 1 up ✓ | Nov 17, S2b: dealt (`DevBox`, seed 7, floor 1's Unit107: "held a find, the ColourGooBall in its box"), taken from its box into slot 1, squeezed in hand twice: the server stamped it (`UseAt`, `UseCount` 1); its tint from Rest (0.38, 1, 1) to Warm (1, 0.50, 0.93) by 0.6 to 1.0 s, held to 1.9 s, back to Rest by 6.2 s, on your view's copy and on the ball in your character's hand (what friends see) alike; its squelch at 0.09 s; under the unit's bulb the ball reads teal and the prints red-pink, two either side of the front blister (`docs/art/S2b-colour-goo-ball-squeezed.jpg`); not banked, no monster in reach (it's quiet) |
 | Goo ball (`GooBall`) | Oozes between your fingers and slowly comes back · Squeeze (quiet; the squishy craze itself) | works: squeezed, five blisters ooze out between your fingers on bones and slowly come back, its own squelch; quiet (S1) | Common · 3 · floor 1 up ✓ | Nov 17, S1b: dealt (`DevBox`, seed 7, floor 1's Unit107: "held a find, the GooBall in its box"), taken from its box into slot 1, pressed in hand twice, stamped On: its bones out to 0.017 studs and turned up to 35 degrees at 1.2 s, back by 4.5 s, the same in your view's copy; its squelch from 0.07 s; not banked, no monster in reach (it's quiet) |
 | Mega goo ball (`MegaGooBall`) | Both hands, and a deep squelch that carries; loud enough to draw a monster · Squeeze (heard 90 studs, D-307) | works: hugged in both hands (Lethal Company's two-handed scrap, D-310), squeezed, its sides flatten and the goo heaves out and slowly comes back on bones, a deep squelch that wakes monsters (S3a, S3b) | Epic · 120 · floor 1 up ✓ | Nov 17, S3b: dealt (`DevBox`, seed 7, floor 1's Unit107: "held a find, the MegaGooBall in its box"), taken from its box into slot 1, welded at your chest (0, -0.45, -1.0 from the upper torso), your view's copy low and centred; switching to slot 2 refused (hand stayed on it); squeezed in hand: its bones out to 0.084 studs and turned 26 degrees at 1.7 s, slumped to 0.045 by 2.1 s, a wobble, back to rest by 6.8 s, your view's copy turning the same; its squelch at 0.08 s at pitch 0.5; a Mannequin stood asleep 11.7 studs off (`StandMannequin`) woke and caught you within a second of the squeeze; not banked (caught twice before reaching the gate); no capture (Studio's screen captures timed out) |
+| Squishy cake slice (`CakeSlice`) | Frosting squishes out of the side · Squeeze (quiet; the squishy craze itself) | works: squeezed, the top goes down, the cream lines push out of both cut sides and the slow-rise foam eases back over 8 s, on bones in bands, its own squish; quiet (S4a, S4b) | Rare · 45 · floor 1 up ✓ | Nov 17, S4b: dealt (`DevBox`, seed 7, floor 1's Unit107: "held a find, the CakeSlice in its box"), the box opened into your hand; squeezed in hand twice: its top bone 0.094 studs down by 0.5 s, back to rest by 8.1 s; the first cream line's side bones 0.0276 studs (7 mm) out of the cut side at 0.43 s, held to 0.75 s, 0.012 by 3.8 s; your view's copy moving the same at its 0.3 size; the squish (9117373366, pitch 0.90, volume 0.80) at 0.08 s; no errors in Output; not banked, no monster in reach (it's quiet); not watched by eye (no capture) |
 | Boombox (`Boombox`, bedroom set) | Loud music wherever you leave it, monsters come to look; at home it plays your tapes · Play, a noise (R.E.P.O.'s music box) | works (V5a, D-286): its key clacks, 80s electro 15 s, the case thumping each beat and swaying from its handle, lures every 2 s, 130 studs, in hand or where you leave it; the tapes wait on the home chain | Uncommon · 25 · floor 1 up ✓ | Nov 17, V5a: given (GiveFind), pressed in hand: the key dipped it to 0.975, then it swelled to 1.04 every 0.53 s, swaying up to 3 degrees and hopping 0.035 studs from the handle, the same in your view's copy; the song from 0.36 s; the Mannequin 56 studs off woke, came and caught me ("lured 8 times (130 studs)"). Again, dropped 2.5 s in and me lifted away: the song carried on from where it was (10.6 s into the recording), the case thumping on the floor; the Mannequin went to it and stood looking |
 | Small box TV (`Television`, bedroom set) | At home: it plays your tapes and films · Play (Animal Crossing's records) | waits on the home chain | Uncommon · 22 · floor 1 up ✓ | |
 | Small teddy bear (`Teddy`, bedroom set) | A tiny squeak · Hug (quiet) | works (V5a, D-286): hugged, squashes, a tiny squeak, wiggles back; quiet | Common · 4 · floor 1 up ✓ | Nov 17, V5a: given, pressed in hand: squashed to 0.78 at 0.17 s in hand and in your view's copy, tipped 6 degrees, sprang to 1.07 and settled by 1.05 s; the cloth at 0.08 s, the squeak at 0.17 s |
@@ -251,6 +253,24 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, S4b (the squishy cake slice finished, imported and seen in Play; S1 to S4 done; L1
+  next).** **Judged** the full sheets: the rosettes' lower halves baked as torn, crumpled paper,
+  their feet hanging over the top's rounded back edge. The game mesh had half the detailed
+  mesh's rings and its quads cut across the swirling ridges, up to 2 mm off and out of the
+  short rays' reach (`cage=0.0016`). Now each ring's points turn with the swirl (a crest and a
+  groove always on a point), both meshes keep the same 12 rings (`rosette_rings`), and the
+  rosettes stand 16 mm in from the back, sunk 1.5 mm (`rosette_sink`): piped cream with a soft
+  shadow at the foot (CRAFT.md, "The bake"). **The owner dropped the cherry** mid-session ("the
+  cherry makes no sense"): its shapes, bone, nod (`NOD`), kinds and paint are gone; 46 bones,
+  10,572 triangles, 1024 at 1105 texels a stud; full sheets rendered and judged again. Ticked;
+  fingerprint 1673008115 (only this find, with HEAD's `Rows.luau`); FBX 98272687486525;
+  imported in Edit (1 part, 47 Bones with the root). **Seen in Play:** A1's table. **Traps:**
+  `scripts/art.sh`'s `renders` once exited 0 having drawn nothing (Blender aborted, 134, its
+  output filtered away): check the sheets' times after a render. The marked box opens straight
+  into your hand (`HeldTool`, `YourTool`), no Take prompt. **Not done:** banked at the gate;
+  watched by eye (no capture). **For L1:** the 14 squishies are all ticked, imported and in
+  `ReplicatedStorage.Props.Finds`.
 
 - **Nov 17, S4a (the squishy cake slice's art and row; not ticked, imported or seen in Play;
   S4b next).** Stopped at the run's 200k context line after the art. `CakeSlice` in
@@ -2306,7 +2326,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Glitter goo ball | Uncommon | Squeeze: glitter swirls, then settles |  | Nov 16, F-05d2 |
 | Jumbo slow-rise strawberry | Uncommon | Squeeze: the dent takes ten seconds to rise back |  | Nov 16, F-05c |
 | Colour-change goo ball | Rare | Squeeze: it changes colour where your fingers pressed |  | Nov 17, S2b |
-| Squishy cake slice | Rare | Squeeze: frosting squishes out of the side |  | |
+| Squishy cake slice | Rare | Squeeze: frosting squishes out of the side |  | Nov 17, S4b |
 | Squishy capybara | Rare | Squeeze: it lets out a tiny, happy sigh |  | Nov 16, F-05c2 |
 | Mega goo ball | Epic | Squeeze: both hands, and a deep squelch that carries | Loud enough to draw a monster | Nov 17, S3b |
 | Galaxy goo ball | Legendary | Squeeze: stars drift and swirl inside |  | Nov 16, F-05d3 |

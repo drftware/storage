@@ -544,23 +544,31 @@ shortcake slice with cream rosettes and berries. They are wedges of about an eig
 cake with a blunt tip, thick bright sponge layers split by thin white cream lines on both cut
 sides, white frosting over the top and round the back, sprinkles on top, often a rosette and a
 berry. Ours: 127 mm (5 in, 0.5 studs) tip to back, 44 degrees, 95 mm across the back, 71.5 mm to
-the frosting and about 111 mm to the stem's tip; four sponges of our own colours (sky, mint, lemon,
-pink from the floor up), three piped rosettes along the back, a glossy cherry on the middle one,
-rainbow sprinkle rods on top.
+the frosting and about 85 mm to the rosettes' peaks; four sponges of our own colours (sky, mint,
+lemon, pink from the floor up), three piped rosettes along the back, rainbow sprinkle rods on top.
+It had a glossy cherry on the middle rosette until S4b: the owner dropped it ("the cherry makes
+no sense").
 
-**Tells:** the striped cut side (bright bands, white lines), the white wedge, the red cherry.
+**Tells:** the striped cut side (bright bands, white lines), the white wedge, the piped rosettes.
 
-**The squeeze** (47 bones): bands up the walls at every layer's middle and wherever two layers
+**The squeeze** (46 bones): bands up the walls at every layer's middle and wherever two layers
 meet, each going down in step with its height, so the cake squashes evenly; each band's two side
 bones go down the same and out of their cut side (the cream lines 7 mm, the sponges 1.6, their
 edges 2.2, the top frosting 3), along each side as a hump that is nothing at the tip and the back
 corner. The wall's rings are 1.1 mm apart through each cream line, 3 mm through the sponges. The
-top's bone takes the rosettes; the cherry has its own and nods. 8.8 s: down 0.36 s, held, a
+top's bone takes the rosettes. 8.8 s: down 0.36 s, held, a
 little give back, then the slow rise.
 
 **Judged** on quick sheets three times: (1) the bulge spread over the whole sponge (bands only
 at the layers' middles), the sprinkles sparse and thin, pale blotches on the sponge, small
 rosettes; (2) bands at the layers' edges too and fine rings through the cream: the cream now
-pushes out as its own bead; sprinkles 3 a square cm, 5 x 1.5 mm; (3) the rosettes and cherry
-baked black, jagged rims where they sink into the cream: `cage=0.0016`. Full sheets rendered
-after that, not yet looked at (S4b). 1024 texture at 1096 texels a stud, 9,892 triangles.
+pushes out as its own bead; sprinkles 3 a square cm, 5 x 1.5 mm; (3) the rosettes and the cherry
+baked black, jagged rims where they sink into the cream: `cage=0.0016`. (4) S4b, the full
+sheets: the rosettes' lower halves baked as torn, crumpled paper and their feet hung over the
+top's rounded back edge. The game mesh's rings were half the detailed one's and its quads cut
+across the swirling ridges, up to 2 mm off, out of the short rays' reach; now each ring's points
+turn with the swirl (a crest and a groove always on a point) and both meshes keep the same 12
+rings, a third of a millimetre apart at most, and the rosettes stand 16 mm in from the back, the
+foot sunk 1.5 mm. They read as piped cream now, a soft shadow at the foot. Then the cherry came
+off (the owner). Full sheets rendered and judged again after both: 1024 texture
+at 1105 texels a stud, 10,572 triangles.

@@ -2299,7 +2299,7 @@ local Rows: { Game.Row } = {
 	{
 		key = "CakeSlice",
 		set = "Squishies",
-		judged = false,
+		judged = true,
 		name = "Cake slice",
 		grade = "Rare",
 		worth = 45,

@@ -22,6 +22,8 @@ github.com/drftware/storage); Brix pinned at `7f25310`, NOT on Brix's `origin` y
   click its centre plus (47, 0) (STUDIO.md, S5-03e3b).
 - Stage only your own paths; the find run commits its own `art/finds/`, `src/shared/Finds/`,
   `tests/stuffdeal.spec.luau`, and may have hunks in `docs/`: stage yours as a blob then.
+- Find art (third run): S1 to S4 done; the squishy cake slice (no cherry, the owner) ticked,
+  imported and squeezed in Play (S4b). Next: L1, the 14 squishies at phone size (WAVES.md's Next).
 
 ## Next task: S5-03f1 The mirror in every home, its real frame
 The moment: walk into your home and the long mirror leaning by the wall is a real piece of

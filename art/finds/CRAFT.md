@@ -97,7 +97,10 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   A find of small pieces packed close (the gel bead ball's beads) asks for shorter rays with
   `cage=` on its Find (0.0016 studs; the reach shrinks with it): from 0.008 out the rays start
   inside the next piece and bake black, jagged rims round every one. Its game mesh must then
-  sit within that of the detailed one.
+  sit within that of the detailed one: a twisted, ridged piece (the cake slice's piped rosettes,
+  S4b) keeps the same rings in both meshes and turns each ring's points with the twist, so the
+  game mesh's quads run along the ridges; cut across them it sat 2 mm off, out of reach, and
+  baked as torn paper.
 - **Looks.** `look(L, find) -> Surface`: `Coat(L, colour, roughness, metal, height)`, then
   `paint(mask, ...)` layers, `enamel_wear` (chips that bite edges, never a band), `lights(mask)`
   (where it glows), `finish(dust, grime)` (creases darkened, dust on whatever faced up as it was

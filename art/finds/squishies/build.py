@@ -2997,16 +2997,15 @@ MEGA_GOO_BALL = kit.Find(
 # --- The squishy cake slice (S4) ------------------------------------------------------------------
 # A slow-rise foam layer cake slice of our own (README): a blunt-tipped wedge, four bright sponge
 # layers split by white cream lines on both cut sides, white frosting over the top and round the
-# back, sprinkles on top, three piped rosettes along the back and a glossy cherry on the middle
-# one. One part (a boned find is one mesh, F-05c's trap): the wedge lofted ring by ring from its
-# bottom up its walls, round its top edge and in over its top, the rosettes and the cherry in the
-# same mesh. Its squeeze: a thumb presses the top down and the cream lines push out of both cut
+# back, sprinkles on top, three piped rosettes along the back (no cherry: the owner dropped it,
+# S4b). One part (a boned find is one mesh, F-05c's trap): the wedge lofted ring by ring from its
+# bottom up its walls, round its top edge and in over its top, the rosettes in the same mesh. Its squeeze: a thumb presses the top down and the cream lines push out of both cut
 # sides, on bones in bands up the walls: each band goes down in step with its height (an even
 # squash), and its side bones go down the same and out of their side as well (the bulge), so
-# their shares never fight. The cherry nods on its own bone.
+# their shares never fight.
 
 CS = K.CAKE
-CS_CAKE, CS_CREAM, CS_CHERRY, CS_STEM = 40, 41, 42, 43
+CS_CAKE, CS_CREAM = 40, 41
 CS_L = CS["length"]
 CS_A = math.radians(CS["angle"] / 2)                       # half the wedge's angle
 CS_ZS = [float(z) for z in np.cumsum([0.0] + CS["layers"])]  # each layer's floor, then the top (mm)
@@ -3062,56 +3061,31 @@ def cs_rosette_at():
 
 
 def cs_rosette(sh, c, hi, turn):
-    """A piped rosette: a star tip's ridges swirling up a dome to a little peak, its foot sunk a
-    millimetre into the frosting."""
+    """A piped rosette: a star tip's ridges swirling up a dome to a little peak, its foot sunk into
+    the frosting. Each ring's points turn with the swirl, a ridge's crest and the groove between
+    always on a point, and both meshes keep the same rings: the game mesh's quads then run along
+    the ridges, not across them, and the detailed mesh is never more than a third of a
+    millimetre off it (cut across, the bake's short rays missed and drew the feet as torn paper,
+    S4b)."""
     nr = CS["ridges"]
     m = nr * (6 if hi else 4)
-    nz = 14 if hi else 7
+    nz = CS["rosette_rings"]
     Rr, Hr, tw = CS["rosette_r"], CS["rosette_h"], math.radians(CS["twist"])
+    sink = CS["rosette_sink"]
     rings = []
     for i in range(nz):
         u = i / nz
         r0 = Rr * (1 - u ** 1.7) ** 0.55
         amp = 0.17 * (1 - u) ** 0.5
-        z = CS_H - 1.0 + (Hr + 1.0) * u
+        z = CS_H - sink + (Hr + sink) * u
         ring = []
         for j in range(m):
-            th = 2 * math.pi * j / m
+            th = 2 * math.pi * j / m + tw * u - turn / nr
             r = r0 * (1 + amp * math.cos(nr * (th - tw * u) + turn))
             ring.append((mm(c.x + r * math.cos(th)), mm(c.y + r * math.sin(th)), mm(z)))
         rings.append(ring)
     rings.append([(mm(c.x), mm(c.y), mm(CS_H + Hr))])
     sh.loft(rings, CS_CREAM, cap_bottom=CS_CREAM)
-
-
-def cs_cherry_at():
-    """The cherry's middle (mm): on the middle rosette, sunk into its peak."""
-    c = cs_rosette_at()[CS["rosettes"] // 2]
-    zc = CS_H + CS["rosette_h"] - CS["cherry_sink"] + CS["cherry_r"] * CS["cherry_squat"]
-    return Vector((c.x, c.y, zc))
-
-
-def cs_cherry(sh, hi):
-    """A glossy cherry, a touch squat, a dimple on top where its stem grows, the stem bending back."""
-    C = cs_cherry_at()
-    r, sq = CS["cherry_r"], CS["cherry_squat"]
-    n = 16 if hi else 8
-    prof = []
-    for k in range(n + 1):
-        t = -math.pi / 2 + math.pi * k / n
-        rr, z = r * math.cos(t), r * sq * math.sin(t)
-        dip = 1.8 * max(0.0, 1 - (rr / (r * 0.45)) ** 2) if t > 0 else 0.0
-        prof.append((mm(rr), mm(z - dip)))
-    M = Matrix.Translation((mm(C.x), mm(C.y), mm(C.z)))
-    sh.lathe(prof, CS_CHERRY, 32 if hi else 16, M=M)
-    p = C + Vector((0.0, 0.0, r * sq - 2.6))
-    pts = [p.copy()]
-    m = 8 if hi else 5
-    for k in range(1, m + 1):
-        a = math.radians(CS["stem_lean"]) * (k / m) ** 1.3
-        p = p + (CS["stem_l"] / m) * Vector((0.0, math.sin(a), math.cos(a)))
-        pts.append(p.copy())
-    sh.tube([tuple(mm(v) for v in q) for q in pts], mm(CS["stem_r"]), CS_STEM, sides=8 if hi else 5)
 
 
 def cs_wall(z0, z1, f):
@@ -3153,12 +3127,11 @@ def cs_body(hi):
     sh.loft([[(mm(x), mm(y), mm(z)) for x, y, z in r] for r in out], CS_CAKE, cap_bottom=CS_CAKE)
     for k, c in enumerate(cs_rosette_at()):
         cs_rosette(sh, c, hi, 1.7 * k)
-    cs_cherry(sh, hi)
     return sh
 
 
 # The bands up the walls: one at each layer's middle and one where each two meet, the last at the
-# top (the rosettes and the cherry ride it); how far each goes down at the full press (in step with its height) and how far
+# top (the rosettes ride it); how far each goes down at the full press (in step with its height) and how far
 # its side bones push out of the cut sides (the cream lines most)
 CS_NODES, CS_OUT = [], []
 for _i, (_a, _b) in enumerate(zip(CS_ZS, CS_ZS[1:])):
@@ -3209,12 +3182,6 @@ def cs_side(p):
     return out
 
 
-def cs_in_cherry(p):
-    C, r = cs_cherry_at(), CS["cherry_r"]
-    bottom = C.z - r * CS["cherry_squat"]
-    return p.z > bottom + 1.2 and math.hypot(p.x - C.x, p.y - C.y) < r + 1.0 + max(0.0, p.z - C.z)
-
-
 def cs_weights(co):
     key = (round(co.x, 6), round(co.y, 6), round(co.z, 6))
     w = CS_CACHE.get(key)
@@ -3222,12 +3189,11 @@ def cs_weights(co):
         p = Vector(co) * K.STUD_MM
         hat = cs_hat(p.z)
         sr, sl = cs_side(p.xy)
-        keep = 0.0 if cs_in_cherry(p) else 1.0
-        w = {"Cherry": 1.0 - keep, "Top": hat[-1] * keep}
+        w = {"Top": hat[-1]}
         for i in range(len(CS_NODES) - 1):
-            w[f"Band{i + 1}"] = hat[i] * (1 - sr - sl) * keep
-            w[f"Band{i + 1}R"] = hat[i] * sr * keep
-            w[f"Band{i + 1}L"] = hat[i] * sl * keep
+            w[f"Band{i + 1}"] = hat[i] * (1 - sr - sl)
+            w[f"Band{i + 1}R"] = hat[i] * sr
+            w[f"Band{i + 1}L"] = hat[i] * sl
         CS_CACHE[key] = w
     return w
 
@@ -3247,17 +3213,12 @@ def cs_bones():
                                   axis=tuple(way.normalized()), weight=share(f"Band{i + 1}{side}")))
     bones.append(kit.Bone("Top", (0.0, mm(CS_MID.y), mm(CS_H)), axis=tuple(down),
                           weight=share("Top")))
-    C = cs_cherry_at()
-    foot = (mm(C.x), mm(C.y), mm(C.z - CS["cherry_r"] * CS["cherry_squat"]))
-    # a positive nod leans it back (+Y): about -X by the right hand
-    bones.append(kit.Bone("Cherry", foot, axis=tuple(down), weight=share("Cherry"),
-                          hinge=(-1.0, 0.0, 0.0)))
     return bones
 
 
 def cs_squeeze():
     """The tracks from FROST: each band down by its share of the press, its side bones down and
-    out together; the top and the cherry the whole way down, the cherry nodding."""
+    out together; the top (and the rosettes on it) the whole way down."""
     def scaled(v):
         return [(k[0], k[1] * v, *k[2:]) for k in K.FROST]
     tracks = []
@@ -3267,8 +3228,6 @@ def cs_squeeze():
             tracks.append((f"Band{i + 1}{side}", "move",
                            scaled(mm(math.hypot(CS_OUT[i], CS_DOWN[i])))))
     tracks.append(("Top", "move", scaled(mm(CS["press_d"]))))
-    tracks.append(("Cherry", "move", scaled(mm(CS["press_d"]))))
-    tracks.append(("Cherry", "turn", list(K.NOD)))
     return round(K.FROST[-1][0] + 0.4, 2), tracks
 
 
@@ -3369,16 +3328,6 @@ def cake_look(L, f):
         C.paint(nb.mul(top, t.outputs["Color"]), hexc(CS_SPRINKLES[k]), 0.4, height=0.9)
     # the rosettes: piped cream, a touch glossier than the frosting
     C.paint(L.k(CS_CREAM), CREAM, 0.5)
-    # the cherry: deep glossy red, darker underneath; its stem green going brown at the tip
-    cherry = L.k(CS_CHERRY)
-    cz = cs_cherry_at().z
-    C.paint(cherry, hexc("#C0142C"), 0.16)
-    C.paint(nb.mul(cherry, nb.inv(nb.ss(zm, cz - CS["cherry_r"], cz + 2.0))), hexc("#7E0718"))
-    C.paint(nb.mul(cherry, nb.mul(nb.ss(L.noise(90.0, 7, detail=2), 0.55, 0.75), 0.3)),
-            hexc("#E0283F"))
-    stem = L.k(CS_STEM)
-    C.paint(stem, hexc("#5E7A2A"), 0.7)
-    C.paint(nb.mul(stem, nb.ss(zm, cz + 15.0, cz + 23.0)), hexc("#7A5A30"))
     C.finish(f.dust, grime=0.2)
     return C.surface(bump_dist=mm(0.12), bump=0.5)
 
@@ -3392,12 +3341,12 @@ CAKE_SLICE = kit.Find(
     motions={
         # a thumb pressed down on its top and let go: the cake squashes and the cream lines push
         # out of both cut sides, held; then the slow-rise foam eases back up and the cream draws
-        # in, the cherry nodding on top (the game's soft squish on the press)
+        # in (the game's soft squish on the press)
         "Squeeze": dict(duration=CS_DUR, tracks=CS_TRACKS,
                         focus=(0.0, mm(CS_MID.y - 14.0), mm(CS_H * 0.55)),
                         distance=0.85, view=(-1.25, -1.5, 0.7), drop=0.0),
     },
-    # the rosettes and the cherry sink into the cream: shorter rays, or they bake black rims
+    # the rosettes sink into the cream: shorter rays, or they bake black rims
     dust=CS["dust"], seed=CS["seed"], texels=900, cage=0.0016,
 )
 

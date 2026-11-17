@@ -661,7 +661,7 @@ MEGA_OOZE = [
 # and round the back, sprinkles on top, a cream rosette and a berry at the back. Pressed on top,
 # the foam squashes and the cream lines push out of the sides. Ours is 5 in long, 3.7 in across
 # the back and 2.8 in tall to the frosting: four layers of its own colours (sky, mint, lemon,
-# pink, bottom to top), three piped rosettes along the back, a glossy cherry on the middle one.
+# pink, bottom to top), three piped rosettes along the back (no cherry: the owner dropped it).
 # Lengths in mm; y from the tip (-) to the back (+), z up from the floor.
 CAKE = dict(
     length=127.0,     # the tip to the back (5 in): the round cake's radius
@@ -680,11 +680,11 @@ CAKE = dict(
     # mesh halves them all)
     side_step=4.0, back_step=7.0, ring=3.0, ring_cream=1.1,
     # the rosettes: three piped swirls along the back (mm in from the back edge), their radius
-    # and height, how many ridges the star tip leaves and how far they twist (degrees)
-    rosettes=3, rosette_in=12.0, rosette_r=11.5, rosette_h=13.0, ridges=8, twist=150.0,
-    # the cherry on the middle rosette: its radius, how much squatter than round, how deep it
-    # sinks into the cream, the stem (radius, length, how far it leans back, degrees)
-    cherry_r=8.6, cherry_squat=0.9, cherry_sink=3.0, stem_r=0.9, stem_l=17.0, stem_lean=24.0,
+    # and height, how many ridges the star tip leaves and how far they twist (degrees); in far
+    # enough that the ridges' tips stay on the flat of the top, not over its rounded edge; the
+    # foot sunk this deep into the frosting (mm) and the rings up each, the same in both meshes
+    rosettes=3, rosette_in=16.0, rosette_r=11.5, rosette_h=13.0, ridges=8, twist=150.0,
+    rosette_sink=1.5, rosette_rings=12,
     # sprinkles on the top: rods this long and wide (mm), this many a square cm, none within
     # this far of the edge or under the rosettes
     sprinkle_l=5.0, sprinkle_w=1.5, sprinkles=3.0, sprinkle_edge=4.0,
@@ -707,22 +707,6 @@ FROST = [
     (3.9, 0.42, "Quad", "Out"),     # the slow rise, quickest first
     (8.4, 0.0, "Sine", "Out"),      # easing the last of the way up
 ]
-
-# The cherry's nod on its rosette (degrees, leaning back toward +Y is positive): it rocks back
-# as the top drops, swings over and settles; let go, it rocks again as the top starts back up.
-NOD = [
-    (0.0, 0.0),
-    (0.2, 7.0, "Quad", "Out"),
-    (0.5, -3.5, "Sine", "InOut"),
-    (0.8, 1.5, "Sine", "InOut"),
-    (1.1, 0.0, "Sine", "InOut"),
-    (1.4, 0.0),
-    (1.58, -4.0, "Quad", "Out"),
-    (1.9, 2.0, "Sine", "InOut"),
-    (2.3, -0.7, "Sine", "InOut"),
-    (2.8, 0.0, "Sine", "InOut"),
-]
-
 
 # --- The game rows (F-G1f, D-265; art/finds/PIPELINE.md) ----------------------------------------
 # What the game deals and plays for each find, in the order the deal lists them. art/finds/rows.py

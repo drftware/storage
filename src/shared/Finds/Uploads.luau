@@ -27,6 +27,7 @@ return {
 	},
 	Squishies = {
 		ButterStick = { Model = 91493472138143 },
+		CakeSlice = { Model = 98272687486525 },
 		Capybara = { Model = 127773297862764 },
 		ColourGooBall = { Model = 111826517480983 },
 		GalaxyGooBall = { Model = 128329446635375, Emissive = 80360072013614 },
