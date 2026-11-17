@@ -8,9 +8,14 @@ left, the cart rack to the right of the door. Built from code in Blender 5.2 the
 sets, and the deck, joists and walls are the corridor kit's own pieces, so the front office is
 plainly the same building as the halls.
 
-**Being re-laid as the ground floor** (D-259, D-260): `spec.py` already holds the new numbers
-(156 deep, 12 unit slots down the side walls); `build.py`, the sheets and this page still show the
-48-deep front office until S5-03a1b.
+**Now the ground floor, and a home** (D-259 to D-264): 156 deep, 12 unit slots down the side
+walls. Past `LANDING` (12 from the bay wall) it wears the home's look (`art/home`'s Plaster and
+Wood, D-264): oak planks, sage and cream plaster walls with a wood baseboard and rail, a white
+ceiling on wood beams with 28 round lamps (`Lamps`, plain: the game makes them Neon), a red
+runner (`Runner`, plain: Fabric), and plaster unit insides. The cars' strip keeps the climb's
+concrete, steel deck and joists (`Deck`, `Joists`), and the bay wall its Facade, Trim and Panel.
+The tables below still describe the front office's first build where they differ; the parts
+list in `build.py`'s `TEXSET` and `PLAIN` is current. Build `scripts/art.sh home` first.
 
 | | |
 |---|---|

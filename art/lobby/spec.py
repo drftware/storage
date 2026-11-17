@@ -169,6 +169,28 @@ def fixtures():
     return out
 
 
+# --- the home's look (D-263): calm everywhere but the cars ------------------------------------
+# The climb's edge keeps to a strip along the bay wall: its concrete, steel deck and joists, the
+# striped zones and the cars. Past LANDING the ground floor is a home: a plank floor, painted
+# walls with wood trim, a finished ceiling on wood beams with round warm lamps.
+LANDING = -SLOT_BACK     # the line the home starts on: the first partition's line, clear of the
+                         # striped zones; a bulkhead drops the finished ceiling to meet the deck
+CEIL = DECK              # the finished ceiling's underside: the deck's, so cards and colliders hold
+BULKHEAD = (0.8, 1.4)    # where the finished ceiling meets the cars' deck: its depth, how far it drops
+BEAM = (1.0, 0.75)       # the ceiling's wood beams: width, depth below the ceiling
+BEAM_XS = (-30.0, 30.0)  # two beams run front to back; one runs across on every slot line
+LAMP = (2.6, 0.16)       # the round ceiling lamps: across, how far they hang below the ceiling
+BASE = 0.55              # the wood baseboard's height on every home wall, the units' too
+RAIL = (0.32, 0.12)      # the wood rail where the wall's two paints meet (the units' cap): tall, proud
+RUNNER = (10.0, FRONT + 3.0, LANDING - 4.0)  # the runner rug down the middle: wide, from, to
+
+
+def lamps():
+    """Where the round lamps sit (x, y): four across, midway in each beam bay (over the units'
+    doors and the open middle), one row per slot, and a row over the front."""
+    return [(x, y) for y in slot_ys() + [FRONT + 12.0] for x in (-45.0, -15.0, 15.0, 45.0)]
+
+
 SPAWN = (0.0, FRONT + 6.0)  # where you load in: just inside the door, facing the cars
 
 # --- the shelves' stock: moving boxes the game clones from the boxes kit -----------------------

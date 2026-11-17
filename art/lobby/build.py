@@ -23,6 +23,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 UNIT = os.path.join(HERE, "..", "unit")
 CORRIDOR = os.path.abspath(os.path.join(HERE, "..", "corridor"))
 ELEVATOR = os.path.abspath(os.path.join(HERE, "..", "elevator"))
+HOME = os.path.abspath(os.path.join(HERE, "..", "home"))
 sys.path.insert(0, UNIT)
 sys.path.insert(0, CORRIDOR)  # first: `spec` is the corridor's, which its pieces read
 
@@ -51,18 +52,27 @@ E = load("elevator_spec", K.ELEVATOR_SPEC)
 
 OUT = os.path.join(HERE, "out")
 TEX = os.path.join(UNIT, "out", "textures")
+HOME_TEX = os.path.join(HOME, "out", "textures")  # the home's sets (art/home: build those first)
+HOME_SETS = {"Plaster", "Wood"}
+bake.TINTED.add("Plaster")  # the paint is the part's Color, as the unit's Facade
 SHEETS = os.path.join(K.ROOT, "art", "sheets")
 FBX = os.path.join(OUT, "Lobby.fbx")
-TEXSET = {"Floor": "Concrete", "Ceiling": "TrimSheet", "JoistsLeft": "TrimSheet",
-          "JoistsRight": "TrimSheet", "Facade": "Facade", "Trim": "TrimSheet", "Panel": "Partition",
-          "UnitWallsLeft": "Partition", "UnitWallsRight": "Partition", "UnitTops": "Partition", "Storefront": "TrimSheet", "Counter": "TrimSheet",
+TEXSET = {"Floor": "Concrete", "Boards": "Wood", "Deck": "TrimSheet", "Joists": "TrimSheet",
+          "Ceiling": "Plaster", "Facade": "Facade", "Trim": "TrimSheet", "Panel": "Partition",
+          "Walls": "Plaster", "WallsUpper": "Plaster", "Woodwork": "Wood",
+          "UnitWallsLeft": "Plaster", "UnitWallsRight": "Plaster", "UnitTops": "Plaster",
+          "Storefront": "TrimSheet", "Counter": "TrimSheet",
           "CounterFront": "Facade", "Shelves": "TrimSheet", "CartRack": "TrimSheet",
           "Signs": "TrimSheet"}
 # Untextured: imported without a SurfaceAppearance, so the game sets their Material and Color.
 # These are only the colours they import with.
-PLAIN = {"Glass": (0.16, 0.19, 0.2), "FloorPaint": (0.84, 0.62, 0.1)}
-# Everkeep's colours in the sheets (the game's are Lobby.Paint): teal walls, cream counter.
-TINT = {"Facade": "#2F6466", "CounterFront": "#CFCAC0"}
+PLAIN = {"Glass": (0.16, 0.19, 0.2), "FloorPaint": (0.84, 0.62, 0.1), "Lamps": (1.0, 0.9, 0.76),
+         "Runner": (0.36, 0.13, 0.1)}
+# The colours in the sheets (the game's are Lobby.Paint): the climb's teal on the bay wall, a
+# home's sage below the rail and warm cream above it, a soft white ceiling, the units warm white.
+TINT = {"Facade": "#2F6466", "CounterFront": "#CFCAC0", "Walls": "#93A68F",
+        "WallsUpper": "#E6DDCC", "Ceiling": "#F5F2EB", "UnitWallsLeft": "#E8DFCF",
+        "UnitWallsRight": "#E8DFCF", "UnitTops": "#F1EBDF"}
 
 H = C.WALL_H                         # the walls' cap height, as the units' and the corridor's
 CAP = H - C.CAP_DROP                 # the cap's underside: the facade stops there
@@ -103,30 +113,93 @@ def check():
 # --- the shell: floor, deck, walls ------------------------------------------------------------
 
 def floor():
-    """The slab from the bay wall to the apron outside the front door. UVs start on a texture
-    edge at the room's corner, so the saw-cut joints run square to the walls."""
-    m = Mesh("Floor")
+    """The climb's concrete where the cars are (the landing strip) and outside the front door;
+    the home's oak planks over the rest of the room and in the units, running toward the cars.
+    UVs start on a texture edge at the room's corner, so joints and planks run square to the walls."""
+    m, boards = Mesh("Floor"), Mesh("Boards")
     uv = lambda vs, n: [((v.x + W2) / C.TILE, (v.y + D) / C.TILE) for v in vs]
-    geo.box(m, (-W2, -D - K.APRON, -C.FLOOR_SKIRT), (W2, 0.0, 0.0), uv)
+    geo.box(m, (-W2, K.LANDING, -C.FLOOR_SKIRT), (W2, 0.0, 0.0), uv)
+    geo.box(m, (-W2, -D - K.APRON, -C.FLOOR_SKIRT), (W2, -D, 0.0), uv)
+    geo.box(boards, (-W2, -D, -C.FLOOR_SKIRT), (W2, K.LANDING, 0.0), uv)
     # under the units, out to their back walls (as the Floor collider)
     lines, back = K.slot_lines(), W2 + K.SLOT_DEPTH + K.OUTER
     for side in (-1, 1):
         x0, x1 = sorted((side * W2, side * back))
-        geo.box(m, (x0, lines[0], -C.FLOOR_SKIRT), (x1, lines[-1], 0.0), uv)
+        geo.box(boards, (x0, lines[0], -C.FLOOR_SKIRT), (x1, lines[-1], 0.0), uv)
+    return {"Floor": m, "Boards": boards}
+
+
+def plaster_uv(tile=4.0):
+    """Painted plaster: world-planar, 4 studs to a tile, whichever way a face looks."""
+    def f(vs, n):
+        ax = max(range(3), key=lambda i: abs(n[i]))
+        a, b = {0: (1, 2), 1: (0, 2), 2: (0, 1)}[ax]
+        return [(v[a] / tile, v[b] / tile) for v in vs]
+    return f
+
+
+def wood_uv(axis, lo, hi, column=4):
+    """Wood trim (beams, rails, baseboards, benches) out of one plank of the floor's bake: the
+    piece's length runs down the plank, so no plank joints show, the grain drawn out along it."""
+    off = (column * 0.618034) % 1.0
+    v0, v1 = (1.0 - off) / 3.0 + 0.01, (2.0 - off) / 3.0 - 0.01  # one plank's run in V
+    u0, u1 = (column + 0.12) / 12.0, (column + 0.88) / 12.0
+    span = [max(hi[i] - lo[i], 1e-6) for i in range(3)]
+    def f(vs, n):
+        ax = max(range(3), key=lambda i: abs(n[i]))
+        other = [i for i in range(3) if i not in (ax, axis)]
+        k = other[0] if other else [i for i in range(3) if i != ax][0]
+        t = lambda v: (v[axis] - lo[axis]) / span[axis] if ax != axis else 0.5
+        return [(u0 + (u1 - u0) * (v[k] - lo[k]) / span[k], v0 + (v1 - v0) * t(v)) for v in vs]
+    return f
+
+
+def wood_box(m, lo, hi, column=4):
+    """A box of wood trim, its grain along its longest side."""
+    axis = max(range(3), key=lambda i: abs(hi[i] - lo[i]))
+    geo.box(m, lo, hi, wood_uv(axis, lo, hi, column))
+
+
+def ceiling(wood):
+    """Over the cars' landing strip the climb's steel deck on its open-web joists (one every 6
+    across, each car's middle between two). Over the home a finished plaster ceiling (Ceiling),
+    dropping to a bulkhead where it meets the deck, on wood beams: two front to back and one across
+    on every unit's partition line, so each beam bay holds a pair of units and its round lamps."""
+    deck, joists, ceil = Mesh("Deck"), Mesh("Joists"), Mesh("Ceiling")
+    pieces.deck(deck, -W2, W2, K.LANDING, 0.0)
+    j = pieces.joist(-K.LANDING)
+    turn = Matrix.Rotation(math.radians(90), 4, "Z")
+    for x in K.joist_xs():
+        joists.extend(j, Matrix.Translation((x, K.LANDING / 2, 0.0)) @ turn)
+    bd, drop = K.BULKHEAD
+    edge = K.LANDING - bd
+    pu = plaster_uv()
+    geo.box(ceil, (-W2, -D, K.CEIL), (W2, edge, K.CEIL + 0.1), pu)
+    geo.box(ceil, (-W2, edge, K.CEIL - drop), (W2, K.LANDING, TOP), pu)
+    bw, bdep = K.BEAM
+    for y in K.slot_lines():
+        if y < K.LANDING - 1.0:
+            wood_box(wood, (-W2, y - bw / 2, K.CEIL - bdep), (W2, y + bw / 2, K.CEIL), 3)
+    for x in K.BEAM_XS:  # a touch shallower, so they butt into the cross beams as joinery does
+        wood_box(wood, (x - bw / 2, -D, K.CEIL - bdep + 0.06), (x + bw / 2, edge, K.CEIL), 3)
+    return {"Deck": deck, "Joists": joists, "Ceiling": ceil}
+
+
+def lamps():
+    """The round lamps, flush drums under the ceiling: a plain part the game lights warm."""
+    m = Mesh("Lamps")
+    d, hang = K.LAMP
+    for x, y in K.lamps():
+        geo.cylinder(m, "z", (x, y, K.CEIL - hang / 2), d / 2, hang, segs=20, smooth=False)
     return m
 
 
-def ceiling():
-    """The corridor's steel deck over the whole room (Ceiling) on its open-web joists, which span
-    the room's depth front to back, one every 6 across: each car's middle falls between two. Over
-    156 deep the joists pass Roblox's 20,000 triangles, so each half of the room is its own part."""
-    m, left, right = Mesh("Ceiling"), Mesh("JoistsLeft"), Mesh("JoistsRight")
-    pieces.deck(m, -W2, W2, -D, 0.0)
-    j = pieces.joist(D)
-    turn = Matrix.Rotation(math.radians(90), 4, "Z")
-    for x in K.joist_xs():
-        (left if x < 0 else right).extend(j, Matrix.Translation((x, -D / 2, 0.0)) @ turn)
-    return {"Ceiling": m, "JoistsLeft": left, "JoistsRight": right}
+def runner():
+    """The runner rug from the door mat to the landing strip: a plain part the game makes Fabric."""
+    m = Mesh("Runner")
+    w, y0, y1 = K.RUNNER
+    geo.box(m, (-w / 2, y0, 0.0), (w / 2, y1, 0.03), geo.map_floor(8.0))
+    return m
 
 
 # Each wall is built in the corridor's wall frame (its face on y = 0, the room toward -y, x along
@@ -169,14 +242,36 @@ def wall_layout():
     return lay
 
 
-def walls():
-    """Facade (the painted panels to the cap), Trim (posts, kick plate, cap, inside corners) and
-    Panel (the R-panel from the cap up through the deck) round the whole room."""
+def walls(wood):
+    """The bay wall keeps the climb's: Facade (the painted panels to the cap), Trim (posts, kick
+    plate, cap) and Panel (the R-panel from the cap up through the deck). The home's three walls
+    are plaster in two paints, Walls below the rail and WallsUpper above it to the ceiling, with a
+    wood baseboard and a wood rail where the units' caps run (Woodwork)."""
     facade, trim, panel = Mesh("Facade"), Mesh("Trim"), Mesh("Panel")
+    lower, upper = Mesh("Walls"), Mesh("WallsUpper")
+    pu = plaster_uv()
+    rh, rp = K.RAIL
     trim_z = geo.map_strip("trim", 2)
     P, F = C.POST, C.FACADE
     for name, (mat, along) in WALLS.items():
         faces, kicks, caps, posts, *halves = wall_layout()[name]
+        if name != "Bay":
+            lo_m, up_m, w_m = Mesh("lo"), Mesh("up"), Mesh("w")
+            for a, b in faces:
+                a, b = along(a, b)
+                geo.box(lo_m, (a, 0.0, 0.0), (b, F, H), pu)
+            for a, b in kicks:
+                a, b = along(a, b)
+                wood_box(w_m, (a, -0.07, 0.0), (b, 0.0, K.BASE), 5)
+            for a, b in caps:
+                a, b = along(a, b)
+                wood_box(w_m, (a, -rp, H - rh), (b, F, H + 0.02), 5)
+            a, b = along(*((-D, 0.0) if name in ("Left", "Right") else (-W2, W2)))
+            geo.box(up_m, (a, 0.0, H), (b, F, K.CEIL + 0.1), pu)
+            lower.extend(lo_m, mat)
+            upper.extend(up_m, mat)
+            wood.extend(w_m, mat)
+            continue
         f, t = Mesh("f"), Mesh("t")
         for a, b in faces:
             a, b = along(a, b)
@@ -203,11 +298,11 @@ def walls():
         panel.extend(p, mat)
     # a steel column in each inside corner, floor to deck, over where two walls' edges meet
     s = C.INSIDE_PROUD + 0.1
-    for cx, cy in ((-W2, 0.0), (W2, 0.0), (-W2, -D), (W2, -D)):
+    for cx, cy in ((-W2, 0.0), (W2, 0.0)):  # the bay wall's corners: the home's need none
         x0, x1 = sorted((cx, cx - math.copysign(s, cx)))
         y0, y1 = sorted((cy, cy + (s if cy < -1 else -s)))
         geo.box(trim, (x0, y0, 0.0), (x1, y1, TOP), trim_z, bevel=0.015)
-    return {"Facade": facade, "Trim": trim, "Panel": panel}
+    return {"Facade": facade, "Trim": trim, "Panel": panel, "Walls": lower, "WallsUpper": upper}
 
 
 def slot_frame(side, y):
@@ -217,30 +312,43 @@ def slot_frame(side, y):
     return mat @ Matrix.Translation((along(y, y)[0], 0.0, 0.0))
 
 
-def unit_shells():
-    """The units' shells the lobby builds round each M front: a partition on every slot line
-    (shared by the units either side), each slot's back wall and closed top, and the inside of the
-    side wall either side of its gap. The unit kit's own parts at XL (art/unit/parts.py)."""
+def unit_shells(wood):
+    """The units' shells round each front, a home's: smooth painted plaster partitions on every
+    slot line (shared by the units either side), each slot's back wall and the inside of the side
+    wall either side of its gap, a flat plaster ceiling at the walls' top (UnitTops), and a wood
+    baseboard round the inside. Built in each slot's frame (`slot_frame`)."""
     out = {"UnitWallsLeft": Mesh("UnitWallsLeft"), "UnitWallsRight": Mesh("UnitWallsRight"),
            "UnitTops": Mesh("UnitTops")}
     w2, g, H, F = XL.width / 2, K.DOOR_GAP / 2, XL.wall_height, XL.facade
-    inside = Mesh("inside")
-    mp = unit_parts.map_wall_along(H, 0, u_off=0.6)
+    d, t, b, pu = XL.depth, 0.125, K.BASE, plaster_uv()
+
+    def part(x):
+        m = Mesh("partition")
+        geo.box(m, (x - t, F, 0.0), (x + t, d, H), pu)
+        return m
+
+    shell, top, trim = Mesh("shell"), Mesh("top"), Mesh("trim")
+    geo.box(shell, (-w2, d - t, 0.0), (w2, d + t, H), pu)  # the back wall
     for x0, x1 in ((-w2, -g), (g, w2)):
-        unit_parts.quad(inside, (x0, F, 0.0), (x0, F, H), (x1, F, H), (x1, F, 0.0), mp)  # faces +y
-    back, top = unit_parts.wall_back(XL), unit_parts.top(XL)
-    near, far = unit_parts.wall_side(XL, -1), unit_parts.wall_side(XL, 1)
+        geo.box(shell, (x0, F, 0.0), (x1, F + 0.04, H), pu)  # the side wall's inside
+        wood_box(trim, (x0 + (t if x0 < 0 else 0.0), F + 0.04, 0.0),
+                 (x1 - (t if x1 > 0 else 0.0), F + 0.1, b), 5)
+    geo.box(top, (-w2, F, H), (w2, d, H + 0.15), pu)
+    wood_box(trim, (-w2 + t, d - t - 0.06, 0.0), (w2 - t, d - t, b), 5)
+    wood_box(trim, (-w2 + t, F + 0.1, 0.0), (-w2 + t + 0.06, d - t - 0.06, b), 5)
+    wood_box(trim, (w2 - t - 0.06, F + 0.1, 0.0), (w2 - t, d - t - 0.06, b), 5)
+    near, far = part(-w2), part(w2)
     for side, name in ((-1, "UnitWallsLeft"), (1, "UnitWallsRight")):
         ys = K.slot_ys()
         for k, y in enumerate(ys):
             at = slot_frame(side, y)
-            out[name].extend(back, at)
-            out[name].extend(inside, at)
+            out[name].extend(shell, at)
             out[name].extend(near, at)
             # the line the -x partitions leave: the cars' end on the left, the front on the right
             if k == (len(ys) - 1 if side < 0 else 0):
                 out[name].extend(far, at)
             out["UnitTops"].extend(top, at)
+            wood.extend(trim, at)
     return out
 
 
@@ -498,10 +606,14 @@ def floor_paint():
 
 
 def meshes():
-    out = {"Floor": floor()}
-    out.update(ceiling())
-    out.update(walls())
-    out.update(unit_shells())
+    wood = Mesh("Woodwork")
+    out = floor()
+    out.update(ceiling(wood))
+    out.update(walls(wood))
+    out.update(unit_shells(wood))
+    out["Woodwork"] = wood
+    out["Lamps"] = lamps()
+    out["Runner"] = runner()
     out["Storefront"], out["Glass"] = storefront()
     out["Counter"], out["CounterFront"] = counter()
     out["Shelves"] = shelves()
@@ -516,10 +628,13 @@ def build(coll=None, for_export=True):
     objs = {}
     for name, mesh in meshes().items():
         ob = mesh.build(coll)
-        if name in PLAIN:
-            ob.data.materials.append(render.simple(f"plain_{name}", PLAIN[name], 0.4))
+        if name == "Lamps" and not for_export:
+            ob.data.materials.append(render.emissive("lamp_lit", PLAIN[name], 5.0))
+        elif name in PLAIN:
+            ob.data.materials.append(render.simple(f"plain_{name}", PLAIN[name], 0.9 if name == "Runner" else 0.4))
         else:
-            ob.data.materials.append(bake.textured(TEXSET[name], TEX, for_export=for_export))
+            tex = HOME_TEX if TEXSET[name] in HOME_SETS else TEX
+            ob.data.materials.append(bake.textured(TEXSET[name], tex, for_export=for_export))
             if not for_export and name in TINT:
                 ob["tint"] = (*render.hexc(TINT[name]), 1.0)
         objs[name] = ob
@@ -647,7 +762,7 @@ def unit_fronts(coll):
     for name, ob in unit.objs.items():
         if uk.TEXSET.get(name):
             ob.data.materials.append(bake.textured(uk.TEXSET[name], TEX, for_export=False))
-    unit.objs["Facade"]["tint"] = (*render.hexc(TINT["Facade"]), 1.0)  # the lobby's teal
+    unit.objs["Facade"]["tint"] = (*render.hexc(TINT["Walls"]), 1.0)  # the home's wall paint
     chain = list(unit.make_chain().objects)
     drop = ("WallLeft", "WallRight", "WallBack", "Floor", "Top", "DoorOrigin", "Slat_A", "Slat_B",
             "Slat_C", "CurtainClosed")
@@ -690,6 +805,8 @@ def fixtures(coll):
     lens = render.emissive("lens_lit", (0.9, 0.95, 0.93), 6.0)
     eye = render.simple("eye_dark", (0.12, 0.12, 0.12), 0.4)
     for x, y in K.fixtures():
+        if y < K.LANDING:
+            continue  # the home has its round lamps (below); the hall lights keep to the cars
         for ob in corridor.build_fixture(0.0, coll, for_export=False, lens=lens, eye=eye).values():
             ob.matrix_world = Matrix.Translation((x, y, 0.0)) @ ob.matrix_world
         ld = bpy.data.lights.new("hall", "AREA")
@@ -700,6 +817,14 @@ def fixtures(coll):
         ld.color = (0.86, 0.95, 0.93)
         lo = bpy.data.objects.new("hall", ld)
         lo.location = (x, y, C.LENS_Z - C.LENS_THICK / 2 - 0.01)
+        coll.objects.link(lo)
+    d, hang = K.LAMP
+    for x, y in K.lamps():
+        ld = bpy.data.lights.new("lamp", "AREA")
+        ld.shape, ld.size = "DISK", d * 0.9
+        ld.energy, ld.color = 800.0, (1.0, 0.88, 0.74)
+        lo = bpy.data.objects.new("lamp", ld)
+        lo.location = (x, y, K.CEIL - hang - 0.02)
         coll.objects.link(lo)
 
 
@@ -780,10 +905,10 @@ def stage_renders():
         cam = render.camera(loc, target, lens=lens)
         render.shoot(cam, os.path.join(SHEETS, f"lobby-{name}.png"), exposure=ex)
     # the plan, from above with the deck lifted off
-    for n in ("Ceiling", "JoistsLeft", "JoistsRight", "Panel", "UnitTops"):
+    for n in ("Ceiling", "Deck", "Joists", "Panel", "UnitTops", "WallsUpper", "Lamps"):
         objs[n].hide_render = True
     for o in bpy.data.objects:
-        if o.name.startswith(("Housing", "Diffuser", "Eye", "hall")) or o.type == "LIGHT" and o.name.startswith("hall"):
+        if o.name.startswith(("Housing", "Diffuser", "Eye", "hall", "lamp")):
             o.hide_render = True
     sun = bpy.data.lights.new("plan_sun", "SUN")
     sun.energy = 2.0

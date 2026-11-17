@@ -6754,3 +6754,32 @@ are safe and a space all your own, so I want that vibe fully delivered as well."
   beanbag and a floor lamp, as Animal Crossing's first tent comes with a sleeping bag, a lamp
   and a radio. Movable once Arrange exists (S5-03e).
 - The phone weighing moves to S5-03a2c, after this, since the new look changes what's drawn.
+
+## D-264 · 2026-11-16 · The ground floor re-done calm: plaster, oak, beams and round lamps (S5-03a2b1)
+
+The ground floor's art is re-done for D-263. The climb's edge keeps to a strip 12 deep along the
+bay wall (`LANDING`, the first partition's line): its concrete, the steel deck on open-web
+joists, the hall lights, the striped zones and the cars. Past it the floor is a home.
+
+- **The home's own texture sets** (`art/home`, baked the unit's way): `Plaster`, painted
+  plaster whose paint is the part's Color (Overlay, as the unit's Facade), with only a roller's
+  stipple and a satin sheen in the maps; `Wood`, an oiled oak plank floor, twelve planks to 8
+  studs, ends staggered, every plank its own shade, no scratches (it's looked after). Wood trim
+  (beams, rails, baseboards) wears one plank of that bake drawn out along its length, so no
+  plank joints show on a beam.
+- **The room:** oak planks running toward the cars; sage plaster below the rail and warm cream
+  above it to the ceiling, a wood baseboard and a wood rail where the units' caps run; a soft
+  white plaster ceiling at the deck's height on wood beams (two front to back, one across on
+  every partition line, so each beam bay holds a pair of units), dropping to a bulkhead where
+  it meets the cars' deck; 28 round lamps, four across in each beam bay; a deep red runner rug
+  from the door to the cars. Precedent: a hotel's lobby, Animal Crossing's warm interiors.
+- **The units' insides** are smooth plaster in a warm white with a flat ceiling at the walls'
+  top and a wood baseboard round the inside, on the oak floor. Their fronts are still the
+  climb's M until S5-03a2b2 builds the home front.
+- **Phone cost:** 17,470 triangles in 24 parts (from 25,166): the finished ceiling and the
+  plaster walls are a few boxes where the deck and R-panel were thousands. The lamps are one
+  plain part (the game makes it Neon); which of them throw real light is S5-03a2c's.
+- **Defaults the owner may change** (`OWNER.md`): the palette (sage, cream, oak, red runner).
+- **Not chosen:** a carpeted floor (reads as an office, and shows nothing of the light); posts
+  and pilasters on the home's walls (they were the climb's steel rhythm); the counter and shelves
+  re-done (the shop's own piece).

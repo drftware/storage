@@ -2326,15 +2326,27 @@ Done when players watch the results to the end and change their perks between cl
         home's (`UnitLight.Home`: stronger, further, no shadow, always real when lit), so from
         the spawn every open unit reads as a warm doorway. Verified in Studio Play: twelve
         fronts, a door rolling, the lit view from the spawn, a car taking you to floor 1.
-      - [ ] **S5-03a2b The home look: calm, welcoming, yours** (the owner, Nov 16, D-263). The
+      - S5-03a2b The home look: calm, welcoming, yours (the owner, Nov 16, D-263). The
         moment: you step out of the car and the building breathes out: soft warm light, a
         finished ceiling, plants by the doors, twelve units that look like little homes rather
-        than the climb's lockups; in yours you flick the light switch and it's warm. The
-        ground floor's ceiling, walls, floor and light re-done calm (the cars' wall keeps the
-        climb's edge); a home unit kit of its own (smooth painted partitions, a finished
-        ceiling, a clean door in a warm colour, the same door rig); a light switch inside by
-        the door; a rug, a beanbag and a floor lamp in every unit to start. Art first, then
-        the game; split as needed.
+        than the climb's lockups; in yours you flick the light switch and it's warm. Split
+        three ways (art, art, then the game):
+        - [x] **S5-03a2b1 The ground floor re-done calm** (D-264): the home's own baked sets
+          (`art/home`: painted plaster, oak planks); oak floor, sage and cream plaster walls
+          with a wood baseboard and rail, a finished ceiling on wood beams with 28 round
+          lamps and a bulkhead where it meets the cars' steel deck; the units' insides smooth
+          plaster with flat ceilings and baseboards; a runner rug to the cars. The cars'
+          strip keeps its concrete, deck, joists and hall lights. Exported, not uploaded.
+        - [ ] **S5-03a2b2 The home's furnishings and front** (art): the home front kit in
+          `art/home` (a clean roll-up door in a warm colour on the climb's door rig, a painted
+          frame with no diamond plate, a light switch plate inside by the door); potted
+          plants by the doors and benches between units on the ground floor, a couple of
+          islands in the open middle; a rug, a beanbag and a floor lamp for every unit.
+        - [ ] **S5-03a2b3 The home look in the game**: upload and import the ground floor and
+          the home front; `Lobby.prepare` paints the new parts (`Lobby.Paint`), makes Lamps
+          glow (Neon) and the runner Fabric; the hall lights only over the cars; the home
+          front in each gap in place of the climb's M; the switch (Switch; a click; the light
+          warms up or down over about 0.2 s; dark with the door down and the light off).
       - [ ] **S5-03a2c The ground floor weighed for a phone** (after the new look): up to 25 real lights (6 fills,
         12 home bulbs, 6 car lamps, the porch) and the room's 87,446 triangles plus twelve M
         fronts and six cars, weighed at Galaxy A16 size against the GDD tech plan's caps;

@@ -384,15 +384,20 @@ local Specs = {
 	} :: { Slot },
 	-- Each MeshPart's box as imported (its centre is its CFrame in the lobby's frame).
 	Parts = {
+		Boards = {
+			Size = { 182.000, 0.200, 144.000 },
+			Centre = { -0.000, -0.100, -84.000 },
+			Triangles = 36,
+		},
 		CartRack = {
 			Size = { 18.320, 1.870, 5.020 },
 			Centre = { -27.000, 0.935, -153.150 },
 			Triangles = 1288,
 		},
 		Ceiling = {
-			Size = { 120.000, 0.350, 156.000 },
-			Centre = { -0.000, 14.175, -78.000 },
-			Triangles = 1252,
+			Size = { 120.000, 1.750, 144.000 },
+			Centre = { -0.000, 13.475, -84.000 },
+			Triangles = 24,
 		},
 		Counter = {
 			Size = { 2.650, 4.520, 14.120 },
@@ -404,15 +409,20 @@ local Specs = {
 			Centre = { 51.000, 1.625, -143.000 },
 			Triangles = 2,
 		},
+		Deck = {
+			Size = { 120.000, 0.350, 12.000 },
+			Centre = { -0.000, 14.175, -6.000 },
+			Triangles = 100,
+		},
 		Facade = {
-			Size = { 120.000, 9.880, 156.000 },
-			Centre = { 0.000, 4.940, -78.000 },
-			Triangles = 46,
+			Size = { 120.000, 9.880, 0.000 },
+			Centre = { -0.000, 4.940, 0.000 },
+			Triangles = 14,
 		},
 		Floor = {
-			Size = { 182.000, 0.200, 180.000 },
+			Size = { 120.000, 0.200, 180.000 },
 			Centre = { -0.000, -0.100, -90.000 },
-			Triangles = 36,
+			Triangles = 24,
 		},
 		FloorPaint = {
 			Size = { 102.400, 0.000, 3.200 },
@@ -424,20 +434,25 @@ local Specs = {
 			Centre = { -0.000, 5.090, -156.200 },
 			Triangles = 132,
 		},
-		JoistsLeft = {
-			Size = { 48.380, 1.200, 156.056 },
-			Centre = { 30.000, 13.400, -78.000 },
-			Triangles = 14040,
+		Joists = {
+			Size = { 108.380, 1.200, 12.057 },
+			Centre = { -0.000, 13.400, -6.000 },
+			Triangles = 3192,
 		},
-		JoistsRight = {
-			Size = { 54.380, 1.200, 156.056 },
-			Centre = { -27.000, 13.400, -78.000 },
-			Triangles = 15600,
+		Lamps = {
+			Size = { 92.600, 0.160, 124.600 },
+			Centre = { -0.000, 13.920, -83.000 },
+			Triangles = 2128,
 		},
 		Panel = {
-			Size = { 120.230, 4.470, 156.230 },
-			Centre = { 0.000, 12.115, -78.000 },
-			Triangles = 11072,
+			Size = { 120.000, 4.470, 0.130 },
+			Centre = { -0.000, 12.115, 0.050 },
+			Triangles = 2408,
+		},
+		Runner = {
+			Size = { 10.000, 0.030, 137.000 },
+			Centre = { -0.000, 0.015, -84.500 },
+			Triangles = 12,
 		},
 		Shelves = {
 			Size = { 1.920, 8.140, 18.000 },
@@ -455,24 +470,39 @@ local Specs = {
 			Triangles = 1056,
 		},
 		Trim = {
-			Size = { 120.540, 14.350, 156.540 },
-			Centre = { 0.000, 7.175, -78.000 },
-			Triangles = 7448,
+			Size = { 120.000, 14.350, 0.520 },
+			Centre = { -0.000, 7.175, 0.010 },
+			Triangles = 1244,
 		},
 		UnitTops = {
-			Size = { 180.000, 0.396, 120.000 },
-			Centre = { 0.000, 9.978, -72.000 },
-			Triangles = 16080,
+			Size = { 180.000, 0.150, 120.000 },
+			Centre = { 0.000, 10.075, -72.000 },
+			Triangles = 144,
 		},
 		UnitWallsLeft = {
-			Size = { 29.900, 10.000, 120.200 },
-			Centre = { 75.200, 5.000, -71.950 },
-			Triangles = 7872,
+			Size = { 29.875, 10.000, 120.250 },
+			Centre = { 75.188, 5.000, -72.000 },
+			Triangles = 300,
 		},
 		UnitWallsRight = {
-			Size = { 29.900, 10.000, 120.200 },
-			Centre = { -75.200, 5.000, -72.050 },
-			Triangles = 7872,
+			Size = { 29.875, 10.000, 120.250 },
+			Centre = { -75.188, 5.000, -72.000 },
+			Triangles = 300,
+		},
+		Walls = {
+			Size = { 120.500, 10.000, 156.250 },
+			Centre = { 0.000, 5.000, -78.125 },
+			Triangles = 192,
+		},
+		WallsUpper = {
+			Size = { 120.500, 4.100, 156.250 },
+			Centre = { 0.000, 12.050, -78.125 },
+			Triangles = 36,
+		},
+		Woodwork = {
+			Size = { 179.750, 14.000, 156.250 },
+			Centre = { 0.000, 7.000, -78.125 },
+			Triangles = 1188,
 		},
 	} :: { [string]: Part },
 	-- Invisible boxes the game collides with; the meshes don't.

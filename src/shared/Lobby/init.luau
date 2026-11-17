@@ -192,9 +192,23 @@ function Lobby.prepare(model: Model): Model
 	paint.Color = Lobby.Paint.Stripes
 	paint.Transparency = 0.12 -- worn: the concrete's tone comes through
 	paint.CastShadow = false
-	for _, name in { "Floor", "Ceiling", "Panel", "JoistsLeft", "JoistsRight", "UnitTops" } do
-		-- the floor has nothing under it to shade; the deck, the panels, the joists and the units'
-		-- closed tops nothing over them (every light is under them). The units' walls do cast:
+	for _, name in
+		{
+			"Floor",
+			"Boards",
+			"Runner",
+			"Ceiling",
+			"Deck",
+			"Joists",
+			"Lamps",
+			"Panel",
+			"WallsUpper",
+			"UnitTops",
+		}
+	do
+		-- the floors and the rug have nothing under them to shade; the ceilings, the deck, the
+		-- joists, the lamps, the upper walls and the units' ceilings nothing over them (every light
+		-- is under them). The units' walls do cast:
 		-- they keep each unit's bulb out of the next unit.
 		part(model, name).CastShadow = false
 	end

@@ -31,11 +31,14 @@ nowhere else.
   5. Only a unit's owner works its light switch (D-263); visitors see it as it is.
   6. Every unit starts with a rug, a beanbag and a floor lamp (D-263), as Animal Crossing's
      first tent comes furnished.
-  5. The ground floor is 156 studs deep (the front office was 48), so a new player runs about
+  7. The ground floor is 156 studs deep (the front office was 48), so a new player runs about
      9 seconds from loading in to the cars, past all 12 units.
-  6. Each unit's door is the climb's 8-wide door, in a unit 20 wide. A 12-wide door would show
+  8. Each unit's door is the climb's 8-wide door, in a unit 20 wide. A 12-wide door would show
      more of each unit from the floor, but that door's paint still stretches (D-260).
-  7. The units' doors are the climb's oxblood, on the lobby's teal walls (D-262).
+  9. The ground floor's colours (D-264): sage walls below a wood rail, warm cream above, a soft
+     white ceiling on wood beams, oak plank floors, a deep red runner down the middle to the
+     cars. Look at `art/sheets/lobby-spawn.png`, `lobby-unit.png` and `lobby-inside.png`.
+  10. The units' doors stay oxblood until the home front (S5-03a2b2) picks a warm colour.
 - [ ] **Walk the new ground floor** (S5-03a2a, D-262; seen in Studio Play by me, not on a
   phone). Press Play in Studio (or publish and play on your phone, Galaxy A16 or similar):
   1. You load in just inside the glass door, facing the six cars 150 studs away, twelve roll-up
