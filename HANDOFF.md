@@ -19,8 +19,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   and the stranger's rattle are Lune-tested only; the two-player test is in OWNER.md. Brix's
   ENG-25b is logged as a one-player run, not ticked (two clients and a leave still to see).
 - Still over the triangle default: the cars' 51k, ticketed as S5-03a2d.
-- Find art (third find run): V3a done (D-274: a step's timed `cues`; the kazoo and drum seen
-  in Play). Next: V3b, the spinner, doll and fish (ROADMAP F-G1e3b; `art/finds/WAVES.md`).
+- Find art (third find run): V3b done (D-276: the spinner, doll and fish seen in Play). Next:
+  V3c, the kazoo's lift in hand (ROADMAP F-G1e3c), then V4 the siren car (`art/finds/WAVES.md`).
 
 ## Next task: F-G1b4a The hard hat on your head, lit (the owner's order, D-259)
 The moment: you pull the hard hat on with the shell's knock and the lamp's click, and a tight,

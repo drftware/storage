@@ -864,6 +864,7 @@ from game import (  # noqa: E402
     CLANG,
     CLANK,
     CLASH,
+    CLICK_ON,
     CLINK,
     CRUNCH,
     DOWN_THE_HALL,
@@ -871,6 +872,9 @@ from game import (  # noqa: E402
     DRUM_HIT,
     HOLLOW,
     HUM,
+    LEVER,
+    MEOW,
+    MOTOR,
     MUSIC_BOX,
     PLASTIC,
     POP,
@@ -878,7 +882,9 @@ from game import (  # noqa: E402
     SNAP,
     SOFT,
     SQUEAK,
+    TICK,
     TIN,
+    WHIRR,
     WHISTLE,
     WIND,
     pitched,
@@ -1098,6 +1104,18 @@ GAME = [
         size="Large",
         pickUp=pitched(HOLLOW, 1.0),
         drop=pitched(PLASTIC, 1.0),
+        # "Pull: the arrow spins and an animal noise plays": the lever slams back up, the arrow
+        # spins, slows and ticks into its last three notches, and the animal it stops on calls
+        # through the speaker; monsters down the hall turn to it. As built it always stops on the
+        # cat (the server's pick is ROADMAP polish)
+        press=dict(
+            verb="Pull",
+            on=[dict(motion="Pull", hit=dict(part="FarmSpinner_Arrow", sound=TICK),
+                     cues=[dict(at=0.47, sound=LEVER), dict(at=3.2, sound=MEOW)])],
+            noise="Pull",
+            heard=DOWN_THE_HALL,
+            toy=True,
+        ),
     ),
     dict(
         key="CowboyDoll",
@@ -1110,6 +1128,17 @@ GAME = [
         size="Medium",
         pickUp=SOFT,
         drop=pitched(SOFT, 0.75, 0.6),
+        # "Pull: it says one of six lines": the ring pulled out and let go, the cord creeps home
+        # as it talks and clacks in; monsters down the hall turn to it. Until its lines are
+        # recorded (OWNER.md) you hear the cord's whirr under its governor
+        press=dict(
+            verb="Pull",
+            on=[dict(motion="Pull",
+                     cues=[dict(at=0.62, sound=WHIRR), dict(at=3.01, sound=pitched(CLACK, 1.6, 0.5))])],
+            noise="Pull",
+            heard=DOWN_THE_HALL,
+            toy=True,
+        ),
     ),
     dict(
         key="SingingFish",
@@ -1122,6 +1151,18 @@ GAME = [
         size="Large",
         pickUp=pitched(HOLLOW, 0.95),
         drop=pitched(CRUNCH, 0.9),
+        # "Press: its head turns and it sings": the button clicks in, the tail flaps, the head
+        # swings out and sings two bars, then snaps back and knocks the board twice; monsters
+        # down the hall turn to it. Until its song is recorded (OWNER.md) its motors hum
+        press=dict(
+            verb="Press",
+            on=[dict(motion="Press", sound=CLICK_ON,
+                     cues=[dict(at=0.28, sound=MOTOR), dict(at=5.86, sound=pitched(HOLLOW, 1.15, 0.5)),
+                           dict(at=6.04, sound=pitched(HOLLOW, 1.25, 0.3))])],
+            noise="Press",
+            heard=DOWN_THE_HALL,
+            toy=True,
+        ),
     ),
     dict(
         key="TinBird",

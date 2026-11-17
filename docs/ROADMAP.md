@@ -2722,11 +2722,15 @@ actions themselves and dealing the new finds on floors are later game tickets.
         `cues` play sounds partway into its motion (`Use.timeline`, with its `hit`'s beats); the
         kazoo hums once at your lips, heard 60 studs; the drum bangs at each of its five hits,
         heard 130. Both seen in Play, each waking a Mannequin that turned to it.
-      - [ ] **F-G1e3b The spinner, the doll and the fish.** Their rows on V3a's `cues` (the
-        spinner: the lever's clack, a tick each notch on `FarmSpinner_Arrow`'s turn, the cat's
-        meow at 3.07 s, where its arrow stops as built; the doll: the cord's whirr at 0.62 s; the
-        fish: the motor's hum from 0.28 s), each a `heard`; and the kazoo's lift to your lips in
-        hand (its root's motion, which the hand holds still today, so only its skin moves).
+      - [x] **F-G1e3b The spinner, the doll and the fish.** (Nov 17, V3b; D-276) Their rows on
+        V3a's `cues`, each heard 60 studs: the spinner's lever clack, a tick each notch, the cat's
+        meow as it stops; the doll's whirr and clack home; the fish's click, motors' hum and two
+        knocks. A part's last key is no beat (`Use.beats`). All three seen in Play; the spinner
+        woke a Mannequin that came to it.
+      - [ ] **F-G1e3c The kazoo's lift to your lips, in hand.** Its lift and tip are its root's
+        motion (`Kazoo_Body`'s own channels), and `Finds.joints` places every joint round the root,
+        so the hand holds it still. Offset the grip weld that holds the root (its `Part0` is the
+        hand) by the root's move from rest, on every screen and on your view's copy's weld.
     - [ ] **F-G1e4 The siren car (V4).** It rolls as the toy car does, its beacon spins and
       lights the hall while it rolls, and its wail lures along its path (F-G1e2's lure).
     - [ ] **F-G1e5 The rest the audit found (V5).** Split before starting: (a) a press on a

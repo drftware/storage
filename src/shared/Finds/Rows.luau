@@ -1288,6 +1288,50 @@ local Rows: { Game.Row } = {
 			volume = 0.8,
 			pitch = 1.0,
 		},
+		verb = "Pull",
+		press = {
+			verb = "Pull",
+			on = {
+				{
+					motion = "Pull",
+					hit = {
+						part = "FarmSpinner_Arrow",
+						sound = {
+							id = "rbxassetid://9119728830",
+							from = 0.15,
+							length = 0.12,
+							volume = 0.4,
+							pitch = 2.8,
+						},
+					},
+					cues = {
+						{
+							at = 0.47,
+							sound = {
+								id = "rbxassetid://9119728830",
+								from = 0.15,
+								length = 0.35,
+								volume = 0.8,
+								pitch = 1.25,
+							},
+						},
+						{
+							at = 3.2,
+							sound = {
+								id = "rbxassetid://83454004588488",
+								from = 0.04,
+								length = 0.65,
+								volume = 1.3,
+								pitch = 1.0,
+							},
+						},
+					},
+				},
+			},
+			noise = "Pull",
+			heard = 60,
+			toy = true,
+		},
 	},
 	{
 		key = "CowboyDoll",
@@ -1311,6 +1355,40 @@ local Rows: { Game.Row } = {
 			length = 0.4,
 			volume = 0.6,
 			pitch = 0.75,
+		},
+		verb = "Pull",
+		press = {
+			verb = "Pull",
+			on = {
+				{
+					motion = "Pull",
+					cues = {
+						{
+							at = 0.62,
+							sound = {
+								id = "rbxassetid://9118399720",
+								from = 0.2,
+								length = 1.9,
+								volume = 1.6,
+								pitch = 0.8,
+							},
+						},
+						{
+							at = 3.01,
+							sound = {
+								id = "rbxassetid://9119728830",
+								from = 0.15,
+								length = 0.35,
+								volume = 0.5,
+								pitch = 1.6,
+							},
+						},
+					},
+				},
+			},
+			noise = "Pull",
+			heard = 60,
+			toy = true,
 		},
 	},
 	{
@@ -1336,6 +1414,56 @@ local Rows: { Game.Row } = {
 			length = 0.7,
 			volume = 0.8,
 			pitch = 0.9,
+		},
+		verb = "Press",
+		press = {
+			verb = "Press",
+			on = {
+				{
+					motion = "Press",
+					sound = {
+						id = "rbxassetid://9114480271",
+						from = 0.38,
+						length = 0.14,
+						volume = 1.4,
+					},
+					cues = {
+						{
+							at = 0.28,
+							sound = {
+								id = "rbxassetid://9118401640",
+								from = 0.12,
+								length = 4.2,
+								volume = 1.4,
+								pitch = 0.7,
+							},
+						},
+						{
+							at = 5.86,
+							sound = {
+								id = "rbxassetid://9117544893",
+								from = 0,
+								length = 0.42,
+								volume = 0.5,
+								pitch = 1.15,
+							},
+						},
+						{
+							at = 6.04,
+							sound = {
+								id = "rbxassetid://9117544893",
+								from = 0,
+								length = 0.42,
+								volume = 0.3,
+								pitch = 1.25,
+							},
+						},
+					},
+				},
+			},
+			noise = "Press",
+			heard = 60,
+			toy = true,
 		},
 	},
 	{

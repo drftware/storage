@@ -2761,6 +2761,15 @@ verified: a doc page, Studio, or "untested".
   what monsters heard from a Server `LogService:GetLogHistory()` filtered for "heard a find" and
   "made its noise", not the whole Output. A find's motion channels in `Finds/Sets` are Roblox's
   axes: the art's up (Blender z) is `y`, so a `hit` on a part's rise or dip names `channel="y"`.
+- **Whether a sound loads in Play** (F-G1e3b, Nov 17): a Client `ContentProvider:PreloadAsync`
+  of bare "rbxassetid://" strings reports Failure for every audio id, Pro Sound Effects' too.
+  Parent a `Sound` with the id to Workspace instead and read `IsLoaded` and `TimeLength` after a
+  few seconds: the Creator Store meow (83454004588488) and the drum's snare load. A press's
+  sounds reach a `workspace.DescendantAdded` logger about 0.05 s after their cue; when the
+  Mannequin catches you the dropped find plays on where it lands.
+- **Generated rows: a cue list's sounds all carry a pitch or none do** (F-G1e3b): Luau types a
+  table literal's list by its first entry, so a cue without `pitch` after one with it fails strict
+  types in `Rows.luau`. Give it `pitch` 1.0 in `kit/game.py`.
 
 ## A home each, seen in Play (S5-03a3b, Nov 17)
 

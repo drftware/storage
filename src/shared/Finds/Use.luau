@@ -280,7 +280,9 @@ Use.BeatShare = 0.15
 	The beats of `motion` that sound a step's `hit` (seconds into it): each key where `part`'s
 	`channel` (none: its turn) peaks on the side it swings furthest, and at least `Use.BeatShare`
 	of that far (the cymbal monkey's every clash as its arms swing in; the teeth's every snap as
-	the body jolts forward, slowing as the spring runs down). A peak held over keys beats once.
+	the body jolts forward, slowing as the spring runs down). A peak held over keys beats once; a
+	part's last key is where it comes to rest, never a beat (the spinner's arrow settling into the
+	notch it has just ticked into, F-G1e3b).
 ]]
 function Use.beats(motion: Art.Motion?, part: string, channel: string?): { number }
 	local out: { number } = {}
@@ -304,7 +306,7 @@ function Use.beats(motion: Art.Motion?, part: string, channel: string?): { numbe
 			for i, k in keys do
 				local v = k[2] * side -- how far out on the far side
 				local before = if i > 1 then keys[i - 1][2] * side else -math.huge
-				local after = if i < #keys then keys[i + 1][2] * side else -math.huge
+				local after = if i < #keys then keys[i + 1][2] * side else v
 				if v >= Use.BeatShare * math.abs(far) and v >= before and v > after then
 					table.insert(out, k[1])
 				end

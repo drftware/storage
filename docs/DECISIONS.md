@@ -7083,3 +7083,18 @@ keeps everyone out, friends too."), on Brix's Plots (D-273).
 - **A home's room is its own size** (`RoomWidth`, `RoomDepth` on the unit, from the lobby slot's
   Inside, 20 by 30): ShutIn counts you shut in anywhere in it, not just the M's first 12 studs.
 
+
+## D-276 · 2026-11-17 · The spinner, the doll and the fish; a part at rest is no beat (F-G1e3b, V3b)
+The three talking finds are rows on D-274's cues, each the jack's one-shot noise heard 60 studs
+(down the hall), toys, no lure. The farm spinner's Pull: the lever's clack as it slams back
+(0.47 s), a tick on each hop of its arrow into a notch (a `hit` on `FarmSpinner_Arrow`'s turn),
+the cat's meow as it stops (3.2 s). The doll's Pull and the fish's Press ship OWNER.md's
+defaults until their voices are recorded: the cord's whirr from the let-go (0.62 s) and its clack
+home (3.01 s); the button's click, the motors' hum from 0.28 s and the head's two knocks on the
+board (5.86, 6.04 s). `Use.beats` no longer beats a part's last key, where it comes to rest: the
+spinner's arrow settles into the notch it has just ticked into 0.09 s earlier, which sounded the
+third tick twice; no other find's beats changed. The server's pick of the animal stays ROADMAP
+polish (the session's context cap): as built it always lands on the cat. Sounds measured in
+Studio (AudioAnalyzer): "Cat Meow Sound" (Creator Store, 0.97 s, the meow 0.06 to 0.6 s; it
+loads in Play); Pro Sound Effects' "Robot Servo 3" (the whirr, 0.8 pitch over 2.4 s) and
+"Robot Servo 19" (the hum, 0.7 pitch over 6 s).

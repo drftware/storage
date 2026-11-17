@@ -115,6 +115,22 @@ HUM = sound("rbxassetid://9114898444", 2.68, 0.92, 0.9, 0.75)
 # The toy drum's every hit: "INSTRUMENT Snare Drum" (Creator Store, 0.51 s, the hit in its
 # first 0.05 s), pitched up into a small tin drum's calfskin head and cut before the next hit.
 DRUM_HIT = sound("rbxassetid://127450250691379", 0, 0.4, 0.9, 1.3)
+# The farm spinner (F-G1e3b): its lever slamming back up to its stop, the hard plastic clack a
+# little higher; then its arrow hopping into each notch, the clack small, high and cut short.
+LEVER = pitched(CLACK, 1.25, 0.8)
+TICK = sound("rbxassetid://9119728830", 0.15, 0.12, 0.4, 2.8)
+# The cat the arrow stops on as built: "Cat Meow Sound" (Creator Store, 0.97 s; measured in Studio,
+# AudioAnalyzer PeakLevel in 60 ms bins: the meow from 0.06 s, loudest to 0.4 s, gone by 0.6 s),
+# through the toy's little speaker. Each animal's own call waits on the server's pick (ROADMAP
+# polish, "The farm spinner's arrow lands on any animal").
+MEOW = sound("rbxassetid://83454004588488", 0.04, 0.65, 1.3, 1.0)  # a pitch, as its cue list's other sounds have: Luau types a list by its first entry
+# The cowboy doll's cord creeping home under its governor, the owner's default until its six
+# lines are recorded (OWNER.md): Pro Sound Effects' "Robot Servo 3" (3.98 s, a steady dual-tone
+# whine from 0.18 s, measured), lower and slower so it runs the cord's whole 2.4 s creep.
+WHIRR = sound("rbxassetid://9118399720", 0.2, 1.9, 1.6, 0.8)
+# The singing fish's motors under its latex, the default until its song is recorded: "Robot Servo
+# 19" (4.64 s, steady from 0.12 s to 4.4 s, measured), lower, so it runs the press's 6 s.
+MOTOR = sound("rbxassetid://9118401640", 0.12, 4.2, 1.4, 0.7)
 
 # How far along the halls monsters hear a noisy find (studs: a press's `heard`, its loudness,
 # `Use.loudness`). A press with a noise and no `heard` carries as far as the air horn, 130 (the

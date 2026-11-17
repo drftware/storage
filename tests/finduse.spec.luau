@@ -574,6 +574,41 @@ do
 	ok(sorted, "a step's cues and beats in time order")
 end
 
+-- The spinner, the doll and the fish (F-G1e3b): each one noise down the hall, pressed again once
+-- it's done. The spinner's arrow ticks into its last three notches and settles; a part coming to
+-- rest at its last key is no beat, or the third tick would sound twice.
+do
+	for key, verb in { FarmSpinner = "Pull", CowboyDoll = "Pull", SingingFish = "Press" } do
+		local row = Use.Rows[key]
+		ok(row ~= nil and row.verb == verb, `{key}: its word`)
+		if row then
+			local d = durations(key)
+			ok(Use.noiseAt(row, "On", d) == 0, `{key}: heard as it's pressed`)
+			ok(Use.lureUntil(row, "On", d) == nil, `{key}: one noise, not a lure`)
+			ok(row.heard == 60 and Use.toy(row), `{key}: down the hall, pressed again`)
+			local step = row.on[1]
+			local cues = Use.timeline(step, Fixture.kit[key].Motions[step.motion])
+			ok(#cues > 0 and cues[#cues].t < d[step.motion], `{key}: its sounds inside its motion`)
+		end
+	end
+	local spinner = Use.Rows.FarmSpinner
+	local pull = spinner and spinner.on[1]
+	local hit = pull and pull.hit
+	local ticks = if hit
+		then Use.beats(Fixture.kit.FarmSpinner.Motions.Pull, hit.part, hit.channel)
+		else {}
+	ok(#ticks == 3, `spinner: three ticks into the notches ({#ticks})`)
+	ok(
+		#ticks == 3
+			and math.abs(ticks[1] - 2.3) < 1e-6
+			and math.abs(ticks[2] - 2.63) < 1e-6
+			and math.abs(ticks[3] - 3.07) < 1e-6,
+		"spinner: on the arrow's hops"
+	)
+	local all = if pull then Use.timeline(pull, Fixture.kit.FarmSpinner.Motions.Pull) else {}
+	ok(#all == 5 and all[#all].t > ticks[3], "spinner: the animal calls once it stops")
+end
+
 print(`finduse: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

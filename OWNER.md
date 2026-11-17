@@ -253,6 +253,14 @@ nowhere else.
      sound louder? (One recording for all five today.)
   3. Loudness defaults chosen: the kazoo carries 60 studs (down the hall, as the duck), the drum
      130 (as the air horn: the catalog says "loud"). Right?
+- [ ] **Try (F-G1e3b, built Nov 17, D-276; seen in Studio Play, not on a phone):** the farm
+  spinner, the cowboy doll and the singing fish. Same setup, `GiveFind` each, then press.
+  1. Pull the **spinner**: the lever clacks back, the arrow spins, ticks into three notches and
+     a cat meows. It always lands on the cat for now; does the pull still feel worth doing?
+  2. Pull the **doll**: its cord whirs home under the governor and clacks in (its voice waits on
+     the talking finds' question below). Does the whirr read as a pull-string toy?
+  3. Press the **fish**: a click, its motors hum, the head swings out and back with two knocks.
+  4. All three carry 60 studs (down the hall, as the kazoo). Right?
 - [ ] **Try (F-G1b3b, built Nov 16, D-234; seen in Studio Play, not on a phone):** drop a lit
   lantern to stop the Mannequin.
   1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),
