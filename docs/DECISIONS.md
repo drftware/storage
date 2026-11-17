@@ -8343,3 +8343,33 @@ the look over a rejoin (version 9). Three faults, fixed in `LooksView`:
 Left for polish (ROADMAP): the sheet (a Texture on plain plastic) reads a shade darker than the
 panel's SurfaceAppearance under the bulb, a small step as the wipe hands over; the mirror's copy
 of the room keeps the floor and paper it had when you came in.
+
+## D-328 The paint tab on the Arrange screen: two rows, the walls over the floor (S5-03g2b3, 2026-11-17)
+
+Seen in Studio Play on the Galaxy A16 simulator (685x338; the gui is 280 tall under the top bar):
+- **Two tabs on the tray's top edge**, at the left, riding with the tray: the finds (the Arrange
+  button's four squares) and the looks (a fan of three paint chips, a decorator's colour card).
+  Bloxburg's build mode tabs. The tab you're on wears the white ring a worn look's chip does; the
+  other stays solid, since a see-through one let the wallpaper muddy its icon. The tray slides
+  190 under the screen now (was 120), so its tabs go with it. Which tab shows is kept between
+  opens.
+- **Two rows, not four.** Four rows of 44-point chips would cover over half of the A16's 280
+  points; two take 120, the room's walls and the back of its floor still in view. The top row is
+  the walls (the papers, a divider, the eight paints), the bottom the floor (the four floors, a
+  divider, the chosen floor's colours), as the room stands. Everything fits the A16 without
+  scrolling; each row scrolls sideways if a later look won't.
+- **A chip shows what you'd get.** A paper's or floor's chip is its set's colour map (an
+  ImageLabel) over the colour that surface would wear were it tapped (`Looks.pick`, then
+  `Looks.wear`): the panels' Overlay, the map's clear bits showing the colour. Papers wear the
+  home's paint, so a new paint re-tints them (eased); a floor wears the colour it would keep by
+  name or its first. ImageLabels, not the ViewportFrames D-325 planned: twelve 3D views cost a
+  low-end phone a frame each, and a flat 46-point map reads the pattern as well. LooksView's
+  fetch-ahead already has the maps, so nothing pops.
+- **The ring is the server's answer, the wipe the room's.** A tap presses the chip in with the
+  job box's soft click and fires `PickLook`; the white ring moves when the unit's `Look` changes
+  (a ping later), then the room rolls. Tapping what you already wear is just the click. A new
+  floor's colours pop in where the old ones stood, the old shrinking away at the row's end so
+  nothing shifts; the oak boards have none, and the divider fades with them.
+- **Nothing to buy here.** Every look is free (D-326), so no chip is marked. When card styles or
+  looks are sold, a chip you don't own shows a small coin or Robux mark and never opens a popup
+  (S5-03g3c).

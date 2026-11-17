@@ -42,6 +42,8 @@ local FreeCursor = require(script.Parent.FreeCursor)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Grades = require(ReplicatedStorage.Shared.Grades)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
+local Looks = require(ReplicatedStorage.Shared.Home.Looks)
+local LooksTab = require(script.Parent.LooksTab)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 local ToolPicture = require(script.Parent.ToolPicture)
 local Tools = require(ReplicatedStorage.Shared.Tools)
@@ -110,6 +112,10 @@ local STILL_KEYS = {
 local REACH = 2.5
 -- How far a finger moves on a tray card before it's a drag (pixels): up lifts, sideways scrolls.
 local SLOP = 14
+-- The tray's height with the finds in it, and how far under the screen's foot it slides away:
+-- far enough that its tabs, standing on its top edge, go with it.
+local TRAY = 92
+local AWAY = 190
 
 -- A find lifted off the floor or out of the tray, as a ghost the finger drags.
 type Lifted = {
@@ -210,6 +216,12 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 	local placeButton: TextButton? = nil
 	local awayButton: TextButton? = nil
 	local cards: { [string]: TextButton } = {}
+	-- The paint tab (LooksTab), the tray's two tabs (the finds, the looks), which one shows (kept
+	-- between opens), and where each tab's things rest in the tray (they slide in to there).
+	local looksTab: LooksTab.Tab? = nil
+	local tabs: { TextButton } = {}
+	local onLooks = false
+	local listAt, looksAt = UDim2.new(), UDim2.new()
 	-- The limit bar: how many finds are set out of the most the home holds (the server's count,
 	-- sent with the box), and whether that's all (then a card in the tray won't lift).
 	local meter: Frame? = nil
@@ -503,7 +515,7 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		local t = tray
 		if t and open then
 			TweenService:Create(t, QUICK, {
-				Position = UDim2.new(0.5, 0, 1, if l then 120 else -10),
+				Position = UDim2.new(0.5, 0, 1, if l then AWAY else -10),
 			}):Play()
 		end
 		local a = awayButton
@@ -1157,6 +1169,69 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		end
 	end
 
+	-- Shows the tray's finds or its looks: the tray grows or shrinks to fit, the tab's things slide
+	-- in from its side (the looks pop in chip by chip), and the tab you're on lights up.
+	local function showTab(looks: boolean, eased: boolean)
+		local changed = looks ~= onLooks
+		onLooks = looks
+		pending = nil
+		local t, s, lt = tray, list, looksTab
+		if t then
+			local size = UDim2.new(1, -28, 0, if looks then LooksTab.Height else TRAY)
+			if eased then
+				TweenService:Create(t, QUICK, { Size = size }):Play()
+			else
+				t.Size = size
+			end
+		end
+		if s then
+			s.Visible = not looks
+		end
+		if lt then
+			lt.root.Visible = looks
+		end
+		if eased and changed then
+			local coming: GuiObject? = if looks then (if lt then lt.root else nil) else s
+			local at = if looks then looksAt else listAt
+			if coming then
+				coming.Position = at + UDim2.fromOffset(if looks then 28 else -28, 0)
+				TweenService:Create(coming, QUICK, { Position = at }):Play()
+			end
+			if looks and lt then
+				lt.reveal()
+			end
+		end
+		-- The tab you're on wears the white ring a worn look's chip does; the other stays solid
+		-- enough that the wallpaper's pattern doesn't muddy its icon (S5-03g2b3).
+		for i, b in tabs do
+			local on = (i == 2) == looks
+			local icon = b:FindFirstChild("Icon")
+			local edge = b:FindFirstChildOfClass("UIStroke")
+			local faded = if on then 0 else 0.35
+			local ring = {
+				Color = if on then Color3.new(1, 1, 1) else RIM,
+				Transparency = if on then 0 else 0.5,
+				Thickness = if on then 2 else 1,
+			}
+			if eased then
+				if icon then
+					TweenService:Create(icon, QUICK, { GroupTransparency = faded }):Play()
+				end
+				if edge then
+					TweenService:Create(edge, QUICK, ring):Play()
+				end
+			else
+				if icon and icon:IsA("CanvasGroup") then
+					icon.GroupTransparency = faded
+				end
+				if edge then
+					edge.Color, edge.Transparency, edge.Thickness =
+						ring.Color, ring.Transparency, ring.Thickness
+				end
+			end
+		end
+	end
+
 	local function openNow()
 		local camera = Workspace.CurrentCamera
 		if open or not camera then
@@ -1189,8 +1264,13 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		end
 		if t then
 			t.Visible = true
-			t.Position = UDim2.new(0.5, 0, 1, 120)
+			t.Size = UDim2.new(1, -28, 0, if onLooks then LooksTab.Height else TRAY)
+			t.Position = UDim2.new(0.5, 0, 1, AWAY)
 			TweenService:Create(t, RISE, { Position = UDim2.new(0.5, 0, 1, -10) }):Play()
+		end
+		local lt = looksTab
+		if lt then
+			lt.attach(home) -- its rings follow the home's look while you arrange
 		end
 		local ask = remote(Arrange.BoxRemote)
 		if ask then
@@ -1209,6 +1289,10 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		open = false
 		pending = nil
 		dragInput = nil
+		local lt = looksTab
+		if lt then
+			lt.attach(nil)
+		end
 		still(false)
 		body(false)
 		me:SetAttribute(Tools.StowAttribute, nil) -- the wheel comes back up
@@ -1251,7 +1335,7 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			tw:Play()
 		end
 		if t then
-			local tw = TweenService:Create(t, QUICK, { Position = UDim2.new(0.5, 0, 1, 120) })
+			local tw = TweenService:Create(t, QUICK, { Position = UDim2.new(0.5, 0, 1, AWAY) })
 			tw.Completed:Once(function()
 				if not open then
 					t.Visible = false
@@ -1428,8 +1512,8 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		-- The tray along the bottom: the box's finds.
 		local t = Instance.new("Frame")
 		t.AnchorPoint = Vector2.new(0.5, 1)
-		t.Position = UDim2.new(0.5, 0, 1, 120)
-		t.Size = UDim2.new(1, -28, 0, 92)
+		t.Position = UDim2.new(0.5, 0, 1, AWAY)
+		t.Size = UDim2.new(1, -28, 0, TRAY)
 		t.BackgroundColor3 = PANEL
 		t.BackgroundTransparency = 0.08
 		t.Visible = false
@@ -1458,6 +1542,73 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		layout.VerticalAlignment = Enum.VerticalAlignment.Center
 		layout.Parent = s
 		list = s
+		listAt = s.Position
+
+		-- The paint tab's papers, paints, floors and floor colours (LooksTab), in the same tray.
+		local lt = LooksTab.new(t, {
+			press = press,
+			pick = function(kind: Looks.Kind, id: string)
+				local r = remote(Looks.Remote)
+				if r then
+					r:FireServer(kind, id)
+				end
+			end,
+			rim = RIM,
+		})
+		looksTab = lt
+		looksAt = lt.root.Position
+
+		-- The tray's tabs on its top edge, at the left: the finds (the Arrange button's four
+		-- squares) and the looks (a fan of paint chips). They ride with the tray. Bloxburg's build
+		-- mode tabs.
+		for i = 1, 2 do
+			local tab = Instance.new("TextButton")
+			tab.Name = if i == 1 then "FindsTab" else "LooksTab"
+			tab.Text = ""
+			tab.AutoButtonColor = false
+			tab.AnchorPoint = Vector2.new(0, 1)
+			tab.Position = UDim2.fromOffset((i - 1) * 62, -6)
+			tab.Size = UDim2.fromOffset(56, 44)
+			tab.BackgroundColor3 = PANEL
+			tab.BackgroundTransparency = 0.08
+			corner(tab, UDim.new(0, 14))
+			local edge = Instance.new("UIStroke")
+			edge.Color = RIM
+			edge.Transparency = 0.5
+			edge.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			edge.Parent = tab
+			Instance.new("UIScale").Parent = tab
+			local icon = Instance.new("CanvasGroup")
+			icon.Name = "Icon"
+			icon.BackgroundTransparency = 1
+			icon.AnchorPoint = Vector2.new(0.5, 0.5)
+			icon.Position = UDim2.fromScale(0.5, 0.5)
+			icon.Size = UDim2.fromOffset(36, 32)
+			icon.Parent = tab
+			if i == 1 then
+				for j, at in { { -6, 6 }, { 6, 6 }, { -6, -6 }, { 7, -8 } } do
+					local sq = Instance.new("Frame")
+					sq.AnchorPoint = Vector2.new(0.5, 0.5)
+					sq.Position = UDim2.new(0.5, at[1], 0.5, at[2])
+					sq.Size = UDim2.fromOffset(10, 10)
+					sq.BackgroundColor3 = if j == 4 then INK else RIM
+					sq.BorderSizePixel = 0
+					corner(sq, UDim.new(0, 2))
+					sq.Parent = icon
+				end
+			else
+				LooksTab.icon(icon, PANEL)
+			end
+			tab.Activated:Connect(function()
+				press(tab)
+				if not lifted then
+					showTab(i == 2, true)
+				end
+			end)
+			tab.Parent = t
+			tabs[i] = tab
+		end
+		showTab(onLooks, false)
 
 		-- What you do with the lifted find: a corner cluster under the right thumb (the tray slides
 		-- away while a find is lifted, so the whole room shows). Place where the jump button sits,

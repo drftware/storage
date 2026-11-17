@@ -2617,14 +2617,14 @@ Done when players watch the results to the end and change their perks between cl
           `Home.Specs.Glows`: each lit piece's Neon and clear parts and its one light, near only
           (D-271). The sheet adds them by a person, then the hangout at night, the lamp off. Not
           uploaded.
-    - [ ] **S5-03g2 Paint and floors on the Arrange screen**, saved per home, in two:
+    - [x] **S5-03g2 Paint and floors on the Arrange screen**, saved per home, in two:
       - [x] **S5-03g2a The panels and swatches** (D-325): a floor panel and a wall panel per
         partition, the back wall and the front wall's inside round the doorway, 0.02 proud of the
         lobby's walls, UVs in studs over the tile so papers run level and carry round the back
         corners (`art/home/panels.py`); a swatch per look set; `Specs.Panels`, `Specs.Swatches`,
         `tests/homepanels.spec`. The looks sheet now dresses its rooms in the real panels and adds
         a row looking back at the doorway. Not uploaded.
-      - [ ] **S5-03g2b The picker and the save** (Animal Crossing's wallpaper and flooring), in
+      - [x] **S5-03g2b The picker and the save** (Animal Crossing's wallpaper and flooring), in
         three:
         - [x] **S5-03g2b1 Saved, worn and wiped in** (D-326): Home.fbx uploaded (18.8 MB taken,
           same asset); the save's `looks` (version 9, a migration, `tests/save.spec`);
@@ -2644,14 +2644,32 @@ Done when players watch the results to the end and change their perks between cl
             shade darker than the panel's SurfaceAppearance under the bulb; match its material.
           - [ ] **Polish: the mirror keeps the old look.** MirrorView's copy of the room keeps the
             floor and paper it had when you came in; re-copy the panels when `LookWorn` changes.
-        - [ ] **S5-03g2b3 The paint tab on the Arrange screen**: paper and floor chips (each
-          set's swatch in a ViewportFrame, tinted), paint and floor colour dots; a tap fires
-          `PickLook`, the chip pressed in with a soft click; the wipe is the answer.
-    - [ ] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby. The
-      chosen style's parts (`Specs.Cards`) replace the lobby's plain card plate over each door
-      (`art/lobby/build.py signs()` drops its unit cards); the name is written on `Face` in its
-      `Font` (Font.fromName) and `Ink`; the neon's tube goes Neon in `Glow`, its name gets a glow
-      stroke and a light (`CardLight`) on the wall; the spray (Holding.Card) still lands the name.
+        - [x] **S5-03g2b3 The paint tab on the Arrange screen** (D-328): two tabs on the tray's
+          top edge, the finds and the looks (a fan of paint chips); the looks tab is two rows, the
+          walls over the floor: papers then paints, floors then the chosen floor's colours. A
+          paper's or floor's chip is its colour map over what it would wear; dots for colours; a
+          white ring on what the home wears, moved when `Look` changes; a tap fires `PickLook`
+          with the soft click. `src/client/LooksTab.luau`. Seen in Studio Play on the A16
+          simulator: every kind picked, ringed and wiped; the save kept it. Pictures
+          `docs/art/S5-03g2b3-*.jpg`.
+          - [ ] **Polish: the floor's wipe half under the tray.** The looks tray (120 of the A16's
+            280 points) hides the near half of the floor as it unrolls; let the tray dip to its
+            tabs while a floor rolls, or lift the camera a touch on this tab.
+    - [ ] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby, in
+      three:
+      - [ ] **S5-03g3a The door's colour**: `Specs.Looks.Doors` (eight, D-321) saved with the
+        looks (`door`, a save migration), a fifth kind for `PickLook`, the roll-up door's slats
+        painted on every screen (the lobby's door of a held home), a third row of dots in the paint
+        tab or a dot row beside the paints. The answer is the door itself: a quick roll of colour
+        down the slats as you watch from inside (the door's inside face), a squish.
+      - [ ] **S5-03g3b The name card plates.** The chosen style's parts (`Specs.Cards`) replace
+        the lobby's plain card plate over each door (`art/lobby/build.py signs()` drops its unit
+        cards); the name is written on `Face` in its `Font` (Font.fromName) and `Ink`; the neon's
+        tube goes Neon in `Glow`, its name gets a glow stroke and a light (`CardLight`) on the
+        wall; the spray (Holding.Card) still lands the name.
+      - [ ] **S5-03g3c Choosing a card's style** in the paint tab: Starter styles free, Cash and
+        Robux ones shown as not yours yet (a small coin or Robux mark on the chip, never a popup);
+        a tap on one you don't own does nothing until the counter sells it (the store's rules).
     - [ ] **S5-03g4 Furniture at the counter in a weekly stock.** The lit pieces from
       `Specs.Glows`: their Neon parts Neon in `Colour`, clear parts Glass, their one light thrown
       only near you as the floor lamps' are (`Home.FloorLamp.Near`, D-271); the string lights hang

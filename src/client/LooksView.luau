@@ -96,6 +96,21 @@ local function fetched(ids: { string }): boolean
 	return true
 end
 
+-- The set's colour map, as a Texture or an ImageLabel can show it (a script reads
+-- `ColorMapContent`, not `ColorMap`: STUDIO.md), and the swatch's look. The Arrange screen's paint
+-- tab (LooksTab) draws its chips with it too.
+function LooksView.mapOf(template: Model, set: string): (string?, SurfaceAppearance?)
+	local swatch = template:FindFirstChild(Specs.Swatches[set] or "", true)
+	local look = if swatch then swatch:FindFirstChildOfClass("SurfaceAppearance") else nil
+	if not look then
+		return nil, nil
+	end
+	-- any: ColorMapContent (a Content) isn't in every type definition yet
+	local content = (look :: any).ColorMapContent
+	local uri = if content then content.Uri else nil
+	return if type(uri) == "string" and uri ~= "" then uri else nil, look
+end
+
 local function vec(v: { number }): Vector3
 	return Vector3.new(v[1], v[2], v[3])
 end
@@ -151,19 +166,7 @@ function LooksView.new(): Brix.System
 		w.folder:Destroy()
 	end
 
-	-- The set's colour map, as a Texture can show it (a script reads `ColorMapContent`, not
-	-- `ColorMap`: STUDIO.md).
-	local function mapOf(template: Model, set: string): (string?, SurfaceAppearance?)
-		local swatch = template:FindFirstChild(Specs.Swatches[set] or "", true)
-		local look = if swatch then swatch:FindFirstChildOfClass("SurfaceAppearance") else nil
-		if not look then
-			return nil, nil
-		end
-		-- any: ColorMapContent (a Content) isn't in every type definition yet
-		local content = (look :: any).ColorMapContent
-		local uri = if content then content.Uri else nil
-		return if type(uri) == "string" and uri ~= "" then uri else nil, look
-	end
+	local mapOf = LooksView.mapOf
 
 	local function step()
 		local now = Workspace:GetServerTimeNow()

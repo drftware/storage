@@ -2989,6 +2989,14 @@ verified: a doc page, Studio, or "untested".
 
 ## The Arrange screen on the Galaxy A16 (S5-03e3a2, Nov 17)
 
+- **Picking the A16 from the shell works** (S5-03g2b3, Nov 17): an Edit `execute_luau` of
+  `StudioDeviceSimulatorService:SetDeviceAsync("samsung_galaxy_a16")` then
+  `SetOrientationAsync(Enum.ScreenOrientation.LandscapeLeft)` set it (the Device menu isn't
+  needed). The gui is then 685 wide and 280 tall (the top bar takes 58), and the same taps land:
+  `user_mouse_input` at (gui x + 47, gui y), the crop above unchanged.
+- **When `user_mouse_input` times out and the window capture says "could not create image from
+  window"**, the Mac's display has slept (a Client count of `RenderStepped` reads 0).
+  `caffeinate -u -t 3` wakes it from the shell; Studio draws again at once and taps land.
 - **Mapping a macOS window capture to the gui:** with the Device Simulator's phone drawn at its
   default size in a 1386x972 Studio window, cropping 668x314 at (358, 361) gives the phone's
   screen, and a gui point is (crop - (49, 52)) / 0.845. Taps from `user_mouse_input` still land
