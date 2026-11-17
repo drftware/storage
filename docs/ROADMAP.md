@@ -2617,13 +2617,19 @@ Done when players watch the results to the end and change their perks between cl
           `Home.Specs.Glows`: each lit piece's Neon and clear parts and its one light, near only
           (D-271). The sheet adds them by a person, then the hangout at night, the lamp off. Not
           uploaded.
-    - [ ] **S5-03g2 Paint and floors on the Arrange screen**, saved per home, in two: g2a the
-      panels and swatches (art, export, Specs; no game code), g2b the Arrange screen's picker and
-      the save. The art first: one
-      floor panel (UVs in studs over `Looks.FloorTile`) and one wall panel (over `PaperTile`) per
-      partition, back and front wall, in `art/home`; a swatch part per set in Home.fbx carries its
-      SurfaceAppearance into Studio, and the game clones it onto the panels (game scripts can't
-      write a SurfaceAppearance's maps, STUDIO.md); the lobby's merged unit walls stay under them.
+    - [ ] **S5-03g2 Paint and floors on the Arrange screen**, saved per home, in two:
+      - [x] **S5-03g2a The panels and swatches** (D-325): a floor panel and a wall panel per
+        partition, the back wall and the front wall's inside round the doorway, 0.02 proud of the
+        lobby's walls, UVs in studs over the tile so papers run level and carry round the back
+        corners (`art/home/panels.py`); a swatch per look set; `Specs.Panels`, `Specs.Swatches`,
+        `tests/homepanels.spec`. The looks sheet now dresses its rooms in the real panels and adds
+        a row looking back at the doorway. Not uploaded.
+      - [ ] **S5-03g2b The picker and the save**: the Arrange screen's paint, paper and floor
+        picker (each look's swatch as its chip), the home's panels laid and dressed by the server
+        from the save (Animal Crossing's wallpaper and flooring). Upload Home.fbx first (18.8 MB:
+        if it's refused, the swatches go to their own FBX). The game clones a swatch's
+        SurfaceAppearance onto each panel and sets the part's Color (Overlay); the panels cast no
+        shadow. A pick answers at once: the walls or floor change round you with a soft sound.
     - [ ] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby. The
       chosen style's parts (`Specs.Cards`) replace the lobby's plain card plate over each door
       (`art/lobby/build.py signs()` drops its unit cards); the name is written on `Face` in its

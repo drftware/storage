@@ -33,6 +33,7 @@ import front  # noqa: E402
 import furnish  # noqa: E402
 import home_spec as K  # noqa: E402
 import looks  # noqa: E402
+import panels  # noqa: E402
 import materials as M  # noqa: E402  the unit's looks: the door's hardware keeps them
 import render  # noqa: E402
 
@@ -78,6 +79,7 @@ def texsets():
     out = {n: front.TEXSET.get(n) for n in front.BUILDERS}
     out.update(furnish.TEXSET)
     out.update(cards.TEXSET)
+    out.update(panels.texsets())
     out.update({n: "HomeDoor" for n in front.DOOR_PARTS})
     return out
 
@@ -133,7 +135,7 @@ def stage_export():
     coll = bpy.context.scene.collection
     objs = {n: unit.objs[n] for n in front.DOOR_PARTS}
     for name, mesh in list(front.meshes(s).items()) + list(furnish.meshes().items()) + \
-            list(cards.meshes().items()):
+            list(cards.meshes().items()) + list(panels.meshes(s).items()):
         objs[name] = mesh.build(coll)
     sets = texsets()
     rows = {}
@@ -162,7 +164,8 @@ def stage_export():
     plate, toggle = front.switch_at(s)
     lua = os.path.join(K.ROOT, "src", "shared", "Home", "Specs.luau")
     os.makedirs(os.path.dirname(lua), exist_ok=True)
-    K.write_luau(lua, rows, plate, toggle, front.lamp_at(s), {k: list(v) for k, v in cards.STYLES.items()})
+    K.write_luau(lua, rows, plate, toggle, front.lamp_at(s), {k: list(v) for k, v in cards.STYLES.items()},
+                 panels.placements(s), {n: f"Swatch{n}" for n in panels.swatch_sets()})
 
 
 # --- the looks' sheet (S5-03g1a, D-321) ------------------------------------------------------------
@@ -187,26 +190,31 @@ def look_wall(name, set_name, w, h, tile, loc, rot, tint):
     return ob
 
 
-def look_room(floor, floor_tint, paper, paint):
-    """One unit's inside wearing a look: walls, floor and ceiling, origin at the doorway's middle."""
-    w, d, h = LOOK_ROOM
-    floors = {i: s for i, s, _ in K.FLOORS}
-    papers = dict(K.PAPERS)
-    hexes = dict(K.PAINTS)
+def look_room(floor, floor_tint, paper, paint, s):
+    """One unit's inside wearing a look on the real panels (panels.py, as exported), with the
+    lobby's ceiling and baseboards round them, in the unit frame."""
+    import math
+    floors = {i: st for i, st, _ in K.FLOORS}
     fcols = {i: dict(c) for i, _, c in K.FLOORS}
-    tint = fcols[floor].get(floor_tint) if floor_tint else None
-    out = [look_wall("LookFloor", floors[floor], w, d, K.FLOOR_TILE, (-w / 2, 0.0, 0.0), (0, 0, 0), tint)]
-    pt, tile = hexes[paint], K.PAPER_TILE
-    out.append(look_wall("LookLeft", papers[paper], d, h, tile, (-w / 2, 0.0, 0.0), (90, 0, 90), pt))
-    out.append(look_wall("LookRight", papers[paper], d, h, tile, (w / 2, d, 0.0), (90, 0, -90), pt))
-    out.append(look_wall("LookBack", papers[paper], w, h, tile, (-w / 2, d, 0.0), (90, 0, 0), pt))
-    out.append(look_wall("LookTop", "Plaster", w, d, 4.0, (-w / 2, d, h), (180, 0, 0), "#F1EBDF"))
+    tints = {"floor": fcols[floor].get(floor_tint) if floor_tint else None, "wall": dict(K.PAINTS)[paint]}
+    coll = bpy.context.scene.collection
+    out = []
+    for name, at, turn in panels.placements(s):
+        ob = panels.panel(s, name, at, turn).build(coll)
+        ob.location = at
+        ob.rotation_euler = (0.0, 0.0, math.radians(turn))
+        kind = "floor" if name == "PanelFloor" else "wall"
+        ob.data.materials.append(material(name, floors[floor] if kind == "floor" else dict(K.PAPERS)[paper], False))
+        ob["tint"] = (*render.hexc(tints[kind]), 1.0) if tints[kind] else (1.0, 1.0, 1.0, 1.0)
+        out.append(ob)
+    x0, x1, y0, y1, h = panels.room(s)
+    out.append(look_wall("LookTop", "Plaster", x1 - x0, y1 - y0, 4.0, (x0, y1, h), (180, 0, 0), "#F1EBDF"))
     oak = render.simple("look_oak", render.hexc("#B98A5E"), 0.5)
-    b, pr = K.BASE, K.BASE_PROUD
-    for name, lo, hi in (("BaseL", (-w / 2, 0, 0), (-w / 2 + pr, d, b)),
-                         ("BaseR", (w / 2 - pr, 0, 0), (w / 2, d, b)),
-                         ("BaseB", (-w / 2, d - pr, 0), (w / 2, d, b))):
-        out.append(render.box_obj(name, lo, hi, oak, bpy.context.scene.collection))
+    b, pr = K.BASE, K.BASE_PROUD + 0.04  # the lobby's trim: 0.06 off the wall, 0.04 off a panel
+    for name, lo, hi in (("BaseL", (x0, y0, 0), (x0 + pr, y1, b)), ("BaseR", (x1 - pr, y0, 0), (x1, y1, b)),
+                         ("BaseB", (x0, y1 - pr, 0), (x1, y1, b)),
+                         ("BaseFL", (x0, y0, 0), (-5.0, y0 + pr, b)), ("BaseFR", (5.0, y0, 0), (x1, y0 + pr, b))):
+        out.append(render.box_obj(name, lo, hi, oak, coll))
     return out
 
 
@@ -274,23 +282,29 @@ def stage_looks():
     render.world((0.02, 0.018, 0.015), 1.0)
     look_lights()
     look_furniture()
-    w, d, h = LOOK_ROOM
+    spec = unit_kit().Spec(K.DOOR_SIZE)
     cam = render.camera((-1.5, -1.0, 6.2), (0.8, 18.0, 3.2), lens=16.0)
+    back = render.camera((1.5, 27.0, 6.2), (-0.8, 0.0, 3.6), lens=16.0, name="back")  # back toward the door
     import tempfile
     tmp = tempfile.mkdtemp(prefix="home-looks-")  # the panels; only the sheet is kept
-    shots = []
-    for k, (floor, ft, paper, paint) in enumerate(LOOK_PANELS):
-        parts = look_room(floor, ft, paper, paint)
-        path = os.path.join(tmp, f"look{k + 1}.png")
-        render.shoot(cam, path)
+    shots, backs = [], []
+
+    def shoot(c, path, into):
+        render.shoot(c, path)
         img = bpy.data.images.load(path)
-        shots.append((bake.pixels(img)[..., :3] * 255.0 + 0.5).astype(np.uint8))
+        into.append((bake.pixels(img)[..., :3] * 255.0 + 0.5).astype(np.uint8))
         bpy.data.images.remove(img)
+
+    for k, (floor, ft, paper, paint) in enumerate(LOOK_PANELS):
+        parts = look_room(floor, ft, paper, paint, spec)
+        shoot(cam, os.path.join(tmp, f"look{k + 1}.png"), shots)
+        if k >= 4:
+            shoot(back, os.path.join(tmp, f"back{k + 1}.png"), backs)
         for ob in parts:
             me = ob.data
             bpy.data.objects.remove(ob)
             bpy.data.meshes.remove(me)
-    rows = [np.hstack(shots[i:i + 4]) for i in range(0, len(shots), 4)]
+    rows = [np.hstack(shots[i:i + 4]) for i in range(0, len(shots), 4)] + [np.hstack(backs)]
     sheet = np.vstack(rows + [door_strip(rows[0].shape[1], 220)])
     out = os.path.join(K.ROOT, "art", "sheets", "home-floors.png")
     bake.write_png(out, sheet)

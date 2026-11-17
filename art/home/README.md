@@ -134,6 +134,27 @@ lights each glow with a point light hidden from the camera and draws the acrylic
 (Cycles' glass shadows its wall black). Home.fbx: 33,534 triangles in 63 parts. Not uploaded
 until g4.
 
+## The panels a home's looks land on (S5-03g2a, D-325)
+
+The lobby's unit walls and floor are merged meshes the twelve homes share, so each home's paint,
+paper and floor go on its own panels (`panels.py`), 0.02 proud of them (`PANEL_PROUD`), the
+lobby's walls left under. Each is its own part on its own origin, its middle, its face toward -y;
+`Specs.Panels` gives its middle in the unit's frame and its turn. Sized for the XL slot (S5-03h).
+
+| Part | Set | Tris | What it is |
+|---|---|---|---|
+| PanelFloor | Wood | 12 | the floor inside the walls, door to back wall: squares start at the back wall and the middle, boards run toward the back |
+| PanelLeft, PanelRight | Plaster | 12 each | the partitions, left and right as you walk in, between the front and back panels |
+| PanelBack | Plaster | 12 | the back wall, wall to wall |
+| PanelFront | Plaster | 36 | the front wall's inside round the doorway (FacadeBack's hole) |
+| Swatch&lt;Set&gt; | each floor and paper set | 12 each | a 2-stud square showing half a tile: carries the set's SurfaceAppearance into Studio, and is the picker's chip |
+
+UVs are in studs over the tile: a paper's rows run level all round (V is the height) and carry on
+round both back corners (U runs round the room from the back wall's middle). `--stage looks` now
+dresses its eight rooms in the real panels, with the lobby's ceiling and baseboards, and adds a
+row looking back at the doorway. Home.fbx: 33,714 triangles in 76 parts, 18.8 MB with the looks'
+maps. Not uploaded until g2b.
+
 ## Into Studio (S5-03a2b3, D-268)
 
 `lune run scripts/upload_art Home` (asset 110439035194989 in `assets.json`), then in Edit load it

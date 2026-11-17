@@ -302,6 +302,16 @@ FLOORS = (("Boards", "Wood", ()),
 PAPERS = (("Plain", "Plaster"), ("Stripes", "PaperStripes"), ("Leaves", "PaperLeaves"),
           ("Daisies", "PaperDaisies"))
 
+# The panels the looks land on (S5-03g2a, D-325, panels.py): a floor panel and a wall panel per
+# partition, the back wall and the front wall's inside, each its own part over the lobby's merged
+# unit walls and floor.
+PANEL_PROUD = 0.02   # each panel's thickness off the wall or floor under it: a hair, so the lobby's
+                     # walls stay under it, the baseboards (0.06 proud) still stand in front and a
+                     # rug (0.04) still lies on it; enough that the two never flicker at a unit's
+                     # depth on a phone's depth buffer
+SWATCH = (2.0, 0.1)  # each set's swatch (the part that carries its SurfaceAppearance into Studio,
+                     # and the picker's chip): across and tall, thick; half a tile on its face
+
 
 # The name card over a home's door (S5-03g1b, D-322): four plates, each its own part(s) on one
 # origin, the card's middle on the wall's face (the lobby's R-panel), its front toward -y. The
@@ -399,6 +409,26 @@ def luau_looks():
     return L
 
 
+def luau_panels(panels, swatches):
+    """The panels' and swatches' lines for Home.Specs. panels: (part, middle, turn) in the unit
+    frame (Blender); swatches: set to part."""
+    L = ["\t-- The panels a home's looks land on (D-325): each its own part on its own origin (its",
+         "\t-- middle, its face toward -Z), At its middle in the unit's frame, turned Turn degrees",
+         "\t-- about Y. The floor wears a floor's set, the walls a paper's, cloned from Swatches (a",
+         "\t-- game script can't write a SurfaceAppearance's maps); the lobby's walls stay under them.",
+         "\tPanels = {"]
+    row = lambda n, at, turn: f"{{ Part = \"{n}\", At = {lua_vec(b2r(at))}, Turn = {turn:.1f} }}"
+    floor = [p for p in panels if p[0] == "PanelFloor"][0]
+    L += [f"\t\tFloor = {row(*floor)},", "\t\tWalls = {"]
+    L += [f"\t\t\t{row(*p)}," for p in panels if p[0] != "PanelFloor"]
+    L += ["\t\t},", "\t} :: { Floor: Panel, Walls: { Panel } },",
+          "\t-- Each floor's and paper's set: the part that carries its SurfaceAppearance.",
+          "\tSwatches = {"]
+    L += [f"\t\t{k} = \"{v}\"," for k, v in swatches.items()]
+    L += ["\t} :: { [string]: string },"]
+    return L
+
+
 def b2r(v):
     """A Blender point in Roblox's frame."""
     return (-v[0], v[2], v[1])
@@ -408,7 +438,7 @@ def lua_vec(v, nd=3):
     return "{ " + ", ".join(f"{c:.{nd}f}" for c in v) + " }"
 
 
-def write_luau(path, parts, switch, toggle, lamp, cards_of):
+def write_luau(path, parts, switch, toggle, lamp, cards_of, panels, swatches):
     """parts: {name: dict(size=(x, y, z) Roblox, centre=Blender, tris=n)}; switch, toggle, lamp:
     their middles in the unit frame (Blender)."""
     L = [
@@ -430,6 +460,7 @@ def write_luau(path, parts, switch, toggle, lamp, cards_of):
         "export type Swatch = { Id: string, Colour: string }",
         "export type Floor = { Id: string, Set: string, Colours: { Swatch } }",
         "export type Paper = { Id: string, Set: string }",
+        "export type Panel = { Part: string, At: Vec, Turn: number }",
         "export type CardStyle = { Id: string, Sold: string, Parts: { string }, Face: Vec, FaceSize: Vec,",
         "\tFont: string, Weight: string, Ink: string, Paint: string?, Glow: string? }",
         "",
@@ -519,6 +550,7 @@ def write_luau(path, parts, switch, toggle, lamp, cards_of):
               f"\t\t\tRange = {rng}, Brightness = {bright}, Colour = \"{col}\" }},"]
     L += ["\t} :: { [string]: Glow },"]
     L += luau_looks()
+    L += luau_panels(panels, swatches)
     L += luau_cards(cards_of)
     L += [
           "\t-- Each MeshPart's box as imported (its centre is its CFrame in its frame).",

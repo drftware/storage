@@ -22,6 +22,7 @@ export type Glow = {
 export type Swatch = { Id: string, Colour: string }
 export type Floor = { Id: string, Set: string, Colours: { Swatch } }
 export type Paper = { Id: string, Set: string }
+export type Panel = { Part: string, At: Vec, Turn: number }
 export type CardStyle = {
 	Id: string,
 	Sold: string,
@@ -230,6 +231,30 @@ local Specs = {
 			{ Id = "Daisies", Set = "PaperDaisies" },
 		} :: { Paper },
 	},
+	-- The panels a home's looks land on (D-325): each its own part on its own origin (its
+	-- middle, its face toward -Z), At its middle in the unit's frame, turned Turn degrees
+	-- about Y. The floor wears a floor's set, the walls a paper's, cloned from Swatches (a
+	-- game script can't write a SurfaceAppearance's maps); the lobby's walls stay under them.
+	Panels = {
+		Floor = { Part = "PanelFloor", At = { -0.000, 0.010, 15.082 }, Turn = 0.0 },
+		Walls = {
+			{ Part = "PanelLeft", At = { 9.865, 5.000, 15.082 }, Turn = 90.0 },
+			{ Part = "PanelBack", At = { -0.000, 5.000, 29.865 }, Turn = 0.0 },
+			{ Part = "PanelRight", At = { -9.865, 5.000, 15.082 }, Turn = -90.0 },
+			{ Part = "PanelFront", At = { -0.000, 5.000, 0.300 }, Turn = 180.0 },
+		},
+	} :: { Floor: Panel, Walls: { Panel } },
+	-- Each floor's and paper's set: the part that carries its SurfaceAppearance.
+	Swatches = {
+		Wood = "SwatchWood",
+		FloorCarpet = "SwatchFloorCarpet",
+		FloorTiles = "SwatchFloorTiles",
+		FloorMatting = "SwatchFloorMatting",
+		Plaster = "SwatchPlaster",
+		PaperStripes = "SwatchPaperStripes",
+		PaperLeaves = "SwatchPaperLeaves",
+		PaperDaisies = "SwatchPaperDaisies",
+	} :: { [string]: string },
 	-- The name card's styles (D-322): each a plate over the door on one origin, the card's
 	-- middle on the wall's face, its front toward -Z. Face: the writing's middle in that
 	-- frame; FaceSize, across and tall. Font: a family for Font.fromName and its weight
@@ -494,6 +519,31 @@ local Specs = {
 			Centre = { -0.030, 0.599, -0.000 },
 			Triangles = 2112,
 		},
+		PanelBack = {
+			Size = { 19.750, 10.000, 0.020 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 12,
+		},
+		PanelFloor = {
+			Size = { 19.750, 0.020, 29.585 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 12,
+		},
+		PanelFront = {
+			Size = { 19.750, 10.000, 0.020 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 36,
+		},
+		PanelLeft = {
+			Size = { 29.545, 10.000, 0.020 },
+			Centre = { 0.000, 0.000, 0.000 },
+			Triangles = 12,
+		},
+		PanelRight = {
+			Size = { 29.545, 10.000, 0.020 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 12,
+		},
 		Plant = {
 			Size = { 2.170, 3.089, 1.966 },
 			Centre = { -0.210, 2.994, 0.062 },
@@ -580,6 +630,46 @@ local Specs = {
 			Size = { 9.628, 0.975, 0.128 },
 			Centre = { -0.000, -0.490, 0.009 },
 			Triangles = 1232,
+		},
+		SwatchFloorCarpet = {
+			Size = { 2.000, 2.000, 0.100 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 12,
+		},
+		SwatchFloorMatting = {
+			Size = { 2.000, 2.000, 0.100 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 12,
+		},
+		SwatchFloorTiles = {
+			Size = { 2.000, 2.000, 0.100 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 12,
+		},
+		SwatchPaperDaisies = {
+			Size = { 2.000, 2.000, 0.100 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 12,
+		},
+		SwatchPaperLeaves = {
+			Size = { 2.000, 2.000, 0.100 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 12,
+		},
+		SwatchPaperStripes = {
+			Size = { 2.000, 2.000, 0.100 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 12,
+		},
+		SwatchPlaster = {
+			Size = { 2.000, 2.000, 0.100 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 12,
+		},
+		SwatchWood = {
+			Size = { 2.000, 2.000, 0.100 },
+			Centre = { -0.000, 0.000, 0.000 },
+			Triangles = 12,
 		},
 		Switch = {
 			Size = { 0.450, 0.700, 0.050 },

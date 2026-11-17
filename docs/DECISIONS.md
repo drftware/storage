@@ -8278,3 +8278,22 @@ to make a room theirs; Animal Crossing's lit furniture.
   `art/sheets/home-furniture.png` now three rows: both parts by a person, the hangout by day and at
   night (lamp off), from a seat and by the wall. Judged at phone size: all four read; the night
   panel is warm under the bulbs and round the moon. Their prices and colours wait on the owner.
+
+## D-325 The home's wall and floor panels, and a swatch per look (S5-03g2a, 2026-11-17)
+
+- **Panels over the lobby's walls, not new walls.** The lobby's unit walls and floor are merged
+  meshes shared by all twelve homes, so a home's paint and floor go on its own panels a hair
+  (0.02) proud of them: a floor panel, one per partition, the back wall and the front wall's
+  inside round the doorway (`art/home/panels.py`). The lobby's walls stay under them. Thin boxes,
+  not single planes, so no part imports with no depth; 84 triangles for a whole home.
+- **UVs in studs over the tile**, so any floor set (8 studs) or paper (4) wears a panel at its
+  true size. A paper's rows run level all round the room (V is the height) and carry on round both
+  back corners (U runs round the room from the back wall's middle); only the front corners break,
+  as real wallpaper does. The floor's squares start at the back wall and the room's middle, and
+  oak boards now run from the door to the back wall (the lobby's ran across): it draws you in.
+- **Each panel its own part on its own origin** (its middle, its face toward -Z); `Specs.Panels`
+  gives its middle in the unit's frame and its turn, so S5-03h can move them. Sized for XL now.
+- **A swatch per set** (`Swatch<Set>`, a 2-stud square showing half a tile): the only way a set's
+  SurfaceAppearance reaches Studio, since game scripts can't write its maps; the game clones a
+  swatch's onto a panel and sets the part's Color (Overlay). The swatch doubles as the picker's
+  chip in a ViewportFrame. Home.fbx: 33,714 triangles in 76 parts, 18.8 MB with the looks' maps.
