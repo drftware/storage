@@ -7778,3 +7778,21 @@ edge, and it breaks D-302's rule that a server going down never costs a find.
   own server (S5-03d4), so that ticket's OWNER.md steps include a live shutdown mid-climb. If a
   store ever answered within a frame, a leaver's strike would miss their last write and they'd
   keep the find (no loss; a friend carrying it aboard would make two).
+
+## D-306 · 2026-11-17 · Arranging is judged by Brix's Placements; the home supplies areas and spots (S5-03e1)
+
+The owner's word (D-252): a system the home needs that Brix lacks is built in Brix, then the pin moves.
+- **Built in Brix** as its ENG-26a (`7f25310`): `Brix.Placements.new({ areas, limit })` judges every
+  find set out in one unit, and `Brix.PlacementSnap.grid({ step = 0.5, turn = 90 })` and
+  `.free({ turn })` settle a find being dragged (idea 13: the grid, and Free for everyone).
+- **How the home will use it (e2, e3):** each unit's floor, walls and ceiling are its areas, sized
+  from its XL slot and its size; the shelf, the job box and any find with a flat top offer a top
+  (idea 14's tabletop). A find's spot (floor, tabletop, wall, ceiling) and footprint come from a
+  home file keyed by the find's kind. The limit is 25, 50, 100 and 150 by size (idea 15).
+- **Saved:** the save keeps Brix's saved form per player in a new save version. A find that no
+  longer fits after an update (its art grew, the unit shrank) is left out on load and is simply back
+  in the chest; a form newer than the server reads is never written over.
+- **The server's side stays here:** only the unit's holder may move its things (FrontOffice's
+  plots), each ask is checked and rate-limited (`Brix.RateLimit.bucket`), and every change is told to
+  every client. Brix's adapter for this (its ENG-26b) waits until the game has wired its own.
+- Footprints are flat: a tall floor find and a low wall find may cross. Not judged until it shows.

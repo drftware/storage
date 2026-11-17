@@ -2499,14 +2499,18 @@ Done when players watch the results to the end and change their perks between cl
     ceiling spots (a column in the catalog), red where it can't go, Place, Put away, Done, the
     limit bar (25, 50, 100, 150 by size); saved in a new save version; every move checked on the
     server. Split for context:
-    - [ ] **S5-03e1 Placements, in Brix** (D-252): a pure placements system built in `../engine`
+    - [x] **S5-03e1 Placements, in Brix** (D-252): a pure placements system built in `../engine`
       by Brix's own AGENTS.md (neutral names, its checks and specs, its commit): a room's
       surfaces (floor, tabletop, wall, ceiling), footprints snapped to a half-stud grid with
       quarter turns, in-bounds and overlap checks with a reason for each refusal, a limit; then
       the pin moves here. No game code beyond the pin.
+      Done (D-306): Brix's ENG-26a at `7f25310`, `Brix.Placements` and `Brix.PlacementSnap`
+      (grid and free); the pin moved; nothing wired here yet.
     - [ ] **S5-03e2 Arranged, saved and checked**: a new save version holding each home's
       placements (with its migration), the catalog's spot column, every move checked on the
-      server through e1 and rate-limited.
+      server through e1 and rate-limited. The spot column lives in a home file of its own, not
+      the find run's `Rows.luau`; the unit's areas come from its XL slot, the limit from its size;
+      rows a load leaves out go back to the chest; only the unit's holder may move its things.
     - [ ] **S5-03e3 The Arrange screen**: lift, drag, red where it can't go, Place, Put away,
       Done, the limit bar, Free for everyone; seen in Studio at phone size.
   - [ ] **S5-03f The mirror and the clothes rail** (ideas 21 to 24): the tested mirror in every

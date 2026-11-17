@@ -6,7 +6,7 @@ touches. This file is read on demand, never at session start; keep each row to o
 | Path | Owns |
 | --- | --- |
 | `default.project.json` | Rojo tree (JSON with comments): Brix → ReplicatedStorage.Brix, `src/shared` → ReplicatedStorage.Shared, `src/server` → ServerScriptService.Server, `src/client` → StarterPlayerScripts.Client; streaming and Lighting settings with what each does to the player |
-| `vendor/brix/` | Brix, a git submodule pinned at `4c21b5f` (docs/FRAMEWORK.md) |
+| `vendor/brix/` | Brix, a git submodule pinned at `7f25310` (docs/FRAMEWORK.md) |
 | `src/shared/StorageUnit/init.luau` | The package: CrawlHole, Curtain, Door, DoorSound, Motion, RollUpDoor, ShutIn, TopHole, UnitKit, Specs |
 | `src/shared/StorageUnit/Curtain.luau` | Pure roll-up kinematics: rise → every slat's frame and the drum angle (port of `art/unit/curtain.py`) |
 | `src/shared/StorageUnit/Motion.luau` | Pure door timing curves per action, targets, the replicated motion string; `speed` (the curve's slope) and `strikes` (when a door lands, bounces, settles or meets the top); `Bang` (a trapped keeper's blow: the door jumps on its rail where it is) and `Burst` (its burst up, 0.6 s) (L-06b3d1, D-078); S2-05a (D-169): "Ease" (down to `Motion.Hover`, 0.9 studs, over 1.85 s), "Settle" (0.9 s, soft) and "Drop" (a slam's fall from there, full strength) |
