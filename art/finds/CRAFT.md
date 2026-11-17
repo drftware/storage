@@ -183,7 +183,10 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   specks from a doorway when off; the bigger ones read off and on. **Value** (F-04k): Roblox's
   bulb is darker and redder than the `-unit` sheet, so saturated reds and pale faces read and
   mid browns go dark: a tell drawn as a shape on a background (the fish on its plaque) needs the
-  two far apart in value.
+  two far apart in value. **Glitter** (L1): flakes over about 1.5 mm across read as big pale
+  chips in a 2.5 in ball up close; 0.7 to 1.4 mm, and more of them, glint as glitter. A small
+  find's own glow light reaches about 2 studs: the galaxy ball's at range 7 turned a whole row
+  of finds violet.
 
 ## Things that move or light
 

@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** L1 (the 14 squishies in Studio at phone size, with the glitter and galaxy balls' glitter
-hexes and the galaxy ball's glow; it ticks F-05). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
+**Next:** L1b (squeeze the rebuilt glitter and galaxy balls in Play, maybe shorten the galaxy's
+light; it ticks F-05: the newest note). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
 V5a to V5f are done and seen in Play (Nov 17), but for V5e2.
 
 ## The third run's plan (owner's brief, Nov 16 night)
@@ -57,6 +57,8 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
    owner dropped its cherry).
 9. **L1 The 14 squishies in Studio at phone size**, with the glitter and galaxy balls' glitter
    hexes (they read as big pale squares up close) and the galaxy ball's glow. Ticks F-05.
+   (L1a done Nov 17: judged in Studio, both fixes built, imported and seen in Edit; L1b: the
+   Play pass, then F-05 ticks.)
 10. **Q1 Everything in Studio Play.** A dev command that deals a chosen find into the nearest
     unit (Studio or the owner's UserId only), then every find checked: dealt, taken, carried,
     banked, pressed, written in A1's table. Then fix sessions (Q2 ...) until the table is green
@@ -253,6 +255,42 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, L1a (the 14 squishies judged together in Studio; both fixes built, imported and seen
+  in Edit; stopped at the run's 200k context line before the Play pass; L1b next).** **The look:** all 14 cloned
+  into a medium unit (a clone of `Units.M` at (600, 0.5, 600), door parts gone, a bulb at 0.6,
+  range 11, at (0, 8.8, 6) in it), two rows of seven 0.85 apart at 7.4 and 8.7 deep (past the
+  bulb: in front of it their faces turned from it went dark), each posed at rest with
+  `Finds.pose(m, name, Finds.rest(name))` (without it the galaxy ball imports dark, D-249).
+  Captured from macOS (`screen_capture` timed out; STUDIO.md's way), cropped to the Galaxy A16's
+  screen in the Device Simulator (664 x 314 of the window's 1386 x 972). **Read:** from the
+  doorway all 14 are specks, as CRAFT.md expects for 2.5 in toys; the mega goo ball, the
+  strawberry, the cake slice, the toast and the butter stick read by shape and colour from 2
+  studs; up close every one reads as itself and apart: the gel bead ball's beads, the toast's
+  crust, the cat-shaped paper squishy's drawn heart, the strawberry's seeds, the mega ball's
+  violet ribbons; sizes sit true (the mega ball three of the others across, the strawberry and
+  cake the big ones beside the 2.5 in balls); nothing blown out. **Faults, fixed in the art:**
+  (1) the glitter ball's 230 hexes (1.6 to 2.9 mm across) read as big pale chips up close: now
+  640 at 0.7 to 1.4 mm (`GLITTER` `flakes`, `flake_r`, `gap` 1.6), 9,408 triangles, 1024 at
+  1138 texels a stud; the galaxy ball's 80 specks now 260 at 0.6 to 1.1 mm (`specks`,
+  `speck_r`), 7,120 triangles, 1179 texels a stud. (2) The galaxy ball's violet Point light
+  (0.4 at 0.8 = 0.32, range 7) turned the whole row violet: the cake slice's cream lilac, the
+  red goo ball magenta, the floor purple. Now 0.3, range 2.2: a pool about two feet across.
+  Re-baked, exported (the other FBX checked out), uploaded in place (the galaxy's glow mask is a
+  new Decal, 98353373662402, in `Uploads.luau`); imported in Edit from a clone of `Shared` (5
+  parts each). **Seen again in Edit:** the glitter ball's flakes now glint as fine glitter all
+  through the aqua gel, and the galaxy's specks are fine; the textures took about a minute to
+  draw after the import (first capture: plain tan balls). The cake slice 1.3 studs behind the
+  galaxy ball still goes a little lilac at range 2.2: shorten it to 1.5 if the Play pass shows
+  it on a neighbour in a box (export only, then re-import: the light lives in the Luau).
+  **Trap:** a second `scripts/art.sh set squishies textures <Find>` straight after another
+  printed nothing and baked nothing (Blender aborted; the grep hides it), and the export then
+  wrote that find's FBX from the old bake: check each `BAKED` line before exporting.
+  The lineup is deleted and the camera put back; only the two templates changed in the place.
+  **For L1b:** a Play pass: `DevBox` = `GlitterGooBall`, then `GalaxyGooBall`, take and squeeze
+  each (PIPELINE.md step 7); then tick F-05 in ROADMAP and here (the Squishies heading), and
+  move Next to Q1. Sheets weren't re-rendered (`scripts/art.sh set squishies renders
+  GlitterGooBall`, about 4 min, if the look calls for it).
 
 - **Nov 17, S4b (the squishy cake slice finished, imported and seen in Play; S1 to S4 done; L1
   next).** **Judged** the full sheets: the rosettes' lower halves baked as torn, crumpled paper,

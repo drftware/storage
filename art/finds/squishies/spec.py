@@ -442,8 +442,10 @@ GLITTER = dict(
     sink=1.0,          # how far it settles onto the floor: a small soft flat spot
     skin=1.4,          # the TPR skin's thickness (mm): the gel fills it to its inside
     # the hex flakes hung in the gel: how many, their size (the hexagon's corner radius, mm),
-    # how far apart two must stay (mm, so none cross), and how near the gel's wall they may come
-    flakes=230, flake_r=(0.8, 1.45), gap=2.8, wall=2.9,
+    # how far apart two must stay (mm, so none cross), and how near the gel's wall they may come.
+    # Small and many (L1): at 1.6 to 2.9 mm across, in Studio up close they read as big pale
+    # chips; at 0.7 to 1.4 mm they glint as fine glitter, catching the light one by one
+    flakes=640, flake_r=(0.35, 0.7), gap=1.6, wall=2.9,
     # how the flakes are dealt: silver, gold, rose, lilac (shares of the whole)
     mix=(0.46, 0.24, 0.18, 0.12),
     # the star sequins: how many, their points' radius and their waist's (mm)
@@ -511,8 +513,9 @@ GALAXY = dict(
     # the star sequins: silver five-pointed, gold five-pointed, and pale four-pointed sparkles
     # that glow; how many of each, their points' radius (mm) and their waist's share of it
     silver=11, gold=7, sparkle=10, star_r=(1.9, 2.8), star_in=0.43, sparkle_in=0.24,
-    # the fine glitter: hex specks, how many and how big (corner radius, mm)
-    specks=80, speck_r=(0.45, 0.8),
+    # the fine glitter: hex specks, how many and how big (corner radius, mm): small and many, so
+    # up close they glint as glitter, not read as pale chips (L1)
+    specks=260, speck_r=(0.3, 0.55),
     gap=2.4, wall=3.2,  # how far apart two pieces stay and how near the gel's wall they come (mm)
     band=9.0,          # the swirling bands, by a piece's height over the middle (mm)
     # the pearl moon (radius mm, its middle from the ball's) and the ringed planet (its ball's

@@ -2590,8 +2590,9 @@ GALAXY_GOO_BALL = kit.Find(
     galaxy_look,
     lights=[
         # a faint violet glow all round, shining out through the skin: from a doorway it reads
-        # as a softly glowing ball; far weaker than the unit's bulb
-        dict(kind="Point", part="Gel", at=GX_FOCUS, rgb=(150, 116, 255), brightness=0.4, range=7,
+        # as a softly glowing ball; far weaker than the unit's bulb. A pool about two feet
+        # across: at range 7 it turned every find in a row violet in Studio (L1)
+        dict(kind="Point", part="Gel", at=GX_FOCUS, rgb=(150, 116, 255), brightness=0.3, range=2.2,
              shadows=False, preview_kind="POINT", preview_watts=0.8, preview_size=0.03),
     ],
     glow=dict(part="Gel", strength=1.5, tint=(226, 214, 255), preview=4.0),

@@ -30,7 +30,7 @@ return {
 		CakeSlice = { Model = 98272687486525 },
 		Capybara = { Model = 127773297862764 },
 		ColourGooBall = { Model = 111826517480983 },
-		GalaxyGooBall = { Model = 128329446635375, Emissive = 80360072013614 },
+		GalaxyGooBall = { Model = 128329446635375, Emissive = 98353373662402 },
 		GelBeadBall = { Model = 79353970920181 },
 		GlitterGooBall = { Model = 81331925763211 },
 		GooBall = { Model = 73237673219847 },

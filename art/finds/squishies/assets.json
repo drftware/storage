@@ -17,11 +17,11 @@
   },
   "GalaxyGooBall": {
     "assetId": 128329446635375,
-    "sha256": "0a77555ce04cde985b4a93ff344fa8021292a7a0edf5ac1464796ed4a952ca26"
+    "sha256": "1a2d57c57ad7f476a666f262fccceb4f880ee42b14337443bb5a5f6e96cc955e"
   },
   "GalaxyGooBallEmissive": {
-    "assetId": 80360072013614,
-    "sha256": "41a9a5214a6b365adf1c60c33814b83955e8c1ba108fe0dacd8b1d95e7b65dcd"
+    "assetId": 98353373662402,
+    "sha256": "b2fd268ade2a386dbd339c44427b8ffab2f393487466fec31d4a2da541698183"
   },
   "GelBeadBall": {
     "assetId": 79353970920181,
@@ -29,7 +29,7 @@
   },
   "GlitterGooBall": {
     "assetId": 81331925763211,
-    "sha256": "8909e8bd2bc9feaf0d379cd0711e2e77d1cd101cfe5c29fcb6ed81d19dbad5e7"
+    "sha256": "b855c41f98b2f27a85da52aabe38aad5b0e72e3743e16680779437c9ab4cf55f"
   },
   "GooBall": {
     "assetId": 73237673219847,

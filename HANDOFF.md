@@ -24,6 +24,8 @@ github.com/drftware/storage); Brix pinned at `7f25310`, NOT on Brix's `origin` y
   centre plus (47, 0) (STUDIO.md).
 - Stage only your own paths; the find run commits its own `art/finds/`, `src/shared/Finds/`,
   `tests/stuffdeal.spec.luau`, and may have hunks in `docs/`: stage yours as a blob then.
+- Find art (third run): S1 to S4 and L1a done (the 14 squishies judged in Studio; the glitter
+  balls' flakes fine, the galaxy's light shorter). Next: L1b, their Play pass (WAVES.md's Next).
 
 ## Next task: S5-03f2b Wearing from the rail
 The moment: everything you own that you can wear hangs on your rail; you press the hard hat and
