@@ -187,6 +187,59 @@ do
 	ok(data.finds.Teddy == 2, "and nothing struck off")
 end
 
+-- Selling a cracked find (S5-03c3a2, D-296): a name with cracked ones sells a cracked one first,
+-- at half (Chip.worth), one off `chipped`, so `chipped` never tops `finds`; the whole ones keep
+-- their full price; the card's price says which is next.
+do
+	ok(BoxPanel.price({ worth = 20 }, nil, true) == 10, "a cracked one's price is half")
+	ok(BoxPanel.price({ worth = 1 }, nil, true) == 1, "never under one")
+	ok(BoxPanel.price({ worth = 21 }, nil, false) == 21, "a whole one's is its worth")
+
+	local data = Save.fresh()
+	data.cash = 0
+	data.finds = { Lamp = 3 }
+	data.chipped = { Lamp = 2 }
+	local boxed = Save.boxed(data, {})
+	ok(BoxPanel.sell(data, boxed, "Lamp", 20) == 10, "the first sells cracked, at half")
+	ok(data.finds.Lamp == 2 and data.chipped.Lamp == 1, "one fewer owned, one fewer cracked")
+	ok(BoxPanel.sell(data, Save.boxed(data, {}), "Lamp", 20) == 20, "the second cracked, at half")
+	ok(data.finds.Lamp == 1 and data.chipped.Lamp == nil, "none cracked left: its name leaves")
+	ok(BoxPanel.sell(data, Save.boxed(data, {}), "Lamp", 20) == 40, "the whole one, at full")
+	ok(data.finds.Lamp == nil and data.cash == 40, "all three sold: 10, 10, 20")
+
+	data.finds = { Lamp = 1 }
+	data.chipped = { Lamp = 4 } -- more cracked than owned: a save that slipped
+	ok(BoxPanel.sell(data, Save.boxed(data, {}), "Lamp", 20) == 50, "sold cracked")
+	ok(data.chipped.Lamp == nil, "cracked never tops what you own")
+
+	data.finds = { Lamp = 2 }
+	data.chipped = { Lamp = 1 }
+	ok(Save.shelve(data, "Lamp", Save.Fresh.Seen, 6) == 1, "one Lamp on the shelf")
+	ok(BoxPanel.sell(data, Save.boxed(data, { Lamp = 1 }), "Lamp", 20) == nil, "none in the box")
+	ok(data.chipped.Lamp == 1 and data.cash == 50, "a refused sale cracks nothing off")
+
+	-- what the box sends as it opens: how many of each name in it are cracked, nothing else
+	data.finds = { Lamp = 3, Teddy = 2, Vase = 1 }
+	data.chipped = { Lamp = 2, Vase = 1 }
+	data.shelf = {}
+	local cracked = BoxPanel.cracked(data.chipped, Save.boxed(data, { Vase = 1 }))
+	ok(cracked.Lamp == 2, "the box's cracked Lamps")
+	ok(cracked.Teddy == nil, "no cracked Teddy")
+	ok(cracked.Vase == nil, "the Vase is out in your hands: not the box's")
+	data.finds.Lamp = 1
+	ok(
+		BoxPanel.cracked(data.chipped, Save.boxed(data, {})).Lamp == 1,
+		"never more than the box holds"
+	)
+
+	-- the screen's count after its answers: a sale takes a cracked one first, a Gold four
+	local left = BoxPanel.crackedLeft
+	ok(left(2, BoxPanel.Ways.Sell) == 1 and left(1, BoxPanel.Ways.Sell) == 0, "a sale: one")
+	ok(left(0, BoxPanel.Ways.Sell) == 0, "none cracked stays none")
+	ok(left(5, BoxPanel.Ways.Gold) == 1 and left(3, BoxPanel.Ways.Gold) == 0, "a Gold: four")
+	ok(left(2, BoxPanel.Ways.Hand) == 2, "taken out: the cracked ones stay in the box")
+end
+
 -- Four make a Gold (S5-03c3b, D-298): four of one find in the box become one of its Gold in one
 -- step, never from the shelf's or one out; cracked ones go first; a Gold sells at five times;
 -- the card counts four fewer and the Gold's is dealt beside it.

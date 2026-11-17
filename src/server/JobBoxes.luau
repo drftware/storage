@@ -38,7 +38,8 @@
 	written `BoxPanel.SellSave` seconds after a run of sales (one write for the run); it holds the
 	sale from the moment it's made, so the autosave, a leave or a shutdown write it too, and a crash
 	before any of them undoes the whole sale, never half. The list sent as the lid opens carries
-	the holder's cash, so the panel shows it from the start.
+	the holder's cash, so the panel shows it from the start, and how many of each are cracked
+	(`BoxPanel.cracked`): a cracked one sells first, at half, one off `chipped` (S5-03c3a2).
 
 	Making a Gold (S5-03c3b, D-298): Gold is the fourth way, through the same checks and rate limit,
 	for a find that can be made Gold (Home.Gold: not a Secret). Four of it in the box are struck
@@ -69,6 +70,10 @@ local JobBox = Home.JobBox
 -- One home's box as wired: its unit, the piece, its button and when it last answered a press.
 type Box = { unit: Model, model: Model, prompt: ProximityPrompt, last: number }
 
+-- The Studio-only hook's name in ServerStorage: Invoke(player, name) cracks one of `name` in their
+-- save, as a climb's gate does (S5-03c3a2's test).
+local STUDIO_CRACK = "StudioCrack"
+
 local JobBoxes = {}
 
 function JobBoxes.new(): Brix.System
@@ -87,6 +92,7 @@ function JobBoxes.new(): Brix.System
 	local takeLimit = Brix.RateLimit.bucket(BoxPanel.TakeLimit)
 	local spots = #Home.Specs.Shelf.Spots -- every home is small until the sizes come (S5-03h)
 	local writing: { [Player]: true } = {} -- a write after a sale is waiting
+	local crackHook: BindableFunction? = nil -- Studio only (STUDIO_CRACK)
 
 	local function holderOf(box: Box): Player?
 		local id = box.unit:GetAttribute(Door.HolderAttribute)
@@ -141,7 +147,8 @@ function JobBoxes.new(): Brix.System
 			local boxed = if data and s then Save.boxed(data, s:fromBox(player)) else {}
 			local free = if data then Save.free(data, spots) else 0
 			local cash = if data then data.cash else 0
-			listRemote:FireClient(player, box.model, BoxPanel.list(boxed), free, cash)
+			local cracked = if data then BoxPanel.cracked(data.chipped, boxed) else {}
+			listRemote:FireClient(player, box.model, BoxPanel.list(boxed), free, cash, cracked)
 		end
 	end
 
@@ -213,12 +220,15 @@ function JobBoxes.new(): Brix.System
 			return
 		end
 		if to == BoxPanel.Ways.Sell then
-			local price = BoxPanel.price(row, plain ~= nil)
-			local cash = BoxPanel.sell(data, boxed, key, price)
+			local before = data.cash
+			-- whole: a cracked one goes first, at half (BoxPanel.sell, S5-03c3a2)
+			local cash = BoxPanel.sell(data, boxed, key, BoxPanel.price(row, plain ~= nil))
 			if cash then
 				keepSale(player)
 				if RunService:IsStudio() then
-					print(`JobBoxes: {player.Name} sold a {key} for {price}, cash now {cash}`)
+					print(
+						`JobBoxes: {player.Name} sold a {key} for {cash - before}, cash now {cash}`
+					)
 				end
 			end
 			answer(cash ~= nil, cash)
@@ -350,6 +360,28 @@ function JobBoxes.new(): Brix.System
 			end
 			listRemote = remotes[1]
 			tookRemote = remotes[4]
+			if RunService:IsStudio() then
+				-- Studio only, and never a remote: the MCP's Server execute_luau cracks one of a
+				-- find in a player's save (as a climb's gate does, Save.chip), so a cracked sale is
+				-- tested without a climb (S5-03c3a2). Answers how many of it are cracked now.
+				local hook = Instance.new("BindableFunction")
+				hook.Name = STUDIO_CRACK
+				hook.OnInvoke = function(player: unknown, name: unknown): number?
+					local sv = saving
+					local data = if sv
+							and typeof(player) == "Instance"
+							and player:IsA("Player")
+						then sv:data(player)
+						else nil
+					if not (data and type(name) == "string") then
+						return nil
+					end
+					Save.chip(data, { name })
+					return data.chipped[name]
+				end
+				hook.Parent = game:GetService("ServerStorage")
+				crackHook = hook
+			end
 			table.insert(connections, remotes[2].OnServerEvent:Connect(closeAsked))
 			table.insert(connections, remotes[3].OnServerEvent:Connect(takeAsked))
 			table.insert(
@@ -415,6 +447,10 @@ function JobBoxes.new(): Brix.System
 			table.clear(remotes)
 			listRemote = nil
 			tookRemote = nil
+			if crackHook then
+				crackHook:Destroy()
+				crackHook = nil
+			end
 		end,
 	}
 end

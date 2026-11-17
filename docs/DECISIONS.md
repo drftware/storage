@@ -7658,3 +7658,20 @@ ones; the item catalog's "solid gold that catches any light".
 - **Its card shows Take and Shelf** as any find's; only Gold (a Gold of a Gold) is refused.
 - **Kept at the gate as a Gold**: `keep` names it so. Today it never is (one out of your box is
   never kept, D-293); taking finds up (S5-03d) gets it for free.
+
+## D-301 · 2026-11-17 · A cracked find sells first, at half, and Sell says so (S5-03c3a2)
+
+D-296 and D-297. Precedent: R.E.P.O.'s valuables, whose price drops on screen once they're hit.
+- **Cracked first** (`BoxPanel.sell`): the save counts cracked finds by name (`chipped`), not
+  which one is cracked, so a name with cracked ones sells a cracked one first, at half
+  (`Chip.worth`), one off `chipped` (never more than what's left). The whole ones then sell at
+  full. A Gold makes from cracked ones first too (D-298), so the cracked ones are the box's:
+  one taken out to your hands or the shelf is whole (D-296).
+- **The price on Sell is the next one's**: the box sends how many of each name in it are cracked
+  as it opens (`BoxPanel.cracked`: never more than the box holds); the screen counts them off
+  after each answer (`BoxPanel.crackedLeft`: a sale one, a Gold four, a take none) and less the
+  sales still asked, so "Sell $9" turns "Sell $18" once the cracked one is gone. Nothing else
+  says why: the half price is the lesson.
+- **A Studio-only hook** (`ServerStorage.StudioCrack`, a BindableFunction made only in Studio,
+  never a remote): Invoke(player, name) cracks one of a find in that player's save as a climb's
+  gate does (`Save.chip`), so a cracked sale is tested without a climb.

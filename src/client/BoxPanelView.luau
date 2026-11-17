@@ -220,6 +220,9 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	local chips: { Chip } = {}
 	local grade: Grades.Grade? = nil
 	local free = 0 -- the shelf's free spots, as the server said as the box opened
+	-- how many of each card's are cracked, as the server said as the box opened, less those since
+	-- sold or made Gold (S5-03c3a2): while one is, Sell shows half
+	local cracked: { [string]: number } = {}
 	local picked: Shown? = nil
 	local asks: { Ask } = {} -- takes asked and not yet answered, oldest first
 	local landing: { [number]: boolean } = {} -- a hand a find is flying into: drawn as it lands
@@ -422,6 +425,14 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 			local card = picked.card
 			local row = (Tools.Catalog :: any)[card.key] -- any: keyed by text
 			offer = BoxPanel.offers(card, row) and card.count - pending(card.key, nil) >= Gold.Need
+			-- the price of the next one sold: a cracked one goes first, at half (S5-03c3a2), less
+			-- the cracked ones already asked away
+			local cracks = (cracked[card.key] or 0)
+				- pending(card.key, BoxPanel.Ways.Sell)
+				- pending(card.key, BoxPanel.Ways.Gold) * Gold.Need
+			local base = (Tools.Catalog :: any)[card.base or card.key] -- any: keyed by text
+			local price = BoxPanel.price(base or {}, card.gold, cracks > 0)
+			sellButton.Text = `{BoxPanel.Words.sell} {Cash.text(price)}`
 		end
 		takeButton.Visible = true
 		shelfButton.Visible = both
@@ -516,9 +527,6 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		TweenService:Create(s.pop, LIFT, { Scale = BoxPanel.Lift }):Play()
 		TweenService:Create(s.rim, GLOW, { Thickness = BoxPanel.Glow, Transparency = 0 }):Play()
 		paintVerbs()
-		local row = (Tools.Catalog :: any)[s.card.base or s.card.key] -- any: keyed by text
-		local price = BoxPanel.price(row or {}, s.card.gold)
-		sellButton.Text = `{BoxPanel.Words.sell} {Cash.text(price)}`
 		verbs.Parent = s.frame
 		verbs.Visible = true
 		verbsPop.Scale = 0.6
@@ -760,13 +768,20 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 
 	-- The server opened `model` for us with `finds` in it and `spots` free on the shelf: rise with
 	-- its lid.
-	local function openFor(model: Model, finds: { [string]: number }, spots: number, cash: number)
+	local function openFor(
+		model: Model,
+		finds: { [string]: number },
+		spots: number,
+		cash: number,
+		chipped: { [string]: number }
+	)
 		if box then
 			close()
 		end
 		clear()
 		box = model
 		free = spots
+		cracked = chipped
 		local run = counting
 		counting = nil
 		if run then
@@ -958,6 +973,12 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		end
 		if way == BoxPanel.Ways.Shelf then
 			free = math.max(free - 1, 0)
+		end
+		local still = BoxPanel.crackedLeft(cracked[key] or 0, way)
+		if still >= 1 then
+			cracked[key] = still
+		else
+			cracked[key] = nil
 		end
 		tick(key)
 		local total = if way == BoxPanel.Ways.Sell
@@ -2075,8 +2096,9 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 					connections,
 					-- any: a remote's arguments, checked here
 					remote.OnClientEvent:Connect(
-						function(model: any, finds: any, spots: any, cash: any)
+						function(model: any, finds: any, spots: any, cash: any, chipped: any)
 							local list = BoxPanel.read(finds)
+							local broken = BoxPanel.read(chipped) or {}
 							local n = if type(spots) == "number" and spots == spots
 								then math.clamp(math.floor(spots), 0, 99)
 								else 0
@@ -2084,7 +2106,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 								then math.max(math.floor(cash), 0)
 								else 0
 							if typeof(model) == "Instance" and model:IsA("Model") and list then
-								openFor(model, list, n, money)
+								openFor(model, list, n, money, broken)
 							end
 						end
 					)

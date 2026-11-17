@@ -19,7 +19,9 @@
 	Selling one (S5-03c3a): Sell is the take's third way. The server prices it at its catalog worth
 	(`price`), strikes one off what you own and puts the price on your cash in one step (`sell`),
 	so a save written at any moment holds both or neither; it answers with your new cash. Only one
-	in the box sells: never the shelf's, never one out in someone's hands.
+	in the box sells: never the shelf's, never one out in someone's hands. A name with cracked ones
+	(the save's `chipped`, D-296) sells a cracked one first, at half (S5-03c3a2): the box sends how
+	many of each are cracked (`cracked`), and the card's price says which is next.
 
 	Making a Gold (S5-03c3b, D-298): Gold is the take's fourth way. With four of one find in the box
 	(Gold.Need), the server strikes the four and adds one of its Gold (Gold.key) in one step
@@ -27,13 +29,15 @@
 	The screen counts the four off its card and deals the Gold's (`made`). A Gold sells at five
 	times its find's price; it doesn't come out into your hands or onto the shelf yet.
 ]]
+local Chip = require("../Finds/Chip")
 local Gold = require("./Gold")
 local Grades = require("../Grades")
 
 local BoxPanel = {}
 
 BoxPanel.RemoteFolder = "Remotes"
--- Server to the holder, as their box opens: the box, then its finds by name with how many.
+-- Server to the holder, as their box opens: the box, its finds by name with how many, the free
+-- shelf spots, their cash, and how many of each find are cracked (`cracked`).
 BoxPanel.ListRemote = "JobBoxList"
 -- The holder's screen to the server, nothing carried: shut my open box (its X, or a tap outside).
 BoxPanel.CloseRemote = "JobBoxClose"
@@ -91,23 +95,36 @@ end
 
 -- What one find sells for (S5-03c3a): its catalog worth, as the Packrat weighs it and the item
 -- catalog prices it, whole; with none, its grade's least (Grades.Worth); never under 1 or over
--- PriceMost. Its Gold (`gold`) sells for Gold.Times that.
-function BoxPanel.price(row: { grade: Grades.Grade?, worth: number? }, gold: boolean?): number
+-- PriceMost. Its Gold (`gold`) sells for Gold.Times that; a cracked one (`cracked`, D-296) for half
+-- (Chip.worth).
+function BoxPanel.price(
+	row: { grade: Grades.Grade?, worth: number? },
+	gold: boolean?,
+	cracked: boolean?
+): number
 	local worth = row.worth
 	if type(worth) ~= "number" or worth ~= worth then
 		local range = if row.grade then Grades.Worth[row.grade] else nil
 		worth = if range then range[1] else 1
 	end
 	local price = math.clamp(math.floor(worth :: number), 1, BoxPanel.PriceMost)
-	return if gold then price * Gold.Times else price
+	price = if gold then price * Gold.Times else price
+	return Chip.worth(price, cracked == true)
 end
 
--- What a sale changes: what you own and your cash (the save's Data is one of these).
-export type Sellable = { finds: { [string]: number }, cash: number }
+-- What a sale changes: what you own, which of it is cracked, and your cash (the save's Data is
+-- one of these).
+export type Sellable = {
+	finds: { [string]: number },
+	chipped: { [string]: number },
+	cash: number,
+}
 
--- Sells one `name` from a box holding `boxed` (Save.boxed) for `price`: one fewer owned (its name
--- gone at none) and the price on the cash, together. Returns the cash after, or nil, changing
--- nothing, when none is in the box or the price isn't one.
+-- Sells one `name` from a box holding `boxed` (Save.boxed), whole, for `price`: one fewer owned
+-- (its name gone at none) and the price on the cash, together. With cracked ones of it
+-- (`chipped`, S5-03c3a2), a cracked one goes first, at half (Chip.worth), one off `chipped`, so it
+-- never tops what's left. Returns the cash after, or nil, changing nothing, when none is in the
+-- box or the price isn't one.
 function BoxPanel.sell(
 	data: Sellable,
 	boxed: { [string]: number },
@@ -130,8 +147,50 @@ function BoxPanel.sell(
 	else
 		data.finds[name] = nil -- the save's counts are one or more
 	end
+	local cracked = math.floor(data.chipped[name] or 0)
+	if cracked >= 1 then
+		price = Chip.worth(price, true)
+		local still = math.min(cracked - 1, left)
+		if still >= 1 then
+			data.chipped[name] = still
+		else
+			data.chipped[name] = nil
+		end
+	end
 	data.cash = math.floor(data.cash) + math.floor(price)
 	return data.cash
+end
+
+-- How many of each name in a box holding `boxed` (Save.boxed) are cracked, as the box sends them
+-- when it opens (S5-03c3a2): the save's `chipped`, never more than the box holds, and only names
+-- in it. Cracked ones are kept in the box: one taken out is whole (D-296).
+function BoxPanel.cracked(
+	chipped: { [string]: number },
+	boxed: { [string]: number }
+): { [string]: number }
+	local out: { [string]: number } = {}
+	for name, n in chipped do
+		local inBox = boxed[name]
+		if type(n) == "number" and type(inBox) == "number" then
+			local count = math.floor(math.min(n, inBox))
+			if count >= 1 then
+				out[name] = count
+			end
+		end
+	end
+	return out
+end
+
+-- How many of a card's are cracked after the server took one `way` (S5-03c3a2): a sale takes a
+-- cracked one first, a Gold four, cracked first (`gold`); taken out or shelved, the cracked ones
+-- stay in the box.
+function BoxPanel.crackedLeft(cracked: number, way: Way): number
+	if way == BoxPanel.Ways.Sell then
+		return math.max(cracked - 1, 0)
+	elseif way == BoxPanel.Ways.Gold then
+		return math.max(cracked - Gold.Need, 0)
+	end
+	return cracked
 end
 
 -- What making a Gold changes (the save's Data is one of these): what you own and which of it is

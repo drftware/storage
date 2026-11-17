@@ -271,6 +271,11 @@ verified: a doc page, Studio, or "untested".
   capture first as a background shell command (`sleep 2.6; screencapture -l <number> ...`, the
   window number found beforehand), then fire the moment with the MCP. In first person the camera
   turns where you set `workspace.CurrentCamera.CFrame` from the client, and stays turned.
+- **The Edit DataModel can't reach DataStores from the MCP** (S5-03c3a2, Nov 17): an Edit
+  `execute_luau` calling `ListKeysAsync` on "Saves.studio" got "502: API Services rejected
+  request ... Access forbidden", though Play reaches them. To change the test save, use a
+  Studio-only server hook in Play: `ServerStorage.StudioCrack:Invoke(player, "BlobLamp")` from a
+  Server `execute_luau` cracks one (JobBoxes); then shut and reopen the job box to resend its list.
 - **Clicking a button in Play** (S5-03c2b2b, Nov 17): `execute_luau` can't fire `Activated`,
   but the Studio MCP's `user_mouse_input` on the Client with `instance_path` (for example
   `LocalPlayer.PlayerGui.JobBoxPanel.Panel.Finds.Boombox.Pick`) moves to the button and clicks

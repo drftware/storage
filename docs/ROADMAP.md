@@ -2442,8 +2442,11 @@ Done when players watch the results to the end and change their perks between cl
       one and pays in one step (`BoxPanel.sell`) and writes the save 6 s after a run of sales; the
       picture flies into your cash over the panel's corner, which chinks and counts up as the
       results board's does. A tap guard after a card leaves. Seen in Play, a rejoin keeping it.
-    - [ ] **S5-03c3a2 Selling a cracked find** (D-296, D-297): a name with `chipped` sells a
-      cracked one first at `Chip.worth`, one off `chipped`, so `chipped` never tops `finds`.
+    - [x] **S5-03c3a2 Selling a cracked find** (Nov 17, D-301): a name with `chipped` sells a
+      cracked one first at half (`Chip.worth`), one off `chipped`, so `chipped` never tops
+      `finds`; the box sends how many are cracked and Sell shows the next one's price ("Sell $9",
+      then "Sell $18"). Seen in Play: a cracked Blob lamp sold for 9, the whole one then offered
+      at 18. A Studio-only hook cracks one (`ServerStorage.StudioCrack`).
     - [x] **S5-03c3b1 Four make a Gold, on the server** (Nov 17, D-298): a Gold is a name of its
       own in `finds` ("Teddy:Gold", `Home/Gold`), no new save version; Gold is the take's fourth
       way (`BoxPanel.gold`: four in the box struck, cracked first, one Gold added and its book page
@@ -2461,7 +2464,8 @@ Done when players watch the results to the end and change their perks between cl
     - Polish for Golds (later): a Gold's own textures where the find art has them (the goo
       ball's `GooBall_GoldColor.png`), else the generic gild; a glint as a Gold is drawn; the
       Packrat wanting a Gold most (Slots' `worth` reads the find's row, not five times it).
-    - Polish for the panel (later): a chip tap you can hear differently per rarity; cards drawn
+    - Polish for the panel (later): a hairline crack drawn over a card's picture while its next
+      one is cracked (D-301); a chip tap you can hear differently per rarity; cards drawn
       only as they scroll into view if a player ever owns 60 kinds or more (ViewportFrames cost).
   - [ ] **S5-03d Taking finds up** (idea 10, D-251): take any find from the chest into a slot and
     carry it to the elevator. On the climb it's at risk like any find: stolen, dropped where
