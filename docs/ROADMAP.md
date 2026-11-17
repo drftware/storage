@@ -2310,14 +2310,23 @@ Done when players watch the results to the end and change their perks between cl
       front's pieces measured off the front wall, 12 slots (`slots`, `slot_rows`), their gaps,
       partitions, backs and tops in the colliders, a name card each, 26 hall lights, the
       Specs writer's `Slots`. Checked by script; `Lobby/Specs.luau` not regenerated yet.
-    - [ ] **S5-03a1b The ground floor's build and sheets**: `build.py` to the new spec, export,
-      sheets, import (HANDOFF has the steps).
-
-    a2 laid in the game: load in
-    facing the cars (a new player in a car within 15 s), the carts and their rack, the lights,
-    the cars and trips untouched. a3 a unit for each player as they join (12; a plots system
-    built in Brix first, D-252), your name over your door, doors open by default, pulled down
-    keeping everyone out with a locked rattle, spare units padlocked.
+    - [x] **S5-03a1b The ground floor's build and sheets** (D-261): `build.py` to the new spec:
+      side walls with a gap per unit (the cap stops at the gaps, the M's own cap fills them),
+      the units' shells from the unit kit at XL, the floor out to the units' backs, the joists
+      split off the deck, a name card per unit; sheets `lobby-unit` and `lobby-inside` added, the
+      M's front, bulb and stand-in boxes in every gap. Export checked (every part under 20,000,
+      87,446 triangles); not imported: Specs.luau waits for a2a.
+    - [ ] **S5-03a2 The floor in the game**, split (D-261):
+      - [ ] **S5-03a2a Into the game with its unit fronts**: export and import together (Specs
+        and FBX), `Lobby.prepare` for the new parts, the M unit's front (walls dropped,
+        `UnitKit.dropWall`) laid in each gap with its door working, the spawn just inside the
+        door; Play: walk from the spawn into a car and climb.
+      - [ ] **S5-03a2b Lights for 156 deep**: the floor before the spawn is black in the sheets
+        and the open units need their bulbs; within the phone light cap (GDD tech plan), the
+        carts and their rack, the cars and trips untouched, a new player in a car within 15 s.
+    - [ ] **S5-03a3 A unit each**: a unit for each player as they join (12; a plots system
+      built in Brix first, D-252), your name over your door, doors open by default, pulled down
+      keeping everyone out with a locked rattle, spare units padlocked.
   - [ ] **F-G1b4a The hard hat on your head** (its own ticket in Step 4's finds; the owner put
     it here, Nov 16).
   - [ ] **S5-03b The mirror test** (ideas 21, 22): one mirror in a unit, built as D-259 says,

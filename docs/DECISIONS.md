@@ -6666,3 +6666,27 @@ front, 7 to 12 down the right.
 - **Split S5-03a1** into the numbers (a1a, this) and the build and sheets (a1b), because the
   session ran out of room. `Lobby/Specs.luau` stays the front office's until a1b exports and
   imports the new mesh together, so today's lobby keeps working.
+
+## D-261 · 2026-11-16 · The ground floor built: the units' shells from the unit kit, the import left to a2a (S5-03a1b)
+
+`art/lobby/build.py` now builds D-260's ground floor. The side walls break for a 12-wide gap per
+unit, with a full post on each partition's line and a half post on the lobby side of each gap's
+edge, which the M unit's own half pilaster makes whole. The units' partitions, back walls and
+closed tops are the unit kit's own parts (`art/unit/parts.py`) built at XL and placed in each
+slot's frame (`unit_shells`, `slot_frame`): one partition per slot line, shared by the units
+either side, as the climb's units share theirs.
+
+- **The cap stops at the gaps**, not the whole wall as the ticket said: the M unit's frame
+  carries its own cap at exactly the corridor's height and depth, so a lobby cap over the gap
+  would sit in the same place and flicker. The R-panel above still runs the whole wall.
+- **The joists are their own parts** (`JoistsLeft`, `JoistsRight`) and `Ceiling` is only the deck:
+  over 156 deep one part of joists would pass Roblox's 20,000 triangles. Every part is under the
+  cap; the whole room is 87,446 triangles before the twelve M fronts, which a2b weighs on a phone.
+- **The sheets stand the climb's M unit in every gap** (its build loaded as a library, the
+  elevator's trick) wearing the M's bake, ten open with a lit bulb and stand-in boxes, two shut
+  and locked, each owner's name on its card. They show the floor before the spawn is black: the
+  middle's lights start 38 studs in, which a2b fixes with the rest of the lighting.
+- **Not imported** (the ticket's fallback): the FBX is built but `Lobby/Specs.luau` stays the
+  front office's. Imported alone, the new mesh would leave twelve open holes in the game's side
+  walls until the M fronts stand in them, so a2a exports, imports and lays the fronts together.
+- **Split S5-03a2** into the import with the unit fronts (a2a) and the lights for 156 deep (a2b).

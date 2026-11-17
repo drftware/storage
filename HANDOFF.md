@@ -2,55 +2,47 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 221 (the ground floor's numbers) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
+**Updated:** 2026-11-16, session 222 (the ground floor's build and sheets) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
-  only) is built a ROADMAP piece a session (S5-03). S5-03a1 is split (D-260). a1a is done:
-  `art/lobby/spec.py` re-laid as the ground floor, 156 deep, the front measured off `FRONT`, 12 XL
-  slots (`slots`, `slot_lines`, `slot_rows`, `unit_card`) with colliders, name cards, 26 hall
-  lights and the Specs writer's `Slots`. Checked by script only.
-- `build.py`, sheets, `Lobby.fbx` and `Lobby/Specs.luau` are still the 48-deep front office, so
-  the lobby still works: never regenerate Specs without the import.
+  only) is built a ROADMAP piece a session (S5-03). S5-03a1 is done (D-260, D-261):
+  `art/lobby/build.py` builds the 156-deep ground floor, a gap per unit in the side walls, the
+  units' shells from the unit kit at XL, the joists as `JoistsLeft`/`JoistsRight`. Every part is
+  under 20,000; the room is 87,446 triangles. Sheets `art/sheets/lobby-*.png` (new: `unit`,
+  `inside`) stand the M's front in each gap, ten open and lit, two shut.
+- `art/lobby/out/Lobby.fbx` is the new floor, but `src/shared/Lobby/Specs.luau` is still the
+  48-deep front office and the place still holds the old mesh: export, upload and import go
+  together in a2a, never Specs alone.
 
-## Next task: S5-03a1b The ground floor's build and sheets
-The moment: you walk out of the car across the ground floor, every open unit down both walls
-shows someone's finds, and yours has your name over it (Grow a Garden's plots round one ground).
-1. `build.py` walls: `check()` asserts `UNIT_WALL == C.WALL_H`, `UNIT_FACADE == C.FACADE`,
-   `HANG == C.WALL_H - C.CHANNEL_DROP`, `DOOR_GAP == C.UNIT.width`. Left and Right in
-   `wall_layout`: facade and kick spans between the gaps (`slot_ys` ± `DOOR_GAP/2`), cap and
-   panel the whole wall, a full post on each `slot_lines` line, a half post (`C.POST` wide) on the
-   lobby side of each gap edge (the M unit's own half pilaster makes it whole).
-2. Slot shells from `unit_parts` with an XL spec object (width 20, depth 30, wall_height 10,
-   facade 0.25): `wall_side` once per slot line (partitions are shared), `wall_back` and `top`
-   per slot, and the front wall's inside face either side of the gap (quads as `facade_back`
-   does, slot edge to ±6). Place each with `WALLS[side][0] @ Translation((along(y, y)[0], 0, 0))`.
-   Parts `UnitWallsLeft`, `UnitWallsRight`, `UnitTops` (Partition), each under 20,000.
-3. Floor out to the units' backs (as the Floor collider); the joists over 156 pass 20,000, so
-   `Ceiling` becomes the deck and `JoistsLeft`/`JoistsRight` the joists; add new parts to
-   `TEXSET`. Signs: a name card plate on standoffs at each `unit_card` (`CARD`), as the bays'.
-4. Sheets: move the shots for the depth (spawn y -150; counter, rack, door shift by -108); add
-   `unit` (one unit from the floor, its card written) and `inside` (from a unit's back corner
-   out its door); lift the plan's camera. Stand the M unit's front in every gap: load
-   `art/unit/build.py` as a library the way `elevator_kit` does (swap `spec`),
-   `Unit(Spec("M"), coll)`, `pose(7.65)`, `bake.copy_atlas` its DoorKit parts from
-   `art/unit/out/M/unit.blend`, hide its walls, floor and top, copy the rest to each slot. The
-   corridor's bulb (`corridor.build_bulb`) at each `slot_rows` bulb with a warm point light.
-5. `scripts/art.sh lobby`, judge the sheets at phone size, then Studio by the README's "Into
-   Studio" (upload, insert, `Lobby.prepare`, replace `Props.Lobby`) and Play: you load in inside
-   the door and a car still takes you up. If Studio can't be done, `git checkout` Specs.luau and
-   leave export and import together to a2.
-**Acceptance:** check green; sheets show the ground floor and its 12 units at phone size;
-`Lobby/Specs` has `Slots`; Studio Play lays it and a car takes you on a climb (or say why not).
-**Read first:** D-260 (grep "^## D-260" docs/DECISIONS.md); `art/lobby/spec.py`;
-`art/lobby/build.py` by ranges (walls 113-181, export 464-493, sheets 496-640);
-`art/unit/parts.py` 163-206 and 316-336; `art/unit/build.py` 62-150 (`Unit`, `pose`);
-`art/lobby/README.md` "Into Studio". This session spent 200k just reading: read by ranges.
+## Next task: S5-03a2a Into the game with its unit fronts
+The moment: you load in just inside the glass door, the floor runs away to the cars, and twelve
+roll-up doors line the walls, each one a real door that rolls the way it does on a climb.
+1. `scripts/art.sh lobby export` (writes the FBX and `Lobby/Specs.luau` with `Slots`, the new
+   `Parts` and the units' colliders), then `scripts/check.sh`: fix what the new Specs breaks.
+2. `Lobby.prepare`: square the new parts (`JoistsLeft`, `JoistsRight`, `UnitWallsLeft`,
+   `UnitWallsRight`, `UnitTops`); its `{ "Floor", "Ceiling", "Panel" }` list (init.luau ~180)
+   decides something per part: put the joists and unit parts where they belong.
+3. `Lobby.lay`: for each `Specs.Slots` row, a copy of the climb's M unit (find how the floor
+   builder places one: grep `dropWall` in `src/`), its WallLeft, WallRight, WallBack, Floor and
+   Top dropped, pivoted so its doorway's outer face sits on `Door` looking along `Out`; paint
+   its facade the lobby's walls (`Lobby.Paint.Walls`); its door shut and working as on a climb
+   (a3 decides who opens it). The bulbs and the units' lights wait for a2b.
+4. `lune run scripts/upload_art Lobby`, then Studio by `art/lobby/README.md` "Into Studio":
+   insert, `Lobby.prepare`, replace `Props.Lobby`, save. Play: you land just inside the door
+   facing the cars, no holes in the side walls, a unit's door rolls, a car takes you up.
+**Acceptance:** check green; `Lobby/Specs` has `Slots`; Play lays the floor with twelve M fronts
+in their gaps and you climb from a car (or say why not and leave the import with Specs undone).
+**Read first:** D-261 (grep "^## D-261" docs/DECISIONS.md); `src/shared/Lobby/init.luau`
+(`prepare` 126-213, `lay` 255 on); `src/shared/StorageUnit/UnitKit.luau`; the floor builder's
+use of `dropWall` (grep); `art/lobby/spec.py` 283-376 (`slot_rows`, `write_luau`);
+`art/lobby/README.md` "Into Studio". Read by ranges: 300k is the cap.
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03a2 the floor in the game (M unit fronts in the gaps, lights for 156 deep), S5-03a3 a unit
-   each (a Brix plots system first, D-252), F-G1b4a the hard hat on your head (no run-down at
-   home, D-259), S5-03b the mirror test, then S5-03c to h.
+1. S5-03a2b lights for 156 deep (the floor before the spawn is black in `lobby-spawn.png`; each
+   open unit's bulb; the phone light cap), S5-03a3 a unit each (a Brix plots system first,
+   D-252), F-G1b4a the hard hat on your head (no run-down at home, D-259), S5-03b the mirror
+   test, then S5-03c to h.
 2. F-G1b4b the hard hat spent and broken; F-G1b5 waits for its art.
 3. Brix ticket: Driving's stick read needs `PlayerScripts.PlayerModule`; fall back to the camera-
    turned `Humanoid.MoveDirection` as `input` does (D-254). Built in `../engine`, then the pin.

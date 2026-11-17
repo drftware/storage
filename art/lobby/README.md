@@ -97,9 +97,15 @@ art/lobby/build.py  stages export | renders; scripts/art.sh lobby runs both
   in the corridor's wall frame and turned onto its side of the room. The bay wall's facade stops
   at each hole's edge and its trim at the landing frame's plates, so the elevator's frame covers
   the join.
+- **The units** (D-260, D-261): each side wall breaks for a 12-wide gap per unit, where the
+  climb's M unit stands with its walls dropped. The partitions, back walls and tops behind it are
+  the unit kit's own parts at XL (`unit_shells`), placed with `slot_frame` (the unit kit's frame:
+  the doorway's outer face at the origin, the unit toward +y). The cap stops at the gaps; the M's
+  own cap fills them.
 - **The striped zones** are flat polygons: a border and 45-degree stripes clipped to it
   (`clip`, Sutherland-Hodgman), the concrete showing between.
-- **The sheets** load the elevator's build as a library (`elevator_kit`, the finds' and
+- **The sheets** load the unit's build the same way to stand the M's front in every gap
+  (`unit_fronts`), and load the elevator's build as a library (`elevator_kit`, the finds' and
   Mannequin's trick of swapping `spec`), pose its gate open and copy it into each bay with its
   lamp; the stock boxes are render stand-ins where `Specs.Stock` puts the real ones.
 

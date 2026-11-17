@@ -17,6 +17,7 @@ import importlib.util
 import math
 import os
 import sys
+from types import SimpleNamespace
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 UNIT = os.path.join(HERE, "..", "unit")
@@ -52,8 +53,9 @@ OUT = os.path.join(HERE, "out")
 TEX = os.path.join(UNIT, "out", "textures")
 SHEETS = os.path.join(K.ROOT, "art", "sheets")
 FBX = os.path.join(OUT, "Lobby.fbx")
-TEXSET = {"Floor": "Concrete", "Ceiling": "TrimSheet", "Facade": "Facade", "Trim": "TrimSheet",
-          "Panel": "Partition", "Storefront": "TrimSheet", "Counter": "TrimSheet",
+TEXSET = {"Floor": "Concrete", "Ceiling": "TrimSheet", "JoistsLeft": "TrimSheet",
+          "JoistsRight": "TrimSheet", "Facade": "Facade", "Trim": "TrimSheet", "Panel": "Partition",
+          "UnitWallsLeft": "Partition", "UnitWallsRight": "Partition", "UnitTops": "Partition", "Storefront": "TrimSheet", "Counter": "TrimSheet",
           "CounterFront": "Facade", "Shelves": "TrimSheet", "CartRack": "TrimSheet",
           "Signs": "TrimSheet"}
 # Untextured: imported without a SurfaceAppearance, so the game sets their Material and Color.
@@ -66,6 +68,9 @@ H = C.WALL_H                         # the walls' cap height, as the units' and 
 CAP = H - C.CAP_DROP                 # the cap's underside: the facade stops there
 TOP = C.DECK + C.RIB_DEPTH + C.DECK_COVER  # the panel runs up to the deck's top
 W2, D = K.WIDTH / 2, K.DEPTH
+# A unit slot as the unit kit's parts read a spec (art/unit/parts.py): every slot is built at XL
+XL = SimpleNamespace(width=K.SLOT_WIDTH, depth=K.SLOT_DEPTH, wall_height=K.UNIT_WALL,
+                     facade=K.UNIT_FACADE)
 
 
 def reset():
@@ -85,6 +90,14 @@ def check():
         assert abs(off) < 1e-6, f"a light at {x} isn't midway between joists"
     xs = K.bay_xs()
     assert all(abs(x % K.JOIST_EVERY - K.JOIST_EVERY / 2) < 1e-6 for x in xs), "a joist over a car"
+    # the units' slots wear the climb's unit and corridor numbers, so the M's front fits each gap
+    assert K.UNIT_WALL == C.WALL_H and K.UNIT_FACADE == C.FACADE, "the slots aren't the units' walls"
+    assert abs(K.HANG - (C.WALL_H - C.CHANNEL_DROP)) < 1e-9, "the bulb doesn't hang from the channel"
+    assert K.DOOR_GAP == C.UNIT.width, "the gap isn't the M unit's front"
+    lines = K.slot_lines()
+    for y in K.slot_ys():
+        near = min(abs(y - ln) for ln in lines)
+        assert near - K.DOOR_GAP / 2 > 2 * C.POST, "a gap's half post runs into a partition's post"
 
 
 # --- the shell: floor, deck, walls ------------------------------------------------------------
@@ -95,19 +108,25 @@ def floor():
     m = Mesh("Floor")
     uv = lambda vs, n: [((v.x + W2) / C.TILE, (v.y + D) / C.TILE) for v in vs]
     geo.box(m, (-W2, -D - K.APRON, -C.FLOOR_SKIRT), (W2, 0.0, 0.0), uv)
+    # under the units, out to their back walls (as the Floor collider)
+    lines, back = K.slot_lines(), W2 + K.SLOT_DEPTH + K.OUTER
+    for side in (-1, 1):
+        x0, x1 = sorted((side * W2, side * back))
+        geo.box(m, (x0, lines[0], -C.FLOOR_SKIRT), (x1, lines[-1], 0.0), uv)
     return m
 
 
 def ceiling():
-    """The corridor's steel deck over the whole room on its open-web joists, which span the
-    room's depth front to back, one every 6 across: each car's middle falls between two."""
-    m = Mesh("Ceiling")
+    """The corridor's steel deck over the whole room (Ceiling) on its open-web joists, which span
+    the room's depth front to back, one every 6 across: each car's middle falls between two. Over
+    156 deep the joists pass Roblox's 20,000 triangles, so each half of the room is its own part."""
+    m, left, right = Mesh("Ceiling"), Mesh("JoistsLeft"), Mesh("JoistsRight")
     pieces.deck(m, -W2, W2, -D, 0.0)
     j = pieces.joist(D)
     turn = Matrix.Rotation(math.radians(90), 4, "Z")
     for x in K.joist_xs():
-        m.extend(j, Matrix.Translation((x, -D / 2, 0.0)) @ turn)
-    return m
+        (left if x < 0 else right).extend(j, Matrix.Translation((x, -D / 2, 0.0)) @ turn)
+    return {"Ceiling": m, "JoistsLeft": left, "JoistsRight": right}
 
 
 # Each wall is built in the corridor's wall frame (its face on y = 0, the room toward -y, x along
@@ -138,9 +157,15 @@ def wall_layout():
     # the front: facade either side of the storefront; the cap runs over it
     front_posts = [x for x in (-48.0, -36.0, -24.0, 24.0, 36.0, 48.0)]
     lay["Front"] = ([(-W2, s0), (s1, W2)], [(-W2, s0), (s1, W2)], [(-W2, W2)], front_posts)
-    side_posts = [-36.0, -24.0, -12.0]
-    lay["Left"] = ([(-D, 0.0)], [(-D, 0.0)], [(-D, 0.0)], side_posts)
-    lay["Right"] = ([(-D, 0.0)], [(-D, 0.0)], [(-D, 0.0)], side_posts)
+    # the side walls: facade, kick plate and cap between the units' gaps (the M unit standing in a
+    # gap brings its own, its cap level with the wall's); a full post on each partition's line and
+    # a half post on the lobby side of each gap's edge, which the M's half pilaster makes whole
+    g = K.DOOR_GAP / 2
+    edges = [-D] + [e for y in K.slot_ys() for e in (y - g, y + g)] + [0.0]
+    spans = [(edges[i], edges[i + 1]) for i in range(0, len(edges), 2)]
+    halves = [h for y in K.slot_ys() for h in ((y - g - C.POST, y - g), (y + g, y + g + C.POST))]
+    for name in ("Left", "Right"):
+        lay[name] = (spans, spans, spans, K.slot_lines(), halves)
     return lay
 
 
@@ -151,7 +176,7 @@ def walls():
     trim_z = geo.map_strip("trim", 2)
     P, F = C.POST, C.FACADE
     for name, (mat, along) in WALLS.items():
-        faces, kicks, caps, posts = wall_layout()[name]
+        faces, kicks, caps, posts, *halves = wall_layout()[name]
         f, t = Mesh("f"), Mesh("t")
         for a, b in faces:
             a, b = along(a, b)
@@ -167,6 +192,10 @@ def walls():
             x = along(x, x)[0]
             geo.box(t, (x - P, -C.POST_PROUD, 0.0), (x + P, F, H), trim_z, bevel=0.015,
                     segments=2, edges=lambda e, c, sz: True)
+        for a, b in (halves[0] if halves else []):
+            a, b = along(a, b)
+            geo.box(t, (a, -C.POST_PROUD, 0.0), (b, F, H), trim_z, bevel=0.015,
+                    segments=2, edges=lambda e, c, sz: True)
         a, b = along(*((-D, 0.0) if name in ("Left", "Right") else (-W2, W2)))
         p = pieces._panel(a, b, C.PANEL_PLANE, [])
         facade.extend(f, mat)
@@ -179,6 +208,40 @@ def walls():
         y0, y1 = sorted((cy, cy + (s if cy < -1 else -s)))
         geo.box(trim, (x0, y0, 0.0), (x1, y1, TOP), trim_z, bevel=0.015)
     return {"Facade": facade, "Trim": trim, "Panel": panel}
+
+
+def slot_frame(side, y):
+    """A unit slot's frame (the unit kit's: origin on the floor at the doorway's outer face, the
+    floor toward -y, the unit toward +y) for the slot at `y` on side -1 (left) or +1 (right)."""
+    mat, along = WALLS["Left" if side < 0 else "Right"]
+    return mat @ Matrix.Translation((along(y, y)[0], 0.0, 0.0))
+
+
+def unit_shells():
+    """The units' shells the lobby builds round each M front: a partition on every slot line
+    (shared by the units either side), each slot's back wall and closed top, and the inside of the
+    side wall either side of its gap. The unit kit's own parts at XL (art/unit/parts.py)."""
+    out = {"UnitWallsLeft": Mesh("UnitWallsLeft"), "UnitWallsRight": Mesh("UnitWallsRight"),
+           "UnitTops": Mesh("UnitTops")}
+    w2, g, H, F = XL.width / 2, K.DOOR_GAP / 2, XL.wall_height, XL.facade
+    inside = Mesh("inside")
+    mp = unit_parts.map_wall_along(H, 0, u_off=0.6)
+    for x0, x1 in ((-w2, -g), (g, w2)):
+        unit_parts.quad(inside, (x0, F, 0.0), (x0, F, H), (x1, F, H), (x1, F, 0.0), mp)  # faces +y
+    back, top = unit_parts.wall_back(XL), unit_parts.top(XL)
+    near, far = unit_parts.wall_side(XL, -1), unit_parts.wall_side(XL, 1)
+    for side, name in ((-1, "UnitWallsLeft"), (1, "UnitWallsRight")):
+        ys = K.slot_ys()
+        for k, y in enumerate(ys):
+            at = slot_frame(side, y)
+            out[name].extend(back, at)
+            out[name].extend(inside, at)
+            out[name].extend(near, at)
+            # the line the -x partitions leave: the cars' end on the left, the front on the right
+            if k == (len(ys) - 1 if side < 0 else 0):
+                out[name].extend(far, at)
+            out["UnitTops"].extend(top, at)
+    return out
 
 
 # --- the front: the storefront and its double door ----------------------------------------------
@@ -362,6 +425,16 @@ def signs():
             geo.box(m, (lo_x, yy - 0.05, z - 0.05), (hi_x, yy + 0.05, z + 0.05), raw)
     for xx in (cx - cw / 2 + 0.3, cx + cw / 2 - 0.3):
         geo.box(m, (xx - 0.05, -D, cz - 0.05), (xx + 0.05, -D + so, cz + 0.05), raw)
+    # a name card over each unit's door, off the R-panel on standoffs as the bays' numbers are
+    kw, kh, kz = K.CARD
+    for _, side, y in K.slots():
+        x0, x1 = sorted((side * (W2 - off), side * (W2 - off - t)))
+        geo.box(m, (x0, y - kw / 2, kz - kh / 2), (x1, y + kw / 2, kz + kh / 2), trim, bevel=0.02)
+        s0, s1 = sorted((side * W2, side * (W2 - off)))
+        for sy in (-1, 1):
+            for sz in (-1, 1):
+                cy, cz2 = y + sy * (kw / 2 - 0.3), kz + sz * (kh / 2 - 0.3)
+                geo.box(m, (s0, cy - 0.05, cz2 - 0.05), (s1, cy + 0.05, cz2 + 0.05), raw)
     return m
 
 
@@ -425,8 +498,10 @@ def floor_paint():
 
 
 def meshes():
-    out = {"Floor": floor(), "Ceiling": ceiling()}
+    out = {"Floor": floor()}
+    out.update(ceiling())
     out.update(walls())
+    out.update(unit_shells())
     out["Storefront"], out["Glass"] = storefront()
     out["Counter"], out["CounterFront"] = counter()
     out["Shelves"] = shelves()
@@ -537,6 +612,79 @@ def cars(coll):
         o.hide_render = True
 
 
+def unit_kit():
+    """The unit's own build module (its Unit and Spec), for standing the M's front in each gap."""
+    mine = sys.modules.pop("spec")
+    here = os.path.abspath(UNIT)
+    try:
+        s = importlib.util.spec_from_file_location("unit_build", os.path.join(here, "build.py"))
+        mod = importlib.util.module_from_spec(s)
+        s.loader.exec_module(mod)
+    finally:
+        sys.modules["unit_spec_live"] = sys.modules.pop("spec", None)
+        sys.modules["spec"] = mine
+        if sys.path and sys.path[0] == here:
+            sys.path.pop(0)  # it put its folder first; the corridor's `spec` must stay ahead
+    return mod
+
+
+SHUT = (3, 10)  # in the sheets these units are shut and locked; the rest stand open
+NAMES = ("Maya", "Jax", "Rowan", "Kit", "Theo", "Ivy", "Sam", "Nova", "Eli", "Pip", "Ash", "Zoe")
+FINDS = (((-5.5, 24.0, 0.0), "Medium", 12.0), ((-3.2, 25.2, 0.0), "Small", -8.0),
+         ((-5.0, 24.6, 1.8), "Small", 20.0), ((5.8, 18.0, 0.0), "Medium", -4.0),
+         ((2.0, 27.0, 0.0), "Medium", 3.0))  # stand-in boxes in each open unit (unit frame)
+
+
+def unit_fronts(coll):
+    """The climb's M unit with its walls, floor and top dropped (its facade, frame and roll-up
+    door) standing in every gap, wearing the M's bake; its bulb lit under each slot's top. Render
+    copies of one build, open or shut by SHUT."""
+    uk = unit_kit()
+    sub = uk.collection("UnitFront", coll)
+    unit = uk.Unit(uk.Spec(K.DOOR_SIZE), sub)
+    dk = [unit.objs[n] for n in ("BottomBar", "LatchBolt", "Padlock", "Hardware", "Drum", "NumberPlate")]
+    bake.copy_atlas(dk, os.path.join(UNIT, "out", K.DOOR_SIZE, "unit.blend"))
+    for name, ob in unit.objs.items():
+        if uk.TEXSET.get(name):
+            ob.data.materials.append(bake.textured(uk.TEXSET[name], TEX, for_export=False))
+    unit.objs["Facade"]["tint"] = (*render.hexc(TINT["Facade"]), 1.0)  # the lobby's teal
+    chain = list(unit.make_chain().objects)
+    drop = ("WallLeft", "WallRight", "WallBack", "Floor", "Top", "DoorOrigin", "Slat_A", "Slat_B",
+            "Slat_C", "CurtainClosed")
+    fixed = [o for n, o in unit.objs.items() if n not in drop]
+    for shut in (False, True):
+        unit.pose(0.0 if shut else unit.spec.travel, locked=shut)
+        bpy.context.view_layer.update()
+        show = fixed + ([unit.objs["CurtainClosed"]] if shut else chain)
+        show = [o for o in show if not o.hide_render]
+        for n, side, y in K.slots():
+            if (n in SHUT) != shut:
+                continue
+            at = slot_frame(side, y)
+            for o in show:
+                c = o.copy()
+                coll.objects.link(c)
+                c.matrix_world = at @ o.matrix_world
+    for o in list(unit.objs.values()) + chain:
+        o.hide_render = True
+    glass = render.emissive("bulb_lit", (1.0, 0.84, 0.6), 7.0)
+    for n, side, door, _, _, bulb in K.slot_rows():
+        at = slot_frame(side, door[1])
+        corridor.build_bulb(coll, for_export=False, glass=glass,
+                            matrix=Matrix.Translation(bulb) @ at.to_3x3().to_4x4())
+        ld = bpy.data.lights.new("unit_bulb", "POINT")
+        ld.energy, ld.color, ld.shadow_soft_size = 1500.0, (1.0, 0.78, 0.52), 0.15
+        lo = bpy.data.objects.new("unit_bulb", ld)
+        coll.objects.link(lo)
+        lo.location = Vector(bulb) - Vector((0.0, 0.0, 0.9))
+        if n in SHUT:
+            continue
+        yaw = math.atan2(at[1][0], at[0][0])
+        for (lx, ly, lz), kind, turn in FINDS:
+            sx, sy, sz = K.BOX_SIZE[kind]
+            render.box_prop(coll, tuple(at @ Vector((lx, ly, lz))), (sy, sx, sz), yaw + math.radians(turn))
+
+
 def fixtures(coll):
     """The corridor's hall light at each of Specs.Lights, lit, its eye dark (the lobby is safe)."""
     lens = render.emissive("lens_lit", (0.9, 0.95, 0.93), 6.0)
@@ -578,8 +726,9 @@ def text(body, at, normal, height, colour, coll, width=None):
 def dressing(coll):
     """The game's writing on the cards and the boxes on the shelves (render stand-ins)."""
     for name, c, (w, h), n in K.cards():
-        label = name[3:] if name.startswith("Bay") else {"Name": "EVERKEEP SELF STORAGE", "Carts": "CARTS"}[name]
-        text(label, Vector(c) + Vector(n) * 0.01, n, h * (0.95 if name.startswith("Bay") else 0.62),
+        label = (name[3:] if name.startswith("Bay") else NAMES[int(name[4:]) - 1] if name.startswith("Unit")
+                 else {"Name": "EVERKEEP SELF STORAGE", "Carts": "CARTS"}[name])
+        text(label, Vector(c) + Vector(n) * 0.01, n, h * (0.95 if name.startswith(("Bay", "Unit")) else 0.62),
              (0.92, 0.9, 0.84), coll, w)
     for kind, x, y, z, turn in K.stock():
         sx, sy, sz = K.BOX_SIZE[kind]
@@ -597,6 +746,7 @@ def stage_renders():
     gm.node_tree.nodes["Principled BSDF"].inputs["Transmission Weight"].default_value = 0.85
     glass.data.materials.append(gm)
     cars(coll)
+    unit_fronts(coll)
     fixtures(coll)
     dressing(coll)
     # the porch light outside over the door (Lobby.Porch): a sodium pool on the concrete
@@ -610,23 +760,28 @@ def stage_renders():
     render.world((0.004, 0.0045, 0.006), 1.0)
     os.makedirs(SHEETS, exist_ok=True)
     shots = [
-        # where you load in: just inside the door, at a player's eyes, facing the six cars
-        ("spawn", (0.0, -42.0, 4.6), (0.0, 0.0, 4.4), 14.0, 0.5),
+        # where you load in: just inside the door, at a player's eyes, the units down both walls
+        # and the six cars at the far end
+        ("spawn", (0.0, K.FRONT + 6.0, 4.6), (0.0, 0.0, 4.4), 14.0, 0.5),
         # one car up close: its number, the striped zone, the post between
         ("bay", (3.0, -15.0, 4.8), (9.0, 0.0, 5.6), 20.0, 0.4),
-        # from the cars back to the way in: the storefront, the counter, the rack
-        ("door", (4.0, -6.0, 5.2), (0.0, -48.0, 4.2), 14.0, 0.5),
+        # from near the front back to the way in: the storefront, the counter, the rack
+        ("door", (4.0, K.FRONT + 42.0, 5.2), (0.0, K.FRONT, 4.2), 14.0, 0.5),
         # the counter and the shelves behind it
-        ("counter", (-38.0, -20.0, 5.2), (-56.0, -36.0, 3.6), 20.0, 0.4),
+        ("counter", (-38.0, K.FRONT + 28.0, 5.2), (-56.0, K.FRONT + 12.0, 3.6), 20.0, 0.4),
         # the cart rack, empty
-        ("rack", (20.0, -34.0, 5.0), (28.0, -46.0, 1.2), 22.0, 0.4),
+        ("rack", (20.0, K.FRONT + 14.0, 5.0), (28.0, K.FRONT + 2.0, 1.2), 22.0, 0.4),
+        # one unit from the floor: its door up, its bulb on, its owner's name over it (unit 9)
+        ("unit", (37.0, -94.0, 5.2), (60.0, -82.0, 6.6), 18.0, 0.4),
+        # from a unit's back corner out its door to the floor (unit 4)
+        ("inside", (-88.4, -70.4, 6.2), (-40.0, -60.0, 3.6), 18.0, 0.4),
     ]
     for name, loc, target, lens, ex in shots:
         cam = render.camera(loc, target, lens=lens)
         render.shoot(cam, os.path.join(SHEETS, f"lobby-{name}.png"), exposure=ex)
     # the plan, from above with the deck lifted off
-    objs["Ceiling"].hide_render = True
-    objs["Panel"].hide_render = True
+    for n in ("Ceiling", "JoistsLeft", "JoistsRight", "Panel", "UnitTops"):
+        objs[n].hide_render = True
     for o in bpy.data.objects:
         if o.name.startswith(("Housing", "Diffuser", "Eye", "hall")) or o.type == "LIGHT" and o.name.startswith("hall"):
             o.hide_render = True
@@ -635,7 +790,7 @@ def stage_renders():
     so = bpy.data.objects.new("plan_sun", sun)
     coll.objects.link(so)
     so.rotation_euler = (math.radians(20), math.radians(10), 0.0)
-    cam = render.camera((0.0, -30.0, 120.0), (0.0, -26.0, 0.0), lens=30.0)
+    cam = render.camera((0.0, -86.0, 330.0), (0.0, -84.0, 0.0), lens=30.0)
     render.shoot(cam, os.path.join(SHEETS, "lobby-plan.png"), exposure=0.0)
 
 
