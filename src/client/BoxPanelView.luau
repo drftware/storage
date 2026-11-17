@@ -356,6 +356,9 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		end
 		local value = me:GetAttribute(`{Tools.SlotAttribute}{i}`)
 		local key = if type(value) == "string" then value else ""
+		if key ~= "" and me:GetAttribute(Gold.slotAttribute(i)) == true then
+			key = Gold.key(key) -- a Gold in your hand: drawn gilded, matched to the Gold asked for
+		end
 		-- the server fills your slot just before it answers: an empty hand that a find asked for
 		-- is filling stays empty until the picture lands in it
 		if not landed and w.key == "" and key ~= "" and pending(key, BoxPanel.Ways.Hand) > 0 then
@@ -412,15 +415,15 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	end
 
 	local function paintVerbs()
-		local gold = picked ~= nil and picked.card.gold == true -- a Gold only sells, for now
-		local both = not gold and free - pending(nil, BoxPanel.Ways.Shelf) > 0
+		-- a Gold comes out to your hand and your shelf as any find does (S5-03c3b3)
+		local both = free - pending(nil, BoxPanel.Ways.Shelf) > 0
 		local offer = false
 		if picked then
 			local card = picked.card
 			local row = (Tools.Catalog :: any)[card.key] -- any: keyed by text
 			offer = BoxPanel.offers(card, row) and card.count - pending(card.key, nil) >= Gold.Need
 		end
-		takeButton.Visible = not gold
+		takeButton.Visible = true
 		shelfButton.Visible = both
 		goldButton.Visible = offer
 		-- two rows over the card's name (Sell; Take and Shelf), or three with Gold on top
@@ -1031,7 +1034,8 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 					drawWell(slot, true)
 					well.pop.Scale = 1.3
 					TweenService:Create(well.pop, LAND, { Scale = 1 }):Play()
-					local row = (Tools.Catalog :: any)[key] -- any: the catalog is keyed by text
+					-- any: the catalog is keyed by text; a Gold picks up with its find's own sound
+					local row = (Tools.Catalog :: any)[Gold.base(key) or key]
 					if row and gui then
 						Tools.play(row.pickUp, gui, 50)
 					end
@@ -2018,6 +2022,14 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 			table.insert(
 				connections,
 				me:GetAttributeChangedSignal(`{Tools.SlotAttribute}{i}`):Connect(function()
+					if box then
+						drawWell(i)
+					end
+				end)
+			)
+			table.insert(
+				connections,
+				me:GetAttributeChangedSignal(Gold.slotAttribute(i)):Connect(function()
 					if box then
 						drawWell(i)
 					end

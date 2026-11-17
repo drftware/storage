@@ -2894,3 +2894,17 @@ verified: a doc page, Studio, or "untested".
   (no PIL here); the screen's mean went from 60 to 33 under the veil.
 - Rojo syncs to Edit, not to a running Play: stop Play and start it again to try a change.
 
+
+## Aiming a capture in Play (S5-03c3b3, Nov 17)
+
+- **The camera can't be held from `execute_luau` in Play**: after each call the MCP resets a
+  Scriptable camera to Custom (Output: "The execute_luau changed camera type. Resetting..."), and
+  the game's first-person camera takes it back to your character's eye. Aim by moving the
+  character (its root's CFrame) and turning the camera in the same call; a camera placed apart
+  from the character drew from the character's eye, and the character's own body showed as a
+  black slab across the view.
+- **A card's verb below the panel's scroll edge can't be clicked**: `user_mouse_input`'s
+  `instance_path` lands on clipped space and nothing happens. Scroll first
+  (`Finds.CanvasPosition = Vector2.new(0, 10000)` in a Client call), then click.
+- `ServerStorage.ShelfTest:Invoke(player, "", i)` empties cubby `i` so Shelf shows on a card
+  (Shelf is hidden while the shelf is full).

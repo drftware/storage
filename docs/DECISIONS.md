@@ -7640,3 +7640,21 @@ build to a flash (the job box's own Legendary reveal, `Boxes.Reveal`).
   be picked mid-swirl. The panel closing ends the show where it is.
 - Feel numbers in `Home/Gold`'s `Show`; about 3.5 s in all (swirl 2 s, hold 0.9 s, flight 0.4 s).
 
+
+## D-300 · 2026-11-17 · A Gold is carried as its find with a gold mark, gilded everywhere (S5-03c3b3)
+
+D-251 and D-298: a Gold is a find of yours like any other, so it comes out to your hand and your
+shelf. Precedent: Pet Simulator's golden pets, which you equip and show off as you do the plain
+ones; the item catalog's "solid gold that catches any light".
+- **Its key in your slots stays its find's** ("Teddy"), with a gold mark beside it: on the
+  server's carried thing (`gold`) and on the player (`Gold.slotAttribute(i)`, set before the key
+  and cleared after it, so no screen draws it plain for a moment). Every catalog row, model,
+  sound, verb (Hug) and weight is the find's untouched, so no other system had to learn the
+  ":Gold" name. Only the save's counts use it: `fromBox` and `keep` name it "Teddy:Gold".
+- **Gilded wherever it's drawn, one way** (`Gold.gild`, shared): textures off, one gold Metal.
+  The server gilds its own model, so a friend sees it gold in your hand, on the floor or on your
+  head; your own view's copy, your slot wheel, the panel's hands and the shelf gild theirs.
+- **Solid gold never cracks** (my default, OWNER.md): a fragile find's Gold lands whole.
+- **Its card shows Take and Shelf** as any find's; only Gold (a Gold of a Gold) is refused.
+- **Kept at the gate as a Gold**: `keep` names it so. Today it never is (one out of your box is
+  never kept, D-293); taking finds up (S5-03d) gets it for free.

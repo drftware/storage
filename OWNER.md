@@ -71,7 +71,11 @@ nowhere else.
 - [ ] **Decide: Gold defaults** (S5-03c3b1, D-298). My defaults, yours to change: four of one find
   make one Gold worth five times the find (the item catalog's table), so making one beats selling
   the four a little; cracked lamps go into a Gold first and come out whole; no Secret Golds; a Gold
-  only sells until it can go on the shelf and in your hand (S5-03c3b3).
+  is solid gold, so it never cracks when dropped (D-300).
+- [ ] **Judge: a Gold on your shelf** (S5-03c3b3, D-300). Seen in Studio in your hand (it reads as
+  solid gold under the bulb) and in the hand wells, but the shelf's cubby never came clear in a
+  capture. Open your job box, pick a Gold card, press Shelf, then stand at the shelf: does it
+  shine gold in its cubby, or go dull where the bulb doesn't reach (D-290's warm fill)?
 - [ ] **Judge: four make a Gold, on a phone** (S5-03c3b2, D-299). Seen in Studio at the window's
   size (1380 by 761), not on a phone. Keep four of one find (or have them), open your job box, tap
   that card: Gold glows over Sell with a shine. Press it. Look for: the panel dims; four pictures

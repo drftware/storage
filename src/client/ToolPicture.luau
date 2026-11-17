@@ -14,24 +14,6 @@ local RAD = math.pi / 180
 
 local ToolPicture = {}
 
--- Solid gold that catches any light (the item catalog's Gold): the find's own shape, gilded.
-local GOLD = Color3.fromRGB(255, 196, 64)
-
--- Every part of `model` turned to gold: its textures off, metal of one colour.
-local function gild(model: Model)
-	for _, d in model:GetDescendants() do
-		if d:IsA("SurfaceAppearance") or d:IsA("Decal") then
-			d:Destroy()
-		elseif d:IsA("BasePart") then
-			d.Color = GOLD
-			d.Material = Enum.Material.Metal
-			if d:IsA("MeshPart") then
-				d.TextureID = ""
-			end
-		end
-	end
-end
-
 -- Draws `key`'s tool in `frame` (empty for ""), a Gold's ("Teddy:Gold") as its find gilded.
 -- Returns the model drawn, if any.
 function ToolPicture.draw(frame: ViewportFrame, key: string): Model?
@@ -46,7 +28,7 @@ function ToolPicture.draw(frame: ViewportFrame, key: string): Model?
 		return nil
 	end
 	if base then
-		gild(model)
+		Gold.gild(model)
 	end
 	local body = Tools.body(model)
 	local length = if body then body.Size.Magnitude else 2

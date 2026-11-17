@@ -67,6 +67,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Chip = require(ReplicatedStorage.Shared.Finds.Chip)
+local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Head = require(ReplicatedStorage.Shared.Finds.Head)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Prompts = require(script.Parent.Prompts)
@@ -196,7 +197,7 @@ export type Slots = Brix.System & {
 	-- at the car's machine, S1-10c2), with its pick-up sound. False, and nothing made, if they have
 	-- no room, a big tool in their hands, no living character, or the place lacks its art.
 	give: (self: any, player: Player, key: string, quiet: boolean?) -> boolean,
-	-- A find `key` out of `player`'s job box (S5-03c2b2, D-293) into a free slot and their hand,
+	-- A find `key` out of `player`'s job box (S5-03c2b2, D-293; a Gold's gilded) into a free slot,
 	-- as `give` with `quiet` (their screen plays the pick-up as the picture lands), marked as
 	-- from their box. The slot it went into, or nil when it can't (as `give`).
 	unbox: (self: any, player: Player, key: string) -> number?,
@@ -253,7 +254,16 @@ type Tool = {
 	home: number?,
 	-- its glass cracked (a fragile find dropped hard, F-G1e5e): worth half, never cracks again
 	chipped: boolean?,
+	-- a Gold of its find (S5-03c3b3, D-298): `key` stays the find's, so its row, model and sounds
+	-- are the find's; its model is gilded for everyone, its slot says so (Gold.slotAttribute),
+	-- and it's counted and kept by its Gold's name (`named`). Solid gold: it never cracks.
+	gold: boolean?,
 }
+
+-- The name `t` goes by in a save: "Teddy", or its Gold's "Teddy:Gold".
+local function named(t: Tool): string
+	return if t.gold then Gold.key(t.key) else t.key
+end
 
 type Hand = {
 	carry: Tools.CarryState,
@@ -447,8 +457,18 @@ function Slots.new(): Slots
 			local id = h.carry.slots[i]
 			local t = if id then tools[id] else nil
 			local key = if t then t.key else ""
+			-- a Gold's mark goes on before its key and off after it, so no screen ever reads a
+			-- Gold's key unmarked and draws it plain for a moment
+			local gold = if t and t.gold then true else nil
+			local goldChanged = player:GetAttribute(Gold.slotAttribute(i)) ~= gold
+			if goldChanged and gold then
+				player:SetAttribute(Gold.slotAttribute(i), gold)
+			end
 			if player:GetAttribute(Tools.slotAttribute(i)) ~= key then
 				player:SetAttribute(Tools.slotAttribute(i), key)
+			end
+			if goldChanged and not gold then
+				player:SetAttribute(Gold.slotAttribute(i), nil)
 			end
 			local uses = if t and t.uses then t.uses else 0
 			if player:GetAttribute(Wear.slotAttribute(i)) ~= uses then
@@ -652,7 +672,7 @@ function Slots.new(): Slots
 	-- every screen, worth half from now on. Once.
 	local function crack(t: Tool)
 		local glass = Catalog[t.key].fragile
-		if t.chipped or not glass then
+		if t.chipped or t.gold or not glass then
 			return
 		end
 		t.chipped = true
@@ -664,7 +684,7 @@ function Slots.new(): Slots
 	-- Whether `t`, let go by someone moving `speed` studs a second, falling `fall` studs from
 	-- their hand to the floor, cracks as it lands (`Chip.cracks`).
 	local function cracks(t: Tool, speed: number, fall: number): boolean
-		return Chip.cracks(Catalog[t.key].fragile, t.chipped == true, speed, fall)
+		return Chip.cracks(Catalog[t.key].fragile, t.chipped == true or t.gold == true, speed, fall)
 	end
 
 	-- `hard`: it was let go hard enough to crack its glass as it lands (`cracks`).
@@ -1605,7 +1625,7 @@ function Slots.new(): Slots
 			local t = tools[id]
 			if t then
 				tools[id] = nil
-				table.insert(keys, t.key)
+				table.insert(keys, named(t))
 				if t.chipped then
 					table.insert(chipped, t.key)
 				end
@@ -1789,8 +1809,14 @@ function Slots.new(): Slots
 	-- A new `key` into a free slot of `player`'s and their hand: the slot, or nil. `quiet`: no
 	-- pick-up sound here, as the screens play it when the thing reaches the hand (a buy at the
 	-- car's machine, MachineVend; a find out of the job box, BoxPanelView). `home`: the UserId
-	-- whose job box it came out of.
-	local function make(player: Player, key: string, quiet: boolean?, home: number?): number?
+	-- whose job box it came out of; `gold`: a Gold of find `key`, its model gilded.
+	local function make(
+		player: Player,
+		key: string,
+		quiet: boolean?,
+		home: number?,
+		gold: boolean?
+	): number?
 		local root = rootOf(player)
 		local h = handOfPlayer(player)
 		if not root or Catalog[key] == nil or bothHands(h) or Carry.room(h.carry) == nil then
@@ -1804,6 +1830,9 @@ function Slots.new(): Slots
 			end
 			return nil
 		end
+		if gold then
+			Gold.gild(model) -- on the server's model, so every screen sees it gold wherever it goes
+		end
 		nextId += 1
 		local t: Tool = {
 			id = `{key}{nextId}`,
@@ -1814,6 +1843,7 @@ function Slots.new(): Slots
 			owner = player,
 			uses = Wear.full(key),
 			home = home,
+			gold = gold,
 		}
 		tools[t.id] = t
 		local slot = Carry.take(h.carry, t.id)
@@ -1833,18 +1863,20 @@ function Slots.new(): Slots
 	end
 
 	function system.unbox(_: any, player: Player, key: string): number?
-		local row = Catalog[key]
+		local base = Gold.base(key) -- a Gold's find: carried as the find, gilded
+		local row = Catalog[base or key]
 		if not (row and row.find) then
 			return nil
 		end
-		return make(player, key, true, player.UserId)
+		return make(player, base or key, true, player.UserId, base ~= nil)
 	end
 
 	function system.fromBox(_: any, player: Player): { [string]: number }
 		local out: { [string]: number } = {}
 		for _, t in tools do
 			if t.home == player.UserId then
-				out[t.key] = (out[t.key] or 0) + 1
+				local name = named(t)
+				out[name] = (out[name] or 0) + 1
 			end
 		end
 		return out

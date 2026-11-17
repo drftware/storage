@@ -23,6 +23,7 @@ local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Holding = require(ReplicatedStorage.Shared.Home.Holding)
 local HomeSpecs = require(ReplicatedStorage.Shared.Home.Specs)
 local Save = require(ReplicatedStorage.Shared.Save)
@@ -62,9 +63,13 @@ end
 -- Find `key` standing in a cubby at `at` (Shelf.fit), inert and still: a copy as a hand holds it,
 -- its lights off (a find on a shelf isn't switched on, and a phone's lights are few). Not parented.
 local function stand(key: string, at: CFrame): Model?
-	local model = Tools.clone(key, CFrame.identity)
+	local base = Gold.base(key) -- a Gold ("Teddy:Gold") stands as its find, gilded
+	local model = Tools.clone(base or key, CFrame.identity)
 	if not model then
 		return nil
+	end
+	if base then
+		Gold.gild(model) -- solid gold, catching the bulb's light
 	end
 	local pivot = model:GetPivot()
 	local low = Vector3.one * math.huge

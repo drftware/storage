@@ -43,7 +43,9 @@
 	Making a Gold (S5-03c3b, D-298): Gold is the fourth way, through the same checks and rate limit,
 	for a find that can be made Gold (Home.Gold: not a Secret). Four of it in the box are struck
 	and one Gold added in one step (`BoxPanel.gold`), written as a sale is. A Gold's own key
-	("Teddy:Gold") is only ever sold, at Gold.Times its find's price, for now.
+	("Teddy:Gold") sells at Gold.Times its find's price, and comes out to the hand (carried as its
+	find, gilded: Slots' `unbox`) and to the shelf (stood gilded: Shelves) as any find does
+	(S5-03c3b3); a Gold of a Gold is refused.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -191,7 +193,7 @@ function JobBoxes.new(): Brix.System
 			not (data and s and sh and openOf(player) and row and row.find)
 			or Prompts.wrapped(player)
 			or not BoxPanel.canTake(boxed, key)
-			or (plain and to ~= BoxPanel.Ways.Sell) -- a Gold only sells, for now
+			or (plain and to == BoxPanel.Ways.Gold) -- never a Gold of a Gold
 			or (to == BoxPanel.Ways.Gold and not Gold.can(row))
 		then
 			answer(false)

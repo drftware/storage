@@ -62,6 +62,34 @@ Gold.Show = table.freeze({
 	Chink = 0.14, -- each copy's chink this much higher in pitch than the one before
 })
 
+-- Solid gold that catches any light (the item catalog's Gold), as red, green and blue: bright
+-- enough that it reads as gold under the home's warm bulb and a climb's cold torch alike.
+Gold.Colour = table.freeze({ 255, 196, 64 })
+
+-- The player attribute that says slot `i` holds a Gold (true, or absent): the slot's own key
+-- stays its find's ("Teddy"), so every catalog row and model is the find's (Slots, ToolView).
+function Gold.slotAttribute(i: number): string
+	return `ToolGold{i}`
+end
+
+-- Every part of `model` turned to gold, wherever a Gold is drawn (a hand, a shelf, a slot's
+-- picture): its textures off, one gold metal all over, its shape the find's own.
+function Gold.gild(model: Model)
+	local c = Gold.Colour
+	local gold = Color3.fromRGB(c[1], c[2], c[3])
+	for _, d in model:GetDescendants() do
+		if d:IsA("SurfaceAppearance") or d:IsA("Decal") then
+			d:Destroy()
+		elseif d:IsA("BasePart") then
+			d.Color = gold
+			d.Material = Enum.Material.Metal
+			if d:IsA("MeshPart") then
+				d.TextureID = ""
+			end
+		end
+	end
+end
+
 -- The Gold of find `name`: its key in the save.
 function Gold.key(name: string): string
 	return name .. Gold.Mark

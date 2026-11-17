@@ -2454,8 +2454,13 @@ Done when players watch the results to the end and change their perks between cl
       a card with four or more (`BoxPanel.offers`); press it and the four pictures fly out round
       the screen's middle, swirl inward faster with a rising shimmer, flash, and one gold picture
       lands big with its own sound, then deals onto its new card (`BoxPanel.made`). Seen in Play.
-    - [ ] **S5-03c3b3 A Gold on the shelf and in your hand**: Take and Shelf for a Gold (Slots,
-      Shelves and the held model gilded as ToolPicture does); kept at the gate as a Gold.
+    - [x] **S5-03c3b3 A Gold on the shelf and in your hand** (D-300): Take and Shelf on a Gold's
+      card; carried as its find with a gold mark (`Gold.slotAttribute`), gilded on the server for
+      everyone and in your own view, the slot wheel and the panel's hands; stood gilded on the
+      shelf; counted and kept by its Gold name. Seen in Play: taken to the hand, held, shelved.
+    - Polish for Golds (later): a Gold's own textures where the find art has them (the goo
+      ball's `GooBall_GoldColor.png`), else the generic gild; a glint as a Gold is drawn; the
+      Packrat wanting a Gold most (Slots' `worth` reads the find's row, not five times it).
     - Polish for the panel (later): a chip tap you can hear differently per rarity; cards drawn
       only as they scroll into view if a player ever owns 60 kinds or more (ViewportFrames cost).
   - [ ] **S5-03d Taking finds up** (idea 10, D-251): take any find from the chest into a slot and

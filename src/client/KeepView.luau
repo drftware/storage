@@ -17,6 +17,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Pay = require(ReplicatedStorage.Shared.Pay)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local ToolPicture = require(script.Parent.ToolPicture)
@@ -157,7 +158,7 @@ function KeepView.new(): Brix.System
 			})
 		end
 
-		local row = Catalog[k.key]
+		local row = Catalog[Gold.base(k.key) or k.key] -- a Gold sounds as its find
 		if row then
 			Tools.play(row.pickUp, gui, 10) -- on this screen only: a ScreenGui's sound is flat
 		end
@@ -273,7 +274,8 @@ function KeepView.new(): Brix.System
 			if i > Tools.Carry.Slots then
 				break
 			end
-			local row = if type(key) == "string" then Catalog[key] else nil
+			-- a Gold ("Teddy:Gold") by its find's row; drawn gilded (ToolPicture)
+			local row = if type(key) == "string" then Catalog[Gold.base(key) or key] else nil
 			if row and row.find then
 				table.insert(list, key :: string)
 			end

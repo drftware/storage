@@ -62,6 +62,7 @@ local CaughtLunge = require(script.Parent.CaughtLunge)
 local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local FreeCursor = require(script.Parent.FreeCursor)
+local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local HandRoom = require(script.Parent.HandRoom)
 local InFlight = require(script.Parent.InFlight)
 local Hands = require(ReplicatedStorage.Shared.Hands)
@@ -323,6 +324,16 @@ end
 local function usesOf(i: number): number
 	local u = player:GetAttribute(Wear.slotAttribute(i))
 	return if type(u) == "number" then u else 0
+end
+
+-- Whether slot `i` holds a Gold (S5-03c3b3): its key is its find's, drawn gilded.
+local function goldAt(i: number): boolean
+	return player:GetAttribute(Gold.slotAttribute(i)) == true
+end
+
+-- What slot `i`'s picture draws for `key`: a Gold's name when it holds one, so it's gilded.
+local function drawnAt(i: number, key: string): string
+	return if key ~= "" and goldAt(i) then Gold.key(key) else key
 end
 
 -- A slot's wear mark (S1-08): a row of notches along its foot, as Minecraft's bar under a worn
@@ -587,6 +598,7 @@ function ToolView.new(
 	local pose = Torch.pose()
 	local lastYaw: number?, lastPitch = nil, 0
 	local shownKey = ""
+	local shownGold = false -- the shown tool is a Gold of its find, gilded
 	local shownModel: Model? = nil
 	local shownBody: BasePart? = nil
 	local bodyOff = CFrame.identity
@@ -649,6 +661,12 @@ function ToolView.new(
 		local keys = serverSlots()
 		local slot, pocketed = current()
 		return if pocketed then "" else keys[slot] or ""
+	end
+
+	-- Whether what your hand holds out is a Gold (its slot says so, `goldAt`).
+	local function heldGold(): boolean
+		local slot, pocketed = current()
+		return not pocketed and goldAt(slot)
 	end
 
 	local function keyboard(): boolean
@@ -810,9 +828,10 @@ function ToolView.new(
 		-- the wheel's slots: the one your hand is on lit (softly while pocketed)
 		for i, v in h.slots do
 			local key = keys[i] or ""
-			if v.key ~= key then
-				v.key = key
-				picture(v.frame, key)
+			local drawn = drawnAt(i, key)
+			if v.key ~= drawn then
+				v.key = drawn
+				picture(v.frame, drawn)
 			end
 			mark(v.marks, key, usesOf(i))
 			local on = i == slot
@@ -825,10 +844,11 @@ function ToolView.new(
 		local key = keys[slot] or ""
 		-- broken in your hand: the box keeps its picture and its spent notches as it cracks
 		local cracked = key == "" and os.clock() < cracking
-		if key ~= boxKey then
-			boxKey = key
+		local drawn = drawnAt(slot, key)
+		if drawn ~= boxKey then
+			boxKey = drawn
 			if not cracked then
-				picture(h.boxFrame, key)
+				picture(h.boxFrame, drawn)
 			end
 		end
 		if not cracked then
@@ -1115,12 +1135,13 @@ function ToolView.new(
 		end
 	end
 
-	-- Your view's tool: `key`'s model, or none.
-	local function show(key: string)
+	-- Your view's tool: `key`'s model, or none; `gold`: a Gold of it, gilded as everyone sees it.
+	local function show(key: string, gold: boolean)
 		if shownModel then
 			shownModel:Destroy()
 		end
 		shownModel, shownBody, shownKey = nil, nil, key
+		shownGold = gold and key ~= ""
 		viewShift = CFrame.identity
 		if key == "" or not viewFolder then
 			return
@@ -1128,6 +1149,9 @@ function ToolView.new(
 		local model = Tools.clone(key, CFrame.identity)
 		if not model then
 			return
+		end
+		if shownGold then
+			Gold.gild(model)
 		end
 		local body = Tools.body(model)
 		if not body then
@@ -1201,6 +1225,7 @@ function ToolView.new(
 			end
 		end
 		local model = shownModel
+		local wasGold = shownGold and shownKey == key -- its picture torn away gilded too
 		if model and shownKey == key then
 			if breaking then
 				breaking:Destroy()
@@ -1230,7 +1255,7 @@ function ToolView.new(
 			flyer.Size = UDim2.fromOffset(across * 0.9, across * 0.9)
 			flyer.Position = UDim2.fromOffset(start.X, start.Y)
 			flyer.ZIndex = 10
-			picture(flyer, key)
+			picture(flyer, if wasGold then Gold.key(key) else key)
 			local tween = TweenService:Create(flyer, SNATCH_FLY, {
 				Position = UDim2.fromOffset(goal.X, goal.Y),
 				Size = UDim2.fromOffset(across * 0.25, across * 0.25),
@@ -1302,6 +1327,7 @@ function ToolView.new(
 		if want == gone and clock < goneUntil then
 			want = "" -- it broke: the slots haven't caught up yet
 		end
+		local wantGold = want ~= "" and heldGold()
 		-- a tool bought at the car's machine is yours already but still on its way: your hand
 		-- stays empty until it arrives, then it's simply there, where it flew to, with its weight
 		local wasFlying = flying
@@ -1309,19 +1335,19 @@ function ToolView.new(
 		if flying then
 			want = ""
 		elseif wasFlying and want ~= "" and want ~= shownKey then
-			show(want)
+			show(want, wantGold)
 			swing = 1
 			rising = true
 			landed = os.clock()
 		end
-		if want ~= shownKey then
+		if want ~= shownKey or wantGold ~= shownGold then
 			-- the old one drops out of view, then the new one comes up
 			rising = false
 			swing -= dt / SWING_OUT
 			if swing <= 0 or shownModel == nil then
 				swing = 0
 				rising = true
-				show(want)
+				show(want, wantGold)
 			end
 		elseif swing < 1 then
 			rising = true
@@ -1590,6 +1616,10 @@ function ToolView.new(
 			table.insert(
 				connections,
 				player:GetAttributeChangedSignal(Wear.slotAttribute(i)):Connect(refresh)
+			)
+			table.insert(
+				connections,
+				player:GetAttributeChangedSignal(Gold.slotAttribute(i)):Connect(refresh)
 			)
 		end
 		-- the server agreed (or overruled): its word from here
