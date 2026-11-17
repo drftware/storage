@@ -2430,10 +2430,18 @@ Done when players watch the results to the end and change their perks between cl
       known find, one in the box; answered on `JobBoxTook`. A find out of the box is still yours
       in the save, never kept at a gate, and goes back in the box when you leave. Passes checks,
       untested in Studio.
-    - [ ] **S5-03c2b2b Taking a find out, seen in Studio**: Play, keep finds, open the box, take
-      one to hand, shelve one, fill your hands and press Take, watch the counts; capture at half
-      scale (`docs/art/S5-03c2b2-*.jpg`); fix what looks wrong.
-    - [ ] **S5-03c3 Selling and Gold** from the panel.
+    - [x] **S5-03c2b2b Taking a find out, seen in Studio** (D-295): in Play at computer size
+      (1380x761), cards clicked for real: the pick (lift, glow, Take and Shelf over the name), the
+      flight into a hand with the count ticking down, the last one's card leaving, Shelf to a
+      free cubby, hands full asking nothing, the find in your hand after Close; asks for a find you
+      don't own or have none left of refused with nothing changed; a rejoin finds the box whole.
+      Fixed: a hand drew the find before its picture arrived (it now waits for the landing).
+      `docs/art/S5-03c2b2-pick.jpg`, `-flight.jpg`, `-shelf.jpg`. Sounds not heard (OWNER.md).
+    - [ ] **S5-03c3a Selling from the panel** (D-251: "sell whatever you want"): a Sell verb on
+      the picked card, cash counted up with its own sound and motion, the server owning the price
+      (the find's worth, as the climb's haul counts it) and striking one off `finds`.
+    - [ ] **S5-03c3b Four make a Gold** (D-188, D-251): with four of a kind in the box, the panel
+      offers Gold; a big animation, the four become one Gold find (Pet Simulator's golden pets).
     - Polish for the panel (later): a chip tap you can hear differently per rarity; cards drawn
       only as they scroll into view if a player ever owns 60 kinds or more (ViewportFrames cost).
   - [ ] **S5-03d Taking finds up** (idea 10, D-251): take any find from the chest into a slot and

@@ -271,6 +271,15 @@ verified: a doc page, Studio, or "untested".
   capture first as a background shell command (`sleep 2.6; screencapture -l <number> ...`, the
   window number found beforehand), then fire the moment with the MCP. In first person the camera
   turns where you set `workspace.CurrentCamera.CFrame` from the client, and stays turned.
+- **Clicking a button in Play** (S5-03c2b2b, Nov 17): `execute_luau` can't fire `Activated`,
+  but the Studio MCP's `user_mouse_input` on the Client with `instance_path` (for example
+  `LocalPlayer.PlayerGui.JobBoxPanel.Panel.Finds.Boombox.Pick`) moves to the button and clicks
+  it for real; no screen sums needed (an `IgnoreGuiInset` gui's `AbsolutePosition` is 58 points
+  off the window's). Move, wait 50 ms, click.
+- **Catching a motion under half a second** (S5-03c2b2b): run 25 `screencapture -l <number>`
+  in a row as a background shell command (about ten a second), 0.3 s after it starts click
+  with the MCP; the frames whose file sizes change hold the motion. Don't `rm` a glob in a
+  scratch folder (the safety check refuses it): give each burst a new folder.
 - **Checking your work when the checkout is red from another session** (S5-03c1b): `git worktree
   add --detach <scratch>/wt HEAD`, copy in only your changed files and `roblox.d.luau`, and copy
   `vendor/brix` in whole (it's a submodule, empty in a new worktree, and Lune won't follow a

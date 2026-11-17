@@ -207,15 +207,31 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		end
 	end
 
+	-- Takes asked and not yet answered, of find `key` (nil: any) going `way` (nil: either).
+	local function pending(key: string?, way: BoxPanel.Way?): number
+		local n = 0
+		for _, a in asks do
+			if (key == nil or a.key == key) and (way == nil or a.way == way) then
+				n += 1
+			end
+		end
+		return n
+	end
+
 	-- Draws hand `i` from your slot (unless a find is still flying into it), its rim lit while
-	-- it's the hand you hold out.
-	local function drawWell(i: number)
+	-- it's the hand you hold out. `landed`: a find from the panel has just arrived in it.
+	local function drawWell(i: number, landed: boolean?)
 		local w = wells[i]
 		if not w or landing[i] then
 			return
 		end
 		local value = me:GetAttribute(`{Tools.SlotAttribute}{i}`)
 		local key = if type(value) == "string" then value else ""
+		-- the server fills your slot just before it answers: an empty hand that a find asked for
+		-- is filling stays empty until the picture lands in it
+		if not landed and w.key == "" and key ~= "" and pending(key, BoxPanel.Ways.Hand) > 0 then
+			return
+		end
 		if key ~= w.key then
 			w.key = key
 			w.picture:ClearAllChildren()
@@ -228,15 +244,10 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 			else 0.5
 	end
 
-	-- Takes asked and not yet answered, of find `key` (nil: any) going `way` (nil: either).
-	local function pending(key: string?, way: BoxPanel.Way?): number
-		local n = 0
-		for _, a in asks do
-			if (key == nil or a.key == key) and (way == nil or a.way == way) then
-				n += 1
-			end
+	local function drawWells()
+		for i = 1, Carry.Slots do
+			drawWell(i)
 		end
-		return n
 	end
 
 	-- Whether a hand is free for one more find: none holds a two-handed thing, and an empty slot
@@ -630,6 +641,9 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		end
 		if a.way == BoxPanel.Ways.Hand then
 			InFlight.land(me, "tool")
+			if box then
+				drawWells() -- a hand held for it shows what's really there
+			end
 		end
 		local pic = a.shown.picture
 		if pic:IsDescendantOf(panel) then
@@ -700,6 +714,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		if not a then
 			if box then
 				paintVerbs()
+				drawWells()
 			end
 			return -- answered after the screen gave up on it: counted, nothing left to fly
 		end
@@ -724,6 +739,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 			if not (slot and w) then
 				InFlight.land(me, "tool")
 				ask.copy:Destroy()
+				drawWells()
 				return
 			end
 			local well = w :: Well
@@ -738,7 +754,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 				function()
 					landing[slot] = nil
 					InFlight.land(me, "tool")
-					drawWell(slot)
+					drawWell(slot, true)
 					well.pop.Scale = 1.3
 					TweenService:Create(well.pop, LAND, { Scale = 1 }):Play()
 					local row = (Tools.Catalog :: any)[key] -- any: the catalog is keyed by text

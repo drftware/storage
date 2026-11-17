@@ -245,18 +245,28 @@ function Shelves.new(): ShelvesSystem
 			table.insert(connections, r.OnServerEvent:Connect(seen))
 
 			-- Studio only: `ServerStorage.ShelfTest:Invoke(player, key)` keeps find `key` for
-			-- `player` as a gate does (Save.keep), so a test sees it land without a climb. A
-			-- BindableFunction on the server: no client reaches it.
+			-- `player` as a gate does (Save.keep), so a test sees it land without a climb;
+			-- `ShelfTest:Invoke(player, "", i)` empties cubby `i`, its find back in the job box, so
+			-- a test can shelve one. A BindableFunction on the server: no client reaches it.
 			if RunService:IsStudio() then
 				local test = Instance.new("BindableFunction")
 				test.Name = "ShelfTest"
 				-- any: a BindableFunction's arguments, checked here
-				test.OnInvoke = function(player: any, key: any): boolean
+				test.OnInvoke = function(player: any, key: any, spot: any): boolean
 					local data = if saving
 							and typeof(player) == "Instance"
 							and player:IsA("Player")
 						then saving:data(player)
 						else nil
+					if data and key == "" and type(spot) == "number" then
+						local cubby = data.shelf[spot]
+						if not (cubby and cubby.find ~= "") then
+							return false
+						end
+						cubby.find = ""
+						lay(player)
+						return true
+					end
 					if not (data and type(key) == "string" and Tools.template(key)) then
 						return false
 					end

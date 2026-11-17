@@ -7546,3 +7546,17 @@ you need), Animal Crossing's house storage, Pet Simulator's inventory.
 - **The row:** a press can carry `lays = { length, sound }` (`rows.py` refuses it with `toy`,
   `down` or `lasts`); the fairy lights' is 8 studs, the art's twenty LEDs 0.4 apart.
 - **Defaults for the owner (OWNER.md):** the length, the reach, and that it runs away from you.
+
+## D-295 · 2026-11-17 · Taking a find out, seen in Studio: the hand waits for the find to land (S5-03c2b2b)
+- **Seen in Studio Play** at computer size (1380x761), the cards and verbs clicked for real with
+  the Studio MCP's `user_mouse_input` on their instance paths: the pick, Take into a hand (x7 to
+  x6), the last one's card leaving, Shelf to a free cubby, hands full asking nothing, the find in
+  your hand after Close. Asks fired from the Client for a find you don't own, or have none of
+  left in the box, are answered no and change nothing; wrong types get no answer. A rejoin found
+  every find out of the box back in it. The sounds weren't heard (OWNER.md).
+- **The hand waits for its find.** The server fills your slot just before it answers the take,
+  so the hand drew the find before its picture had flown there, spoiling the landing. An empty
+  hand whose new find matches a take still waiting stays empty until the picture lands in it;
+  a take refused or given up redraws the hands from your slots.
+- **A cubby can be emptied in Studio** for a test: `ShelfTest:Invoke(player, "", i)` puts cubby
+  `i`'s find back in the box (server-side, Studio only).

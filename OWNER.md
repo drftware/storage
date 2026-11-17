@@ -68,8 +68,8 @@ nowhere else.
   that size, does the rise feel slow or right (it takes the lid's 1.1 s), and is the deep blue
   calm. My defaults, yours to change: rarest first then by name; chips only for rarities you own;
   a card shows the find as your slots draw it, with no price yet (selling is S5-03c3).
-- [ ] **Take a find out of your job box** (S5-03c2b2a, D-293). Built and passing checks; the next
-  session sees it in Studio first. Yours, after that, at Galaxy A16 size: open the box, tap a card
+- [ ] **Take a find out of your job box** (S5-03c2b2, D-293, D-295). Seen working in Studio Play
+  at computer size on Nov 17, sounds not heard. Yours, at Galaxy A16 size: open the box, tap a card
   (it lifts and glows), press Take: it should fly into one of the three round hands over the
   panel's corner with its pick-up sound, the x2 dropping to none. Take two more, then press Take
   again with your hands full (the hands shake). Tap another card and press Shelf: it flies up and
