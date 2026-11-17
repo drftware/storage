@@ -2731,12 +2731,14 @@ Done when players watch the results to the end and change their perks between cl
           lifts by a tap, moves, turns, and Put away sends it back. Wall and ceiling pieces are
           listed without Set out. Seen: a pallet bought at the counter, set out on the rug, there
           after a rejoin, put back.
-      - [ ] **S5-03g4c3 A find on a piece's top** (the moment: the pallet set down as a coffee
-        table and your lava lamp stood on it; Bloxburg's tabletop items, Animal Crossing's things
-        on tables): a floor piece with tops (`Specs.Tops`: the crate, the pallet, the folding
-        table, the steel shelf's top tier) offers a top a find stands on, as a find with a top
-        does (`Spots.shape`'s `top`, at the art's height); riders follow it when it moves, go back
-        to the box with it. The shelf's lower tiers and seats wait.
+      - [x] **S5-03g4c3 A find on a piece's top** (D-338; seen in Studio Play on the A16,
+        `docs/art/S5-03g4c3-*.jpg`): the crate's, the pallet's, the folding table's and the steel
+        shelf's top tier take a find, at the art's own height (`Spots.pieceTop`); what stands on
+        a piece rides in its ghost while you drag it, follows it, and goes back to the box with
+        it. Seen: the moon lamp on the pallet, the pallet slid and placed by the screen with the
+        lamp aboard, the firefly jar aimed green onto it and set down, both still there after a
+        re-lay, all three put away together; a jar on a crate's rim. The camp bed and the floor
+        cushion are sat on (Seats, later); the shelf's lower tiers wait.
       - [ ] **S5-03g4d The lit pieces**: the string lights hang from the ceiling by their
         origin, the neon moon from a wall like a name card; their Neon parts Neon in `Colour`,
         clear parts Glass (`Specs.Glows`), their one light made only near you as the neon

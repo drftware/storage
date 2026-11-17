@@ -10,7 +10,8 @@
 	from the slot's XL inside box), the shelf's and the job box's tops where those pieces stand, and
 	the room's own things placed first so nothing is set inside them (`Spots.blocks`, D-309). Each
 	area's world frame is kept by name, so `poseFrame` turns any pose into a CFrame, a find's own
-	top included (lifted by its drawn height, `heights`, or its art's).
+	top included (lifted by its drawn height, `heights`, or its art's) and a piece of furniture's
+	(its art's own top, `Spots.pieceTop`, D-338).
 
 	Also here: the screen's feel numbers and sounds, and the box remote's name (the screen asks for
 	what's in your job box; the server answers it, and again after every move).
@@ -266,6 +267,11 @@ function Arrange.frameOn(room: Room, on: string): CFrame?
 	local name = Spots.name(on)
 	if not (t and name) then
 		return nil
+	end
+	local piece = Furniture.ofPlaced(name)
+	if piece then -- the art's own top, wherever it stands in the piece's box (D-338)
+		local _, at = Spots.pieceTop(piece.id)
+		return if at then t * CFrame.new(at[1], at[2], at[3]) else nil
 	end
 	return Arranged.top(t, room.heights[on] or Spots.topHeight(Arrange.boxOf(name)))
 end

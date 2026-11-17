@@ -8606,3 +8606,28 @@ Sims' and Bloxburg's build mode; Animal Crossing's furniture from your pockets).
 - Seen in Studio Play on the Galaxy A16: a pallet bought through the counter's remote, set out,
   saved across a rejoin, lifted by a tap and put back; the camp bed arriving green.
 
+## D-338 A find stands on a piece's top, at the art's own height (S5-03g4c3, 2026-11-17)
+
+The moment it serves: the pallet set down on the rug as a coffee table, you lift your moon lamp
+out of the tray and it glows green on the pallet's boards and sets down there; slide the pallet
+and the lamp rides with it; put the pallet away and the lamp goes back to the box with it
+(Bloxburg's tabletop items, Animal Crossing's things on tables).
+- **Four pieces take a find** (`Spots.PieceTops`): the milk crate, the pallet, the folding table
+  and the steel shelf, each on its highest top in `Specs.Tops` (the shelf's top tier), kept a
+  rim in as a find's top is. The camp bed and the floor cushion are sat on, not set on (their
+  tops are seats, later); the shelf's lower tiers wait.
+- **At the art's height, not the box's** (`Spots.pieceTop`): the top's middle is measured from
+  the middle of the piece's box's foot. The shelf's posts stand 0.1 above its top tier and the
+  pallet's box is 0.03 off its boards' middle, so a box height would float a find. Both the
+  server and the screen take it through `Arrange.frameOn`, so they judge and draw alike.
+- **What stands on a piece rides with it on the screen too**: lifting a piece puts a copy of each
+  rider in its ghost and hides the drawn one, so the lamp glows green with the pallet, moves and
+  turns with it, and slides back with it if refused; the drawn ones show again once it lands.
+- **The save rule holds without a new save version**: rows save a holder before its riders, a
+  move keeps each rider's pose on the top, Put away takes the riders back first, and a piece no
+  longer owned drops its riders into the box on load (`tests/spots.spec`).
+- No piece stands on a piece: a top is a "top" area, and furniture fits the floor only.
+- Seen in Studio Play on the Galaxy A16 (`docs/art/S5-03g4c3-*.jpg`): the moon lamp on the
+  pallet at 1.204 (the boards' 1.205), the pallet slid by the screen with the lamp aboard, the
+  firefly jar aimed green onto it and placed, both back after a re-lay, all put away together;
+  a jar on a crate's rim at 1.650. Not seen by a second client (`OWNER.md`).

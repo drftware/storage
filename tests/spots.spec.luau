@@ -323,12 +323,122 @@ do
 		has(shape.fits, Spots.Kinds.Floor) and not has(shape.fits, Spots.Kinds.Top),
 		"a pallet stands only on the floor"
 	)
-	ok(shape.top == nil, "nothing stands on furniture yet")
+	ok(
+		shape.top ~= nil
+			and shape.top.kind == Spots.Kinds.Top
+			and near(shape.top.width, 4.2)
+			and near(shape.top.depth, 3.4),
+		"a pallet offers its top, kept a rim in"
+	)
 	local kept = Spots.owned({
 		{ id = "CampBed:Furniture#1", on = "Floor", x = 0, y = 0, turn = 0 },
 		{ id = "CampBed:Furniture#2", on = "Floor", x = 3, y = 0, turn = 0 },
 	}, { ["CampBed:Furniture"] = 1 })
 	ok(#kept == 1 and kept[1].id == "CampBed:Furniture#1", "only the beds you own stay set out")
+end
+
+-- A find on a piece's top (S5-03g4c3, D-338): the crate's, the pallet's, the table's and the
+-- shelf's top tier, at the art's own height above the box's foot (the shelf's posts stand above
+-- its top tier); the camp bed and the floor cushion are sat on, not set on.
+do
+	local function top(kind: string): (Spots.Area?, Spots.Vec?)
+		return Spots.pieceTop(kind)
+	end
+	local _, pallet = top("Pallet")
+	ok(
+		pallet ~= nil and math.abs(pallet[2] - 1.204) < 0.002 and math.abs(pallet[1] - 0.03) < 0.002,
+		"the pallet's boards stand 1.2 up, its middle the art's"
+	)
+	local _, crate = top("MilkCrate")
+	ok(crate ~= nil and near(crate[2], 1.65), "a crate's rim stands 1.65 up")
+	local _, tableTop = top("FoldingTable")
+	ok(tableTop ~= nil and near(tableTop[2], 2.8), "the table's top stands 2.8 up")
+	local shelfArea, shelf = top("SteelShelf")
+	ok(
+		shelf ~= nil and near(shelf[2], 5.9) and shelfArea ~= nil and near(shelfArea.width, 3.32),
+		"the shelf's top tier, below its posts' tops"
+	)
+	ok(top("CampBed") == nil and top("Blanket") == nil, "a bed and a cushion are sat on")
+	ok(Spots.shape("CampBed:Furniture", Spots.pieceBox("CampBed")).top == nil, "no top on a bed")
+	ok(top("Teddy") == nil, "no piece: no top")
+
+	-- The save rule: a find riding on the pallet is never lost or doubled as the pallet moves,
+	-- saves, loads and goes back to the box.
+	local areas = { Floor = { kind = Spots.Kinds.Floor, width = 24, depth = 24 } }
+	local function shapeOf(id: string): Brix.PlacementShape?
+		local name = Spots.name(id)
+		if not name then
+			return nil
+		end
+		local piece = string.match(name, "^(.-):Furniture$")
+		return Spots.shape(name, if piece then Spots.pieceBox(piece) else { 0.8, 1.6, 0.8 })
+	end
+	local set = Brix.Placements.new({ areas = areas, limit = 25 })
+	local palletId, lampId = "Pallet:Furniture#1", "MoonLamp#1"
+	ok(
+		set:place(palletId, shapeOf(palletId) :: any, { on = "Floor", x = 0, y = 0, turn = 0 })
+			== nil,
+		"the pallet set out"
+	)
+	ok(
+		set:place(lampId, shapeOf(lampId) :: any, { on = palletId, x = 1, y = 0.5, turn = 0 })
+			== nil,
+		"the moon lamp stands on the pallet"
+	)
+	ok(
+		set:check(
+			"Pallet:Furniture#2",
+			shapeOf(palletId) :: any,
+			{ on = palletId, x = 0, y = 0, turn = 0 }
+		) == "wrongArea",
+		"no pallet on a pallet"
+	)
+	ok(
+		set:place(palletId, shapeOf(palletId) :: any, { on = "Floor", x = -6, y = 4, turn = 90 })
+			== nil,
+		"the pallet slides and turns with the lamp on it"
+	)
+	local lamp = set:poseOf(lampId)
+	ok(
+		lamp ~= nil and lamp.on == palletId and lamp.x == 1 and lamp.y == 0.5,
+		"the lamp rides where it stood"
+	)
+	ok(set:count() == 2, "nothing doubled by the move")
+	local saved = set:save()
+	ok(#saved.rows == 2 and saved.rows[1].id == palletId, "saved: the pallet, then its lamp")
+	local again = Brix.Placements.new({ areas = areas, limit = 25 })
+	local dropped = again:load(saved, shapeOf)
+	ok(
+		dropped ~= nil and #dropped == 0 and (again:poseOf(lampId) :: any).on == palletId,
+		"loaded: the lamp back on the pallet"
+	)
+	local data = Save.fresh()
+	data.furniture = { Pallet = 1 }
+	data.finds = { MoonLamp = 1 }
+	data.placed = { form = saved.form, rows = saved.rows :: any }
+	ok(
+		(Save.boxed(data, {}).MoonLamp or 0) == 0 and Spots.setOut(data.placed.rows) == 2,
+		"both out of the box while set out"
+	)
+	ok(again:remove(palletId) == "carrying", "the pallet can't leave its lamp behind")
+	for _, rider in again:standingOn(palletId) do
+		again:remove(rider)
+	end
+	ok(again:remove(palletId) == nil and again:count() == 0, "put away: the lamp, then the pallet")
+	data.placed = { form = saved.form, rows = again:save().rows :: any }
+	ok(
+		Save.boxed(data, {}).MoonLamp == 1
+			and (Save.placedCounts(data)["Pallet:Furniture"] or 0) == 0,
+		"both back in the box, once each"
+	)
+	-- a pallet you no longer own goes; the lamp on it drops back to the box, never lost
+	local owned = Spots.owned(saved.rows :: any, { MoonLamp = 1 })
+	local lone = Brix.Placements.new({ areas = areas, limit = 25 })
+	local gone = lone:load({ form = saved.form, rows = owned :: any }, shapeOf)
+	ok(
+		#owned == 1 and gone ~= nil and #gone == 1 and gone[1].id == lampId and lone:count() == 0,
+		"no pallet: the lamp drops to the box"
+	)
 end
 
 print(`spots.spec: {checks - failures}/{checks} passed`)

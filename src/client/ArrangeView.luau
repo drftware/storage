@@ -146,6 +146,7 @@ type Lifted = {
 	centre: Vector3,
 	highlight: Highlight,
 	original: Model?, -- the drawn find, hidden while it's lifted
+	riders: { Model }, -- what stands on it, drawn, hidden while copies ride in the ghost (D-338)
 	from: CFrame, -- where the ghost began
 	pose: Brix.PlacementPose?, -- where it would stand now, snapped
 	turn: number,
@@ -562,7 +563,23 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		l.ghost:Destroy()
 		if l.original and showOriginal then
 			hide(l.original, false)
+			for _, m in l.riders do
+				hide(m, false)
+			end
 		end
+	end
+
+	-- What stands on `id`, however high up, as drawn here, into `out`.
+	local function ridersOf(r: Arrange.Room, id: string, out: { Model }): { Model }
+		local folder = placed()
+		for _, rider in r.placements:standingOn(id) do
+			local m = if folder then folder:FindFirstChild(rider) else nil
+			if m and m:IsA("Model") then
+				table.insert(out, m)
+			end
+			ridersOf(r, rider, out)
+		end
+		return out
 	end
 
 	-- Makes the ghost of `source` (a drawn find, or a fresh copy from the box) and lifts it.
@@ -596,6 +613,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			centre = centre,
 			highlight = highlight,
 			original = original,
+			riders = {},
 			from = from,
 			pose = nil,
 			turn = 0,
@@ -606,6 +624,17 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		lifted = l
 		if original then
 			hide(original, true)
+			-- the moon lamp on the pallet rides with it: a copy in the ghost, the drawn one hidden
+			for _, m in ridersOf(r, id, {}) do
+				local copy = m:Clone()
+				inert(copy)
+				for _, tag in copy:GetTags() do
+					copy:RemoveTag(tag)
+				end
+				copy.Parent = ghost
+				hide(m, true)
+				table.insert(l.riders, m)
+			end
 			local pose = r.placements:poseOf(id)
 			if pose then
 				l.turn = pose.turn

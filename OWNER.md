@@ -170,14 +170,25 @@ nowhere else.
   3. First player: tap it where it stands, Put away: it shrinks off and is first in the tray
      again; lift it out of the tray and set it down again. Rejoin: still there.
   Look for: nothing snaps, the knock feels heavy enough, the furniture reads first in the box.
-- [ ] **Furniture set out at home: my defaults** (S5-03g4c1, D-335, D-336, D-337). Say which to
-  change:
+- [ ] **A find on the pallet, two of you** (S5-03g4c3, D-338; I saw it alone on the A16:
+  `docs/art/S5-03g4c3-*.jpg`). Play with two clients, both in the first player's home.
+  1. First player: set the pallet out on the rug, open Arrange, lift a find from the tray over
+     the pallet: it glows green on the boards; Place: it sets down on top with a knock.
+  2. Tap the pallet: the find on it lifts with it, both green. Drag and Turn: it rides along.
+     Place. Second player: both settle in together, the find never left behind or floating.
+  3. Rejoin: the find is still on the pallet. Tap the pallet, Put away: both go back to the box.
+  Try a crate and the folding table too. Look for: a find sitting right on the top (not
+  floating, not sunk), nothing snapping when the piece lands.
+- [ ] **Furniture set out at home: my defaults** (S5-03g4c1, D-335, D-336, D-337, D-338). Say
+  which to change:
   1. A piece set out counts against your home's limit, the same as a find (Bloxburg's budget).
   2. A piece is solid: you walk round a camp bed or a shelf, not through it.
   3. Their colours are the furniture sheet's: a mustard crate, a sage shelf, an olive canvas bed,
      a mover's blue blanket. Crates set out come in mustard, teal and terracotta in turn.
   4. In the job box the furniture is dealt before the finds, and Set out takes you straight into
      Arrange holding it (it stays in the box if you leave without setting it down).
+  5. Finds stand on a crate, the pallet, the folding table and the steel shelf's top tier; the
+     camp bed and the floor cushion are for sitting, so nothing is set on them.
 - [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
   window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
   Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a

@@ -158,8 +158,11 @@ function Spots.shape(name: string, box: Vec?): Shape
 		depth = rounded(if spot == "Wall" then b[2] else b[3]),
 		fits = fits(spot),
 	}
-	local row = if Furniture.ofPlaced(name) then nil else Spots.Rows[base(name)]
-	if row and row.top then
+	local piece = Furniture.ofPlaced(name)
+	local row = if piece then nil else Spots.Rows[base(name)]
+	if piece then
+		shape.top = (Spots.pieceTop(piece.id)) -- a crate's or the pallet's top (D-338)
+	elseif row and row.top then
 		shape.top = {
 			kind = Spots.Kinds.Top,
 			width = math.max(Spots.Least, b[1] - 2 * Spots.Rim),
@@ -192,6 +195,34 @@ function Spots.pieceBox(kind: string): (Vec?, Vec?)
 		(high[2] + low[2]) / 2,
 		(high[3] + low[3]) / 2,
 	}
+end
+
+-- The counter's furniture whose highest top a find stands on (D-338): a crate, the pallet, the
+-- folding table, the steel shelf's top tier. The floor cushion and the camp bed are sat on.
+Spots.PieceTops =
+	table.freeze({ MilkCrate = true, Pallet = true, FoldingTable = true, SteelShelf = true })
+
+-- Piece `kind`'s top a find stands on (its highest in `Specs.Tops`), as an area kept a rim in,
+-- and where that top's middle stands from the middle of its box's foot (across, up, front to
+-- back): the art's own height, not the box's (the shelf's posts stand above its top tier). Nil
+-- for a piece offering none.
+function Spots.pieceTop(kind: string): (Area?, Vec?)
+	local tops = if Spots.PieceTops[kind] then HomeSpecs.Tops[kind] else nil
+	local box, mid = Spots.pieceBox(kind)
+	if not (tops and tops[1] and box and mid) then
+		return nil, nil
+	end
+	local top = tops[1]
+	for _, each in tops do
+		if each.At[2] > top.At[2] then
+			top = each
+		end
+	end
+	return {
+		kind = Spots.Kinds.Top,
+		width = math.max(Spots.Least, top.Size[1] - 2 * Spots.Rim),
+		depth = math.max(Spots.Least, top.Size[2] - 2 * Spots.Rim),
+	}, { top.At[1] - mid[1], top.At[2] - (mid[2] - box[2] / 2), top.At[3] - mid[3] }
 end
 
 -- How far a find's top stands above what it stands on, from its art's box (studs): its height.

@@ -3171,3 +3171,13 @@ verified: a doc page, Studio, or "untested".
 - A burst capture started before the MCP tap ran early: the tap's call takes a second or more to
   land, so start the burst about 2.5 s ahead, as the two-second note above says.
 
+## A find on the pallet, seen on the A16 (S5-03g4c3, Nov 17)
+
+- **Arrange's camera stays where a pinned shot leaves it**: after `UnbindFromRenderStep("ShotCam")`
+  the camera is still Scriptable at the shot's spot, so you can tap and drag from that view (a
+  clear look at a piece the starter shelf hides from Arrange's corner) until a camera move.
+- **A drag with `user_mouse_input`**: `moveTo`, `mouseButtonDown`, then `moveTo` steps with
+  100 ms waits, then `mouseButtonUp`. A call holding the button down leaves it down; the next
+  call needs a `moveTo` before its `mouseButtonUp`. A world point is tapped at (X + 47, Y - 58)
+  as the A16 note says; find one on the piece by raycasting `ViewportPointToRay` first (a
+  rider's part answers before the boards under it).
