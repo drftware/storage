@@ -5,7 +5,8 @@
 -- hold every value the hand-written ones did (tests/fixtures/kitrows, frozen as they were): each
 -- kit find's name, grade, worth, lowest floor, grip, heft, size in your view, sounds and verb, and
 -- its press step for step, in the deal's order; the Old lamp keeps the catalog's rules (floor 25
--- up, loose only); and the game's catalog, presses and deal hold every generated row.
+-- up, loose only); the game's catalog, presses and deal hold every generated row; and the server
+-- leaves out of the deal any find whose art isn't in the place.
 local Catalog = require("../src/shared/Tools/Catalog")
 local Deal = require("../src/shared/Deal")
 local Rows = require("../src/shared/Finds/Rows")
@@ -104,6 +105,33 @@ for key in Use.Rows do
 	end
 	ok(found, `{key}: a press with a generated row`)
 end
+
+-- The catalog keeps the Old lamp loose (`Deals` never stands it in a marked box).
+local old = Catalog.UnpluggedLamp
+ok(
+	old ~= nil and old.loose == true and old.from == 25,
+	"the Old lamp's catalog row: loose, floor 25 up"
+)
+
+-- As the server starts, a find whose art isn't in the place is left out of the deal
+-- (`Deal.onlyWith`), and the rest are dealt in their order.
+local before = table.clone(Deal.Finds)
+local missing = Deal.onlyWith(function(name: string): boolean
+	return name ~= "Teddy" and name ~= "Kazoo"
+end)
+ok(same(missing, { "Teddy", "Kazoo" }), "the finds with no art are left out, in their order")
+local rest = {}
+for _, name in before do
+	if name ~= "Teddy" and name ~= "Kazoo" then
+		table.insert(rest, name)
+	end
+end
+ok(same(Deal.Finds, rest), "the finds with art are dealt in their order")
+ok(#Deal.onlyWith(function(): boolean
+	return true
+end) == 0, "every find's art in the place: none left out")
+table.clear(Deal.Finds)
+table.move(before, 1, #before, 1, Deal.Finds)
 
 print(`kitrows: {checks - failures}/{checks} passed`)
 if failures > 0 then

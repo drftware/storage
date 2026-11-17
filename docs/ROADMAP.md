@@ -2679,7 +2679,7 @@ actions themselves and dealing the new finds on floors are later game tickets.
       fairy lights laid along a hall for a dim line of light; (d) the Old lamp holds a
       Mannequin while it lies lit; (e) fragile: the oil lamp and glass lamp chip to half their
       worth when dropped hard (R.E.P.O.'s valuables).
-  - [ ] **F-G1f Each find's game row comes from its art (the run's P1).** `art/finds/PIPELINE.md`
+  - [x] **F-G1f Each find's game row comes from its art (the run's P1; Nov 17).** `art/finds/PIPELINE.md`
     (photos to playable in one ticket); each kit find's grade, worth, floors, verb, the verb's
     numbers and sounds in its art spec; the export generates the catalog rows beside
     `Finds/Sets` and a judged flag for the finds ticked in `art/finds/WAVES.md`; the deal takes
@@ -2693,7 +2693,7 @@ actions themselves and dealing the new finds on floors are later game tickets.
       `judged` from WAVES.md's ticks) on every export or `scripts/art.sh rows`; `check.sh`
       fails a stale or hand-edited module; `tests/kitrows.spec` holds all 41 generated rows
       to the hand-written ones, frozen in `tests/fixtures/kitrows.luau`. The game unchanged.
-    - [ ] **F-G1f2 The game takes the rows (P1b).** The hand-written kit rows in
+    - [x] **F-G1f2 The game takes the rows (P1b; Nov 17, D-266, seen in Play).** The hand-written kit rows in
       `Tools.Catalog` and `Finds/Use` go, both built from `Finds/Rows`' judged rows;
       `Deal.Finds` becomes the bedroom set plus the judged rows, less any with no template
       in the place (the server as it starts); the Old lamp's `loose` read where the marked

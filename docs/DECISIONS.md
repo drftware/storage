@@ -6819,3 +6819,18 @@ game's code.
   `Finds/Rows`' judged rows; `Deal.Finds` becomes the bedroom set plus the judged rows, less any
   with no template in the place (checked by the server as it starts), and the Old lamp's `loose`
   is read where the marked box is chosen; then `art/finds/PIPELINE.md` and one Studio Play check.
+
+## D-266 · 2026-11-17 · The deal takes every judged find with its art in the place (F-G1f2, P1b)
+
+- **No hand-kept list for kit finds.** `Tools/Catalog`, `Finds/Use` and `Deal.Finds` are built
+  from `Finds/Rows`' judged rows (D-265): the bedroom set (one-mesh finds with no kit spec) stays
+  hand-written, first in the deal, then each judged row in the order the sets were built.
+- **Art checked as the server starts.** `Deals.new` calls `Deal.onlyWith` once with whether each
+  find's template is in `ReplicatedStorage.Props.Finds`; a find without one is left out of the
+  deal and named in Output, so a find ticked before its import never deals a unit that stands
+  empty. Left out, not an error: the art session imports it next (`art/finds/PIPELINE.md`).
+- **Loose only is the catalog's.** A row's `loose` (the Old lamp) keeps `Deals`' `layBoxed` from
+  standing it in a marked box; Studio's `DevBox` still forces one, as it forces any size.
+- **Big finds wait.** A big find (both hands, behind a floor's code door) gets no game row until
+  a floor has a big-find place, so the theatre spotlight stays out of the deal.
+

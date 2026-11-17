@@ -223,25 +223,28 @@ looked at, its parts, pivots, lights and motions are right, its Luau is generate
 
 ## Not in these sessions
 
-- The actions themselves (the button, what it does on a floor) are game tickets. These sessions
-  make the art and the motion data those tickets will use.
+- A press nobody has built yet (a new verb) is a game ticket of its own (`PIPELINE.md`, rule
+  1). A find whose press exists gets it as data: its game row in its art spec (`PIPELINE.md`).
 - No new design: the catalog says what a find does. A gap gets a sensible default and a line in
   `OWNER.md` only if the owner must decide it.
 
 ## Session rules for the find-art track
 
 These replace AGENTS.md's Session protocol where they differ.
-1. **Start:** read this file, then `art/finds/WAVES.md` from its Next line, then only what the
-   finds in hand need (the kit, one earlier set as an example, `docs/STUDIO.md` by grep).
+1. **Start:** read this file and `PIPELINE.md` (the steps from photos to playable), then
+   `art/finds/WAVES.md` from its Next line, then only what the finds in hand need (the kit, one
+   earlier set as an example, `docs/STUDIO.md` by grep).
 2. **Scope:** the next finds in WAVES.md, one set or part of one. Stop at a find boundary.
 3. **Context:** check `mcp__ccd_session_mgmt__get_usage` ("self") now and then; wrap by 250k
    tokens, never past 300k. Read narrowly; renders you look at cost context, so look at sheets,
    not every frame.
 4. **One agent:** no subagents (AGENTS.md). Studio is open in Edit with the place: use it to check
    glow and size, and leave templates you insert in `ReplicatedStorage.Props.Finds` (say so in the
-   README). Don't save the place, play the game or touch what a floor deals.
-5. **End:** `scripts/check.sh` passes. Tick the finds in WAVES.md, note what the next session
-   should know, and move its Next line. Tick the ROADMAP ticket when its set is done. Durable
+   README). Don't save the place. Play only for the find's Play check (`PIPELINE.md`, step 7);
+   a floor deals a find from its game row, never from a hand-kept list.
+5. **End:** `PIPELINE.md`'s steps 2 to 7, then `scripts/check.sh` passes. Tick the finds in
+   WAVES.md, note what the next session should know, and move its Next line. Tick the ROADMAP
+   ticket when its set is done. Durable
    choices go in `docs/DECISIONS.md`, new code in `docs/CODEMAP.md`, gotchas in `docs/STUDIO.md`.
    `OWNER.md` only for a real decision or an untested bet, never "judge these sheets". In
    `HANDOFF.md` rewrite only the "Find art" bullet under State (what's built, what's next); leave

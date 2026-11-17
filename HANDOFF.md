@@ -16,9 +16,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   exported, NOT uploaded: the place still holds the old template (version 57), which keeps
   working; the new parts need b3's `Lobby.prepare` paint before they import.
 - The fronts in the gaps are still the climb's M (D-262), and the bulbs the climb's.
-- Find art (third find run): P1a done (D-265): each kit find's game row is in its art spec,
-  generated into `Finds/Rows` (`scripts/art.sh rows`), proven equal to the hand rows; the game
-  unchanged. Next: P1b, the game takes the rows (ROADMAP F-G1f2; `art/finds/WAVES.md`).
+- Find art (third find run): P1 done (D-265, D-266): the game deals and presses every kit find
+  from the row in its art spec (`art/finds/PIPELINE.md`), seen in Play. Next: V1 Squeeze
+  (ROADMAP F-G1e1; `art/finds/WAVES.md`).
 
 ## Next task: S5-03a2b2 The home's furnishings and front (art)
 The moment: from the car you see a row of little homes, a plant by each door and a bench

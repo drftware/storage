@@ -6,11 +6,11 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** P1b, the game takes the generated rows (the third run's plan, below; ROADMAP F-G1f2).
-P1a is done (Nov 17): every kit find's game row is in its art spec and generated into
-`Finds/Rows`, proven equal to the hand-written rows; its note says what P1b does. Then V1. The
-second run's steps 14 and 15 (the last four squishies and their Studio look) are now the third
-run's S1 to S4 and L1.
+**Next:** V1 Squeeze, the squishies and the rubber duck (the third run's plan, below; ROADMAP
+F-G1e1). P1 is done (Nov 17): the game deals and presses every kit find from the rows in its art
+spec, and `PIPELINE.md` is the workflow (read it whole). A press is now data: P1b's note says
+how. The second run's steps 14 and 15 (the last four squishies and their Studio look) are now
+the third run's S1 to S4 and L1.
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -25,8 +25,8 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
    find, its catalog action, today's state (works / its verb exists and needs data / its verb is
    missing / waits on the home chain or the owner), its grade, worth and floors checked against
    the catalog, and one column for "seen in Play" (empty until Q1).
-2. **P1 The pipeline** (P1a done Nov 17: the rows in the specs, generated and proven equal; P1b
-   left: the game takes them, PIPELINE.md, the Play check). `art/finds/PIPELINE.md` (the workflow below, plain and short); each find's
+2. **P1 The pipeline** (done Nov 17: P1a the rows in the specs, generated and proven equal; P1b
+   the game takes them, PIPELINE.md, the Play check). `art/finds/PIPELINE.md` (the workflow below, plain and short); each find's
    game row (grade, worth, floors, verb, the verb's numbers, its sounds) in its art spec; the
    export generates the catalog rows next to `Finds/Sets`; the deal takes every generated find
    that has a template in the place and is marked judged (a flag the export writes only for
@@ -107,12 +107,12 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Wind-up walking robot (`WalkingRobot`) | It clanks off in a straight line for 15 seconds · Wind | as the teeth (V2) | Uncommon · 15 · floor 1 up ✓ | |
 | Farm-animal spinner (`FarmSpinner`) | The arrow spins and an animal noise plays · Pull, a noise | needs data and a loudness (V3) | Uncommon · 16 · floor 1 up ✓ | |
 | Jack-in-the-box (`JackInTheBox`) | A tune, then a bang as it pops · Wind | works (D-229, D-231) | Uncommon · 18 · floor 1 up ✓ | |
-| Cymbal monkey (`CymbalMonkey`) | Cymbals for 20 seconds, loud, the strongest lure · Wind (Call of Duty Zombies' Monkey Bomb) | works (D-233) | Rare · 40 · floor 1 up ✓ | |
+| Cymbal monkey (`CymbalMonkey`) | Cymbals for 20 seconds, loud, the strongest lure · Wind (Call of Duty Zombies' Monkey Bomb) | works (D-233) | Rare · 40 · floor 1 up ✓ | Nov 17, P1b: dealt (DevBox), taken, pressed (wind, then a clash each beat, arms swinging), banked |
 | Pull-string cowboy doll (`CowboyDoll`) | It says one of six lines · Pull, a noise | needs data and a loudness (V3); its voice waits on the owner (default: the cord's whirr) | Rare · 45 · floor 1 up ✓ | |
 | Singing fish plaque (`SingingFish`) | Its head turns and it sings · Press, a noise | needs data and a loudness (V3); its song waits on the owner (default: the motor's hum) | Rare · 50 · floor 1 up ✓ | |
 | Clockwork tin bird (`TinBird`) | It hops and whistles · Wind | as the teeth (V2) | Epic · 140 · floor 1 up ✓ | |
 | Wind-up tin carousel (`TinCarousel`) | It turns and plays a tune · Wind | needs data and a loudness: the monkey's lure, in place (V2) | Epic · 200 · floor 1 up ✓ | |
-| Stress ball with a face (`StressBall`) | Its eyes bulge out · Squeeze (quiet; the squishy craze itself) | needs data and its own sound (V1) | Common · 2 · floor 1 up ✓ | |
+| Stress ball with a face (`StressBall`) | Its eyes bulge out · Squeeze (quiet; the squishy craze itself) | needs data and its own sound (V1) | Common · 2 · floor 1 up ✓ | Nov 17, P1b: dealt (seed 7, floor 1, Unit104), taken, banked; no press yet (V1) |
 | Squishy butter stick (`ButterStick`) | A dent that slowly fills back in · Squeeze | needs data (V1; bones) | Common · 4 · floor 1 up ✓ | |
 | Mochi bun (`MochiBun`) | A soft puff of a sound · Squeeze | needs data (V1) | Common · 4 · floor 1 up ✓ | |
 | Paper squishy with a drawn face (`PaperSquishy`) | It crinkles · Squeeze | needs data (V1) | Uncommon · 10 · floor 1 up ✓ | |
@@ -246,6 +246,25 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, P1b (the game takes the rows; seen in Play).** `Tools/Catalog` makes a catalog row
+  for each judged row in `Finds/Rows` (its 41 `built(...)` calls and sound locals are gone);
+  `Finds/Use`'s `Use.Rows` is each judged row's `press` (`Use.LampLasts` went: finduse.spec has
+  its own `LAMP_LASTS`); `Deal.Finds` is the bedroom four, then each judged row's key. As it
+  starts the server calls `Deal.onlyWith` (from `Deals.new`), which leaves out any find with no
+  template in `ReplicatedStorage.Props.Finds` and warns "Deals: no art in the place for ...";
+  none was missing (45 dealt). `Catalog.Row.loose` (the Old lamp) keeps `Deals`' `layBoxed`
+  from boxing it, unless `DevBox` forces it. Big finds get no row until a floor has a big-find
+  place (the spotlight). kitrows.spec still proves the 41 rows equal the hand-written ones and
+  now checks `onlyWith` and the lamp's loose. **Seen in Play** (seed 7, floor 1): Unit104 still
+  deals the stress ball (the deal is unchanged); `DevBox` "CymbalMonkey" in Unit107; both taken
+  from their boxes into slots 1 and 2; the monkey's Wind played its wind-up for 2.4 s, then a
+  clash each beat with both arm joints swinging, stamped "On" on the server; "GatePay: ... kept
+  StressBall, CymbalMonkey"; no errors in Output. Floor 1's three Mannequins were asleep behind
+  shut doors, so no monster turned to the noise. **For V1:** a press is data: add
+  `press=dict(...)` to the find's row in its set's `spec.py`, a new sound in `kit/game.py`, run
+  `scripts/art.sh rows`; a new motion is the set's build. A loudness is new code in
+  `FindUses`' lure (`Use.LureReach`), with a spec.
 
 - **Nov 17, P1a (the rows in the art; the game unchanged, so nothing new to see in Play; P1b
   left).** Every kit find's game row is now the `GAME` list at the end of its set's `spec.py`

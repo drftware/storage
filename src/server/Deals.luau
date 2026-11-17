@@ -164,6 +164,15 @@ function Deals.new(): Deals
 	local keepers: Awake? = nil
 	local markedBoxes: MarkedBoxes.MarkedBoxes? = nil
 
+	-- Deal only the finds whose art is in the place (`Deal.onlyWith`): a find not imported yet
+	-- would leave its unit standing empty.
+	local missing = Deal.onlyWith(function(key: string): boolean
+		return Tools.template(key) ~= nil
+	end)
+	if #missing > 0 then
+		warn(`Deals: no art in the place for {table.concat(missing, ", ")}, so they aren't dealt`)
+	end
+
 	-- Unit `index` of `deck`'s floor as DealSpot measures it, its number, and its note's place
 	-- across the back wall if it holds one.
 	local function shape(deck: Deal.Deck, index: number): (DealSpot.Unit, string, number?)
@@ -260,8 +269,9 @@ function Deals.new(): Deals
 	-- Stands unit `unit`'s one marked box (B-03a) holding `key`, a find or tool, and the unit's
 	-- `count` coins (B-03b), if it packs into one (`Deal.packs`; `forced`, Studio's `DevBox`, whatever
 	-- its size), where a find would stand: behind the bulb, facing the doorway. Where it stands and
-	-- the floor it takes, or nil if it doesn't pack or can't stand (no room, no template), and the
-	-- thing is laid loose instead. `guarded`: a keeper will stand beside it.
+	-- the floor it takes, or nil if it doesn't pack, is loose only (`Catalog.Row.loose`) or can't
+	-- stand (no room, no template), and the thing is laid loose instead. `guarded`: a keeper will
+	-- stand beside it.
 	local function layBoxed(
 		unit: Model,
 		deck: Deal.Deck,
@@ -274,6 +284,11 @@ function Deals.new(): Deals
 		local boxes = markedBoxes
 		local body = Tools.bounds(key).Size
 		if not (boxes and (forced or Deal.packs({ body.X, body.Y, body.Z }, BOX_SIZE))) then
+			return nil, nil
+		end
+		-- the catalog says loose only (the Old lamp, found lit on the unit's floor)
+		local row = Tools.Catalog[key]
+		if row and row.loose and not forced then
 			return nil, nil
 		end
 		local size, number, note = shape(deck, index)

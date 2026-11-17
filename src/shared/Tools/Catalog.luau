@@ -10,9 +10,8 @@
 	(init) does the instances.
 ]]
 
-local Drive = require("../Finds/Drive")
 local Grades = require("../Grades")
-local Use = require("../Finds/Use")
+local Rows = require("../Finds/Rows")
 
 export type Sound = {
 	id: string,
@@ -85,6 +84,9 @@ export type Row = {
 	worth: number?,
 	-- The lowest floor a find is dealt on; none: from floor 1.
 	from: number?,
+	-- The catalog says loose only (the Old lamp, found lit): it stands on the unit's floor, never in
+	-- its marked box (`Deals`).
+	loose: boolean?,
 	-- It wears out (S1-08). None: it never does (the ladder, a find), or it's used up whole as it's
 	-- placed (the padlock hung on a door, the roll laid across a hall: `Slots:spend`).
 	wear: Wear?,
@@ -436,12 +438,13 @@ local Catalog: { [string]: Row } = {
 }
 
 --[[
-	The finds built overnight on Nov 15 (F-G1a, art/finds/WAVES.md): the Lights, the cars and the
-	first wind-ups, each with the item catalog's grade and worth. Each is the kit's jointed model
-	(`Finds`, posed as it's found), so `template` is its name in ReplicatedStorage.Props.Finds. The
-	sizes below say where it sits in your view, by how big it is, as the bedroom set was judged in
-	Play: a palm-sized one near and low (a glow stick, the die-cast car), a medium one where the
-	teddy hangs, a big one where the boombox does.
+	The kit's finds (F-G1f, D-265): each find built with the kit has its game row in its art spec
+	(art/finds/<set>/spec.py), generated into `Finds/Rows` (art/finds/PIPELINE.md says how). Each
+	one ticked built in art/finds/WAVES.md (`judged`) gets a catalog row here. Each is the kit's
+	jointed model (`Finds`, posed as it's found), so `template` is its name in
+	ReplicatedStorage.Props.Finds. Its size says where it sits in your view, as the bedroom set
+	was judged in Play: a palm-sized one near and low (a glow stick, the die-cast car), a medium
+	one where the teddy hangs, a big one where the boombox does.
 ]]
 local HOLD = {
 	Small = { at = { -0.95, -0.62, -1.7 }, turn = { 200, 6, 0 } },
@@ -449,501 +452,35 @@ local HOLD = {
 	Large = { at = { -1.55, -0.8, -2.4 }, turn = { 215, 4, 0 } },
 }
 
---[[
-	Their sounds, until each find has its own recorded (ROADMAP polish "Finds' own sounds"): the
-	stretches the tools and the bedroom set already play, pitched for each find's size and stuff.
-	A higher pitch is a smaller, lighter thing.
-]]
--- Pro Sound Effects' "Keys In Padlock 1": a clink, metal or glass taken in a hand
-local CLINK: Sound = { id = "rbxassetid://9116175991", from = 0, length = 0.5, volume = 0.7 }
--- "Metal Hit Steel Plate Hit Slapped 2": one slap, a hand closing on a tin or steel body
-local SLAP: Sound = { id = "rbxassetid://9116657808", from = 0, length = 0.3, volume = 0.7 }
--- "Plastic Ice Chest 25": hollow plastic knocks
-local HOLLOW: Sound = { id = "rbxassetid://9117544893", from = 0, length = 0.42, volume = 0.8 }
--- "Switch Portable Plastic Radio Tape Player 9": a hard plastic clack
-local CLACK: Sound = { id = "rbxassetid://9119728830", from = 0.15, length = 0.35, volume = 0.85 }
--- "Plastic Bubble Wrap Short Fluttering Movements 12": a plastic sleeve rustling
-local RUSTLE: Sound = { id = "rbxassetid://9125745465", from = 0.2, length = 0.45, volume = 0.7 }
--- "Manacles Metal Clangs 4": its first clang, the monkey's cymbals touching as it's lifted
-local CLANG: Sound = { id = "rbxassetid://9116460746", from = 0, length = 0.42, volume = 0.6 }
--- "Metal Container 2": from just before its hit, a tin landing and bouncing
-local TIN: Sound = { id = "rbxassetid://9116546109", from = 0.36, length = 0.9, volume = 0.75 }
--- "Crowbar Impact Dropping To Concrete 1": steel hitting concrete and bouncing
-local STEEL: Sound = { id = "rbxassetid://9114008989", from = 0, length = 1.4, volume = 0.65 }
--- "Chair Drop 3": from its first hard hit, plastic slamming down and rattling
-local PLASTIC: Sound = { id = "rbxassetid://9113768847", from = 0.22, length = 0.9, volume = 0.8 }
--- "Shield Impacts 15": a plastic case hitting the floor, crunchy
-local CRUNCH: Sound = { id = "rbxassetid://9119075637", from = 0, length = 0.7, volume = 0.8 }
--- "Pillow Blanket 1": the teddy's grab on the cloth, for the squishies and the cowboy doll
-local SOFT: Sound = { id = "rbxassetid://9117373366", from = 0.4, length = 0.4, volume = 0.75 }
-
-local function pitched(s: Sound, pitch: number, volume: number?): Sound
-	return {
-		id = s.id,
-		from = s.from,
-		length = s.length,
-		volume = volume or s.volume,
-		pitch = pitch,
-	}
-end
-
-type Built = {
-	name: string,
-	grade: Grades.Grade,
-	worth: number,
-	from: number?,
-	grip: { number },
-	heft: number,
-	size: "Small" | "Medium" | "Large",
-	pickUp: Sound,
-	drop: Sound,
-}
-
--- A row for a find built with the kit: it hangs from your left hand by its grip, low on the left
--- of your view with its front turned to you, as the bedroom set does. A find with a press
--- (`Finds/Use`'s rows: the lantern's Switch, the jack's Wind) gets that press's word, and the
--- RC car its Drive (`Finds/Drive`).
-local function built(key: string, b: Built)
-	local hold = HOLD[b.size]
-	local press = Use.Rows[key]
-	Catalog[key] = {
-		verb = if press then press.verb elseif key == Drive.Key then Drive.Verb else nil,
-		name = b.name,
-		template = key,
+-- A kit find's catalog row: it hangs from your left hand by its grip, low on the left of your
+-- view with its front turned to you, as the bedroom set does. Its verb is its press's word
+-- (`Finds/Use` plays the press: the lantern's Switch, the jack's Wind), or the RC car's Drive
+-- (`Finds/Drive`).
+for _, row in Rows do
+	if not row.judged then
+		continue
+	end
+	local hold = HOLD[row.size]
+	Catalog[row.key] = {
+		verb = row.verb,
+		name = row.name,
+		template = row.key,
 		find = true,
-		grade = b.grade,
-		worth = b.worth,
-		from = b.from,
-		grip = b.grip,
-		heft = b.heft,
+		grade = row.grade,
+		worth = row.worth,
+		from = row.from,
+		loose = row.loose,
+		grip = row.grip,
+		heft = row.heft,
 		hold = hold.at,
 		holdTurn = hold.turn,
 		use = hold.at,
 		useTurn = hold.turn,
 		inHand = { 0, 90, 0 },
 		icon = { 0.62, 14, 200, 0 },
-		pickUp = b.pickUp,
-		drop = b.drop,
+		pickUp = row.pickUp,
+		drop = row.drop,
 	}
 end
-
--- The Lights. A grip is where a hand closes (studs from the middle of its bottom: across, up,
--- front to back), heft how heavy it feels (0 to 1).
-built("NightLight", {
-	name = "Night-light",
-	grade = "Common",
-	worth = 2,
-	grip = { 0, 0.3, 0 }, -- round its plug body
-	heft = 0.04,
-	size = "Small",
-	pickUp = pitched(CLACK, 1.5),
-	drop = pitched(PLASTIC, 1.7, 0.55),
-})
-built("TeaLight", {
-	name = "Tea light",
-	grade = "Common",
-	worth = 3,
-	grip = { 0, 0.4, 0 }, -- the jar's rim
-	heft = 0.12,
-	size = "Small",
-	pickUp = pitched(CLINK, 1.6),
-	drop = pitched(TIN, 1.7, 0.6),
-})
-built("DeskLamp", {
-	name = "Desk lamp",
-	grade = "Common",
-	worth = 4,
-	grip = { 0, 0.7, 0.4 }, -- its arm, above the base
-	heft = 0.45,
-	size = "Large",
-	pickUp = pitched(SLAP, 1.0),
-	drop = pitched(STEEL, 1.3),
-})
-built("GlowSticks", {
-	name = "Glow sticks",
-	grade = "Common",
-	worth = 5,
-	grip = { 0, 0.06, 0 }, -- round the band
-	heft = 0.03,
-	size = "Small",
-	pickUp = RUSTLE,
-	drop = pitched(PLASTIC, 1.9, 0.45),
-})
-built("FairyLights", {
-	name = "Fairy lights",
-	grade = "Uncommon",
-	worth = 12,
-	grip = { 0, 0.06, 0.03 }, -- the box with the string coiled on it
-	heft = 0.08,
-	size = "Small",
-	pickUp = RUSTLE,
-	drop = pitched(PLASTIC, 1.6, 0.55),
-})
-built("CampLantern", {
-	name = "Lantern",
-	grade = "Uncommon",
-	worth = 15,
-	grip = { 0, 0.66, 0.05 }, -- its handle on top
-	heft = 0.35,
-	size = "Medium",
-	pickUp = pitched(HOLLOW, 1.15),
-	drop = pitched(PLASTIC, 1.15),
-})
-built("MoonLamp", {
-	name = "Moon lamp",
-	grade = "Uncommon",
-	worth = 16,
-	grip = { 0, 0.3, 0 }, -- the moon in its cradle
-	heft = 0.25,
-	size = "Medium",
-	pickUp = pitched(HOLLOW, 1.3),
-	drop = pitched(CRUNCH, 1.1),
-})
-built("BlobLamp", {
-	name = "Blob lamp",
-	grade = "Uncommon",
-	worth = 18,
-	grip = { -0.09, 0.75, 0.23 }, -- round the bottle's waist
-	heft = 0.5,
-	size = "Medium",
-	pickUp = pitched(SLAP, 0.9),
-	drop = pitched(STEEL, 1.2),
-})
-built("OilLamp", {
-	name = "Oil lamp",
-	grade = "Rare",
-	worth = 40,
-	grip = { 0, 0.45, 0 }, -- the brass fount
-	heft = 0.4,
-	size = "Medium",
-	pickUp = pitched(CLINK, 1.2),
-	drop = pitched(TIN, 1.1),
-})
-built("DiscoBall", {
-	name = "Disco ball",
-	grade = "Rare",
-	worth = 45,
-	grip = { 0, 0.25, 0 }, -- its stand
-	heft = 0.45,
-	size = "Medium",
-	pickUp = CLINK,
-	drop = TIN,
-})
-built("NeonSign", {
-	name = "Neon sign",
-	grade = "Rare",
-	worth = 60,
-	grip = { 0, 0.98, 0.05 }, -- its top edge
-	heft = 0.55,
-	size = "Large",
-	pickUp = pitched(HOLLOW, 0.9),
-	drop = pitched(CRUNCH, 0.85),
-})
-built("HardHat", {
-	name = "Hard hat",
-	grade = "Rare",
-	worth = 70,
-	grip = { 0, 0.75, 0 }, -- the crown of its shell
-	heft = 0.3,
-	size = "Medium",
-	pickUp = HOLLOW,
-	drop = pitched(PLASTIC, 0.95),
-})
-built("FireflyJar", {
-	name = "Firefly jar",
-	grade = "Epic",
-	worth = 110,
-	grip = { 0, 0.6, 0 }, -- the lid
-	heft = 0.2,
-	size = "Small",
-	pickUp = pitched(CLINK, 1.45),
-	drop = pitched(TIN, 1.5, 0.65),
-})
-built("StainedGlassLamp", {
-	name = "Glass lamp",
-	grade = "Legendary",
-	worth = 480,
-	grip = { 0, 0.8, 0 }, -- its stem, under the shade
-	heft = 0.8,
-	size = "Large",
-	pickUp = pitched(CLINK, 0.9),
-	drop = STEEL,
-})
--- Found lit, the catalog's Secret: loose only, from floor 25.
-built("UnpluggedLamp", {
-	name = "Old lamp",
-	grade = "Secret",
-	worth = 7000,
-	from = 25,
-	grip = { 0, 0.9, 0 }, -- its stem
-	heft = 0.6,
-	size = "Large",
-	pickUp = pitched(CLINK, 0.85),
-	drop = pitched(STEEL, 0.95),
-})
-
--- The cars and the wind-ups.
-built("DiecastCar", {
-	name = "Toy car",
-	grade = "Common",
-	worth = 4,
-	grip = { 0, 0.06, 0 }, -- pinched by its roof
-	heft = 0.02,
-	size = "Small",
-	pickUp = pitched(CLINK, 1.8, 0.55),
-	drop = pitched(STEEL, 2.2, 0.45),
-})
-built("RCCar", {
-	name = "RC car",
-	grade = "Rare",
-	worth = 60,
-	grip = { 0, 0.45, 0 }, -- the car's roof, its transmitter riding beside it
-	heft = 0.45,
-	size = "Large",
-	pickUp = CLACK,
-	drop = pitched(CRUNCH, 1.15),
-})
-built("CymbalMonkey", {
-	name = "Cymbal monkey",
-	grade = "Rare",
-	worth = 40,
-	grip = { 0, 0.55, 0 }, -- round its middle
-	heft = 0.3,
-	size = "Medium",
-	pickUp = pitched(CLANG, 1.5),
-	drop = pitched(TIN, 1.15),
-})
-built("JackInTheBox", {
-	name = "Jack-in-the-box",
-	grade = "Uncommon",
-	worth = 18,
-	grip = { 0, 0.45, 0 }, -- the tin box, shut
-	heft = 0.3,
-	size = "Medium",
-	pickUp = pitched(SLAP, 1.1),
-	drop = TIN,
-})
-built("Kazoo", {
-	name = "Kazoo",
-	grade = "Common",
-	worth = 2,
-	grip = { 0, 0.05, 0.05 }, -- its tube, behind the bump
-	heft = 0.02,
-	size = "Small",
-	pickUp = pitched(CLACK, 1.9, 0.6),
-	drop = pitched(PLASTIC, 2.1, 0.4),
-})
-built("RubberDuck", {
-	name = "Rubber duck",
-	grade = "Common",
-	worth = 3,
-	grip = { 0, 0.15, 0 }, -- round its body
-	heft = 0.04,
-	size = "Small",
-	pickUp = pitched(HOLLOW, 1.7, 0.6),
-	drop = pitched(HOLLOW, 1.4, 0.55),
-})
-built("SirenCar", {
-	name = "Siren car",
-	grade = "Common",
-	worth = 5,
-	grip = { 0, 0.14, 0 }, -- round its middle, under the light bar
-	heft = 0.06,
-	size = "Small",
-	pickUp = pitched(CLACK, 1.6),
-	drop = pitched(PLASTIC, 1.8, 0.5),
-})
-built("ChatteringTeeth", {
-	name = "Chattering teeth",
-	grade = "Common",
-	worth = 6,
-	grip = { 0, 0.12, 0 }, -- round the jaws, shut
-	heft = 0.05,
-	size = "Small",
-	pickUp = pitched(CLACK, 1.75),
-	drop = pitched(PLASTIC, 1.9, 0.5),
-})
-built("ToyDrum", {
-	name = "Toy drum",
-	grade = "Uncommon",
-	worth = 10,
-	grip = { 0, 0.3, 0 }, -- its tin shell
-	heft = 0.3,
-	size = "Medium",
-	pickUp = pitched(SLAP, 1.15),
-	drop = pitched(TIN, 0.95),
-})
-built("WindupMouse", {
-	name = "Wind-up mouse",
-	grade = "Uncommon",
-	worth = 12,
-	grip = { 0, 0.09, 0 }, -- round its tin body
-	heft = 0.04,
-	size = "Small",
-	pickUp = pitched(SLAP, 1.6, 0.55),
-	drop = pitched(TIN, 1.75, 0.55),
-})
-built("WalkingRobot", {
-	name = "Wind-up robot",
-	grade = "Uncommon",
-	worth = 15,
-	grip = { 0, 0.45, 0 }, -- round its chest
-	heft = 0.15,
-	size = "Small",
-	pickUp = pitched(SLAP, 1.35),
-	drop = pitched(TIN, 1.35),
-})
-built("FarmSpinner", {
-	name = "Farm spinner",
-	grade = "Uncommon",
-	worth = 16,
-	grip = { 0, 1.0, 0 }, -- the handle on its top
-	heft = 0.35,
-	size = "Large",
-	pickUp = pitched(HOLLOW, 1.0),
-	drop = pitched(PLASTIC, 1.0),
-})
-built("CowboyDoll", {
-	name = "Cowboy doll",
-	grade = "Rare",
-	worth = 45,
-	grip = { 0, 0.75, 0 }, -- round its chest, under the hat
-	heft = 0.25,
-	size = "Medium",
-	pickUp = SOFT,
-	drop = pitched(SOFT, 0.75, 0.6),
-})
-built("SingingFish", {
-	name = "Singing fish",
-	grade = "Rare",
-	worth = 50,
-	grip = { 0, 0.8, 0 }, -- the plaque's top edge
-	heft = 0.4,
-	size = "Large",
-	pickUp = pitched(HOLLOW, 0.95),
-	drop = pitched(CRUNCH, 0.9),
-})
-built("TinBird", {
-	name = "Tin bird",
-	grade = "Epic",
-	worth = 140,
-	grip = { 0, 0.12, 0 }, -- round its tin body
-	heft = 0.06,
-	size = "Small",
-	pickUp = pitched(CLINK, 1.6),
-	drop = pitched(TIN, 1.85, 0.55),
-})
-built("TinCarousel", {
-	name = "Tin carousel",
-	grade = "Epic",
-	worth = 200,
-	grip = { 0, 0.75, 0 }, -- the pole under its canopy
-	heft = 0.4,
-	size = "Medium",
-	pickUp = pitched(CLANG, 1.3),
-	drop = pitched(TIN, 1.0),
-})
-
--- The squishies: soft, so they borrow the teddy's grab, higher for the small ones.
-built("StressBall", {
-	name = "Stress ball",
-	grade = "Common",
-	worth = 2,
-	grip = { 0, 0.14, 0 }, -- round the ball
-	heft = 0.04,
-	size = "Small",
-	pickUp = pitched(SOFT, 1.5),
-	drop = pitched(SOFT, 1.2, 0.5),
-})
-built("ButterStick", {
-	name = "Butter stick",
-	grade = "Common",
-	worth = 4,
-	grip = { 0, 0.08, 0 }, -- round the stick
-	heft = 0.04,
-	size = "Small",
-	pickUp = pitched(SOFT, 1.45),
-	drop = pitched(SOFT, 1.15, 0.5),
-})
-built("MochiBun", {
-	name = "Mochi bun",
-	grade = "Common",
-	worth = 4,
-	grip = { 0, 0.09, 0 }, -- round the bun
-	heft = 0.02,
-	size = "Small",
-	pickUp = pitched(SOFT, 1.6),
-	drop = pitched(SOFT, 1.3, 0.45),
-})
-built("PaperSquishy", {
-	name = "Paper squishy",
-	grade = "Uncommon",
-	worth = 10,
-	grip = { 0, 0.2, 0 }, -- round its middle
-	heft = 0.01,
-	size = "Small",
-	pickUp = RUSTLE,
-	drop = pitched(RUSTLE, 0.8, 0.5),
-})
-built("ToastSlice", {
-	name = "Toast slice",
-	grade = "Uncommon",
-	worth = 11,
-	grip = { 0, 0.22, 0 }, -- pinched by its crust
-	heft = 0.02,
-	size = "Small",
-	pickUp = pitched(SOFT, 1.4),
-	drop = pitched(SOFT, 1.1, 0.5),
-})
-built("GelBeadBall", {
-	name = "Gel bead ball",
-	grade = "Uncommon",
-	worth = 12,
-	grip = { 0, 0.13, 0 }, -- round the ball
-	heft = 0.05,
-	size = "Small",
-	pickUp = pitched(SOFT, 1.35),
-	drop = pitched(SOFT, 1.05, 0.55),
-})
-built("GlitterGooBall", {
-	name = "Glitter goo ball",
-	grade = "Uncommon",
-	worth = 15,
-	grip = { 0, 0.12, 0 }, -- round the ball
-	heft = 0.05,
-	size = "Small",
-	pickUp = pitched(SOFT, 1.35),
-	drop = pitched(SOFT, 1.05, 0.55),
-})
-built("JumboStrawberry", {
-	name = "Jumbo strawberry",
-	grade = "Uncommon",
-	worth = 18,
-	grip = { 0, 0.25, 0 }, -- round its middle
-	heft = 0.08,
-	size = "Medium",
-	pickUp = pitched(SOFT, 1.15),
-	drop = pitched(SOFT, 0.9, 0.55),
-})
-built("Capybara", {
-	name = "Squishy capybara",
-	grade = "Rare",
-	worth = 55,
-	grip = { 0, 0.14, 0 }, -- round its back
-	heft = 0.04,
-	size = "Small",
-	pickUp = pitched(SOFT, 1.3),
-	drop = pitched(SOFT, 1.0, 0.55),
-})
-built("GalaxyGooBall", {
-	name = "Galaxy goo ball",
-	grade = "Legendary",
-	worth = 350,
-	grip = { 0, 0.14, 0 }, -- round the ball
-	heft = 0.05,
-	size = "Small",
-	pickUp = pitched(SOFT, 1.25),
-	drop = pitched(SOFT, 0.95, 0.55),
-})
 
 return Catalog

@@ -7,6 +7,10 @@
 local Fixture = require("./fixtures/finds")
 local Use = require("../src/shared/Finds/Use")
 
+-- Seconds a lamp stays lit in all (D-250): about a minute, D-188's default for a found light
+-- (art/finds/kit/game.py's LAMP_LASTS, written into each lamp's row).
+local LAMP_LASTS = 60
+
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
 	checks += 1
@@ -290,31 +294,31 @@ do
 		ok(row ~= nil and row.verb == "Switch", `{name}: a Switch press`)
 		if row then
 			local state, left = Use.press(row, nil, 0, d)
-			ok(state == "On" and left == Use.LampLasts, `{name}: lit for a lamp's minute`)
-			local on: Use.Stamp = { state = "On", at = 10, left = Use.LampLasts }
-			ok(Use.litUntil(row, on) == 10 + Use.LampLasts, `{name}: lit until its minute is out`)
-			local f = Use.frame(row, on, Use.LampLasts - 1, d)
+			ok(state == "On" and left == LAMP_LASTS, `{name}: lit for a lamp's minute`)
+			local on: Use.Stamp = { state = "On", at = 10, left = LAMP_LASTS }
+			ok(Use.litUntil(row, on) == 10 + LAMP_LASTS, `{name}: lit until its minute is out`)
+			local f = Use.frame(row, on, LAMP_LASTS - 1, d)
 			ok(f.lit and not f.spent, `{name}: lit through its minute`)
 			state, left = Use.press(row, on, 20, d)
 			ok(
-				state == "Off" and near(left, Use.LampLasts - 20),
+				state == "Off" and near(left, LAMP_LASTS - 20),
 				`{name}: switched off keeps the rest`
 			)
-			f = Use.frame(row, on, Use.LampLasts + 0.1, d)
+			f = Use.frame(row, on, LAMP_LASTS + 0.1, d)
 			ok(f.motion == "SwitchOff" and not f.lit and not f.spent, `{name}: fading out`)
 			local fade = Use.stepAt(row, "On", f.step)
 			ok(fade ~= nil and fade.sound == nil, `{name}: fades out without a click`)
-			ok(Use.press(row, on, Use.LampLasts + 0.1, d) == nil, `{name}: too late to save it`)
-			f = Use.frame(row, on, Use.LampLasts + (d.SwitchOff or 0) + 0.1, d)
+			ok(Use.press(row, on, LAMP_LASTS + 0.1, d) == nil, `{name}: too late to save it`)
+			f = Use.frame(row, on, LAMP_LASTS + (d.SwitchOff or 0) + 0.1, d)
 			ok(f.spent, `{name}: out for good`)
 			ok(Use.reach(Fixture.kit[name]) > 0, `{name}: lying lit, it holds a Mannequin`)
 		end
 	end
 	local blob, d = Use.Rows.BlobLamp, durations("BlobLamp")
-	local f = Use.frame(blob, { state = "On", at = 0, left = Use.LampLasts }, d.SwitchOn + 1, d)
+	local f = Use.frame(blob, { state = "On", at = 0, left = LAMP_LASTS }, d.SwitchOn + 1, d)
 	ok(f.motion == "Flow" and f.lit, "blob lamp: its blobs flow once it's on")
 	local neon, n = Use.Rows.NeonSign, durations("NeonSign")
-	f = Use.frame(neon, { state = "On", at = 0, left = Use.LampLasts }, n.SwitchOn + 1, n)
+	f = Use.frame(neon, { state = "On", at = 0, left = LAMP_LASTS }, n.SwitchOn + 1, n)
 	ok(f.motion == "Buzz" and f.lit, "neon sign: it buzzes once it's on")
 	ok(Use.Rows.UnpluggedLamp == nil, "the Secret lamp: found lit, no press")
 end

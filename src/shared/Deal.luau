@@ -25,6 +25,7 @@ local Catalog = require("./Tools/Catalog")
 local Floor = require("./Floor")
 local FloorRules = require("./FloorRules")
 local Grades = require("./Grades")
+local Rows = require("./Finds/Rows")
 
 type Floor = Floor.Floor
 type Random = Floor.Random
@@ -188,62 +189,41 @@ Deal.Bag = {
 } :: { [string]: number }
 
 --[[
-	The finds a door can hold (S1-05, F-G1a), each a catalog row with its grade, worth and the floor
-	it's dealt from (`Tools.Catalog`). The 1980s bedroom set (D-035), the finds built overnight
-	on Nov 15 (art/finds/WAVES.md: the Lights, the cars and the first wind-ups) and on Nov 16 (the
-	rest of the wind-ups and the squishies built so far, F-G1d). Which one a unit
-	holds is `Deal.findFrom`'s roll: a grade by the floor, then a find of that grade.
+	The finds a door can hold (S1-05, F-G1a, F-G1f), each a catalog row with its grade, worth and
+	the floor it's dealt from (`Tools.Catalog`): the 1980s bedroom set (D-035), then every kit find
+	ticked built in art/finds/WAVES.md, from the game row in its art spec (`Finds/Rows`, in the
+	order the sets were built; art/finds/PIPELINE.md). Which one a unit holds is `Deal.findFrom`'s
+	roll: a grade by the floor, then a find of that grade. As it starts, the server leaves out any
+	whose art isn't in the place (`Deal.onlyWith`).
 
 	The theatre spotlight is built but not dealt: six studs tall, it's one of the catalog's big
-	finds (both hands, the floor's big find behind the code door), which no floor has yet.
+	finds (both hands, the floor's big find behind the code door), which no floor has yet, so it
+	has no game row.
 ]]
-Deal.Finds = {
-	"Boombox",
-	"Television",
-	"Teddy",
-	"Skates",
-	"NightLight",
-	"TeaLight",
-	"DeskLamp",
-	"GlowSticks",
-	"FairyLights",
-	"CampLantern",
-	"MoonLamp",
-	"BlobLamp",
-	"OilLamp",
-	"DiscoBall",
-	"NeonSign",
-	"HardHat",
-	"FireflyJar",
-	"StainedGlassLamp",
-	"UnpluggedLamp",
-	"DiecastCar",
-	"RCCar",
-	"CymbalMonkey",
-	"JackInTheBox",
-	"Kazoo",
-	"RubberDuck",
-	"SirenCar",
-	"ChatteringTeeth",
-	"ToyDrum",
-	"WindupMouse",
-	"WalkingRobot",
-	"FarmSpinner",
-	"CowboyDoll",
-	"SingingFish",
-	"TinBird",
-	"TinCarousel",
-	"StressBall",
-	"ButterStick",
-	"MochiBun",
-	"PaperSquishy",
-	"ToastSlice",
-	"GelBeadBall",
-	"GlitterGooBall",
-	"JumboStrawberry",
-	"Capybara",
-	"GalaxyGooBall",
-} :: { string }
+Deal.Finds = { "Boombox", "Television", "Teddy", "Skates" } :: { string }
+for _, row in Rows do
+	if row.judged then
+		table.insert(Deal.Finds, row.key)
+	end
+end
+
+--[[
+	Leaves out of `Deal.Finds` every find that `has` says has no art in the place (the server calls
+	it once as it starts, with whether the find's template is in ReplicatedStorage.Props.Finds), so
+	a find whose art isn't imported yet is never dealt to a unit that would then stand empty. The
+	rest keep their order. Returns the names left out, in their order, for Output.
+]]
+function Deal.onlyWith(has: (string) -> boolean): { string }
+	local missing = {}
+	for i = #Deal.Finds, 1, -1 do
+		local name = Deal.Finds[i]
+		if not has(name) then
+			table.remove(Deal.Finds, i)
+			table.insert(missing, 1, name)
+		end
+	end
+	return missing
+end
 
 --[[
 	Which find a unit on floor `number` holds, from its roll `pick` (0 to 1): first a grade, by the

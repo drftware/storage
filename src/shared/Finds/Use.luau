@@ -19,6 +19,7 @@
 
 local Art = require("./Art")
 local Game = require("./Game")
+local Rows = require("./Rows")
 
 local Use = {}
 
@@ -75,165 +76,18 @@ Use.LureReach = 130
 -- your feet, so it rolls away from in front of you, never out from under you.
 Use.SetAhead = 1.6
 
--- The torch's own switch (`Torch.OnSound`, `OffSound`): a lantern, the fairy lights' box and the
--- hard hat's lamp click as a torch does.
-local CLICK_ON: Sound = { id = "rbxassetid://9114480271", from = 0.38, length = 0.14, volume = 1.4 }
-local CLICK_OFF: Sound = { id = "rbxassetid://9114480269", from = 0.1, length = 0.14, volume = 1.4 }
--- Pro Sound Effects' "Music Box Wind Up 1" (19.6 s): a small music box wound and playing
--- "Frère Jacques"; its first 9 seconds under the jack's Wind (the crank turning). Not yet
--- measured against the motion: F-G1b2 judges where the winding ends and the tune starts.
-local MUSIC_BOX: Sound = { id = "rbxassetid://9117044359", from = 0, length = 9, volume = 1.1 }
--- "match strike/ignite" (Creator Store, 2.4 s): a match struck and catching, under the wick's
--- Light (the tea light's whole strike, the oil lamp's strike and its flame taking).
-local MATCH_ID = "rbxassetid://71757268954484"
--- The jack's bang as its lid flies open: for now the catalog's "Metal Container 2" tin hit
--- (`CLANG`), lower and louder; a real spring bang is ROADMAP polish (F-G1b2's follow-up).
-local POP: Sound =
-	{ id = "rbxassetid://9116460746", from = 0, length = 0.42, volume = 1.3, pitch = 0.75 }
--- Pro Sound Effects' "Toy Plastic Feet Wind Up 1" (4.9 s, a key wound then a run): its winding
--- under the monkey's Wind (the key in its back turning).
-local WIND: Sound = { id = "rbxassetid://9120219923", from = 0, length = 2.4, volume = 1 }
--- "Crash Cymbal" (Creator Store, one hit of a 17-inch crash, almost no silence before it),
--- pitched up and cut short into a small brass toy cymbal's clang: one each clash.
-local CLASH: Sound =
-	{ id = "rbxassetid://867306119", from = 0, length = 0.35, volume = 0.9, pitch = 1.9 }
--- "Rolling loop" (Creator Store, small wheels rolling): under the toy car's Push, cut as it
--- slows (a fade is ROADMAP polish).
-local ROLL: Sound = { id = "rbxassetid://99838569349900", from = 0, length = 3.4, volume = 0.6 }
-
--- Seconds a lamp stays lit in all (D-250): about a minute, D-188's default for a found light,
--- so the lantern's 90 seconds is still the long one. Its switch keeps what's left.
-Use.LampLasts = 60
-
--- A lamp's row: switched on by `on`, off by its SwitchOff with a click, and when its light is
--- spent it fades out by the same motion, silent.
-local function lamp(on: { Step }): Row
-	return {
-		verb = "Switch",
-		on = on,
-		lasts = Use.LampLasts,
-		out = { { motion = "SwitchOff" } },
-		off = { motion = "SwitchOff", sound = CLICK_OFF },
-	}
-end
-
 --[[
-	The rows, by catalog key. Each find's one line is the item catalog's (art/finds/WAVES.md):
-	how long a light lasts is D-188's "about a minute" unless the catalog says otherwise.
+	The presses, by catalog key: each find's press is in its game row, in its art spec
+	(art/finds/<set>/spec.py, generated into `Finds/Rows`; art/finds/PIPELINE.md). Only finds
+	ticked built in art/finds/WAVES.md (`judged`) are here. Each find's one line is the item
+	catalog's: how long a light lasts is D-188's "about a minute" unless the catalog says otherwise.
 ]]
-Use.Rows = {
-	-- "Light: a small glow for about a minute": the wick catches, flickers, then gutters out.
-	TeaLight = {
-		verb = "Light",
-		on = {
-			{ motion = "Light", sound = { id = MATCH_ID, from = 0, length = 1.3, volume = 0.9 } },
-			{ motion = "Flicker", loop = Use.Forever },
-		},
-		lasts = 60,
-		out = { { motion = "GoOut" } },
-	},
-	-- "Light: warm light that runs down slowly": longer than any other found light.
-	OilLamp = {
-		verb = "Light",
-		on = {
-			{ motion = "Light", sound = { id = MATCH_ID, from = 0, length = 2.4, volume = 0.9 } },
-			{ motion = "Burn", loop = Use.Forever },
-		},
-		lasts = 150,
-		out = { { motion = "RunDown" } },
-	},
-	-- "Crack: one stick lights a small spot for the rest of the floor".
-	GlowSticks = {
-		verb = "Crack",
-		on = { { motion = "Crack" } },
-	},
-	-- "Switch on: a dim line of light"; on a battery box that doesn't run down.
-	FairyLights = {
-		verb = "Switch",
-		on = { { motion = "SwitchOn", sound = CLICK_ON } },
-		off = { motion = "SwitchOff", sound = CLICK_OFF },
-	},
-	-- "Switch on: a wide light for 90 seconds"; switched off, it keeps what's left.
-	CampLantern = {
-		verb = "Switch",
-		on = { { motion = "SwitchOn", sound = CLICK_ON } },
-		lasts = 90,
-		out = { { motion = "RunDown" } },
-		off = { motion = "SwitchOff", sound = CLICK_OFF },
-	},
-	-- "A lamp on your head lights whatever you look at, for a minute"; worn later (D-188's worn
-	-- finds), switched on in your hand for now.
-	HardHat = {
-		verb = "Switch",
-		on = { { motion = "SwitchOn", sound = CLICK_ON } },
-		lasts = 60,
-		out = { { motion = "RunDown" } },
-		off = { motion = "SwitchOff", sound = CLICK_OFF },
-	},
-	-- "Open: fireflies drift out and light the unit for a minute, then they're gone".
-	FireflyJar = {
-		verb = "Open",
-		on = { { motion = "Open" }, { motion = "Drift", loop = Use.Forever } },
-		lasts = 60,
-		out = { { motion = "Gone" } },
-	},
-	-- "Spin: spots of light race round the walls"; a battery motor that spins until stopped.
-	DiscoBall = {
-		verb = "Spin",
-		on = { { motion = "Spin" }, { motion = "Spinning", loop = Use.Forever } },
-		off = { motion = "SpinDown" },
-	},
-	-- The lamps the catalog once kept for home (D-250, the owner, Nov 16): each switches on
-	-- anywhere, stays lit about a minute (D-188's default for a light) and keeps what's left when
-	-- switched off, as the lantern does. None has a motion of its own for running down yet, so
-	-- each fades out by its switch-off, silent (ROADMAP polish: a flicker as each one dies).
-	-- "Switch on: a warm pool of light".
-	DeskLamp = lamp({ { motion = "SwitchOn", sound = CLICK_ON } }),
-	-- "Switch on: a soft glow by the floor".
-	NightLight = lamp({ { motion = "SwitchOn", sound = CLICK_ON } }),
-	-- "It glows"; its tap to change the moon's phase stays at home for now.
-	MoonLamp = lamp({ { motion = "SwitchOn", sound = CLICK_ON } }),
-	-- "Coloured blobs rise and fall": it warms up, then flows for as long as it's lit.
-	BlobLamp = lamp({
-		{ motion = "SwitchOn", sound = CLICK_ON },
-		{ motion = "Flow", loop = Use.Forever },
-	}),
-	-- "It buzzes and glows pink": it stutters on, then buzzes (a real neon hum is ROADMAP polish).
-	NeonSign = lamp({
-		{ motion = "SwitchOn", sound = CLICK_ON },
-		{ motion = "Buzz", loop = Use.Forever },
-	}),
-	-- "It throws coloured patterns on your walls".
-	StainedGlassLamp = lamp({ { motion = "SwitchOn", sound = CLICK_ON } }),
-	-- "Wind: a tune, then a bang as it pops. The bang comes a few seconds after you let go": wind
-	-- it, set it down, walk away, and see what comes to look.
-	JackInTheBox = {
-		verb = "Wind",
-		on = { { motion = "Wind", sound = MUSIC_BOX }, { motion = "Pop", sound = POP } },
-		reset = { motion = "Shut" },
-		noise = "Pop",
-	},
-	-- "Wind: it bashes its cymbals for 20 seconds, loud", "the strongest lure in the set": wind it,
-	-- set it down, and every monster on the floor keeps coming to it until it stalls.
-	CymbalMonkey = {
-		verb = "Wind",
-		on = {
-			{ motion = "Wind", sound = WIND },
-			{ motion = "Play", hit = { part = "CymbalMonkey_ArmL", sound = CLASH } },
-		},
-		noise = "Play",
-		lure = 2,
-		toy = true,
-	},
-	-- "Push: it rolls off down the hall": let go in front of you, it rolls about seven studs,
-	-- wandering, and slows to a stop where it can be picked up again.
-	DiecastCar = {
-		verb = "Push",
-		on = { { motion = "Push", sound = ROLL } },
-		toy = true,
-		down = true,
-	},
-} :: { [string]: Row }
+Use.Rows = {} :: { [string]: Row }
+for _, row in Rows do
+	if row.judged and row.press then
+		Use.Rows[row.key] = row.press
+	end
+end
 
 -- Whether `row` is a toy: pressed again once its motions end (`toy`, or the jack's `reset`).
 function Use.toy(row: Row): boolean
