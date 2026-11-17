@@ -6,8 +6,64 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-05e, step 14: the goo ball, the colour-change goo ball and the mega goo ball. The
-second run stopped after step 13 (the account's weekly limit): steps 14 and 15 are left.
+**Next:** A1, the third run's audit (below). The second run's steps 14 and 15 (the last four
+squishies and their Studio look) are now the third run's S1 to S4 and L1.
+
+## The third run's plan (owner's brief, Nov 16 night)
+
+The goal: every built find dealt the way the catalog says and doing its action when pressed on
+a climb, seen working in Studio Play; the last four squishies built, through a new workflow
+(`art/finds/PIPELINE.md`) that takes a find from photos to playable in one ticket. Fewer, never
+worse. One step a session or less: a session that doesn't finish its step says exactly where it
+stands, and the next carries on. Actions that only happen at home, and the hard hat on your
+head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not built here.
+
+1. **A1 The audit** (short). A table in this file, "Every built find, in the game": each built
+   find, its catalog action, today's state (works / its verb exists and needs data / its verb is
+   missing / waits on the home chain or the owner), its grade, worth and floors checked against
+   the catalog, and one column for "seen in Play" (empty until Q1).
+2. **P1 The pipeline.** `art/finds/PIPELINE.md` (the workflow below, plain and short); each find's
+   game row (grade, worth, floors, verb, the verb's numbers, its sounds) in its art spec; the
+   export generates the catalog rows next to `Finds/Sets`; the deal takes every generated find
+   that has a template in the place and is marked judged (a flag the export writes only for
+   finds ticked here). No hand-kept list for kit finds. Lune specs prove the generated rows match
+   today's hand-written rows before those go. CRAFT.md's "Not in these sessions" and session
+   rules point at it. Every find is dealt by its grade's floor odds (`Grades.odds`, D-203); the
+   catalog's own rules where it names one (the lamp that's on when you find it: loose only,
+   floor 25 up); big finds not dealt until a floor has a big-find place (the theatre spotlight's
+   precedent in `Deal.luau`). Split it (P1a, P1b) if it won't fit.
+3. **V1 Squeeze**: the squishies and the rubber duck. Each squashes (its bones or its stretch) and
+   squeaks or squelches; the mega goo ball's squelch draws monsters through the cymbal monkey's
+   lure (D-233) with its own loudness.
+4. **V2 Wind and go**: the chattering teeth, walking robot, wind-up mouse and tin bird travel
+   across the floor on their travel channels, luring as they go and stopping at walls. The
+   carousel plays in place.
+5. **V3 One press, one noise**: the kazoo, toy drum, farm-animal spinner, cowboy doll and singing
+   fish, each with its motion, its sound and a loudness on the lure (the doll and the fish ship
+   the defaults OWNER.md names: the cord's whirr, the motor's hum).
+6. **V4 The siren car**: it rolls as the die-cast car does, its beacon spins and lights the hall,
+   and its wail lures.
+7. **V5 onwards**: whatever else A1 finds missing that isn't at home only.
+8. **S1 to S4 The last four squishies**, each from photos to playable through PIPELINE.md, its
+   first proof: S1 the goo ball (oozes between your fingers and slowly comes back, on bones);
+   S2 the colour-change goo ball (changes colour where pressed: find the way that holds up in
+   Roblox; if none reads, ship a whole-ball shift and keep the OWNER.md question); S3 the mega
+   goo ball (Epic, takes both hands); S4 the squishy cake slice (frosting squishes out of the
+   side).
+9. **L1 The 14 squishies in Studio at phone size**, with the glitter and galaxy balls' glitter
+   hexes (they read as big pale squares up close) and the galaxy ball's glow. Ticks F-05.
+10. **Q1 Everything in Studio Play.** A dev command that deals a chosen find into the nearest
+    unit (Studio or the owner's UserId only), then every find checked: dealt, taken, carried,
+    banked, pressed, written in A1's table. Then fix sessions (Q2 ...) until the table is green
+    except what waits on the owner or the home chain.
+
+The workflow PIPELINE.md sets down: (1) verbs before sets: a verb nobody has built is built once,
+as a game step, before or with the first find that needs it; every later find with that verb
+needs only data. (2) Each find's game row lives in its art spec, and the export generates the
+catalog row. (3) The deal takes every generated, judged find with a template in the place.
+(4) An art session ends in the game: import, then one Studio Play check that the find turns up in
+a unit and its verb plays when pressed. (5) Only three things stay separate: a verb nobody has
+built, the owner's decisions, and feel tests on a phone or with friends (OWNER.md).
 
 ## The second run's plan (owner's yes, Nov 15)
 
