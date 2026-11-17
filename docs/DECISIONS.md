@@ -7600,3 +7600,24 @@ you hold, the bells counted out), Bloxburg's sell button that shows its price.
   leaves, and each tap in that time starts the wait again (`BoxPanel.Guard`).
 - **Cracked finds** (D-296, committed by the find run as this was built): a sale doesn't read
   `chipped` yet; S5-03c3a2 sells a cracked one first, at half, one off `chipped`.
+
+## D-298 · 2026-11-17 · Four make a Gold: a name of its own in the save, made in one step (S5-03c3b1)
+
+D-188 and D-251 ("with four of one kind, the panel offers to make it Gold: a big animation").
+Precedent: Pet Simulator's golden machine (copies of one pet make its golden one). The item
+catalog's variant table: solid gold that catches any light, worth five times, every find but the
+Secrets.
+- **Kept as a name of its own in `finds`**: the find's name with ":Gold" after it ("Teddy:Gold",
+  `Home/Gold`). The save's shape is unchanged (no version 8), and the box, the shelf and the book
+  count it as any find. Its catalog row is its find's (`Gold.base`); the gold is drawn
+  (ToolPicture gilds the model: textures off, gold Metal) and priced (`BoxPanel.price`, x5).
+- **Made in one step** (`BoxPanel.gold`): Gold is the take's fourth way on `JobBoxTake`, same
+  checks and limit. Four of it in the box (never the shelf's or one out) come off `finds`, one
+  Gold goes on, and its book page is stamped the first time, together; written as a sale is
+  (`SellSave`). A Gold of a Gold, or of a Secret, is refused.
+- **Cracked ones go in first** (my default, OWNER.md): `chipped` drops by up to four, so it never
+  tops `finds`, and a gold made of cracked lamps is whole.
+- **Its card sits just before its find's** (sorted by the find's name), so the new card is dealt
+  beside the four. A Gold only sells for now (Take and Shelf hidden on its card, refused by the
+  server) until S5-03c3b3.
+

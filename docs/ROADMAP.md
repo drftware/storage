@@ -2444,8 +2444,18 @@ Done when players watch the results to the end and change their perks between cl
       results board's does. A tap guard after a card leaves. Seen in Play, a rejoin keeping it.
     - [ ] **S5-03c3a2 Selling a cracked find** (D-296, D-297): a name with `chipped` sells a
       cracked one first at `Chip.worth`, one off `chipped`, so `chipped` never tops `finds`.
-    - [ ] **S5-03c3b Four make a Gold** (D-188, D-251): with four of a kind in the box, the panel
-      offers Gold; a big animation, the four become one Gold find (Pet Simulator's golden pets).
+    - [x] **S5-03c3b1 Four make a Gold, on the server** (Nov 17, D-298): a Gold is a name of its
+      own in `finds` ("Teddy:Gold", `Home/Gold`), no new save version; Gold is the take's fourth
+      way (`BoxPanel.gold`: four in the box struck, cracked first, one Gold added and its book page
+      stamped, in one step, written as a sale is); not for Secrets; a Gold sells at five times;
+      its card sits beside its find's, gilded (ToolPicture), Sell only. Passes checks, untested in
+      Studio.
+    - [ ] **S5-03c3b2 Four make a Gold, the big animation, seen** (D-251): a Gold verb glowing on
+      a card with four or more (`BoxPanel.offers`); press it and the four pictures fly out round
+      the screen's middle, swirl inward faster with a rising shimmer, flash, and one gold picture
+      lands big with its own sound, then deals onto its new card (`BoxPanel.made`). Seen in Play.
+    - [ ] **S5-03c3b3 A Gold on the shelf and in your hand**: Take and Shelf for a Gold (Slots,
+      Shelves and the held model gilded as ToolPicture does); kept at the gate as a Gold.
     - Polish for the panel (later): a chip tap you can hear differently per rarity; cards drawn
       only as they scroll into view if a player ever owns 60 kinds or more (ViewportFrames cost).
   - [ ] **S5-03d Taking finds up** (idea 10, D-251): take any find from the chest into a slot and
@@ -2910,8 +2920,11 @@ actions themselves and dealing the new finds on floors are later game tickets.
   (Nov 16, D-248): the glitter goo ball, clear aqua gel hung through with glitter and gold stars
   that whip round and coast to a stop. F-05d3 (Nov 16, D-249): the galaxy goo ball, deep
   blue-violet gel with teal and magenta nebula clouds, star sequins, a pearl moon and a ringed
-  planet, found glowing faintly; squeezed, the stars swirl round and the clouds drift. Next
-  F-05e, then F-05f (`art/finds/WAVES.md`, the second run's plan).
+  planet, found glowing faintly; squeezed, the stars swirl round and the clouds drift. The
+  last four are the third run's S1 to S4 (`art/finds/WAVES.md`). S1a (Nov 17): the goo ball's
+  art and game row, a neon-pink goo-filled ball that bulges out between five fingers on bones
+  and slowly comes back; not ticked, imported or seen in Play. Next S1b: judge its full sheets,
+  tick it, import it, the Play check; then S2.
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**
 - [ ] **F-08 Boxes and tins.**

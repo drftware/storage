@@ -68,6 +68,11 @@ nowhere else.
   that size, does the rise feel slow or right (it takes the lid's 1.1 s), and is the deep blue
   calm. My defaults, yours to change: rarest first then by name; chips only for rarities you own;
   a card shows the find as your slots draw it, with no price yet (selling is S5-03c3).
+- [ ] **Decide: Gold defaults** (S5-03c3b1, D-298). My defaults, yours to change: four of one find
+  make one Gold worth five times the find (the item catalog's table), so making one beats selling
+  the four a little; cracked lamps go into a Gold first and come out whole; no Secret Golds; a Gold
+  only sells until it can go on the shelf and in your hand (S5-03c3b3). Nothing to test yet: the
+  Gold button and its animation come next (S5-03c3b2).
 - [ ] **Sell a find from your job box** (S5-03c3a, D-297). Seen working in Studio Play at
   computer size on Nov 17, sounds not heard. Yours, at Galaxy A16 size: open the box, tap a kind
   you have several of, press the gold Sell (it shows the price): the picture should fly into your

@@ -322,7 +322,9 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	end
 
 	local function paintVerbs()
-		local both = free - pending(nil, BoxPanel.Ways.Shelf) > 0
+		local gold = picked ~= nil and picked.card.gold == true -- a Gold only sells, for now
+		local both = not gold and free - pending(nil, BoxPanel.Ways.Shelf) > 0
+		takeButton.Visible = not gold
 		shelfButton.Visible = both
 		takeButton.Size = if both then UDim2.new(0.5, -2, 0.47, 0) else UDim2.fromScale(1, 0.47)
 	end
@@ -394,8 +396,9 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		TweenService:Create(s.pop, LIFT, { Scale = BoxPanel.Lift }):Play()
 		TweenService:Create(s.rim, GLOW, { Thickness = BoxPanel.Glow, Transparency = 0 }):Play()
 		paintVerbs()
-		local row = (Tools.Catalog :: any)[s.card.key] -- any: the catalog is keyed by text
-		sellButton.Text = `{BoxPanel.Words.sell} {Cash.text(BoxPanel.price(row or {}))}`
+		local row = (Tools.Catalog :: any)[s.card.base or s.card.key] -- any: keyed by text
+		local price = BoxPanel.price(row or {}, s.card.gold)
+		sellButton.Text = `{BoxPanel.Words.sell} {Cash.text(price)}`
 		verbs.Parent = s.frame
 		verbs.Visible = true
 		verbsPop.Scale = 0.6
@@ -1331,7 +1334,8 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 					-- any: a remote's arguments, checked here
 					remote.OnClientEvent:Connect(function(key: any, way: any, ok: any, at: any)
 						local name, to = BoxPanel.name(key), BoxPanel.way(way)
-						if name and to and type(ok) == "boolean" then
+						-- making a Gold is answered once the panel offers it (S5-03c3b2)
+						if name and to and to ~= BoxPanel.Ways.Gold and type(ok) == "boolean" then
 							took(name, to :: BoxPanel.Way, ok, at) -- the frozen module widens it to string
 						end
 					end)

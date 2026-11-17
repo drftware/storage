@@ -20,7 +20,14 @@
 	(`price`), strikes one off what you own and puts the price on your cash in one step (`sell`),
 	so a save written at any moment holds both or neither; it answers with your new cash. Only one
 	in the box sells: never the shelf's, never one out in someone's hands.
+
+	Making a Gold (S5-03c3b, D-298): Gold is the take's fourth way. With four of one find in the box
+	(Gold.Need), the server strikes the four and adds one of its Gold (Gold.key) in one step
+	(`gold`), so a save written at any moment holds the four or the Gold, never both or neither.
+	The screen counts the four off its card and deals the Gold's (`made`). A Gold sells at five
+	times its find's price; it doesn't come out into your hands or onto the shelf yet.
 ]]
+local Gold = require("./Gold")
 local Grades = require("../Grades")
 
 local BoxPanel = {}
@@ -46,9 +53,15 @@ BoxPanel.SellSave = 6
 -- The most one find sells for: the dearest Secret's worth (Grades.Worth).
 BoxPanel.PriceMost = 12000
 
--- Where a find taken out goes: into your hands, onto a free spot of your shelf, or sold for cash.
-export type Way = "Hand" | "Shelf" | "Sell"
-BoxPanel.Ways = table.freeze({ Hand = "Hand" :: Way, Shelf = "Shelf" :: Way, Sell = "Sell" :: Way })
+-- Where a find taken out goes: into your hands, onto a free spot of your shelf, sold for cash, or,
+-- four of it, into one Gold.
+export type Way = "Hand" | "Shelf" | "Sell" | "Gold"
+BoxPanel.Ways = table.freeze({
+	Hand = "Hand" :: Way,
+	Shelf = "Shelf" :: Way,
+	Sell = "Sell" :: Way,
+	Gold = "Gold" :: Way,
+})
 
 BoxPanel.SearchMax = 24 -- characters the search box takes: a find's name is never longer
 BoxPanel.KindsMax = 2000 -- kinds a list carries at most: far past every find there is
@@ -56,7 +69,7 @@ BoxPanel.NameMax = 64 -- characters a find's name from the wire may have (the sa
 
 -- A way from the wire, or nil when it isn't one.
 function BoxPanel.way(value: unknown): Way?
-	if value == "Hand" or value == "Shelf" or value == "Sell" then
+	if value == "Hand" or value == "Shelf" or value == "Sell" or value == "Gold" then
 		return value :: Way
 	end
 	return nil
@@ -78,14 +91,15 @@ end
 
 -- What one find sells for (S5-03c3a): its catalog worth, as the Packrat weighs it and the item
 -- catalog prices it, whole; with none, its grade's least (Grades.Worth); never under 1 or over
--- PriceMost.
-function BoxPanel.price(row: { grade: Grades.Grade?, worth: number? }): number
+-- PriceMost. Its Gold (`gold`) sells for Gold.Times that.
+function BoxPanel.price(row: { grade: Grades.Grade?, worth: number? }, gold: boolean?): number
 	local worth = row.worth
 	if type(worth) ~= "number" or worth ~= worth then
 		local range = if row.grade then Grades.Worth[row.grade] else nil
 		worth = if range then range[1] else 1
 	end
-	return math.clamp(math.floor(worth :: number), 1, BoxPanel.PriceMost)
+	local price = math.clamp(math.floor(worth :: number), 1, BoxPanel.PriceMost)
+	return if gold then price * Gold.Times else price
 end
 
 -- What a sale changes: what you own and your cash (the save's Data is one of these).
@@ -120,8 +134,65 @@ function BoxPanel.sell(
 	return data.cash
 end
 
--- A kind of find you own, as its card shows it.
-export type Card = { key: string, name: string, grade: Grades.Grade, count: number }
+-- What making a Gold changes (the save's Data is one of these): what you own and which of it is
+-- cracked.
+export type Goldable = {
+	finds: { [string]: number },
+	chipped: { [string]: number },
+}
+
+-- Makes one Gold of `name` from Gold.Need of it in a box holding `boxed` (Save.boxed), at `now`
+-- (os.time): the four struck off what you own (its name gone at none), cracked ones first so
+-- `chipped` never tops `finds`, and one Gold added, its page in the book (`book`, the save's
+-- `stamps.finds`) stamped the first time, all together. Returns the Gold's key, or nil, changing nothing, when fewer than four are in the
+-- box or `name` is a Gold's already. The server checks the find may be made Gold (Gold.can).
+function BoxPanel.gold(
+	data: Goldable,
+	boxed: { [string]: number },
+	name: string,
+	book: { [string]: number },
+	now: number
+): string?
+	local inBox, owned = boxed[name], data.finds[name]
+	if
+		Gold.base(name) ~= nil
+		or type(inBox) ~= "number"
+		or inBox < Gold.Need
+		or type(owned) ~= "number"
+		or owned < Gold.Need
+	then
+		return nil
+	end
+	local left = math.floor(owned) - Gold.Need
+	if left >= 1 then
+		data.finds[name] = left
+	else
+		data.finds[name] = nil -- the save's counts are one or more
+	end
+	local cracked = math.floor(data.chipped[name] or 0) - Gold.Need
+	if cracked >= 1 then
+		data.chipped[name] = math.min(cracked, left)
+	else
+		data.chipped[name] = nil
+	end
+	local key = Gold.key(name)
+	data.finds[key] = math.floor(data.finds[key] or 0) + 1
+	if book[key] == nil then
+		book[key] = math.floor(now)
+	end
+	return key
+end
+
+-- A kind of find you own, as its card shows it. A Gold's card (`gold`) is its find's, gilded:
+-- `base` is the find it's made of.
+export type Card = {
+	key: string,
+	name: string,
+	grade: Grades.Grade,
+	count: number,
+	gold: boolean?,
+	base: string?,
+}
 -- What the screen needs from a find's catalog row (Tools.Catalog): its name and grade.
 export type Row = { name: string, grade: Grades.Grade?, find: boolean? }
 
@@ -167,32 +238,95 @@ local function plain(text: string): string
 	return (string.gsub(string.lower(text), "[^%w]", ""))
 end
 
+-- The card for `count` of `key` (a find's, or a Gold's) when the catalog knows its find.
+local function cardOf(key: string, count: number, catalog: { [string]: Row }): Card?
+	local base = Gold.base(key)
+	local row = catalog[base or key]
+	if not (row and row.find and count >= 1) or (base and not Gold.can(row)) then
+		return nil
+	end
+	return {
+		key = key,
+		name = if base then `{Gold.Word} {row.name}` else row.name,
+		grade = row.grade or "Common",
+		count = count,
+		gold = base ~= nil,
+		base = base or key,
+	}
+end
+
+-- A card's find's own name, a Gold's without its word: what the cards are sorted by.
+local function nameOf(card: Card): string
+	if card.gold then
+		return string.sub(card.name, #Gold.Word + 2)
+	end
+	return card.name
+end
+
+-- Rarest first, then by its find's name, a Gold just before its find (made beside the four).
+local function before(a: Card, b: Card): boolean
+	local ra, rb = RANK[a.grade] or 0, RANK[b.grade] or 0
+	if ra ~= rb then
+		return ra > rb
+	end
+	local na, nb = string.lower(nameOf(a)), string.lower(nameOf(b))
+	if na ~= nb then
+		return na < nb
+	end
+	if (a.gold == true) ~= (b.gold == true) then
+		return a.gold == true
+	end
+	return a.key < b.key
+end
+
 -- One card for each kind in `finds` that the catalog knows as a find, rarest first, then by name.
 function BoxPanel.cards(finds: { [string]: number }, catalog: { [string]: Row }): { Card }
 	local out: { Card } = {}
 	for key, count in finds do
-		local row = catalog[key]
-		if row and row.find and count >= 1 then
-			table.insert(out, {
-				key = key,
-				name = row.name,
-				grade = row.grade or "Common",
-				count = count,
-			})
+		local card = cardOf(key, count, catalog)
+		if card then
+			table.insert(out, card)
 		end
 	end
-	table.sort(out, function(a: Card, b: Card): boolean
-		local ra, rb = RANK[a.grade] or 0, RANK[b.grade] or 0
-		if ra ~= rb then
-			return ra > rb
-		end
-		local na, nb = string.lower(a.name), string.lower(b.name)
-		if na ~= nb then
-			return na < nb
-		end
-		return a.key < b.key
-	end)
+	table.sort(out, before)
 	return out
+end
+
+-- Whether the panel offers to make `card` Gold: four or more of a find that can be, not a Gold.
+function BoxPanel.offers(card: Card, row: Row?): boolean
+	return card.gold ~= true and card.count >= Gold.Need and Gold.can(row)
+end
+
+-- Four of `name` made one Gold (S5-03c3b): its card counts four fewer, and goes at none; the
+-- Gold's card counts one more, dealt into its place among `cards` if it's new. Returns the Gold's
+-- card and whether it's new, or nil, changing nothing, when no card held four.
+function BoxPanel.made(cards: { Card }, catalog: { [string]: Row }, name: string): (Card?, boolean)
+	local at: number? = nil
+	for i, card in cards do
+		if card.key == name and card.count >= Gold.Need then
+			at = i
+			break
+		end
+	end
+	local key = Gold.key(name)
+	local new = cardOf(key, 1, catalog)
+	if not (at and new) then
+		return nil, false
+	end
+	local four = cards[at]
+	four.count -= Gold.Need
+	if four.count < 1 then
+		table.remove(cards, at)
+	end
+	for _, card in cards do
+		if card.key == key then
+			card.count += 1
+			return card, false
+		end
+	end
+	table.insert(cards, new)
+	table.sort(cards, before)
+	return new, true
 end
 
 -- The search as typed, cut to what the box takes.
@@ -264,6 +398,7 @@ BoxPanel.Words = table.freeze({
 	take = "Take",
 	shelf = "Shelf",
 	sell = "Sell", -- with its price after it: "Sell $4"
+	gold = "Gold", -- four of one find into one Gold
 })
 -- Taking one out (S5-03c2b2): tap a card and it lifts and glows, its verbs over its name; Take, and
 -- its picture flies out of the panel into a free one of your hands (the three wells over the

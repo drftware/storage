@@ -8,6 +8,7 @@
 -- counts one fewer and goes at none.
 local BoxPanel = require("../src/shared/Home/BoxPanel")
 local Catalog = require("../src/shared/Tools/Catalog")
+local Gold = require("../src/shared/Home/Gold")
 local Save = require("../src/shared/Save")
 
 local failures, checks = 0, 0
@@ -184,6 +185,83 @@ do
 	ok(data.cash == 314, "and nothing paid")
 	ok(BoxPanel.sell(data, Save.boxed(data, {}), "Teddy", 0) == nil, "no price: refused")
 	ok(data.finds.Teddy == 2, "and nothing struck off")
+end
+
+-- Four make a Gold (S5-03c3b, D-298): four of one find in the box become one of its Gold in one
+-- step, never from the shelf's or one out; cracked ones go first; a Gold sells at five times;
+-- the card counts four fewer and the Gold's is dealt beside it.
+do
+	ok(BoxPanel.way("Gold") == "Gold", "making a Gold reads as a way")
+	ok(Gold.key("Teddy") == "Teddy:Gold" and Gold.base("Teddy:Gold") == "Teddy", "a Gold's key")
+	ok(Gold.base("Teddy") == nil and Gold.base(":Gold") == nil, "a find's own key isn't a Gold's")
+	ok(
+		Gold.can(catalog.Crown) and not Gold.can({ name = "x", grade = "Secret", find = true }),
+		"no Secret Golds"
+	)
+	ok(not Gold.can(catalog.Ladder) and not Gold.can(nil), "a tool, or nothing, can't be")
+	ok(BoxPanel.price({ worth = 12 }, true) == 60, "a Gold sells for five times its find")
+
+	local data = Save.fresh()
+	data.finds = { Teddy = 3 }
+	ok(
+		BoxPanel.gold(data, Save.boxed(data, {}), "Teddy", data.stamps.finds, 100) == nil,
+		"three: refused"
+	)
+	ok(data.finds.Teddy == 3 and data.finds["Teddy:Gold"] == nil, "and nothing changed")
+
+	data.finds = { Teddy = 9 }
+	data.chipped = { Teddy = 5 }
+	ok(Save.shelve(data, "Teddy", Save.Fresh.Seen, 6) == 1, "one Teddy on the shelf")
+	local made = 0
+	for _ = 1, 5 do
+		if BoxPanel.gold(data, Save.boxed(data, {}), "Teddy", data.stamps.finds, 100) then
+			made += 1
+		end
+	end
+	ok(made == 2, "eight in the box make two in two asks, the shelf's left alone")
+	ok(data.finds.Teddy == 1 and data.finds["Teddy:Gold"] == 2, "nine owned: one left, two Golds")
+	ok(data.chipped.Teddy == nil, "the cracked ones went first, and chipped never tops finds")
+	ok(data.stamps.finds["Teddy:Gold"] == 100, "the book's page stamped the first time")
+
+	data.finds = { Crown = 5 }
+	data.chipped = { Crown = 2 }
+	data.shelf = {}
+	ok(
+		BoxPanel.gold(data, Save.boxed(data, { Crown = 2 }), "Crown", data.stamps.finds, 200) == nil,
+		"two out: three in the box"
+	)
+	ok(
+		BoxPanel.gold(data, Save.boxed(data, {}), "Crown", data.stamps.finds, 200) == "Crown:Gold",
+		"all back: made"
+	)
+	ok(
+		data.finds.Crown == 1 and data.chipped.Crown == nil,
+		"two cracked of the four, gone with them"
+	)
+	data.finds["Crown:Gold"] = 4
+	ok(
+		BoxPanel.gold(data, Save.boxed(data, {}), "Crown:Gold", data.stamps.finds, 200) == nil,
+		"a Gold of a Gold: never"
+	)
+
+	local cards =
+		BoxPanel.cards({ Teddy = 5, Crown = 1, ["Teddy:Gold"] = 1, ["Ladder:Gold"] = 1 }, catalog)
+	ok(#cards == 3, "a Gold's card, none for a tool's")
+	ok(
+		cards[2].key == "Teddy:Gold" and cards[2].name == "Gold Teddy bear",
+		"a Gold beside its find"
+	)
+	ok(BoxPanel.offers(cards[3], catalog.Teddy), "five Teddies: Gold offered")
+	ok(not BoxPanel.offers(cards[2], catalog.Teddy), "never on a Gold's card")
+	ok(not BoxPanel.offers(cards[1], catalog.Crown), "one Crown: not offered")
+	local gold, new = BoxPanel.made(cards, catalog, "Teddy")
+	ok(gold == cards[2] and not new and gold.count == 2, "a second Gold counts on its card")
+	ok(cards[3].count == 1, "four off the Teddies")
+	ok(BoxPanel.made(cards, catalog, "Teddy") == nil, "one left: nothing made")
+	local fresh = BoxPanel.cards({ NightLight = 4, Teddy = 1 }, catalog)
+	local light, dealt = BoxPanel.made(fresh, catalog, "NightLight")
+	ok(dealt and light ~= nil and #fresh == 2, "the last four: their card goes, the Gold's dealt")
+	ok(fresh[1].key == "NightLight:Gold" and fresh[2].key == "Teddy", "in its place by name")
 end
 
 print(`boxpanel: {checks - failures}/{checks} passed`)

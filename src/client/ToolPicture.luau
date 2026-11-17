@@ -6,6 +6,7 @@
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 
 local Catalog = Tools.Catalog
@@ -13,16 +14,39 @@ local RAD = math.pi / 180
 
 local ToolPicture = {}
 
--- Draws `key`'s tool in `frame` (empty for ""). Returns the model drawn, if any.
+-- Solid gold that catches any light (the item catalog's Gold): the find's own shape, gilded.
+local GOLD = Color3.fromRGB(255, 196, 64)
+
+-- Every part of `model` turned to gold: its textures off, metal of one colour.
+local function gild(model: Model)
+	for _, d in model:GetDescendants() do
+		if d:IsA("SurfaceAppearance") or d:IsA("Decal") then
+			d:Destroy()
+		elseif d:IsA("BasePart") then
+			d.Color = GOLD
+			d.Material = Enum.Material.Metal
+			if d:IsA("MeshPart") then
+				d.TextureID = ""
+			end
+		end
+	end
+end
+
+-- Draws `key`'s tool in `frame` (empty for ""), a Gold's ("Teddy:Gold") as its find gilded.
+-- Returns the model drawn, if any.
 function ToolPicture.draw(frame: ViewportFrame, key: string): Model?
 	frame:ClearAllChildren()
-	local row = Catalog[key]
+	local base = Gold.base(key)
+	local row = Catalog[base or key]
 	if not row then
 		return nil
 	end
-	local model = Tools.clone(key, CFrame.identity)
+	local model = Tools.clone(base or key, CFrame.identity)
 	if not model then
 		return nil
+	end
+	if base then
+		gild(model)
 	end
 	local body = Tools.body(model)
 	local length = if body then body.Size.Magnitude else 2

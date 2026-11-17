@@ -39,6 +39,11 @@
 	sale from the moment it's made, so the autosave, a leave or a shutdown write it too, and a crash
 	before any of them undoes the whole sale, never half. The list sent as the lid opens carries
 	the holder's cash, so the panel shows it from the start.
+
+	Making a Gold (S5-03c3b, D-298): Gold is the fourth way, through the same checks and rate limit,
+	for a find that can be made Gold (Home.Gold: not a Secret). Four of it in the box are struck
+	and one Gold added in one step (`BoxPanel.gold`), written as a sale is. A Gold's own key
+	("Teddy:Gold") is only ever sold, at Gold.Times its find's price, for now.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -56,6 +61,7 @@ local Slots = require(script.Parent.Slots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 
 local BoxPanel = Home.BoxPanel
+local Gold = Home.Gold
 local JobBox = Home.JobBox
 
 -- One home's box as wired: its unit, the piece, its button and when it last answered a press.
@@ -178,18 +184,34 @@ function JobBoxes.new(): Brix.System
 		end
 		local data = if saving then saving:data(player) else nil
 		local s, sh = slots, shelves
-		local row = (Tools.Catalog :: any)[key] -- any: the catalog is keyed by text
+		local plain = Gold.base(key) -- a Gold's find, when it's a Gold that's asked for
+		local row = (Tools.Catalog :: any)[plain or key] -- any: the catalog is keyed by text
 		local boxed = if data and s then Save.boxed(data, s:fromBox(player)) else {}
 		if
 			not (data and s and sh and openOf(player) and row and row.find)
 			or Prompts.wrapped(player)
 			or not BoxPanel.canTake(boxed, key)
+			or (plain and to ~= BoxPanel.Ways.Sell) -- a Gold only sells, for now
+			or (to == BoxPanel.Ways.Gold and not Gold.can(row))
 		then
 			answer(false)
 			return
 		end
+		if to == BoxPanel.Ways.Gold then
+			local made = BoxPanel.gold(data, boxed, key, data.stamps.finds, os.time())
+			if made then
+				keepSale(player) -- written as a sale is: one write for a run
+				if RunService:IsStudio() then
+					print(
+						`JobBoxes: {player.Name} made a {made}, {data.finds[key] or 0} {key} left`
+					)
+				end
+			end
+			answer(made ~= nil)
+			return
+		end
 		if to == BoxPanel.Ways.Sell then
-			local price = BoxPanel.price(row)
+			local price = BoxPanel.price(row, plain ~= nil)
 			local cash = BoxPanel.sell(data, boxed, key, price)
 			if cash then
 				keepSale(player)
