@@ -6,9 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** L1b (squeeze the rebuilt glitter and galaxy balls in Play, maybe shorten the galaxy's
-light; it ticks F-05: the newest note). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
-V5a to V5f are done and seen in Play (Nov 17), but for V5e2.
+**Next:** Q1a's rest (the newest note): the night light taken, the tea light, desk lamp and
+glow sticks banked; the fairy lights, oil lamp, hard hat, glass lamp and Old lamp; the two cars;
+the bedroom four; V5e2 (a cracked lamp seen drawn and banked). Then Q1b, Q1c (with L1b), Q2.
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -62,7 +62,9 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
 10. **Q1 Everything in Studio Play.** A dev command that deals a chosen find into the nearest
     unit (Studio or the owner's UserId only), then every find checked: dealt, taken, carried,
     banked, pressed, written in A1's table. Then fix sessions (Q2 ...) until the table is green
-    except what waits on the owner or the home chain.
+    except what waits on the owner or the home chain. Split three ways (ROADMAP F-G1e6): **Q1a**
+    the command (`DealFind`), the Lights, the two cars, the bedroom four and V5e2 (a cracked lamp
+    drawn and banked); **Q1b** the 14 wind-ups; **Q1c** the 14 squishies, with L1b.
 
 The workflow PIPELINE.md sets down: (1) verbs before sets: a verb nobody has built is built once,
 as a game step, before or with the first find that needs it; every later find with that verb
@@ -83,19 +85,19 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 
 | Find (`Deal.Finds`) | Catalog action · verb (precedent) | Today | Grade · worth · floors | Seen in Play |
 |---|---|---|---|---|
-| Plug-in night-light (`NightLight`) | A soft glow by the floor (the catalog says at home; D-250: anywhere) · Switch (DOORS' lighter) | works: a lamp, 60 s | Common · 2 · floor 1 up ✓ | |
-| Tea light in a jar (`TeaLight`) | A small glow for about a minute · Light (DOORS' lighter) | works: 60 s | Common · 3 · floor 1 up ✓ | |
-| Desk lamp (`DeskLamp`) | A warm pool of light (at home; D-250: anywhere) · Switch | works | Common · 4 · floor 1 up ✓ | |
-| Bundle of glow sticks (`GlowSticks`) | One stick lights a small spot for the rest of the floor; three to a bundle · Crack | works: each press cracks the next stick, three to a bundle, each snapping and lit for good, the bottom two kinked out and shaken (V5b, D-292) | Common · 5 · floor 1 up ✓ | Nov 17, V5b: given (GiveFind), pressed four times in hand (`ToolUse` from the Client): the stamp's count 1, 2, 3, the fourth press refused; in your view's copy the top stick bent to 32 degrees at 0.56 s and dropped back, the front one to 34 at 0.60 s then shaken (12, 6, 16, 14, 5, 12 ...), the back one to 30 at 0.67 s and shaken; each stick's glow (2.0) and light (0.7, 0.25, 0.25) on in turn; the snap heard at 0.60, 0.60, 0.65 s, the slosh at 0.72 and 0.78 s; not watched holding a Mannequin (its reach is unchanged) |
+| Plug-in night-light (`NightLight`) | A soft glow by the floor (the catalog says at home; D-250: anywhere) · Switch (DOORS' lighter) | works: a lamp, 60 s | Common · 2 · floor 1 up ✓ | Nov 17, Q1a: dealt (`DealFind`, Unit107, in its box); its box opened with three finds already in hand, so it stayed; not yet taken, carried, banked or pressed |
+| Tea light in a jar (`TeaLight`) | A small glow for about a minute · Light (DOORS' lighter) | works: 60 s | Common · 3 · floor 1 up ✓ | Nov 17, Q1a: dealt (`DealFind`, Unit106), taken from its box, carried out through the unit's door on foot to the keypad, pressed in hand: lit (your view's flame light 0.84, range 9); not banked (the gate shut before I boarded) |
+| Desk lamp (`DeskLamp`) | A warm pool of light (at home; D-250: anywhere) · Switch | works | Common · 4 · floor 1 up ✓ | Nov 17, Q1a: dealt (`DealFind`, Unit105), taken, carried out on foot, pressed: on (its spot 2.2, range 10, and a pool 0.5 in your view's copy), again: off, again: on; not banked (the gate shut before I boarded) |
+| Bundle of glow sticks (`GlowSticks`) | One stick lights a small spot for the rest of the floor; three to a bundle · Crack | works: each press cracks the next stick, three to a bundle, each snapping and lit for good, the bottom two kinked out and shaken (V5b, D-292) | Common · 5 · floor 1 up ✓ | Nov 17, V5b: given (GiveFind), pressed four times in hand (`ToolUse` from the Client): the stamp's count 1, 2, 3, the fourth press refused; in your view's copy the top stick bent to 32 degrees at 0.56 s and dropped back, the front one to 34 at 0.60 s then shaken (12, 6, 16, 14, 5, 12 ...), the back one to 30 at 0.67 s and shaken; each stick's glow (2.0) and light (0.7, 0.25, 0.25) on in turn; the snap heard at 0.60, 0.60, 0.65 s, the slosh at 0.72 and 0.78 s; not watched holding a Mannequin (its reach is unchanged); Nov 17, Q1a: dealt (`DealFind`, Unit118, the marked note in a box of its own beside it), taken, carried out on foot, pressed (stamped On, count 1); not banked (the gate shut before I boarded) |
 | String fairy lights (`FairyLights`) | Lay them along a hall for a dim line of light · Switch | works: a switch in your hand; set down lit, the string runs out 8 studs along the floor, the longest clear way away from you, and holds a Mannequin 4 studs either side (V5c, D-294) | Uncommon · 12 · floor 1 up ✓ | Nov 17, V5c: given (GiveFind), switched on in hand (`ToolUse`), dropped (`ToolDrop`) in floor 1's hall: laid from -638.2 to -646.2 ahead of me, the twenty LEDs running out over 0.6 s on my screen (4, 9, 14, 18, 19, 20 by tenths), the coil hidden, its light on; dropped facing back, it ran the other way, as the rule says; the Mannequin heard the drop 18 studs off, came for me and froze at -650.0, 3.8 studs past the string's far end (the coil's own hold would end at -645.4), held 20 s ("freezes in the light of a find on the floor"); not looked at by eye or on a phone |
-| Camping lantern (`CampLantern`) | A wide light for 90 seconds · Switch | works | Uncommon · 15 · floor 1 up ✓ | |
-| Moon lamp (`MoonLamp`) | It glows (D-250: anywhere); tap it to change its phase · Switch, Tap | works as a switch; the phase tap waits on the home chain | Uncommon · 16 · floor 1 up ✓ | |
-| Blob lamp (`BlobLamp`) | Coloured blobs rise and fall (D-250: anywhere) · Switch | works | Uncommon · 18 · floor 1 up ✓ | |
+| Camping lantern (`CampLantern`) | A wide light for 90 seconds · Switch | works | Uncommon · 15 · floor 1 up ✓ | Nov 17, Q1a: dealt (`DealFind`, Unit107), taken, carried out on foot, banked ("GatePay: drftware paid 10 for floor 1, kept MoonLamp, BlobLamp, CampLantern"), pressed: lit (0.80); its first press, my third in 7 s across slot switches, did nothing (the press limit, or a switch still landing: Q2), the next lit it |
+| Moon lamp (`MoonLamp`) | It glows (D-250: anywhere); tap it to change its phase · Switch, Tap | works as a switch; the phase tap waits on the home chain | Uncommon · 16 · floor 1 up ✓ | Nov 17, Q1a: dealt (`DealFind`, Unit106), taken, carried out on foot, banked (GatePay kept it), pressed: lit (0.80); the phase tap waits on the home chain |
+| Blob lamp (`BlobLamp`) | Coloured blobs rise and fall (D-250: anywhere) · Switch | works | Uncommon · 18 · floor 1 up ✓ | Nov 17, Q1a: dealt (`DealFind`, Unit105), taken, carried out on foot, banked (GatePay kept it), pressed: lit (0.80) |
 | Oil lamp (`OilLamp`) | Warm light that runs down slowly; fragile · Light | works: 150 s; fragile built (V5e, D-296): dropped hard, its chimney cracks, worth 20 | Rare · 40 · floor 1 up ✓ | Nov 17, V5e: given (GiveFind), set down standing (`ToolDrop`): no crack; let go held 4 studs up: the crack heard 0.37 s after, on the clank, `Chipped` set, two Crack decals on the chimney; the decal's ID was the Decal asset (fixed to its image, not yet seen drawn); not banked |
-| Disco ball (`DiscoBall`) | Spots of light race round the walls · Spin | works | Rare · 45 · floor 1 up ✓ | |
-| Neon OPEN sign (`NeonSign`) | It buzzes and glows pink (D-250: anywhere) · Switch | works | Rare · 60 · floor 1 up ✓ | |
+| Disco ball (`DiscoBall`) | Spots of light race round the walls · Spin | works | Rare · 45 · floor 1 up ✓ | Nov 17, Q1a: dealt (`DealFind`, Unit106), taken, carried out on foot, banked (GatePay kept it), pressed: its six spots and a point light lit and turning in your view's copy (1.2, 0.25); one press read Off after a slot switch (Q2) |
+| Neon OPEN sign (`NeonSign`) | It buzzes and glows pink (D-250: anywhere) · Switch | works | Rare · 60 · floor 1 up ✓ | Nov 17, Q1a: dealt (`DealFind`, Unit107), taken, carried out on foot, banked ("kept NeonSign, FireflyJar, DiscoBall"), pressed: stamped On, its hum looping; its own glow not told apart in your view's copy (read while a slot switch was landing: Q2) |
 | Miner's hard hat (`HardHat`) | A lamp on your head lights what you look at, a minute · Wear (Phasmophobia's head torch, D-251) | works as a switch in your hand; Wear waits on the home chain (F-G1b4a, F-G1b4b) | Rare · 70 · floor 1 up ✓ | |
-| Jar of fireflies (`FireflyJar`) | Fireflies drift out and light the unit for a minute · Open | works | Epic · 110 · floor 1 up ✓ | |
+| Jar of fireflies (`FireflyJar`) | Fireflies drift out and light the unit for a minute · Open | works | Epic · 110 · floor 1 up ✓ | Nov 17, Q1a: dealt (`DealFind`, Unit105), taken, carried out on foot, banked (GatePay kept it); pressed: stamped On (`UseState`), but switched back to it 25 s later its three lights in your view's copy were off and no fireflies were seen: **Q2** |
 | Theatre spotlight (not dealt; art `Spotlight`) | At home: point it at your best find; a big find | waits on the home chain and on a floor with a big-find place | catalog: Epic · 240, big find; game: not dealt, no catalog row (right until a floor has a big-find place) | |
 | Stained-glass lamp (`StainedGlassLamp`) | Coloured patterns on the walls (D-250: anywhere); fragile · Switch | works; fragile built (V5e, D-296): dropped hard, its shade cracks, worth 240 | Legendary · 480 · floor 1 up ✓ | |
 | A lamp that's on when you find it (`UnpluggedLamp`, "Old lamp") | It never runs down; in a power cut the only light on the floor · none, found lit | works: found lit at rest, and lying anywhere it holds a Mannequin for good, 8 studs (V5d, D-289) | Secret · 7,000 · floor 25 up, standing loose (too tall for the box) ✓ | Nov 17, V5d: given (GiveFind), dropped in floor 1's hall: its clank woke the Mannequin 17 studs off, which came and stopped 8.0 studs from the lamp ("freezes in the light of a find on the floor"), held there 50 s with me parked away, and again hunting me from 12.6 studs ("sees drftware, 13 studs off" then held); not lifted again (the custom Take prompt didn't fire from the MCP) |
@@ -255,6 +257,26 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, Q1a, part one (the deal command built; ten Lights seen in Play, six banked; stopped
+  at the run's 200k line).** **`DealFind`** (`Deals.luau`): from the Server set Workspace's
+  `DealFind` to a catalog key and the shut unit nearest the tester (the first player in Studio,
+  the place's owner live) lifts its door with the find in its marked box ("Deals: DealFind lifts
+  Unit107's door, 5 studs off"). Checked: a key of a find or tool with art in the place, one a
+  second, within 150 studs, a padlocked door skipped. **The climb from the MCP** (seed 7, floor
+  1, code 3330): pivot to (0.7, 3, -654), set `DealFind` three times 1.3 s apart (Units 107,
+  106, 105 in that order); on the Client open each `MarkedBox`-tagged box (stand 3.5 studs out
+  along its LookVector, a Scriptable camera on it, 1.3 s, `InputHoldBegin`/`End`): each find
+  goes into a slot. **You hold three**; a fourth box opens and its find stays. Press with
+  `Remotes.ToolSwitch:FireServer(slot)`, wait 1.5 s, `Remotes.ToolUse:FireServer()`; a lamp's
+  light is drawn only on your view's copy (`Workspace.YourTool`; the held model's lights stay
+  off on the server). Carry: `character_navigation` to (-7.8, 3, -591.5) walks out through the
+  unit's door to the keypad; it can't route into the car, so in ONE Client call fire
+  `Remotes.Keypad` 3, 3, 3, 0 (0.45 s apart) at `Floor1.Lobby.Elevator` and pivot to (0, 3,
+  -581); the Server then reads "GatePay: ... kept A, B, C" about 32 s on. A separate pivot
+  call was too late: "1 stepped out as the gate shut". **Seen:** A1's table (ten Lights).
+  **Q2:** the firefly jar's light, and presses right after a slot switch (ROADMAP). Output: only
+  the known "Requester does not have permission for Asset" lines.
 
 - **Nov 17, L1a (the 14 squishies judged together in Studio; both fixes built, imported and seen
   in Edit; stopped at the run's 200k context line before the Play pass; L1b next).** **The look:** all 14 cloned

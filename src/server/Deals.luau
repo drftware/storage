@@ -21,6 +21,7 @@
 	by a noise), so the cap (the floor rules' `awake`) sees what's really loose. The guarded note's unit is
 	always dealt a keeper awake (D-072), and the deal keeps its place under the cap until then.
 ]]
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -61,6 +62,15 @@ local LAND_Z = (TopHoleSpecs.Front + TopHoleSpecs.Back) / 2
 -- deals the next unit that opens that, in its marked box even if it's too big for one (so the
 -- lamps' gold and red reveals can be seen), in place of what it was dealt; then goes back to false.
 local DEV_BOX = "DevBox"
+-- For testing finds (Q1a): Workspace's `DealFind` set to a catalog key deals that find or tool
+-- into the shut unit nearest the tester, in its marked box, and lifts the unit's door. Only
+-- server code can set it: Studio's command bar in Play, or the place's owner in the Developer
+-- Console's server command line (`workspace:SetAttribute("DealFind", "OilLamp")`). The tester is
+-- the first player in Studio, the place's owner on a live server. It goes back to "" at once.
+local DEAL_FIND = "DealFind"
+local DEAL_GAP = 1 -- seconds before the next one is taken: about a door's lift
+local DEAL_NEAR = 150 -- studs: the farthest shut unit it opens (no reaching into another floor)
+local DEAL_KEY = 64 -- the longest key it reads; catalog keys are short words
 -- The marked box (B-03a): its size for `Deal.packs`, and its footprint as DealSpot measures it.
 local BOX = BoxSpecs.Marked.Size
 local BOX_SIZE = { BOX.X, BOX.Y, BOX.Z }
@@ -163,6 +173,11 @@ function Deals.new(): Deals
 	local batteries: Batteries.Batteries? = nil
 	local keepers: Awake? = nil
 	local markedBoxes: MarkedBoxes.MarkedBoxes? = nil
+	-- `DealFind` (above): the key each unit it lifted is to deal, until its deal takes it
+	local chosen: { [Model]: string } = {}
+	local doorsHeld: Doors.Doors? = nil
+	local dealFinding: RBXScriptConnection? = nil
+	local lastDealFind = -math.huge
 
 	-- Deal only the finds whose art is in the place (`Deal.onlyWith`): a find not imported yet
 	-- would leave its unit standing empty.
@@ -622,14 +637,20 @@ function Deals.new(): Deals
 		return if laid then name else nil
 	end
 
-	-- Studio's `DevBox` (above): deals `contents` the find or tool it names, in place of what
-	-- the unit was dealt. Whether it did.
-	local function devDeal(contents: Deal.Contents): boolean
-		local asked = if RunService:IsStudio() then Workspace:GetAttribute(DEV_BOX) else nil
+	-- `DealFind`'s choice for `unit` (above), or else Studio's `DevBox`: deals `contents` the
+	-- find or tool it names, in place of what the unit was dealt. Whether it did.
+	local function devDeal(contents: Deal.Contents, unit: Model): boolean
+		local asked: unknown = chosen[unit]
+		chosen[unit] = nil
+		if asked == nil and RunService:IsStudio() then
+			asked = Workspace:GetAttribute(DEV_BOX)
+			if type(asked) == "string" and asked ~= "" then
+				Workspace:SetAttribute(DEV_BOX, false)
+			end
+		end
 		if type(asked) ~= "string" or asked == "" then
 			return false
 		end
-		Workspace:SetAttribute(DEV_BOX, false)
 		local row = Tools.Catalog[asked]
 		if not (row and Tools.template(asked)) then
 			warn(`Deals: DevBox "{asked}" names no find or tool with its art in the place`)
@@ -653,7 +674,7 @@ function Deals.new(): Deals
 		local deck, index = entry.deck, entry.index
 		local awake = if keepers then keepers:awakeOn(unit) else 0
 		local contents = Deal.open(deck, index, { mood = "Build", awake = awake })
-		local dev = devDeal(contents)
+		local dev = devDeal(contents, unit)
 		local packing = layStacks(unit, deck, index)
 		local place, keeper, taken, pileAt, boxed = lay(unit, deck, index, contents, dev)
 		-- a keeper sleeps here, not standing guard: a box laid now goes behind it (D-219)
@@ -789,6 +810,66 @@ function Deals.new(): Deals
 		end
 	end
 
+	-- Who `DealFind` deals beside: the first player in Studio; on a live server the place's owner,
+	-- when a user (not a group) owns it, and only while they're in it.
+	local function tester(): Player?
+		if RunService:IsStudio() then
+			return Players:GetPlayers()[1]
+		end
+		if game.CreatorType ~= Enum.CreatorType.User then
+			return nil
+		end
+		return Players:GetPlayerByUserId(game.CreatorId)
+	end
+
+	-- `DealFind` (above): checks the key, then lifts the nearest shut unit's door that will lift
+	-- (a padlocked one won't), and its deal lays the find in its marked box.
+	local function dealFind()
+		local asked = Workspace:GetAttribute(DEAL_FIND)
+		if type(asked) ~= "string" or asked == "" then
+			return
+		end
+		Workspace:SetAttribute(DEAL_FIND, "")
+		local now = os.clock()
+		if now - lastDealFind < DEAL_GAP then
+			warn(`Deals: DealFind "{asked}" came too soon after the last; set it again`)
+			return
+		end
+		lastDealFind = now
+		local row = if #asked <= DEAL_KEY then Tools.Catalog[asked] else nil
+		if not (row and Tools.template(asked)) then
+			warn(`Deals: DealFind "{asked}" names no find or tool with its art in the place`)
+			return
+		end
+		local player = tester()
+		local character = player and player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		local doors = doorsHeld
+		if not (player and doors and root and root:IsA("BasePart")) then
+			warn(`Deals: DealFind "{asked}" has no tester standing in the place`)
+			return
+		end
+		local near: { { unit: Model, away: number } } = {}
+		for unit in units do
+			local away = (unit:GetPivot().Position - root.Position).Magnitude
+			if away <= DEAL_NEAR then
+				table.insert(near, { unit = unit, away = away })
+			end
+		end
+		table.sort(near, function(a, b)
+			return a.away < b.away
+		end)
+		for _, n in near do
+			chosen[n.unit] = asked
+			if doors:move(n.unit, "Open") then
+				print(`Deals: DealFind lifts {n.unit.Name}'s door, {math.floor(n.away)} studs off`)
+				return
+			end
+			chosen[n.unit] = nil
+		end
+		warn(`Deals: DealFind "{asked}" found no shut unit within {DEAL_NEAR} studs that lifts`)
+	end
+
 	local system = {
 		name = "Deals",
 		dealt = dealt,
@@ -803,6 +884,9 @@ function Deals.new(): Deals
 		keepers = (context.registry:get("keepers") :: any) :: Awake?
 		markedBoxes = (context.registry:get("markedBoxes") :: any) :: MarkedBoxes.MarkedBoxes?
 		table.insert(connections, doors.acted:connect(onActed))
+		doorsHeld = doors
+		Workspace:SetAttribute(DEAL_FIND, "")
+		dealFinding = Workspace:GetAttributeChangedSignal(DEAL_FIND):Connect(dealFind)
 		local saws = (context.registry:get("saws") :: any) :: Saws.Saws?
 		if saws then
 			table.insert(connections, saws.sawing:connect(onSawn))
@@ -814,6 +898,12 @@ function Deals.new(): Deals
 			c:disconnect()
 		end
 		table.clear(connections)
+		if dealFinding then
+			dealFinding:Disconnect()
+			dealFinding = nil
+		end
+		doorsHeld = nil
+		table.clear(chosen)
 		table.clear(units)
 		dealt:disconnectAll()
 	end
@@ -859,6 +949,7 @@ function Deals.new(): Deals
 		floor.Destroying:Once(function()
 			for unit in laid do
 				units[unit] = nil
+				chosen[unit] = nil
 			end
 		end)
 	end

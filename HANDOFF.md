@@ -25,6 +25,8 @@ github.com/drftware/storage); Brix pinned at `7f25310`, NOT on Brix's `origin` y
   Client `execute_luau` (`InputHoldBegin`/`End`, STUDIO.md).
 - Stage only your own paths; the find run commits its own `art/finds/`, `src/shared/Finds/`,
   `tests/stuffdeal.spec.luau`, and may have hunks in `docs/`: stage yours as a blob then.
+- Find art (third run): Q1a part one done: Workspace's `DealFind` deals a chosen find into the
+  nearest shut unit; ten Lights seen in Play, six banked. Next: Q1a's rest (WAVES.md's Next).
 
 ## Next task: S5-03f3 Nothing worn or switched on runs down at home
 The moment: at home your hat burns for good; the minute you ride a lobby car up, it starts

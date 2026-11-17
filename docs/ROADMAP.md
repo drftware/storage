@@ -2972,6 +2972,29 @@ actions themselves and dealing the new finds on floors are later game tickets.
         hold its notes down to a quarter speed, then it fades as the top stops. A tune joined
         part way slows on from where it is; a drop that carries your own copy to the floor no
         longer plays the tune twice (the boombox's too).
+    - [ ] **F-G1e6 Every built find in Studio Play (the run's Q1).** Each find dealt into a unit,
+      taken, carried out through its door, banked at a gate (GatePay keeps it) and pressed
+      (motion, sound, its effect on the floor), written in `art/finds/WAVES.md`'s "Every built
+      find, in the game" table. Each failure gets a fix ticket below (Q2, Q3 ...) with its steps.
+      - [ ] **F-G1e6a The deal command, the Lights, the cars, the bedroom four, a cracked lamp
+        (Q1a).** Workspace's `DealFind` (Studio, or the owner's server console live) deals a
+        chosen find into the shut unit nearest you and lifts its door. Then the 15 dealt Lights,
+        the two cars, the Boombox, TV, Teddy and Skates, and F-G1e5e2 (a cracked lamp drawn and
+        banked). (Nov 17: `DealFind` built and used in Studio Play; ten Lights dealt, taken,
+        carried and pressed, six banked at the gate; the rest is WAVES.md's Next line.)
+      - [ ] **F-G1e6q2 The firefly jar's light, and a press right after a slot switch (Q2).**
+        Seen in Play (Q1a): `DealFind` the neon sign, disco ball and firefly jar (Units 107,
+        106, 105 on seed 7's floor 1), open the three boxes, then for slots 1 to 3 fire
+        `ToolSwitch(slot)`, wait 1.5 s, `ToolUse`. The jar stamps On (`UseState`), but switched
+        back to it 25 s later its three PointLights in `Workspace.YourTool.FireflyJar` are off
+        and no fireflies show, inside its minute. And a press 1.5 s after a switch twice did
+        nothing or reached the find held before (the camp lantern's first press; the disco
+        ball read Off). Find which: the press limit (`Carry.allow`), the switch still landing,
+        or the jar's view not restoring a lit state on a switch back (the tea light's does).
+        Whatever drops a press must answer it (AGENTS.md: no silent state changes).
+      - [ ] **F-G1e6b The 14 wind-ups and noisemakers (Q1b).**
+      - [ ] **F-G1e6c The 14 squishies (Q1c)**, with L1b: the rebuilt glitter and galaxy balls
+        squeezed in hand (shorten the galaxy's light to 1.5 if it still tints a neighbour).
   - [x] **F-G1f Each find's game row comes from its art (the run's P1; Nov 17).** `art/finds/PIPELINE.md`
     (photos to playable in one ticket); each kit find's grade, worth, floors, verb, the verb's
     numbers and sounds in its art spec; the export generates the catalog rows beside
