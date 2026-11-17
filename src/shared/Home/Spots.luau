@@ -27,6 +27,7 @@
 	`Home.Arranged`'s.
 ]]
 local Save = require("../Save")
+local HomeSpecs = require("./Specs")
 
 local Spots = {}
 
@@ -99,7 +100,7 @@ Spots.Start = "Small"
 Spots.Furniture = table.freeze({
 	ShelfTop = { piece = "Shelf", part = "Shelf" },
 	JobBoxTop = { piece = "JobBox", part = "JobBoxLid" },
-})
+} :: { [string]: { piece: string, part: string } })
 
 -- The remotes (in ReplicatedStorage.Remotes): Place(what, on, x, y, turn) sets a find out of your
 -- job box (`what` a find's name) or moves one set out (`what` its id); PutAway(id) puts it back in
@@ -240,6 +241,82 @@ function Spots.furnitureTop(partSize: Vec, partCentre: Vec): (Area, number)
 		depth = math.max(Spots.Least, partSize[3] - 2 * Spots.Rim),
 	},
 		partCentre[2] + partSize[2] / 2
+end
+
+-- One of the room's own things a find can't stand in (`blocks`): its footprint posed on its area.
+export type Block = { id: string, shape: Shape, pose: Pose }
+
+-- The starter pieces that lie flat, so a find stands on them as on the floor.
+Spots.Underfoot = table.freeze({ Rug = true })
+
+-- Point `p` (the unit's frame) on area `area`'s face: its `x` and `y` from the area's middle.
+local function onArea(area: RoomArea, p: Vec): (number, number)
+	local o, a, n = area.origin, area.across, area.normal
+	local dx, dy, dz = p[1] - o[1], p[2] - o[2], p[3] - o[3]
+	local yx, yy, yz =
+		n[2] * a[3] - n[3] * a[2], n[3] * a[1] - n[1] * a[3], n[1] * a[2] - n[2] * a[1]
+	return dx * a[1] + dy * a[2] + dz * a[3], dx * yx + dy * yy + dz * yz
+end
+
+-- Something fixed in the room on one of its areas (the ceiling's lamp, the mirror): its id, its
+-- area, its middle in the unit's frame, and its size along the area's `x` and `y`.
+export type Fixed = { id: string, on: string, at: Vec, width: number, depth: number }
+
+-- The room's own things (S5-03e2b): each starter piece that stands on the floor (`starter`, its
+-- parts' boxes `parts` by the piece's part names `pieces`, as `Home.Specs` has them; the rug lies
+-- flat) and what else is `fixed` in it, as footprints posed on `room`'s areas. Their ids are the
+-- pieces' names, never a find's (`Spots.name` gives nil), so none is saved or put away. A new list.
+function Spots.blocks(
+	room: { [string]: RoomArea },
+	starter: { HomeSpecs.Placed },
+	pieces: { [string]: { string } },
+	parts: { [string]: HomeSpecs.Part },
+	fixed: { Fixed }
+): { Block }
+	local out: { Block } = {}
+	local floor = room.Floor
+	for _, s in starter do
+		local names = pieces[s.Kind]
+		if Spots.Underfoot[s.Kind] or not names or not floor then
+			continue
+		end
+		local lowX, highX, lowZ, highZ = math.huge, -math.huge, math.huge, -math.huge
+		for _, name in names do
+			local p = parts[name]
+			if p then
+				lowX = math.min(lowX, p.Centre[1] - p.Size[1] / 2)
+				highX = math.max(highX, p.Centre[1] + p.Size[1] / 2)
+				lowZ = math.min(lowZ, p.Centre[3] - p.Size[3] / 2)
+				highZ = math.max(highZ, p.Centre[3] + p.Size[3] / 2)
+			end
+		end
+		if lowX >= highX or lowZ >= highZ then
+			continue
+		end
+		-- its parts' middle, turned with the piece about Y, from its origin
+		local ox, oz = (lowX + highX) / 2, (lowZ + highZ) / 2
+		local t = math.rad(s.Turn)
+		local c, sn = math.cos(t), math.sin(t)
+		local at = { s.At[1] + ox * c + oz * sn, floor.origin[2], s.At[3] - ox * sn + oz * c }
+		local x, y = onArea(floor, at)
+		table.insert(out, {
+			id = s.Kind,
+			shape = { width = highX - lowX, depth = highZ - lowZ, fits = { Spots.Kinds.Floor } },
+			pose = { on = "Floor", x = x, y = y, turn = s.Turn % 360 },
+		})
+	end
+	for _, f in fixed do
+		local area = room[f.on]
+		if area then
+			local x, y = onArea(area, f.at)
+			table.insert(out, {
+				id = f.id,
+				shape = { width = f.width, depth = f.depth, fits = { area.kind } },
+				pose = { on = f.on, x = x, y = y, turn = 0 },
+			})
+		end
+	end
+	return out
 end
 
 -- Find `name`'s `n`th set out: "Teddy#2".

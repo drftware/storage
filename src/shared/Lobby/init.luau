@@ -19,6 +19,7 @@
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Arranged = require(script.Parent.Home.Arranged)
 local Boarding = require(script.Boarding)
 local Boxes = require(script.Parent.Boxes)
 local Cart = require(script.Parent.Cart)
@@ -320,8 +321,7 @@ function Lobby.front(template: Model, home: Model?, pivot: CFrame, slot: Specs.S
 	end
 	local spec = StorageUnit.RollUpDoor.spec(unit)
 	local outer = StorageUnit.RollUpDoor.frame(unit) * CFrame.new(0, 0, -spec.CurtainPlane)
-	local door = pivot * vec(slot.Door)
-	local face = CFrame.lookAt(door, door + pivot:VectorToWorldSpace(vec(slot.Out)))
+	local face = Arranged.face(pivot, slot.Door, slot.Out) -- the starter set's frame
 	unit:PivotTo(face * outer:ToObjectSpace(unit:GetPivot()))
 	unit.Name = `Unit{slot.Number}`
 	if home then
@@ -331,8 +331,7 @@ function Lobby.front(template: Model, home: Model?, pivot: CFrame, slot: Specs.S
 		starter.Name = "Starter"
 		for _, s in Home.Specs.Starter do
 			if Home.has(home, s.Kind) then
-				local at = face * CFrame.new(vec(s.At)) * CFrame.Angles(0, math.rad(s.Turn), 0)
-				Home.piece(home, s.Kind, at, starter)
+				Home.piece(home, s.Kind, Arranged.piece(face, s.At, s.Turn), starter)
 			end
 		end
 		starter.Parent = unit

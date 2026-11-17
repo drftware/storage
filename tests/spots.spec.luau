@@ -219,6 +219,67 @@ do
 	ok(#rows == 4, "the saved rows are left alone")
 end
 
+-- The room's own things (S5-03e2b): the starter pieces on the floor (not the rug), the lamp in the
+-- ceiling and the mirror all stand in the small room, never overlapping, and a find set inside the
+-- shelf is refused while one beside it stands.
+do
+	local room = Spots.room({ 0, 5, 15.125 }, { 20, 10, 29.75 })
+	local fixed: { Spots.Fixed } = {
+		{ id = "Lamp", on = "Ceiling", at = HomeSpecs.Lamp, width = 2.2, depth = 2.2 },
+		{ id = "Mirror", on = "RightWall", at = { -9.25, 3.02, 12.5 }, width = 2.84, depth = 6.04 },
+		{ id = "MirrorFoot", on = "Floor", at = { -9.25, 0, 12.5 }, width = 1.5, depth = 2.84 },
+	}
+	local blocks = Spots.blocks(room, HomeSpecs.Starter, HomeSpecs.Pieces, HomeSpecs.Parts, fixed)
+	local areas = {}
+	for name, r in room do
+		areas[name] = { kind = r.kind, width = r.width, depth = r.depth }
+	end
+	local set = Brix.Placements.new({ areas = areas, limit = 25 + #blocks })
+	local ids = {}
+	for _, b in blocks do
+		ids[b.id] = true
+		local refusal = set:place(b.id, b.shape, b.pose)
+		ok(refusal == nil, `the room's {b.id} stands ({refusal})`)
+		ok(Spots.name(b.id) == nil, `{b.id} is never a find's id`)
+	end
+	ok(
+		ids.Shelf and ids.JobBox and ids.Beanbag and ids.FloorLamp,
+		"the starter pieces stand on the floor"
+	)
+	ok(not ids.Rug, "the rug lies flat: finds stand on it")
+	ok(ids.Lamp and ids.Mirror and ids.MirrorFoot, "the lamp and the mirror are the room's")
+	local shelf = set:poseOf("Shelf")
+	ok(
+		shelf ~= nil and math.abs(shelf.x) < 0.01 and math.abs(shelf.y + 0.075) < 0.02,
+		"the shelf stands mid-room"
+	)
+	local lamp = Spots.shape("LavaLamp", { 0.8, 1.6, 0.8 })
+	ok(
+		set:check("LavaLamp#1", lamp, { on = "Floor", x = 0, y = 0, turn = 0 }) == "overlaps",
+		"not inside the shelf"
+	)
+	ok(
+		set:check("LavaLamp#1", lamp, { on = "Floor", x = -4, y = 8, turn = 0 }) == nil,
+		"out on the floor"
+	)
+	ok(
+		set:check("LavaLamp#1", lamp, { on = "Ceiling", x = 0, y = 0, turn = 0 }) == "wrongArea",
+		"a lamp isn't hung"
+	)
+	local sign = Spots.shape("NeonSign", { 3, 1.5, 0.3 })
+	local mirror = set:poseOf("Mirror")
+	ok(
+		mirror ~= nil
+			and set:check(
+					"NeonSign#1",
+					sign,
+					{ on = "RightWall", x = mirror.x, y = mirror.y, turn = 0 }
+				)
+				== "overlaps",
+		"a sign can't cover the mirror"
+	)
+end
+
 print(`spots.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

@@ -7848,3 +7848,27 @@ things on tables.
   longer fits; either way it's back in the box. A save whose form is newer than the server reads is
   never written over: that home refuses moves (`notYours`) until the server is updated.
 - A find on the job box's lid would hang in the air as the lid opens: in e3 it rides the lid.
+
+## D-309 · 2026-11-17 · The server arranges; the room's own things are in the way (S5-03e2b)
+
+The moment: your lava lamp set on the job box stays, for you and every friend, after a rejoin too.
+- **One judge per held home** (`Arranging`): a `Brix.Placements` with the room's areas, the shelf's
+  and the job box's tops, and the room's own things placed first as things nothing can overlap
+  (`Spots.blocks`): the starter pieces that stand on the floor (the rug lies flat, so finds stand
+  on it), the ceiling's round lamp, and the mirror on the right wall and its foot on the floor. My
+  pick, so a find is never set inside the shelf or over the mirror. Their ids are the pieces'
+  names, never a find's, so they're never saved, moved or put away; the limit is raised by their
+  count.
+- **Ownership is the asker's home only**: no remote names a unit. A name needs one in your job box
+  (`Save.boxed`) and a template; an id must be set out. Rate limit first, then type and range
+  (`Spots.ask`), then ownership. Arranged(what, id, refusal) answers; ("", "") after a put away.
+  A malformed ask gets no answer (only a cheat or a broken screen sends one).
+- **Never lost or doubled:** a find set out stays in `finds`; every change rewrites `placed` in the
+  live save at once (the autosave and the leave keep it); a crash loses only the move, never the
+  find. Putting away puts what stands on it away first.
+- **Drawn** as a hand holds it, gilded for a Gold, anchored, not collidable, but pickable
+  (`CanQuery`, for e3's taps), lights off, tagged `Spots.Tag` with its id and owner, in the unit's
+  `Placed` folder. Its box is measured from the model (the grip isn't the box's foot); a top's
+  height is the drawn box's.
+- The unit's frame (`Arranged.face`) is built square rather than with `CFrame.lookAt`: the same
+  frame in Roblox, and Lune's `lookAt` flips Z, so the spec checks the real maths.

@@ -2966,3 +2966,19 @@ verified: a doc page, Studio, or "untested".
   after the store answers, so a change made in the PlayerRemoving frame (or a `task.defer` from
   it) rides in it. Studio's in-memory store, used when Studio can't reach DataStores, may run
   the transform at once: there a change made after the let-go can miss.
+
+## Arranging, seen in Play (S5-03e2b, Nov 17)
+
+- One player, Unit1, the owner's test save, all from a Server `execute_luau` through
+  `ServerStorage.ArrangeTest` and a Client one through the real remotes. Set out: MoonLamp on
+  JobBoxTop (its box's foot at 2.75, the lid's top 2.74), DiscoBall on the Ceiling (its top at
+  9.99 under 10), RCCar and Teddy:Gold on the Floor; the box one fewer of each. Refused: inside
+  the shelf (overlaps), past the left wall (outOfBounds), a tabletop find on BackWall and Skates
+  on JobBoxTop (wrongArea), a turn of 1e9 (never read), a sign you don't have (notInBox).
+  `"relay"` set the home up again from the save and drew all four; 35 s later the DataStore's
+  `placed.rows` held the four with the lamp's new spot. All put away, the box back as it was.
+  Through the remotes a malformed ask got no answer and a flood of 21 put-aways was cut off by
+  the rate limit after about a dozen answers.
+- The client streams a home unit only near it: `Units.Unit1` may be missing on a Client run.
+- Lune's `CFrame.lookAt` flips Z (looking toward (0.6, 0, 0.8) gives a LookVector of
+  (0.6, 0, -0.8)); build a frame with `fromMatrix` in code a spec loads (`Arranged.face`).

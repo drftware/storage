@@ -2517,14 +2517,22 @@ Done when players watch the results to the end and change their perks between cl
         (`Save.boxed`, `Save.settable`); `Home/Spots` gives each find's spot and footprint, the
         room's areas from its XL box, the starter set's tops, the limit by size, ids, the asks'
         checks and the load's trim to what you own. Pure, specs green; nothing on the server yet.
-      - [ ] **S5-03e2b The server arranges**: `Home/Arranged` (D-308's frames: an area's, a
-        pose's, a find drawn by its spot), a server system with one `Brix.Placements` per held
-        home, loaded from the save and trimmed (`Spots.owned`), Place and PutAway checked and
-        rate-limited, each change written to the save and drawn in the home for everyone; a
-        Studio dev command and a Play pass: placed, refused in a wall, kept on rejoin.
-    - [ ] **S5-03e3 The Arrange screen**: lift, drag, red where it can't go, Place, Put away,
-      Done, the limit bar, Free for everyone; seen in Studio at phone size. Finds set on the job
-      box's lid ride it as it opens (JobBoxView poses the lid on each screen; D-308).
+      - [x] **S5-03e2b The server arranges** (D-309): `Home/Arranged` (D-308's frames), the
+        `Arranging` system (one `Brix.Placements` per held home, the room's own things stood in
+        it first: the starter pieces on the floor, the ceiling's lamp, the mirror), Place and
+        PutAway rate-limited and checked, each change saved and drawn for everyone. Seen in
+        Studio Play: four set out, six refused, kept through a set-up from the save and the
+        DataStore, all put away; a true Stop and Play rejoin not yet watched.
+    - [ ] **S5-03e3 The Arrange screen** (split for context):
+      - [ ] **S5-03e3a Lift, drag and set down**: an Arrange button at home; tap a find in the box
+        list or one set out to lift it; it follows your finger over the room's areas, snapped
+        (`Brix.PlacementSnap.grid`), a ghost green where it stands and red where it can't (the
+        client's own `Placements` from `Spots` and `Arranged`), a turn button; let go to Place;
+        Put away; the server's answer settles it (a refused one slides back). Every action
+        answers: a soft lift, a set-down knock, a slide back. Seen in Studio at phone size.
+      - [ ] **S5-03e3b The limit bar, the lid and friends**: how many of the limit are out; finds
+        on the job box's lid ride it as it opens (JobBoxView poses the lid on each screen; D-308);
+        friends see a find move as it's set down (a short settle, not a snap).
   - [ ] **S5-03f The mirror and the clothes rail** (ideas 21 to 24): the tested mirror in every
     unit, its real frame built the unit's way in `art/home` (the test's is plain parts, D-280); the rail (press to wear, with the find's own sound); nothing worn or switched on runs
     down at home; wrap colours tried on, with a mirror by the counter.

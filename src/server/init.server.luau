@@ -26,6 +26,7 @@ local FindUses = require(script.FindUses)
 local FrontOffice = require(script.FrontOffice)
 local Shelves = require(script.Shelves)
 local JobBoxes = require(script.JobBoxes)
+local Arranging = require(script.Arranging)
 local GatePay = require(script.GatePay)
 local Horns = require(script.Horns)
 local Keepers = require(script.Keepers)
@@ -115,6 +116,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "shelves", system = Shelves.new() },
 	-- the job box in every home: its Open button, its lid and its sparkle (after shelves: it follows its lays)
 	{ slot = "jobBoxes", system = JobBoxes.new() },
+	-- the finds each player sets out in their home: judged, saved and drawn (after jobBoxes)
+	{ slot = "arranging", system = Arranging.new() },
 	-- The lobby's platform carts: Ride, handed to the rider's screen, its pace watched, parked again.
 	{ slot = "carts", system = Carts.new() },
 	-- A lobby car's group to a server of its own; on that server, the group stood in floor 1's car.
