@@ -25,9 +25,9 @@ github.com/drftware/storage); Brix pinned at `7f25310`, NOT on Brix's `origin` y
   A world button is pressed from a Client `execute_luau` (`InputHoldBegin`/`End`, STUDIO.md).
 - Stage only your own paths; the find run commits its own `art/finds/`, `src/shared/Finds/`,
   `tests/stuffdeal.spec.luau`, and may have hunks in `docs/`: stage yours as a blob then.
-- Find art (third run): Q1a part two: 14 of the 15 dealt lights and the boombox now dealt,
-  taken and banked on a climb (`DealFind`), the cracked oil lamp banked cracked. Next: the Old lamp, cars,
-  TV, teddy, skates, then Q1b and Q1c (WAVES.md's Next).
+- Find art (third run, paused Nov 17 at the conductor's cap): every verb and the 4 last squishies
+  built and seen in Play; Q1's Play pass part done (lights, boombox banked). Next: the Old lamp, cars,
+  TV, teddy, skates, then Q1b, Q1c and the Q2 fixes (`art/finds/WAVES.md`'s Next line).
 
 ## Next task: S5-03f4 Wrap colours tried on (idea 24)
 The moment: you see yourself in the mirror wrapped in a colour for a few seconds, then it peels
