@@ -11,9 +11,16 @@
 	floor colour with the set's colour map as a Texture (its clear bits show the colour, as the
 	panels' Overlay does), tiled in studs and lined up with the panels' own tiles, so nothing
 	jumps when the real panels change under it. The front wall's inside, round the doorway, fades
-	in as the wipe reaches it, a copy of its panel. The sheets go once the panels wear the look.
+	in as the wipe reaches it, a copy of its panel. The sheets go once the panels wear the look
+	and this screen has fetched what they draw with.
+
+	A set's maps and the panels' meshes download the first time something shows them, about 3 s
+	in Studio (S5-03g2b2): a first paper wiped in as plain colour and its pattern popped in after,
+	and a first floor flashed the old boards back. So every look's maps and the panels' meshes are
+	fetched once, as soon as a home is near; they're small (512 maps).
 ]]
 local CollectionService = game:GetService("CollectionService")
+local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -28,13 +35,17 @@ local Specs = require(ReplicatedStorage.Shared.Home.Specs)
 -- offset moves them right and down as you face the texture.
 local SHIFT = 1
 local GAP = 0.01 -- how far a sheet stands off the face it covers, clear of flicker
-local SHEET = 0.02 -- a sheet's thickness
+local SHEET = 0.02 -- a wall sheet's thickness
+-- The floor's sheet is thinner and sits GAP / 2 over the floor panel, so its top (0.035 over
+-- the floor) stays under the rug's (0.045): the rug lies on the new floor as it rolls under it.
+local FLOOR_SHEET = 0.01
 -- the roller: Aurarus's "Paint Roller", a wet squish; the floor's lower, a heavier roll
 local ROLLER = "rbxassetid://252778323"
 local ROLLER_VOLUME = 0.55
 local FLOOR_PITCH = 0.8
 local HEARD = 45 -- studs: heard across your home and the hall outside it, not the lobby
 local LATE = 3 -- seconds past the wipe a sheet waits for the panels before it goes anyway
+local SETTLE = 0.05 -- seconds the sheets stay once the panels wear the look: a frame or two
 
 -- One wall a wipe crosses: where it stands, how far round the room its middle is, half its width.
 type Wall = { cf: CFrame, mid: number, half: number, sheet: Part, texture: Texture }
@@ -55,9 +66,35 @@ type Wipe = {
 	floorTop: number,
 	folder: Folder,
 	sound: Sound?,
+	needs: { string }, -- what the new look's panels draw with: they're drawn once all is fetched
+	worn: number?, -- os.clock() when the server said the panels wear it
 }
 
 local LooksView = {}
+
+-- The content ids a swatch's look draws with.
+local function mapsOf(look: SurfaceAppearance, into: { string })
+	-- any: the *MapContent properties (Content) aren't in every type definition yet
+	local a = look :: any
+	for _, content in
+		{ a.ColorMapContent, a.NormalMapContent, a.RoughnessMapContent, a.MetalnessMapContent }
+	do
+		local uri = if content then content.Uri else nil
+		if type(uri) == "string" and uri ~= "" then
+			table.insert(into, uri)
+		end
+	end
+end
+
+-- Whether this screen has fetched every one of `ids`.
+local function fetched(ids: { string }): boolean
+	for _, id in ids do
+		if ContentProvider:GetAssetFetchStatus(id) ~= Enum.AssetFetchStatus.Success then
+			return false
+		end
+	end
+	return true
+end
 
 local function vec(v: { number }): Vector3
 	return Vector3.new(v[1], v[2], v[3])
@@ -94,6 +131,7 @@ function LooksView.new(): Brix.System
 	local watches: { [Model]: RBXScriptConnection } = {}
 	local connections: { RBXScriptConnection } = {}
 	local stepping: RBXScriptConnection? = nil
+	local preloaded = false
 
 	local function finish(unit: Model)
 		local w = wipes[unit]
@@ -131,7 +169,11 @@ function LooksView.new(): Brix.System
 		local now = Workspace:GetServerTimeNow()
 		for unit, w in wipes do
 			local t = now - w.since
-			if t > Looks.Wipe + LATE then
+			local worn = w.worn
+			-- a frame past the server's word, so the panels draw their new look before the
+			-- sheets go; later if this screen is still fetching what they draw with
+			local drawn = worn ~= nil and os.clock() - worn > SETTLE and fetched(w.needs)
+			if drawn or t > Looks.Wipe + LATE then
 				finish(unit)
 				continue
 			end
@@ -160,7 +202,7 @@ function LooksView.new(): Brix.System
 			local floor = w.floor
 			if floor then
 				local deep = math.max(share * w.floorDeep, 0.05)
-				floor.Size = Vector3.new(floor.Size.X, deep, SHEET)
+				floor.Size = Vector3.new(floor.Size.X, deep, FLOOR_SHEET)
 				floor.CFrame = w.floorCf
 					* CFrame.new(0, w.floorTop, w.floorDeep / 2 - deep / 2)
 					* CFrame.fromMatrix(Vector3.zero, Vector3.xAxis, Vector3.zAxis)
@@ -210,13 +252,18 @@ function LooksView.new(): Brix.System
 			floorTexture = nil,
 			floorCf = frame * CFrame.new(vec(Specs.Panels.Floor.At)),
 			floorDeep = base.Size.Z,
-			floorTop = base.Size.Y / 2 + GAP + SHEET / 2,
+			floorTop = base.Size.Y / 2 + GAP / 2 + FLOOR_SHEET / 2,
 			folder = folder,
 			sound = nil,
+			needs = {},
+			worn = nil,
 		}
 		local wallWear, floorWear = Looks.wear(after)
 		if wallsOff then
 			local uri, look = mapOf(template, wallWear.set)
+			if look then
+				mapsOf(look, w.needs)
+			end
 			local mids = {
 				PanelBack = 0,
 				PanelRight = wide / 2 + deep / 2,
@@ -228,6 +275,9 @@ function LooksView.new(): Brix.System
 					* CFrame.Angles(0, math.rad(spec.Turn), 0)
 				local mid = mids[spec.Part]
 				local source = template:FindFirstChild(spec.Part, true)
+				if source and source:IsA("MeshPart") then
+					table.insert(w.needs, source.MeshId)
+				end
 				if mid and uri and source and source:IsA("BasePart") then
 					local s = sheet(wallWear.colour, folder)
 					local tx = texture(s, uri, Specs.Looks.PaperTile)
@@ -256,10 +306,16 @@ function LooksView.new(): Brix.System
 			end
 		end
 		if floorOff then
-			local uri = mapOf(template, floorWear.set)
+			local uri, look = mapOf(template, floorWear.set)
+			if look then
+				mapsOf(look, w.needs)
+			end
+			if base:IsA("MeshPart") then
+				table.insert(w.needs, base.MeshId)
+			end
 			if uri then
 				local s = sheet(floorWear.colour, folder)
-				s.Size = Vector3.new(base.Size.X, 0.05, SHEET)
+				s.Size = Vector3.new(base.Size.X, 0.05, FLOOR_SHEET)
 				local tx = texture(s, uri, Specs.Looks.FloorTile)
 				tx.OffsetStudsU = Looks.offset(SHIFT * -base.Size.X / 2, Specs.Looks.FloorTile)
 				w.floor = s
@@ -311,19 +367,45 @@ function LooksView.new(): Brix.System
 	local function worn(unit: Model)
 		local w = wipes[unit]
 		if w and unit:GetAttribute(Looks.WornAttribute) == w.target then
-			-- a frame on, so the panels draw their new look before the sheets go
-			task.delay(0.05, function()
-				if wipes[unit] == w then
-					finish(unit)
-				end
-			end)
+			w.worn = os.clock() -- the step takes the sheets away once the panels can draw it
 		end
+	end
+
+	-- Fetches every look's maps and the panels' meshes, once, so no pick waits on a download
+	-- (a SurfaceAppearance handed to PreloadAsync fetches nothing: its maps go by id).
+	local function preload()
+		local template = Home.template()
+		if preloaded or not template then
+			return
+		end
+		preloaded = true
+		local ids: { string } = {}
+		for _, name in Specs.Swatches do
+			local swatch = template:FindFirstChild(name, true)
+			local look = if swatch then swatch:FindFirstChildOfClass("SurfaceAppearance") else nil
+			if look then
+				mapsOf(look, ids)
+			end
+		end
+		-- a mesh is fetched from its part: its id alone is fetched as a picture, and fails
+		local panels: { Instance } = {}
+		for _, spec in { Specs.Panels.Floor, table.unpack(Specs.Panels.Walls) } do
+			local part = template:FindFirstChild(spec.Part, true)
+			if part and part:IsA("MeshPart") then
+				table.insert(panels, part)
+			end
+		end
+		task.spawn(function()
+			ContentProvider:PreloadAsync(ids)
+			ContentProvider:PreloadAsync(panels)
+		end)
 	end
 
 	local function added(instance: Instance)
 		if not instance:IsA("Model") or watches[instance] then
 			return
 		end
+		preload()
 		local unit = instance
 		local look = unit:GetAttribute(Looks.Attribute)
 		seen[unit] = if type(look) == "string" then look else nil

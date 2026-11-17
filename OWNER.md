@@ -92,6 +92,14 @@ nowhere else.
   rubber mats; walls are plain (a home's), stripes, leaves and daisies; eight paints from warm
   white to ink; eight door colours from clay; carpet, checker and mats each come in five colours;
   every paper takes the wall's paint as its ground.
+- [ ] **Watch your home re-done, on the phone** (S5-03g2b2, D-327; seen in Studio Play, not on
+  the A16: Studio restarted onto "Current device"). In Studio pick Galaxy A16 in the Device menu,
+  Play, walk into your home and run in the Server command bar
+  `game.ServerStorage.LookTest:Invoke(game.Players:GetPlayers()[1], "paper", "Leaves")`, then
+  `"floor", "Carpet"` and `"paint", "Sage"`. Look for: the paper rolling from the middle of the
+  back wall round both corners to the door, the floor unrolling from the back wall to your feet
+  under the rug, a roller's soft squish, nothing popping in after. With a friend (two-player
+  test) standing in your home, they see the same roll. Stop and Play: it's still up.
 - [ ] **Should any paint, paper or floor cost cash?** (S5-03g2b1, D-326.) My default: all free,
   since a home is the calm reward for climbing and no price was agreed. Say which, if any, should
   be bought (and for how much) and I'll gate them at the counter.

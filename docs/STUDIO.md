@@ -3081,6 +3081,25 @@ verified: a doc page, Studio, or "untested".
   really landed. Back-to-back `screencapture` with no sleep takes about 0.1 s a frame; crop the
   phone at 660x310 from (360, 362) of Studio's 1386x972 window.
 
+## Fetching art before it's shown (S5-03g2b2, Nov 17)
+
+- **A SurfaceAppearance's maps and a MeshPart's mesh download only when something draws them.**
+  Parts kept in `ReplicatedStorage` as templates never draw, so `ContentProvider:
+  GetAssetFetchStatus(id)` stays `None` until a clone is shown in the world, about 3 s later in
+  Studio. Read a map's id from `look.ColorMapContent.Uri` (and Normal, Roughness, Metalness).
+- **`PreloadAsync` takes a map by id, a mesh by its part.** Handing it a SurfaceAppearance fetches
+  nothing (returns at once, status `None`); handing it the map's id string works (status
+  `Loading`, then `Success`). A MeshPart's `MeshId` as a string is fetched as a picture and ends
+  `Failure`; hand it the MeshPart itself and the mesh comes `Success`.
+- **A Texture shows a SurfaceAppearance's colour map** (its clear bits show the part's colour, as
+  Overlay does), once fetched; until then it's the plain part.
+- **The Device Simulator resets to "Current device" when Studio restarts**, and the shell can't
+  click Studio's menus (a CGEvent click isn't trusted: no accessibility access). Only the owner
+  can put the A16 back. In a fresh Play the room can draw black for several seconds while it
+  streams in; wait for a capture to come back to its usual size before firing a moment.
+- **A Texture's OffsetStudsU moves its tiles the way `LooksView.SHIFT = 1` assumes:** a Leaves
+  sheet handed over to its panel with no visible jump.
+
 ## Fonts Studio ships (S5-03g1b, Nov 17)
 
 - Studio's fonts live in `/Applications/RobloxStudio.app/Contents/Resources/content/fonts`, each

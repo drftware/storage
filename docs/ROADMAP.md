@@ -2634,9 +2634,16 @@ Done when players watch the results to the end and change their perks between cl
           changing the panels as the wipe ends; `LooksView` grows the new paper from the back
           wall's middle round to the door and the floor from the back wall, with a roller's
           squish, on every screen near. Passes checks, untested in Studio.
-        - [ ] **S5-03g2b2 Seen in Play**: insert the uploaded Home, pick through `LookTest`, watch
-          the wipe on the A16; line the sheets' tiles up with the panels' (`LooksView.SHIFT`),
-          hear the roller (swap it if it doesn't load), judge it calm and warm (D-263).
+        - [x] **S5-03g2b2 Seen in Play** (D-327): Home.fbx inserted (worst 0.0007); papers wipe
+          round the room and floors roll under the rug, the panels taking them with no jump
+          (`SHIFT = 1` holds); the roller loads (2.2 s); the look survives a rejoin. Fixed: every
+          look's maps and the panels' meshes fetched once a home is near (a first pick wiped in
+          plain and popped its pattern 3 s later), sheets that wait for the panels to draw, the
+          floor's sheet under the rug. Pictures `docs/art/S5-03g2b2-*.jpg`. Not seen on the A16.
+          - [ ] **Polish: the hand-over's shade.** The sheet (a Texture on plain plastic) reads a
+            shade darker than the panel's SurfaceAppearance under the bulb; match its material.
+          - [ ] **Polish: the mirror keeps the old look.** MirrorView's copy of the room keeps the
+            floor and paper it had when you came in; re-copy the panels when `LookWorn` changes.
         - [ ] **S5-03g2b3 The paint tab on the Arrange screen**: paper and floor chips (each
           set's swatch in a ViewportFrame, tinted), paint and floor colour dots; a tap fires
           `PickLook`, the chip pressed in with a soft click; the wipe is the answer.

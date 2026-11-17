@@ -8323,3 +8323,23 @@ to make a room theirs; Animal Crossing's lit furniture.
   middle, lower for a floor, heard to 45 studs. The sheets go once the panels wear the look, so
   nothing jumps; a screen that sees a pick late just sees the panels.
 
+
+## D-327 A home's new look seen in Play: fetched ahead, under the rug, no flash (S5-03g2b2, 2026-11-17)
+
+Seen in Studio Play (not on the A16: Studio had restarted onto "Current device"). The paper wipe
+works as D-326 planned: it grows from the back wall's middle round both corners to the door and
+the panels take it with no jump (Leaves to Stripes; `LooksView.SHIFT = 1` holds). The save keeps
+the look over a rejoin (version 9). Three faults, fixed in `LooksView`:
+- **Every look is fetched before anyone picks.** A set's maps and the panels' meshes download
+  only when something shows them (the swatches in `ReplicatedStorage.Props.Home` never draw), so
+  a first pick of a paper wiped in as plain paint and its pattern popped in about 3 s later, and
+  a first floor flashed the old boards back for a second before its panel drew. The first time a
+  home is near (a unit tagged `HomeLook` streams in), the screen fetches all eight sets' four maps
+  (512 maps, small) by id and the five panels by part. Lobby only: the climb never pays for it.
+- **The sheets wait for the panels to draw.** They go a frame after `LookWorn` matches only once
+  this screen has the new look's maps and meshes, else when the wipe's 3 s grace runs out.
+- **The floor rolls under the rug.** The rug's top stands 0.045 over the floor; the floor's sheet
+  was 0.03 to 0.05 and hid it as it went. It's now 0.01 thick, 0.025 to 0.035.
+Left for polish (ROADMAP): the sheet (a Texture on plain plastic) reads a shade darker than the
+panel's SurfaceAppearance under the bulb, a small step as the wipe hands over; the mirror's copy
+of the room keeps the floor and paper it had when you came in.
