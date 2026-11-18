@@ -65,6 +65,20 @@ for i = 2, #Sizes.List do
 	ok(sb < sa and bb < ba, `{b}'s walls stand further out than {a}'s`)
 end
 
+-- Small's doorway is the S door's 6 in the M's 8: each side a stud in; Medium and up the M's
+do
+	ok(Sizes.doorIn("Small") == 1, "Small's doorway stands a stud in each side")
+	for _, name in { "Medium", "Large", "XL" } do
+		ok(Sizes.doorIn(name) == 0, `{name} keeps the M's doorway`)
+	end
+	ok(Sizes.doorIn("Huge") == 1, "a name that isn't a size has Small's doorway")
+	local side = Sizes.inset("Small")
+	ok(
+		Sizes.Door - 2 * Sizes.doorIn("Small") < 2 * (10 - side),
+		"Small's doorway fits inside its room"
+	)
+end
+
 print(`walls: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

@@ -85,6 +85,8 @@ Home.CrateColours = { Home.Paint.Crate, Color3.fromHex("#5E8C7E"), Color3.fromHe
 local TINTED: { [string]: Color3 } = {
 	Facade = Home.Paint.Facade,
 	FacadeBack = Home.Paint.FacadeBack,
+	FillLeft = Home.Paint.Facade, -- Small's doorway's plaster: the front's wall
+	FillRight = Home.Paint.Facade,
 	Pot = Home.Paint.Pot,
 	Planter = Home.Paint.Planter,
 	Beanbag = Home.Paint.Beanbag,
@@ -134,7 +136,20 @@ local PLAIN: { [string]: { material: Enum.Material, colour: Color3, clear: numbe
 }
 
 -- The home front's own parts, set into a unit in place of the M's facade and frame.
-Home.FrontParts = { "Facade", "FacadeBack", "Casing", "Frame", "Switch", "SwitchToggle", "Lamp" }
+Home.FrontParts = {
+	"Facade",
+	"FacadeBack",
+	"Casing",
+	"CasingLeft",
+	"CasingRight",
+	"CasingHead",
+	"FillLeft",
+	"FillRight",
+	"Frame",
+	"Switch",
+	"SwitchToggle",
+	"Lamp",
+}
 -- The M's parts a home has no use for (the home's own stand in for the first three; its owner's
 -- name hangs over it, D-266). The M's padlock stays on the latch, drawn only while the door is
 -- padlocked: a spare home's, rented out (the home doc's idea 2, D-275); yours wears none.

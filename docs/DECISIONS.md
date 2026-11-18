@@ -9337,6 +9337,29 @@ size out of one floor with movable steel walls).
   did at the front; Small, Large and XL meet whole. Building a panel per size would mend it but
   snap the paper at h6's end; not worth it (my call).
 
+
+## D-355 Small's doorway: the M's sides slide in a stud each, plaster with them (S5-03h5b, 2026-11-18)
+
+The moment: your first unit is snug, a Small home with a doorway to match; grow it to Medium and
+the door is plainly wider (Animal Crossing's house rooms by size).
+- **One door rig, a narrower doorway in front of it.** Every home keeps the M's door (D-266); at
+  Small the doorway is the S door's 6 wide (`Sizes.SmallDoor`, art's `SMALL_DOOR`): the
+  doorway's two sides (the oak lining, the casing's leg, its plinth and a baseboard's end) stand a
+  stud in each, a strip of the front's sage plaster comes in beside each, and the head is drawn
+  narrower about its middle. The M's curtain rolls behind them, its ends hidden.
+- **Built to slide, not swapped** (h6 grinds them): the Casing mesh split into what never moves
+  (`Casing`: the baseboards and the rail) and `CasingLeft`, `CasingRight`, `CasingHead`, plus
+  `FillLeft` and `FillRight`, each its own part built at the M's place. What slides into the wall
+  sits a hair inside its faces and the baseboard's end a hair proud of the baseboard, so nothing
+  flickers at either place or between. `Walls.doorway(unit, frame, inset)` slides the sides and
+  scales the head's length (its cornice's ends in by the inset; the oak grain squeezes 22%, not
+  seen at phone size); `Walls.size` calls it with `Sizes.doorIn` (1 at Small, 0 above).
+- **Inside, oak boards** either side of Small's doorway (0.78 of front wall shows between the
+  doorway and each partition). Plaster there would need Decorating's picked paint; oak suits every
+  paint and paper (my call, `OWNER.md`).
+- **Phone cost:** 372 triangles more per home (five parts); the Casing split takes nothing away.
+- **Seen in Studio Play at A16 size** with h5a: all four sizes' walls, corners and lamp, the door
+  counting you in by Small's room, Small's doorway from the hall, close and inside, Medium's.
 ## D-409 Caught on the back-to-the-lobby floor: down the shaft to the lobby car (S4-03c4a, Nov 18)
 
 - **What happens.** On the floor the team picked with the "back to the lobby" card, a catch plays

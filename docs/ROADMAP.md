@@ -2906,7 +2906,7 @@ Done when players watch the results to the end and change their perks between cl
         from `art/home/home_spec.py` (Small holds what's "snug": the shelf, the box, the mirror
         and the rail, idea 30); each piece rides its wall as the home grows; look sheets at
         phone size.
-      - [ ] **S5-03h5 The walls drawn by size**: the partitions and the back wall where the size
+      - [x] **S5-03h5 The walls drawn by size**: the partitions and the back wall where the size
         ends (the unit kit's steel, the home's panels following, D-325), the door frame per size
         (Small's doorway narrower than the M door), the room depth and width the door counts you
         in by, and the Arrange button's inside box from the size. Art first, the unit's way.
@@ -2916,13 +2916,18 @@ Done when players watch the results to the end and change their perks between cl
             middle, the picked paint and paper riding them, and the door's count, the lights'
             room, Arrange's fixed lamp and its button's inside box and the look's wipe all from
             the size (`Sizes.inset`, `Sizes.onWall`). Done Nov 18, D-354.
-          - [ ] **S5-03h5b Small's narrower doorway**: the front built round the S door's
+          - [x] **S5-03h5b Small's narrower doorway**: the front built round the S door's
             opening (6 wide, in the M's wall: plaster and oak casing fill the M's sides, the M
             curtain rolling behind them), shown at Small, the M's at Medium and up; art first
-            (`art/home/front.py`), rebuilt, uploaded and seen at phone size.
+            (`art/home/front.py`), rebuilt, uploaded and seen at phone size. Done Nov 18, D-355:
+            the doorway's sides, plaster and head slide (`Walls.doorway`); h5a and h5b seen in
+            Studio Play at A16 size.
       - [ ] **S5-03h6 The walls grind back** (idea 31): when it grows, you're there to watch: the
         partitions slide along their rails, the back wall rolls away, the door frame widens, dust
-        drifts down, with the steel's grind (Animal Crossing's house growing).
+        drifts down, with the steel's grind (Animal Crossing's house growing). Built to slide:
+        `Walls.doorway(unit, frame, inset)` takes any inset between a stud and none, and the walls
+        need the same (a blend of two sizes' `Sizes.onWall`). The pieces that ride a wall (the
+        shelf on the back wall) glide with it; what you set out mid-room stays put.
   - [x] **S5-03i Everything in the room moves, lifts and works** (the owner, Nov 18, D-345;
     Animal Crossing's house, Bloxburg's build mode). Next, ahead of S5-03h5 and h6. The moment:
     you buy an end table, set it by the bed, stand your lamp on it, walk up and press Switch, and

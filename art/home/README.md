@@ -28,7 +28,10 @@ Rug (512², baked colours), HomeDoor (1024², the DoorKit's layout, tinted).
 | Part | Set | Tris | What it is |
 |---|---|---|---|
 | Facade, FacadeBack | Plaster | 36 each | the wall across the front, outside and in |
-| Casing | Wood | 360 | casing, plinths, cornice, reveal lining, baseboards, rail |
+| Casing | Wood | 60 | the baseboards outside and in, the rail: what never moves |
+| CasingLeft, CasingRight | Wood | 124 each | a doorway side: lining, leg, plinth, baseboard's end, Small's inside board (D-355) |
+| CasingHead | Wood | 100 | the reveal's head, the casing's head, the cornice; drawn narrower at Small |
+| FillLeft, FillRight | Plaster | 12 each | the front's plaster that comes in with Small's doorway sides |
 | Frame | TrimSheet | 1348 | the M's mechanism only (`parts.frame(dress=False)`) |
 | Switch, SwitchToggle | plain | 44 each | the plate and its rocker (pivot at its middle) |
 | Lamp | plain | 76 | the unit's round ceiling lamp |

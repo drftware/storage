@@ -396,9 +396,24 @@ local Specs = {
 			Triangles = 256,
 		},
 		Casing = {
-			Size = { 12.000, 10.020, 0.600 },
-			Centre = { -0.000, 5.010, 0.100 },
-			Triangles = 360,
+			Size = { 12.000, 10.020, 0.470 },
+			Centre = { -0.000, 5.010, 0.115 },
+			Triangles = 60,
+		},
+		CasingHead = {
+			Size = { 9.240, 0.640, 0.600 },
+			Centre = { -0.000, 8.320, 0.100 },
+			Triangles = 100,
+		},
+		CasingLeft = {
+			Size = { 1.560, 8.100, 0.560 },
+			Centre = { 4.760, 4.050, 0.120 },
+			Triangles = 124,
+		},
+		CasingRight = {
+			Size = { 1.560, 8.100, 0.560 },
+			Centre = { -4.760, 4.050, 0.120 },
+			Triangles = 124,
 		},
 		CurtainClosed = {
 			Size = { 8.640, 8.969, 0.956 },
@@ -419,6 +434,16 @@ local Specs = {
 			Size = { 12.000, 10.000, 0.040 },
 			Centre = { -0.000, 5.000, 0.270 },
 			Triangles = 36,
+		},
+		FillLeft = {
+			Size = { 1.000, 8.100, 0.235 },
+			Centre = { 4.600, 4.050, 0.122 },
+			Triangles = 12,
+		},
+		FillRight = {
+			Size = { 1.000, 8.100, 0.235 },
+			Centre = { -4.600, 4.050, 0.122 },
+			Triangles = 12,
 		},
 		FloorLamp = {
 			Size = { 1.100, 5.300, 1.100 },

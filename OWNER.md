@@ -177,18 +177,16 @@ nowhere else.
   walking into a seat; the bed is sat on, not lain on (lying down needs a sleeping animation:
   an untested bet, say if you want it); on the blanket you sit Roblox's way for now, cross-legged
   needs an animation we make and upload (say if you want it).
-- [ ] **Your home's walls by size** (S5-03h5a, D-354; passes checks, untested in Studio: Studio
-  was in another session's Play all through mine). Play and walk into your home: a Small one should
-  close round you, 8 by 8, its side walls and back wall in your paint, the ceiling lamp over the
-  middle. Then on the Server in Studio's command bar run
+- [ ] **Your home's walls by size and Small's doorway** (S5-03h5a and h5b, D-354, D-355; seen in
+  Studio Play at all four sizes). Play and walk into your Small home: the walls close round you,
+  the lamp over the middle, and from the hall the doorway is plainly narrower than a Medium's.
+  On the Server in Studio's command bar run
   `game.ServerStorage.ArrangeTest:Invoke(game.Players:GetPlayers()[1], "size", "Medium")`, then
-  "Large", then "XL": the walls jump out each time (h6 makes them grind), the lamp follows, and at
-  XL the unit's own walls stand. At each size: shut the door with you inside (it should count you
-  in right to the back wall), switch the light, tap Arrange (it should show only inside the walls),
-  pick a paper (it should roll round the size's room). Look for: a gap or flicker at a corner,
-  light leaking past a wall, the camera seeing through a wall. My defaults, say which to change:
-  the steel shows only at a partition's end, inside the doorway at Small, until S5-03h5b narrows
-  Small's doorway; at Medium a patterned paper breaks at the back corners (half a tile).
+  "Large", then "XL": the walls and the doorway jump out each time (h6 makes them grind). At each
+  size shut the door with you inside, switch the light, tap Arrange, pick a paper. Look for a gap
+  or flicker at a corner or round the doorway. My defaults, say which to change: inside, Small's
+  doorway is trimmed in oak boards either side (they never clash with a paint you pick); at Medium
+  a patterned paper breaks at the back corners (half a tile).
 - [ ] **Lift a find out of your shelf in Arrange, on a real phone** (S5-03i2b, D-352; seen in
   Studio Play). Open Arrange, tap a find in a cubby: it rises out at its own size and the cubby
   is empty. Set it on a table: it stays, and the shelf still has its other finds. Lift another

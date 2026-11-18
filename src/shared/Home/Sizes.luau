@@ -83,6 +83,17 @@ function Sizes.inset(name: string): (number, number)
 	return (xl.across - s.across) / 2, xl.deep - s.deep
 end
 
+-- The M door's opening every home's rig is (D-266), and Small's own doorway in its wall: the S
+-- door's (S5-03h5b, D-355; `art/home/home_spec.py` SMALL_DOOR).
+Sizes.Door = 8
+Sizes.SmallDoor = 6
+
+-- How far each side of size `name`'s doorway stands in from the M's: a stud each side at Small,
+-- whose room (8 across) is narrower than the M's opening; nothing from Medium up.
+function Sizes.doorIn(name: string): number
+	return if Sizes.of(name).name == Sizes.Start then (Sizes.Door - Sizes.SmallDoor) / 2 else 0
+end
+
 -- Where something on wall `wall` stands at size `name`, from where it stands in the XL slot
 -- (`at`, the unit's frame: X across, + on your left as you walk in; Z in from the door): "Left"
 -- and "Right" ride their partitions in, "Back" rides the back wall toward the door, "Middle"

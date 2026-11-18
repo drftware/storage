@@ -34,6 +34,14 @@ Walls.Thick = 1
 -- The steel's colour, seen only at a wall's end through the doorway.
 Walls.Steel = Color3.fromRGB(150, 152, 150)
 
+-- The doorway's pieces that slide in for Small's narrower doorway (S5-03h5b, D-355): the two
+-- sides of oak and the plaster strip beside each, built at the M's place; and its head, drawn
+-- narrower. Each keeps where Home.dress laid it and its size there as these attributes.
+Walls.Sides = table.freeze({ "CasingLeft", "CasingRight", "FillLeft", "FillRight" })
+Walls.Head = "CasingHead"
+Walls.WideAttribute = "Wide"
+Walls.WideSizeAttribute = "WideSize"
+
 -- Each movable wall: its name in the folder, the panel it wears, the wall it rides.
 Walls.List = table.freeze({
 	table.freeze({ name = "Left", part = "PanelLeft" }),
@@ -167,8 +175,36 @@ function Walls.lay(
 		model.Parent = folder
 	end
 	Walls.wear(template, faces, (Looks.wear(Looks.start())))
+	for _, name in { Walls.Head, table.unpack(Walls.Sides) } do
+		local p = unit:FindFirstChild(name)
+		if p and p:IsA("BasePart") and p:GetAttribute(Walls.WideAttribute) == nil then
+			p:SetAttribute(Walls.WideAttribute, p.CFrame) -- where Home.dress laid it: the M's place
+			p:SetAttribute(Walls.WideSizeAttribute, p.Size)
+		end
+	end
 	folder.Parent = unit
 	Walls.size(unit, size)
+end
+
+-- Stands home `unit`'s doorway (its unit frame `frame`) with each side `inset` studs in from the
+-- M's place (`Sizes.doorIn`): the two sides and their plaster slide toward the middle, the head
+-- drawn that much narrower each end, about its middle. Any inset between slides them part way.
+function Walls.doorway(unit: Model, frame: CFrame, inset: number)
+	for _, name in Walls.Sides do
+		local p = unit:FindFirstChild(name)
+		local wide = if p then p:GetAttribute(Walls.WideAttribute) else nil
+		if p and p:IsA("BasePart") and typeof(wide) == "CFrame" then
+			local here = frame:ToObjectSpace(wide)
+			local side = if here.Position.X > 0 then 1 else -1
+			p.CFrame = frame * CFrame.new(-side * inset, 0, 0) * here
+		end
+	end
+	local head = unit:FindFirstChild(Walls.Head)
+	local wide = if head then head:GetAttribute(Walls.WideSizeAttribute) else nil
+	if head and head:IsA("BasePart") and typeof(wide) == "Vector3" then
+		local k = 1 - inset / (wide.X / 2) -- its cornice's ends come in by `inset`
+		head.Size = Vector3.new(wide.X * k, wide.Y, wide.Z)
+	end
 end
 
 -- Where wall model `model` (a child of the folder) stands at size `size` in a unit at `frame`:
@@ -212,6 +248,7 @@ function Walls.size(unit: Model, size: string)
 			end
 		end
 	end
+	Walls.doorway(unit, frame, Sizes.doorIn(size))
 	local lamp, xlLamp = unit:FindFirstChild("Lamp"), folder:GetAttribute("Lamp")
 	if lamp and lamp:IsA("BasePart") and typeof(xlLamp) == "CFrame" then
 		lamp.CFrame = Walls.lampAt(xlLamp, frame, size)

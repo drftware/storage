@@ -3349,3 +3349,18 @@ verified: a doc page, Studio, or "untested".
   phone is at (334, 360), 664 by 304, in the full-size capture of a 1386-wide window:
   `ffmpeg -i f%02d.jpg -vf "crop=664:304:334:360,scale=264:-2,tile=5x6"` makes a contact sheet
   of a burst.
+
+## Seeing a home at every size in one pass (S5-03h5b, Nov 18)
+
+- **A timed burst catches several sizes and angles in one go**: on the Server, `task.spawn` the
+  `ArrangeTest` "size" calls 6 s apart and return at once; start a background shell loop of
+  `screencapture -l <window>` (the first after 2 s, then every 3 s, each cropped to the phone);
+  then one Client call binds a ShotCam and steps its CFrame through the shots every 3 s, reading
+  `HomeSize` mid-shot to prove which size each frame shows. Tile them with ffmpeg's `hstack` and
+  `vstack=inputs=3` (no PIL or ImageMagick here) and read one picture, not six.
+- **A ShotCam left bound once keeps the camera Scriptable after it's unbound**: moving the
+  character then changes nothing on screen. Set `CameraType` back to Custom and `CameraSubject` to
+  the humanoid to get the player's eyes back.
+- **The doorway's slid parts are measured in the unit's frame** (`Walls` folder's `Frame`
+  attribute): at Small `CasingLeft` stands at x 3.76 (4.76 at the M's place), `CasingHead` is 7.24
+  long (9.24); a spare home stands Small, so its doorway is Small's too.

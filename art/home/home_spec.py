@@ -24,6 +24,8 @@ PLINTH = (0.7, 0.16)     # the plinth blocks at the casing's feet: tall, proud (
 HEAD_CAP = (0.14, 0.2, 0.12)  # the cornice on the casing's head: tall, proud, past it each side
 LINER = 0.1              # the oak lining the doorway's sides and head, from the face back to the
                          # door's guides (the climb's steel jamb covers did that)
+SMALL_DOOR = 6.0         # Small's doorway: the S door's opening (art/unit/spec.py SIZES), in the
+                         # M's wall (S5-03h5b, D-355)
 BASE = 0.55              # the baseboard's height: the lobby's (art/lobby/spec.py BASE, checked)
 BASE_PROUD = 0.07        # the lobby's baseboard's depth off the wall
 RAIL = (0.32, 0.12)      # the rail where the wall's two paints meet: the lobby's (checked)
