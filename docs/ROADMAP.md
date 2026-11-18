@@ -2886,7 +2886,15 @@ Done when players watch the results to the end and change their perks between cl
         `docs/art/S5-03i1c2-*`.
     - [ ] **S5-03i2 Take anything directly**: outside Arrange, walk up to any find set out (shelf,
       a top, the floor, a wall) and Take puts it in your hands; in Arrange, lift a find straight
-      off the shelf or any top. Server-checked, never lost or doubled.
+      off the shelf or any top. Server-checked, never lost or doubled. Split Nov 18:
+      - [ ] **S5-03i2a Take from where it stands**: a Take button on every find in your shelf's
+        cubbies and every find set out, yours only; the server frees its spot or row and puts it
+        in a free slot in one step (`Slots:unbox`, its pick-up heard), so it's never lost or
+        doubled; hands full, the press does nothing. Its copy hops into your hand. Failing spec
+        first; seen in Studio Play at Galaxy A16 size.
+      - [ ] **S5-03i2b Lift a find out of the shelf in Arrange**: a tap on a cubby's find lifts
+        that find, not the shelf (the shelf's own boards still lift the shelf); set it anywhere
+        or Put away; the server moves it from the shelf spot to a row in one step.
     - [ ] **S5-03i3 Every find set out keeps its button**: walk up and its own verb shows, the
       climb's press from its `Finds/Use` row (Switch, Play, Wind, Squeeze...), for every find at
       once; lights under D-271's caps; friends may press, not move or take.
