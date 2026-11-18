@@ -8864,6 +8864,41 @@ only through the job box's panel; and a find set out was looks only, since the h
 - **Order**: this comes next, as S5-03i, before the rest of the sizes: there's no point laying
   fixed pieces by size when they're about to move. S5-03h4 folds into S5-03i1.
 
+## D-346 Every home's own pieces are rows, laid by size (S5-03i1a, 2026-11-18)
+
+The moment: you walk into your new unit and it's a room, not a store: the shelf against the back
+wall, the job box along the left wall, the mirror on the right, nothing in your way, and every one
+of them yours to lift and move (D-345; Animal Crossing's house, Bloxburg's build mode).
+- **Rows like bought furniture** (`Furniture.Starter`): the job box, shelf, mirror, clothes rail,
+  rug, beanbag and floor lamp are pieces under the furniture mark ("Shelf:Furniture#1"), one each,
+  never sold (`check` says "unknown"), never on the bought counts, and never counted against the
+  size's limit (`Spots.setOut`). The job box is `kept`: never put away.
+- **A layout per size** (`Home.Layout.default`, pure, from the floor's size and the pieces' boxes):
+  the shelf centred on the back wall facing the door; the job box (its back 0.8 off the wall for
+  its lid) then the floor lamp along the left wall; the mirror (its foot off the wall as it leans)
+  then the rail along the right wall, each from the shelf's front toward the door; the rug in the
+  floor left over, turned whichever way fits; the beanbag on the rug's far corner. A piece the
+  floor can't hold starts in the job box: Small holds the shelf, the box and the mirror (the rail,
+  rug, beanbag and lamp in the box); Medium and up hold all seven. Every row is judged whole by
+  Brix in the spec at every size; the job box always comes first, so it always stands.
+- **The rug is floor** (`Spots.pieceTop`): its top is a floor-kind area, so the beanbag, a crate
+  or a find stands on it, and rides it when it moves (Brix has no layers; my default, OWNER.md).
+  The shelf's and the job box's tops are their pieces' tops now, the same boxes as the fixed
+  ShelfTop and JobBoxTop, so a find on one keeps its place.
+- **A home laid before** (save v14's `starterLaid`, false in a new save and a v13 one): the
+  server lays the rows as it sets the home up (`adopt`): each piece where it stood if the size
+  holds it, else where the layout has it, else in the box; the beanbag back on the rug if it
+  stood on it; finds on ShelfTop and JobBoxTop moved onto those pieces' rows, where they were.
+  A find in a piece's way goes back in the box as Brix loads (nothing lost). XL homes keep the
+  set where it stood; Small ones, which held none of it (D-340), get Small's layout.
+- **Growing keeps your arrangement** (`grow`): a starter piece against a wall (its edge within
+  0.9 studs) rides that wall as the home grows, in a corner both; everything else is carried as
+  before (`Spots.carry`). D-345's line said a grown home starts from the default layout; I kept
+  the arrangement instead, as the owner's "fully decorate and modify a room to their liking"
+  reads, and a reset would box the finds in the defaults' way (OWNER.md).
+- **Split**: the server and the views are S5-03i1b, lifting them in Arrange S5-03i1c. Nothing in
+  the game uses the rows yet; save v14 only adds the flag.
+
 ## D-400 A find that lands after you chose what to hold keeps your hand where you put it (F-G1e6q2, Nov 17)
 - **The rule**: a marked box's find reaches your hand as its reveal ends (about 2.4 s for an
   Epic). If you switched slots or put your tool away since the box opened, the find goes into a

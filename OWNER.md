@@ -441,6 +441,15 @@ nowhere else.
   14. The job box can be moved anywhere but never put away, since it holds everything (D-345).
   15. Friends in your home can press a find's button (switch your lamp, play your boombox) but
       can't move or take anything (D-345).
+  16. A new Small home starts with the shelf on the back wall, the job box along the left wall
+      and the mirror on the right; the clothes rail, rug, beanbag and floor lamp wait in the job
+      box, since Small can't hold them all without one standing mid-room. Medium and up start
+      with all seven (D-346).
+  17. When your home grows it keeps your arrangement: a piece against a wall rides that wall out,
+      so the shelf on Small's back wall is on Medium's. D-345 said a grown home starts from the
+      default layout; say if you'd rather it reset to that (D-346).
+  18. The rug is floor you can stand things on: a beanbag or a find set on it moves with it when
+      you move the rug (D-346).
 - [ ] **Walk into your home** (S5-03a2b3 and b4, D-268; seen in Studio Play by me, the switch
   pressed with T and with a tap on the A16 simulator, but I couldn't take a single picture, so
   how it looks is yours). Press Play, or publish and play on a phone (Galaxy A16):

@@ -2804,7 +2804,24 @@ Done when players watch the results to the end and change their perks between cl
       spots, the mirror's reflection and the rail's hangers go with their piece; a default layout
       per size for a new or grown home, none mid-room (this is S5-03h4, folded in); a home laid
       before gets its pieces as rows where they stood (a save version with a migration). The
-      ceiling bulb and the switch stay with the room.
+      ceiling bulb and the switch stay with the room. Split Nov 18 (D-346):
+      - [x] **S5-03i1a The rules**: the starter pieces as furniture rows (`Furniture.Starter`,
+        never sold, free of the limit), each size's layout (`Home.Layout.default`: Small holds
+        the shelf, the box and the mirror), a home laid before adopting its pieces where they
+        stood with the finds on the shelf's and box's tops moved onto them (`adopt`), a growing
+        home's pieces riding their walls (`grow`), the shelf's, box's and rug's tops as piece
+        tops, save v14's `starterLaid`. Done Nov 18, D-346: Lune specs; nothing wired yet.
+      - [ ] **S5-03i1b The server lays them**: `Arranging` lays the rows (`adopt` while
+        `starterLaid` is false, then writes it true; `grow` on a size change), draws them like
+        bought pieces, refuses putting the job box away; `Arrange.room` drops the fixed set's
+        blocks and the ShelfTop and JobBoxTop areas; `Lobby.front` lays a spare home by
+        `Layout.default`; the job box's panel lists the starter pieces put away. The shelf's
+        spots (`Shelves`), the job box's lid and panel (`JobBoxes`, `JobBoxView`), the mirror
+        (`Home.mirror`, `MirrorView`) and the rail (`Rails`) find their piece by its row.
+      - [ ] **S5-03i1c Lift them in Arrange**: lift, move, turn and put away the shelf with finds
+        on it, the mirror (leaning only against a wall), the rail and the rest; the views follow
+        a moved piece; seen in Studio Play at Galaxy A16 size (move the shelf, the mirror, the
+        box; rejoin; grow a size), captures in `docs/art/`.
     - [ ] **S5-03i2 Take anything directly**: outside Arrange, walk up to any find set out (shelf,
       a top, the floor, a wall) and Take puts it in your hands; in Arrange, lift a find straight
       off the shelf or any top. Server-checked, never lost or doubled.
