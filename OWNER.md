@@ -169,6 +169,18 @@ nowhere else.
   walking into a seat; the bed is sat on, not lain on (lying down needs a sleeping animation:
   an untested bet, say if you want it); on the blanket you sit Roblox's way for now, cross-legged
   needs an animation we make and upload (say if you want it).
+- [ ] **Your home's walls by size** (S5-03h5a, D-354; passes checks, untested in Studio: Studio
+  was in another session's Play all through mine). Play and walk into your home: a Small one should
+  close round you, 8 by 8, its side walls and back wall in your paint, the ceiling lamp over the
+  middle. Then on the Server in Studio's command bar run
+  `game.ServerStorage.ArrangeTest:Invoke(game.Players:GetPlayers()[1], "size", "Medium")`, then
+  "Large", then "XL": the walls jump out each time (h6 makes them grind), the lamp follows, and at
+  XL the unit's own walls stand. At each size: shut the door with you inside (it should count you
+  in right to the back wall), switch the light, tap Arrange (it should show only inside the walls),
+  pick a paper (it should roll round the size's room). Look for: a gap or flicker at a corner,
+  light leaking past a wall, the camera seeing through a wall. My defaults, say which to change:
+  the steel shows only at a partition's end, inside the doorway at Small, until S5-03h5b narrows
+  Small's doorway; at Medium a patterned paper breaks at the back corners (half a tile).
 - [ ] **Lift a find out of your shelf in Arrange, on a real phone** (S5-03i2b, D-352; seen in
   Studio Play). Open Arrange, tap a find in a cubby: it rises out at its own size and the cubby
   is empty. Set it on a table: it stays, and the shelf still has its other finds. Lift another
@@ -298,7 +310,7 @@ nowhere else.
   with the lamp? I left them always on, as Adopt Me's string lights are.
 - [ ] **Your home starts Small now** (S5-03h1, D-340; checked in Studio Play from the server
   only, not looked at on screen). Every home is Small, 8 by 8 studs at the front of the unit,
-  though it still looks like the whole XL unit until its walls are drawn (S5-03h5), and the
+  its walls drawn at its size since S5-03h5a (the item above), and the
   starter set still stands at the back until S5-03h4 lays it by size. Your test save went Small
   as it loaded; I then put everything away while testing, so nothing is set out. Play, walk in
   and tap Arrange. Look for: the grid covering only the front 8 by 8, and a find dragged past it
