@@ -68,9 +68,11 @@ local FloorBuilder = require(script.Parent.FloorBuilder)
 local Keepers = require(script.Parent.Keepers)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Left = require(ReplicatedStorage.Shared.Left)
+local NextFloor = require(ReplicatedStorage.Shared.NextFloor)
 local Prompts = require(script.Parent.Prompts)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
+local ToLobby = require(ReplicatedStorage.Shared.ToLobby)
 local WrapColours = require(ReplicatedStorage.Shared.WrapColours)
 
 -- A kept player cut free by a friend (`cutter`, their UserId; 0 for Studio's stand-in friends), or
@@ -534,6 +536,10 @@ function KeptPlayers.new(): KeptPlayers
 	local function onCaught(catch: Keepers.Catch)
 		local player = catch.player
 		if held[player] or not player.Parent then
+			return
+		end
+		-- the back-to-the-lobby card's floor: no unit and no film, ToLobby sends them down
+		if ToLobby.sends(catch.floor:GetAttribute(NextFloor.Attribute)) then
 			return
 		end
 		local character = player.Character

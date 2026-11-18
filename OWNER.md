@@ -65,6 +65,19 @@ nowhere else.
   the others go dark and sink, the winner flares with the elevator's ding, slides to the middle
   and stays lit through the change of cars until the gate opens. Say if the cards are too big or
   too small on your phone, and if 9 seconds is enough to agree.
+- [ ] **Caught on the back-to-the-lobby floor, two of you** (S4-03c4a, D-409; I saw only the
+  screen's fall in Studio, driven by hand: a real catch there and the move to the car are
+  unseen). Studio's Test tab, 2 players, both in a lobby car to start the climb (or a live
+  server with a friend). Climb to floor 3 and on its ride pick the card with the car far down
+  the shaft, lit red (dealt from floor 3 on; ride again until it's offered). On that floor let a
+  monster catch one of you. The caught one looks for: its face rushes you as any catch, then the
+  shaft picture comes up out of the black and rushes at you, a heavy slam and a jolt, and the
+  black lifts with a ding inside the lobby car you left from, facing out to the lobby; no
+  "Caught" words, no Bang button. The friend: the caught body stands still, then is gone (the
+  drag down in red comes in S4-03c4b), and you play on; get caught too and the end's black and
+  results come as for any wipe, then Again puts you both in the car. My default, yours to change:
+  sent down you keep what a caught friend keeps (your coins this climb turn to cash with the
+  team's at the end; what you carried drops; no pay from gates you miss).
 - [ ] **Your home, with a friend** (S5-03a3b, D-275; seen with one player only). Studio's Test
   tab, Clients and Servers, 2 players. Look for: each player gets a home by the front door (1 then
   7), their name sprays onto its card with a soft hiss and the door rolls up. Player 1 pulls their

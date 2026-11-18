@@ -46,6 +46,7 @@ local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Left = require(ReplicatedStorage.Shared.Left)
+local ToLobby = require(ReplicatedStorage.Shared.ToLobby)
 local Climbs = require(script.Parent.Climbs)
 local CutFrees = require(script.Parent.CutFrees)
 local LobbyCars = require(script.Parent.LobbyCars)
@@ -129,7 +130,8 @@ function ClimbEnds.new(): ClimbEndsSystem
 				floor,
 				player:GetAttribute(Kept.Attribute) == true,
 				w ~= nil and w:isOut(player),
-				c and c:carrying(player)
+				c and c:carrying(player),
+				player:GetAttribute(ToLobby.Attribute) ~= nil
 			)
 			lost[player] = l
 			table.insert(states, state)
@@ -158,6 +160,9 @@ function ClimbEnds.new(): ClimbEndsSystem
 				player.Character = nil
 				character:Destroy()
 			end
+			-- sent down to the lobby (S4-03c4): over with the climb, their fate noted already
+			player:SetAttribute(ToLobby.Attribute, nil)
+			player:SetAttribute(ToLobby.StoodAttribute, nil)
 		end
 		coveredSignal:fire(nil)
 	end

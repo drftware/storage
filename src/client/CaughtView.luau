@@ -40,6 +40,10 @@
 	their screen is already black (WatchView's dip), so it holds black and their eyes open on the
 	dark inside as after any catch.
 
+	Sent down (S4-03c4): caught on the back-to-the-lobby card's floor (`ToLobby.Attribute`), the
+	lunge plays as any catch's and at the cut to black this lets go of the screen at once:
+	ToLobbyView's fall is over it from that frame.
+
 	It steps only while a catch is on the screen or they're kept.
 ]]
 local ContextActionService = game:GetService("ContextActionService")
@@ -58,6 +62,7 @@ local CaughtLunge = require(script.Parent.CaughtLunge)
 local CutFree = require(ReplicatedStorage.Shared.CutFree)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local SoundPrimer = require(script.Parent.SoundPrimer)
+local ToLobby = require(ReplicatedStorage.Shared.ToLobby)
 
 -- The headline's size (pixels), as the gate's "Going up" (GateClock).
 local HEADLINE_SIZE = 34
@@ -733,6 +738,12 @@ function CaughtView.new(kick: (amount: number) -> (), leave: (() -> ())?): Brix.
 			if since >= 0 then
 				-- the lunge's clock, so the black lands on the frame its face goes; a carry's own
 				since = if carried then since + dt else lunge.since()
+				-- sent down to the lobby (S4-03c4): at the cut to black the fall has the screen
+				-- (ToLobbyView, over this one), so nothing of a keep follows: no headline, no wake
+				if since >= Caught.Dark and player:GetAttribute(ToLobby.Attribute) ~= nil then
+					finish()
+					return
+				end
 				local lifts = Caught.Dark + Caught.Hold
 				if since >= lifts then
 					lunge.hear() -- the hall comes back as your eyes open

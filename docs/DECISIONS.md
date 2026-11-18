@@ -9299,3 +9299,31 @@ press Sit, jump to get up).
 - **The camp bed is sat on, not lain on** (my default, `OWNER.md`): Roblox Seats only sit, and lying
   down needs a sleeping pose and a way to get up that we haven't seen work here: an untested bet
   for the owner.
+
+## D-409 Caught on the back-to-the-lobby floor: down the shaft to the lobby car (S4-03c4a, Nov 18)
+
+- **What happens.** On the floor the team picked with the "back to the lobby" card, a catch plays
+  its lunge as any catch does; at the cut to black the card's own picture (the shaft from above,
+  the car lit red far down it) comes up out of the black with the card's low hit and rushes at
+  you, faster and faster, for 1.45 s; the gate's slam, pitched heavy, and a jolt as you land; then
+  the black lifts in the lobby car the climb left from, with the car's ding, facing out of its
+  gate. No words. Friends on the floor carry on. The precedent: DOORS' and Piggy's catch takes you
+  out of the run while friends play on (the GDD's card, D-406).
+- **How.** A new system takes these catches (`ToLobby`, server); KeptPlayers steps aside when the
+  catch's floor model reads `FloorVersion` CaughtToLobby, so no unit and no film. The server
+  drops what you carried (as any catch), anchors you, marks you (`SentDownAt`, the catch's server
+  time) and at `ToLobby.Swap` gives you a new character stood in the car (`SentDownTo`) and takes
+  the kept mark off. The car: on a group's own server the one its trip names, on a lobby riding
+  here the one carrying the floor's number, else the first (Studio's test hall). Each one sent
+  down takes the next of the car's standing spots.
+- **Leaving a climb mid-way didn't exist**, so this is the first way: no teleport (the lobby is on
+  the same server as the climb, L-08e2). Trips' late-arrival rule (`mayStand`) never stands a
+  sent-down player back in the climb.
+- **What you keep (my default, `OWNER.md`):** what any caught player keeps. Whatever you carried
+  drops where you were caught. Your coins this climb stay counted and turn into cash with the
+  team's when the climb ends (CashOut), as a caught friend's do; you're paid nothing at the gates
+  you miss. The results count you caught on that floor (`ClimbEnd.look`'s new `sent`).
+- **The last friend caught there** isn't swapped: the end's black comes down at the cut as for
+  any wipe (EndView is over the fall), and Again brings the whole team back to the car.
+- **Your screen.** CaughtView lets go at the cut to black for a sent-down player; ToLobbyView
+  (DisplayOrder 45, between the catch's 30 and the end's 50) has the fall and the lift.

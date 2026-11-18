@@ -203,18 +203,21 @@ end
 -- unit is a wrap like any other, and the end lands on the last free friend's catch rather than
 -- waiting a few seconds for the unit to stream in; their photo names the floor they're kept on
 -- now. Otherwise the floor is the one they were first lost on (kept, then left behind as the car
--- goes, is still that floor). `was` is what the last look noted (nil while climbing). Returns
--- their state and what to note now (nil while climbing: cut free, they start again).
+-- goes, is still that floor). `was` is what the last look noted (nil while climbing). Sent down
+-- to the lobby (`sent`, S4-03c4: caught on the back-to-the-lobby card's floor) is kept on the
+-- floor they were caught on for good: nobody frees them, so it never turns back into climbing.
+-- Returns their state and what to note now (nil while climbing: cut free, they start again).
 function ClimbEnd.look(
 	was: Lost?,
 	floor: number,
 	kept: boolean,
 	out: boolean,
-	carriedTo: number?
+	carriedTo: number?,
+	sent: boolean?
 ): (State, Lost?)
 	if carriedTo then
 		return "Kept", { fate = "Kept", floor = carriedTo }
-	elseif kept then
+	elseif kept or sent then
 		return "Kept", { fate = "Kept", floor = if was then was.floor else floor }
 	elseif out then
 		return "Left", { fate = "Left", floor = if was then was.floor else floor }

@@ -15,9 +15,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Studio hooks: `ShelfTest` "take"; `ArrangeTest` "take", "own", "place", "rows", "fromShelf",
   "shelfAway" (STUDIO.md). Home doc: https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww
 - **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), the cards' vote,
-  faces and screen (D-403 to D-405), c1 the deal and pay (D-406), c2 the arrival and pop (D-407),
-  c3 the power's out (D-408, seen in Play). Next: S4-03c4 caught there goes back to the lobby
-  (`KeptPlayers`' catch reads `FloorVersion`; the lobby trip of L-08e2), then S4-03d.
+  faces and screen (D-403 to D-405), c1 to c3 (D-406 to D-408), c4a down the shaft to the lobby
+  car (D-409, the fall seen in Play; Trips' `mayStand` now skips `SentDownAt`). Next: S4-03c4b
+  friends see you taken (the body dragged down in red), and a real catch there seen; then S4-03d.
 
 ## Next task: S5-03i4 Sit on the furniture
 The moment: you walk up to the milk crate in your home and sit on it, the beanbag sinks you in,

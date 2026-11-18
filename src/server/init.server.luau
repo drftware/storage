@@ -55,6 +55,7 @@ local Saving = require(script.Saving)
 local Saws = require(script.Saws)
 local Slots = require(script.Slots)
 local Taps = require(script.Taps)
+local ToLobby = require(script.ToLobby)
 local Trips = require(script.Trips)
 local Watching = require(script.Watching)
 local Wraps = require(script.Wraps)
@@ -96,6 +97,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "taps", system = Taps.new() },
 	-- Getting kept: a caught player's things dropped, them stored in a unit, let out as its door lifts.
 	{ slot = "keptPlayers", system = KeptPlayers.new() },
+	-- Caught on the back-to-the-lobby card's floor: down the shaft to the lobby car, out of the climb.
+	{ slot = "toLobby", system = ToLobby.new() },
 	-- The code's notes players carry: pinned beside the keypad as they reach it, dropped as they're caught or leave.
 	{ slot = "pockets", system = Pockets.new() },
 	-- Blowing the air horn: its gap between blows, the blast on every screen, keepers coming to it.

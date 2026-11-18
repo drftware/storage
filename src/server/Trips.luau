@@ -56,6 +56,7 @@ local Climb = require(ReplicatedStorage.Shared.Climb)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
+local ToLobby = require(ReplicatedStorage.Shared.ToLobby)
 local Trip = require(ReplicatedStorage.Shared.Lobby.Trip)
 local Climbs = require(script.Parent.Climbs)
 local FrontOffice = require(script.Parent.FrontOffice)
@@ -273,7 +274,9 @@ function Trips.new(): Trips
 		return Trip.standsLate(
 			s == nil or (root.Position - s).Magnitude <= AT_SPAWN,
 			c ~= nil and c:carrying(player) ~= nil,
+			-- held in a unit, or sent down to the lobby car (S4-03c4): never back in the climb
 			player:GetAttribute(Kept.Attribute) == true
+				or player:GetAttribute(ToLobby.Attribute) ~= nil
 		)
 	end
 

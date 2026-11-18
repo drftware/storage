@@ -2346,9 +2346,22 @@ Done when two climbs in a row feel different and players talk about their best f
       `docs/art/S4-03c3-*`). Polish: catch the halls' flash as the power returns (they read
       powered and dark 3 s after, S4-03d); the gate rising on black, frame by frame (S4-03d).
     - [ ] **S4-03c4 Caught there goes back to the lobby.** A catch on that floor takes you out of
-      the climb to the lobby (not wrapped for friends to free), by the way a player leaves a
-      climb for the lobby today (the trip and the car's return of L-08e2); friends left on the
-      floor carry on. `KeptPlayers`' catch reads the floor's `FloorVersion`.
+      the climb to the lobby (not wrapped for friends to free); friends left on the floor carry
+      on. Split Nov 18 (D-409):
+      - [x] **S4-03c4a Down the shaft to the lobby car.** Done Nov 18 (D-409): `ToLobby` (shared,
+        server, `ToLobbyView`), `tests/tolobby.spec.luau`. The lunge as any catch, then the card's
+        picture rushing up out of the black, the gate's slam and a jolt, and the black lifting in
+        the lobby car the climb left from, with its ding; the end counts you caught on that floor
+        (`ClimbEnd.look`'s `sent`); Trips never stands you back in the climb. Seen in Studio Play
+        at A16 size: the screen's whole timeline, driven by the sent-down marks from the server
+        (captures `docs/art/S4-03c4-*`). Not seen: a real catch there and the server's swap
+        (floor 1 has no monsters; a ride to floor 3 didn't fit): `OWNER.md`.
+      - [ ] **S4-03c4b Friends see you taken.** On friends' screens the caught body is dragged
+        down through the floor in the card's red light with its low hit, as a Dead by Daylight
+        survivor is taken; today it just vanishes at the swap. Then see a real catch on a
+        back-to-the-lobby floor in Play (ride to floor 3 with the card, `WakeSleepers`,
+        `CatchTest`, a stand-in friend) and the swap into the car. Polish: a falling rush under
+        the fall (no wind sound in the project yet).
   - [ ] **S4-03d The whole climb in Studio.** Ride floors 1 to 5 in Play with the cards, each
     version picked once, captures; fixes. Two-player vote and phones go to `OWNER.md`. First,
     what S4-03b2 didn't see: step `DevRideHold` through one ride (4, 9.3 with a capture burst
