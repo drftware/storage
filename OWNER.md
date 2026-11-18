@@ -41,6 +41,12 @@ nowhere else.
   floor's count; twice the monsters is twice the sleepers, twice the awake ones behind a door
   and twice as many loose at once (never past five). To feel it, pick twice the monsters on the
   ride to floor 3 or 4 and play the floor out: does it feel twice as dangerous, or unfair?
+  Arriving (S4-03c2, D-407; my defaults): as the gate opens the winning card flies into it and
+  bursts in its colour, with its own sound: the power's out is the hall lights' dying whine,
+  twice the padlocks two shackles snapping, twice the monsters two Mannequin steps, caught to
+  the lobby the low hit of being caught. At that floor's gate its card pops over your pay and
+  bursts into its coins. Ride floor 1 to 2 looking at the gate: do you know the floor before you
+  see it? Does each sound say its card? Is the little card's picture readable on your phone?
 - [ ] **Vote with a friend, on phones** (S4-03b2, D-405; seen with one player and stand-in
   presses). Two phones (or Studio's Test tab, 2 players), both in one car leaving floor 1 (any
   later floor's ride works; floor 1's from the lobby has no vote). Look for: as the car lurches

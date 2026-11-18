@@ -15,6 +15,12 @@
 	change of cars at the third knock happens under it. Proven: Hades shows each door's reward
 	before you pick; a lobby's map vote shows who voted for which map.
 
+	The arrival (S4-03c2): as the gate starts to fold open, the winner, heads and all, lifts and
+	flies into the gate's opening on your screen, shrinking and turning, and bursts there in its
+	own colour: a ring and a wash of that light over your view, its own sound (`NextFloor`'s
+	row), and the hall beyond the gate lit in it for a breath. You know which floor you chose
+	before you see it, as Hades' door reward flies to you as you walk through.
+
 	- Only riders see them: the ride's `Aboard` names you. They're drawn from the car the vote is
 	  on and kept up on their own once that car's gone (the hand-off clears the floor below).
 	- A press goes to the server (`NextFloor.Remote`) and shows at once; the car's word takes over
@@ -30,12 +36,14 @@
 local CollectionService = game:GetService("CollectionService")
 local ContentProvider = game:GetService("ContentProvider")
 local ContextActionService = game:GetService("ContextActionService")
+local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Buy = require(ReplicatedStorage.Shared.Machine.Buy)
@@ -102,6 +110,23 @@ local CENTRE = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In
 local BREATHE = TweenInfo.new(1.1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
 local BREATHE_LOW = 0.35 -- the winner's glow at the low of its breath
 local TUCK = TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+-- The arrival (S4-03c2): the winner lifts a little, then flies into the gate, picking up speed
+-- as a thrown thing does, small at the end as if far off; then its light bursts there.
+local LIFT = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local LIFT_SIZE = 1.1
+local FLY = TweenInfo.new(0.42, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+local FLY_SIZE = 0.1 -- of its size as it goes in
+local FLY_TURN = 8 -- degrees it turns on the way, tipping in
+local INTO = 6 -- studs past the gate's opening it flies to: into the floor, not the gate
+local RING = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local RING_SIZE = 0.75 -- the ring's reach, of the screen's height
+local WASH = 0.72 -- how see-through its light's wash over your view starts
+local WASH_FADE = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+-- The hall beyond the gate lit in its colour for a breath: one light, on this screen only.
+local HALL_UP = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local HALL_DOWN = TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+local HALL_BRIGHT = 4
+local HALL_RANGE = 30
 
 -- The sounds, flat in your ears (the cards are on your screen): every one from Roblox's licensed
 -- library the game already plays. The cards latching up, a tick as each lands; your press's heavy
@@ -733,6 +758,178 @@ function NextFloorView.new(need: FreeCursor.Need): Brix.System
 		end
 	end
 
+	-- Where the gate of the car carrying ride `at` opens, in the world: a little past its opening,
+	-- into the floor (nil if no such car is here).
+	local function gateOf(at: number): Vector3?
+		local camera = Workspace.CurrentCamera
+		local best: Vector3? = nil
+		local bestAway = math.huge
+		for model in watched do
+			local a = Ride.decode(model:GetAttribute(Ride.Attribute))
+			if not (a and math.abs(a - at) < 1e-3) then
+				continue
+			end
+			local colliders = model:FindFirstChild("Colliders")
+			local left = colliders and colliders:FindFirstChild("PostLeft")
+			local right = colliders and colliders:FindFirstChild("PostRight")
+			local back = colliders and colliders:FindFirstChild("CarBack")
+			if
+				not (
+					left
+					and right
+					and back
+					and left:IsA("BasePart")
+					and right:IsA("BasePart")
+					and back:IsA("BasePart")
+				)
+			then
+				continue
+			end
+			local opening = left.Position:Lerp(right.Position, 0.5)
+			local out = (opening - back.Position) * Vector3.new(1, 0, 1)
+			if out.Magnitude < 1e-3 then
+				continue
+			end
+			local spot = opening + out.Unit * INTO
+			local away = if camera then (camera.CFrame.Position - spot).Magnitude else 0
+			if away < bestAway then
+				best, bestAway = spot, away
+			end
+		end
+		return best
+	end
+
+	-- Plays a version's own sound, flat in your ears.
+	local function hits(version: NextFloor.Version)
+		for _, h in version.sound do
+			task.delay(h.at, function()
+				play({
+					id = h.id,
+					from = h.from,
+					length = h.length,
+					volume = h.volume,
+					pitch = h.pitch,
+				})
+			end)
+		end
+	end
+
+	-- The arrival (S4-03c2): `card`, the winner of `s`, flies into the gate and bursts in its light.
+	local function arrive(s: Session, card: Card)
+		local screen = gui
+		local version = card.name and NextFloor.find(card.name)
+		if not (screen and version) then
+			return
+		end
+		local colour = card.light
+		local size = screen.AbsoluteSize
+		local from = card.slot.AbsolutePosition - screen.AbsolutePosition
+		local w, h = card.slot.AbsoluteSize.X, card.slot.AbsoluteSize.Y
+		-- where the gate is on your screen; the middle of it if you're looking away
+		local spot = gateOf(s.at)
+		local target = Vector2.new(size.X / 2, size.Y * 0.42)
+		local camera = Workspace.CurrentCamera
+		if spot and camera then
+			local p = camera:WorldToViewportPoint(spot)
+			local inset = GuiService:GetGuiInset()
+			local q = Vector2.new(p.X, p.Y) - inset
+			if p.Z > 0 and q.X > 0 and q.X < size.X and q.Y > 0 and q.Y < size.Y then
+				target = q
+			end
+		end
+		-- a copy flies, heads and all; the card itself is put away for the next ride
+		local fly = card.slot:Clone()
+		card.slot.Visible = false
+		card.shown = false
+		local b = card.breathe
+		if b then
+			b:Cancel()
+			card.breathe = nil
+		end
+		fly.Name = "Arriving"
+		fly.Position = UDim2.fromOffset(from.X + w / 2, from.Y + h)
+		local grow = Instance.new("UIScale")
+		grow.Parent = fly
+		local glow = fly:FindFirstChild("Glow")
+		if glow and glow:IsA("CanvasGroup") then
+			glow.GroupTransparency = 0
+		end
+		fly.Parent = screen
+		local turn = if target.X < from.X + w / 2 then -FLY_TURN else FLY_TURN
+		local lift = tween(grow, LIFT, { Scale = LIFT_SIZE })
+		lift.Completed:Once(function()
+			tween(grow, FLY, { Scale = FLY_SIZE })
+			tween(fly, FLY, {
+				Position = UDim2.fromOffset(target.X, target.Y + h * FLY_SIZE / 2),
+				Rotation = turn,
+			})
+		end)
+		task.delay(LIFT.Time + FLY.Time - 0.06, function()
+			hits(version)
+		end)
+		task.delay(LIFT.Time + FLY.Time, function()
+			fly:Destroy()
+			-- its light bursts where it went in: a ring, and a wash over your view
+			local ring = Instance.new("Frame")
+			ring.AnchorPoint = Vector2.new(0.5, 0.5)
+			ring.Position = UDim2.fromOffset(target.X, target.Y)
+			ring.Size = UDim2.fromOffset(8, 8)
+			ring.BackgroundTransparency = 1
+			local rc = Instance.new("UICorner")
+			rc.CornerRadius = UDim.new(0.5, 0)
+			rc.Parent = ring
+			local edge = Instance.new("UIStroke")
+			edge.Color = colour
+			edge.Thickness = 4
+			edge.Parent = ring
+			ring.Parent = screen
+			local reach = math.floor(size.Y * RING_SIZE)
+			tween(ring, RING, { Size = UDim2.fromOffset(reach, reach) })
+			tween(edge, RING, { Transparency = 1, Thickness = 1 })
+			local inset = GuiService:GetGuiInset()
+			local wash = Instance.new("Frame")
+			wash.Position = UDim2.fromOffset(0, -inset.Y)
+			wash.Size = UDim2.new(1, 0, 1, inset.Y)
+			wash.BackgroundColor3 = colour
+			wash.BackgroundTransparency = WASH
+			wash.BorderSizePixel = 0
+			wash.ZIndex = 0
+			wash.Parent = screen
+			tween(wash, WASH_FADE, { BackgroundTransparency = 1 })
+			task.delay(math.max(RING.Time, WASH_FADE.Time) + 0.05, function()
+				ring:Destroy()
+				wash:Destroy()
+			end)
+			-- and the hall beyond the gate takes its colour for a breath
+			if spot then
+				local bulb = Instance.new("Part")
+				bulb.Name = "ArrivalLight"
+				bulb.Anchored = true
+				bulb.CanCollide = false
+				bulb.CanQuery = false
+				bulb.CanTouch = false
+				bulb.CastShadow = false
+				bulb.Transparency = 1
+				bulb.Size = Vector3.one
+				bulb.Position = spot
+				local lamp = Instance.new("PointLight")
+				lamp.Color = colour
+				lamp.Brightness = 0
+				lamp.Range = HALL_RANGE
+				lamp.Shadows = false
+				lamp.Parent = bulb
+				bulb.Parent = Workspace
+				local up = tween(lamp, HALL_UP, { Brightness = HALL_BRIGHT })
+				up.Completed:Once(function()
+					tween(lamp, HALL_DOWN, { Brightness = 0 })
+				end)
+				task.delay(HALL_UP.Time + HALL_DOWN.Time + 0.1, function()
+					bulb:Destroy()
+				end)
+			end
+		end)
+	end
+
 	-- The cards go: down under the screen, the wheel back up, the mouse and keys handed back.
 	local function finish()
 		local s = session
@@ -802,6 +999,14 @@ function NextFloorView.new(need: FreeCursor.Need): Brix.System
 		end
 		s.phase = phase
 		if phase == "gone" then
+			-- the gate opens: the winner flies into the floor it picked (S4-03c2)
+			if s.picked and not tucked then
+				for _, card in cards do
+					if card.shown and not card.sunk and card.name == s.picked then
+						arrive(s, card)
+					end
+				end
+			end
 			finish()
 			return
 		end
@@ -971,7 +1176,15 @@ function NextFloorView.new(need: FreeCursor.Need): Brix.System
 		task.spawn(function()
 			ContentProvider:PreloadAsync(ids)
 		end)
-		task.spawn(SoundPrimer.prime, { LATCH.Id, DING.Id, Buy.Click.id, Buy.Knock.id })
+		local sounds = { LATCH.Id, DING.Id, Buy.Click.id, Buy.Knock.id }
+		for _, version in NextFloor.Versions do
+			for _, h in version.sound do
+				if not table.find(sounds, h.id) then
+					table.insert(sounds, h.id)
+				end
+			end
+		end
+		task.spawn(SoundPrimer.prime, sounds)
 
 		table.insert(
 			connections,

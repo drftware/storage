@@ -9192,3 +9192,26 @@ lobby.
 
 Not chosen: doubling the waves' size or pace (the sleepers are already twice as many, so the
 waves find twice as many to wake); a cap past five (a phone's limit, D-156).
+
+## D-407 The picked card flies into its floor, and pops its own coins at the gate (S4-03c2, Nov 18)
+
+You must know which floor you chose before you see it, and its coins must read as its own.
+- **The arrival.** As the gate starts to fold open (`Ride.opens()`), a copy of the winning card,
+  heads and all, lifts (0.14 s), then flies into the gate's opening on your screen (0.42 s,
+  speeding up, shrinking to a tenth, tipping in), to the middle of the screen if you're facing
+  away. There it bursts in its own colour: a ring, a wash of that light over your view, and the
+  hall six studs past the gate lit in it for a breath (one PointLight, this screen only). As
+  Hades' door reward flies to you as you walk through. Numbers at the top of NextFloorView.
+- **Each version's own sound** (`NextFloor` row `sound`, from sounds the game already plays): the
+  power's out is the hall lights' dying whine; twice the padlocks, two shackles snapping; twice
+  the monsters, two Mannequin steps pitched down; caught to the lobby, the low hit of being
+  caught. Heard at the arrival and again at the pop. My defaults (OWNER.md).
+- **The pop.** `Pay.parts` has a third part, the version's coins, taken first so they always
+  show; GatePay's remote carries the version's name and coins. After the pour and the traps'
+  pops, the card pops up small over the pour (a fifth of the screen tall) in its glow with its
+  sound, holds half a second, flashes white and bursts into its coins, which hang lit in its
+  colour (the coins' own light tinted) and fly to the count, ticking higher than the traps',
+  the "+" swelling to the whole pay. As Balatro scores each joker in turn after the hand.
+
+Not chosen: words or a name on the pop (D-405); the version's coins pouring with the floor's
+(c1's stopgap: you couldn't tell what the pick earned).

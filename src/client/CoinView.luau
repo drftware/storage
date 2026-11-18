@@ -32,6 +32,12 @@
 	coins (`Pay.Trap`) bursting out, hanging and flying to the count, the ticks a little higher
 	each pop; as a pop's last coin lands the "+10" swells to "+15", then "+20".
 
+	The version the team picked for the floor (S4-03c2, `Pay.parts`' third part) pops last, over
+	the pour: its card punches up small, lit in its own colour, with its own sound (`NextFloor`'s
+	row, the one heard as it flew into the floor), holds a beat so you see which, then flashes
+	and bursts into its coins, lit in that colour as they hang, and they fly to the count, the
+	"+" swelling to the whole pay. As Balatro scores each joker in turn after the hand.
+
 	Coins out of a marked box (B-03b): as its flaps burst (with the find, if it holds one) its
 	coins jump out of it on every screen, fanning out round whatever rises between them, spinning
 	up on their edges and gone, with the take's chink (and jingle for two or three) at the box. On
@@ -57,6 +63,7 @@ local Coins = require(ReplicatedStorage.Shared.Coins)
 local Machine = require(ReplicatedStorage.Shared.Machine)
 local CoinSpecs = require(ReplicatedStorage.Shared.Coins.Specs)
 local Minimap = require(ReplicatedStorage.Shared.Minimap)
+local NextFloor = require(ReplicatedStorage.Shared.NextFloor)
 local Opening = require(ReplicatedStorage.Shared.Boxes.Opening)
 local Pay = require(ReplicatedStorage.Shared.Pay)
 local SoundPrimer = require(script.Parent.SoundPrimer)
@@ -87,6 +94,13 @@ local RIM_BACK = TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection
 local PAY_CLIMB = 0.45 -- the pour's landing ticks climb this much in pitch, first to last
 local PLUS_GAP = 8 -- points between the "+10" and the count
 local PLUS_FADE = TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+-- The picked version's card at the gate (S4-03c2): its glow's rings, inside out, how see-through;
+-- the coins' own warm fill a version's light is mixed into; the card's burst.
+local PICK_RINGS = { 0.55, 0.75, 0.88 }
+local PICK_AMBIENT = Color3.fromRGB(190, 175, 150)
+local PICK_IN = TweenInfo.new(Pay.PickIn, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local PICK_PUFF = TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local PICK_GONE = TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 
 type Pile = {
 	model: Model,
@@ -131,6 +145,8 @@ type Flyer = {
 	clink: Sound?,
 	-- the last coin of a monster's pop (S4-04): as it lands, the "+10" by the count swells to this
 	bump: number?,
+	-- a coin of the picked version's pop (S4-03c2): lit in its card's colour
+	tint: Color3?,
 }
 
 local CoinView = {}
@@ -288,6 +304,9 @@ function CoinView.new(): Brix.System
 	local chinks = { sound(Pay.PopChink, gui), sound(Pay.PopChink, gui) }
 	local popTurn = 0
 	local popsAt: { number } = {}
+	-- the picked version's burst (S4-03c2): the chink, brighter than a trap's
+	local pickChink = sound(Pay.PopChink, gui)
+	pickChink.PlaybackSpeed = (Pay.PopChink.pitch or 1) * 1.2
 
 	local ticks: { Sound } = {}
 	for i = 1, TICKS do
@@ -522,6 +541,11 @@ function CoinView.new(): Brix.System
 		if coin then
 			f.coin = picture(frame, coin, 0.8)
 		end
+		local tint = f.tint
+		if tint then
+			frame.LightColor = tint
+			frame.Ambient = PICK_AMBIENT:Lerp(tint, 0.5)
+		end
 		frame.Parent = gui
 		f.view = frame
 		return frame
@@ -680,18 +704,29 @@ function CoinView.new(): Brix.System
 
 	-- One pop of a monster shut in (S4-04): `Pay.Trap` coins burst at `at` from `origin` and hang
 	-- till `hang`, each worth one, the ticks climbing from `rise`; the last swells the "+" to `bump`.
-	local function popCoins(origin: Vector2, reach: number, at: number, rise: number, bump: number)
-		local n = Pay.Trap
+	-- With `shares` and `tint` (S4-03c2): the picked version's coins, each worth its share, lit in
+	-- its colour, hanging `Pay.PickHang`.
+	local function popCoins(
+		origin: Vector2,
+		reach: number,
+		at: number,
+		rise: number,
+		bump: number,
+		shares: { number }?,
+		tint: Color3?
+	)
+		local n = if shares then #shares else Pay.Trap
+		local hang = if tint then Pay.PickHang else Pay.PopHang
 		local twist = rng:NextNumber(0, TAU)
 		for i = 1, n do
 			local angle = twist + (i - 1) / n * TAU + rng:NextNumber(-0.35, 0.35)
 			local r = reach * rng:NextNumber(0.6, 1)
 			table.insert(flyers, {
-				launch = at + Pay.Scatter + Pay.PopHang + (i - 1) * Pay.Gap,
+				launch = at + Pay.Scatter + hang + (i - 1) * Pay.Gap,
 				from = nil,
 				at = Vector3.zero,
 				rise = rise + Pay.PopClimb * (i - 1) / math.max(1, n - 1),
-				worth = 1,
+				worth = if shares then shares[i] else 1,
 				view = nil,
 				coin = nil,
 				start = nil,
@@ -699,19 +734,132 @@ function CoinView.new(): Brix.System
 				origin = origin,
 				spot = origin + Vector2.new(math.cos(angle) * r, math.sin(angle) * r * 0.75),
 				bump = if i == n then bump else nil,
+				tint = tint,
 			})
 		end
 		pouring += n
-		table.insert(popsAt, at)
+		if not tint then
+			table.insert(popsAt, at)
+		end
+	end
+
+	-- One hit of a version's sound, flat on your screen, `after` seconds from now.
+	local function hit(h: NextFloor.Hit, after: number)
+		task.delay(math.max(0, after), function()
+			local s = sound(
+				{ id = h.id, from = h.from, length = h.length, volume = h.volume, pitch = h.pitch },
+				gui
+			)
+			s.TimePosition = h.from
+			s:Play()
+			task.delay(h.length / h.pitch + 0.1, function()
+				s:Destroy()
+			end)
+		end)
+	end
+
+	-- The picked version's card (S4-03c2): at `at` it punches up small at `origin`, `tall` pixels
+	-- tall, glowing in `colour`, with its own sound; at `burst` it flashes and is gone, as its
+	-- coins burst out of it.
+	local function pickCard(
+		version: NextFloor.Version,
+		colour: Color3,
+		origin: Vector2,
+		tall: number,
+		at: number,
+		burst: number
+	)
+		local now = os.clock()
+		task.delay(math.max(0, at - now), function()
+			local wide = math.floor(tall * 0.8)
+			local card = Instance.new("Frame")
+			card.Name = "PickedCard"
+			card.AnchorPoint = Vector2.new(0.5, 0.5)
+			card.Position = UDim2.fromOffset(origin.X, origin.Y)
+			card.Size = UDim2.fromOffset(wide, tall)
+			card.BackgroundTransparency = 1
+			card.ZIndex = 1
+			local grow = Instance.new("UIScale")
+			grow.Scale = 0
+			grow.Parent = card
+			for i, see in PICK_RINGS do
+				local ring = Instance.new("Frame")
+				ring.AnchorPoint = Vector2.new(0.5, 0.5)
+				ring.Position = UDim2.fromScale(0.5, 0.5)
+				ring.Size = UDim2.new(1, i * 10, 1, i * 10)
+				ring.BackgroundColor3 = colour
+				ring.BackgroundTransparency = see
+				ring.BorderSizePixel = 0
+				ring.ZIndex = 1
+				local rc = Instance.new("UICorner")
+				rc.CornerRadius = UDim.new(0, 6 + i * 5)
+				rc.Parent = ring
+				ring.Parent = card
+			end
+			local face = Instance.new("ImageLabel")
+			face.Name = "Face"
+			face.Size = UDim2.fromScale(1, 1)
+			face.BackgroundColor3 = Color3.new(0, 0, 0)
+			face.Image = version.face
+			face.ScaleType = Enum.ScaleType.Crop
+			face.ZIndex = 2
+			local fc = Instance.new("UICorner")
+			fc.CornerRadius = UDim.new(0, 6)
+			fc.Parent = face
+			local edge = Instance.new("UIStroke")
+			edge.Color = colour
+			edge.Thickness = 3
+			edge.Parent = face
+			face.Parent = card
+			local flash = Instance.new("Frame")
+			flash.Size = UDim2.fromScale(1, 1)
+			flash.BackgroundColor3 = Color3.new(1, 1, 1)
+			flash.BackgroundTransparency = 1
+			flash.ZIndex = 3
+			local lc = Instance.new("UICorner")
+			lc.CornerRadius = UDim.new(0, 6)
+			lc.Parent = flash
+			flash.Parent = face
+			card.Parent = gui
+			TweenService:Create(grow, PICK_IN, { Scale = 1 }):Play()
+			for _, h in version.sound do
+				hit(h, h.at)
+			end
+			task.delay(math.max(0, burst - os.clock()), function()
+				flash.BackgroundTransparency = 0
+				local puff = TweenService:Create(grow, PICK_PUFF, { Scale = 1.22 })
+				puff.Completed:Once(function()
+					TweenService:Create(grow, PICK_GONE, { Scale = 0 }):Play()
+				end)
+				puff:Play()
+				pickChink.TimePosition = Pay.PopChink.from
+				pickChink:Play()
+				task.delay(PICK_PUFF.Time + PICK_GONE.Time + 0.05, function()
+					card:Destroy()
+				end)
+			end)
+		end)
 	end
 
 	-- Paid at the gate (S1-06): `coins` burst out a beat after the slam and pour into the count,
 	-- then one pop for each of the `trapped` monsters shut in that they count (S4-04).
-	local function paid(coins: unknown, _kept: unknown, trapped: unknown)
+	-- Last, the picked version's card and its `picked` coins (S4-03c2).
+	local function paid(
+		coins: unknown,
+		_kept: unknown,
+		trapped: unknown,
+		versionName: unknown,
+		picked: unknown
+	)
 		if typeof(coins) ~= "number" or coins ~= coins or coins < 1 then
 			return
 		end
-		local floorCoins, pops = Pay.parts(coins, if type(trapped) == "number" then trapped else 0)
+		local version = if type(versionName) == "string" then NextFloor.find(versionName) else nil
+		local floorCoins, pops, versionCoins = Pay.parts(
+			coins,
+			if type(trapped) == "number" then trapped else 0,
+			if version and type(picked) == "number" then picked else 0
+		)
 		local shares = Pay.split(floorCoins, Pay.Flyers)
 		local n = #shares
 		local now = os.clock()
@@ -754,6 +902,27 @@ function CoinView.new(): Brix.System
 				+ Vector2.new(side * further * view.X * Pay.PopSide, -view.Y * Pay.PopUp * further)
 			local rise = 1 + PAY_CLIMB + Pay.PopClimb * j
 			popCoins(at, popReach, first + (j - 1) * Pay.PopGap, rise, floorCoins + j * Pay.Trap)
+		end
+		-- the version picked: its card pops over the pour, then bursts into its coins
+		if version and versionCoins > 0 then
+			local light = version.light
+			local colour = Color3.new(light[1], light[2], light[3])
+			local cardAt = if pops > 0
+				then first + (pops - 1) * Pay.PopGap + Pay.PickAfter
+				else first - Pay.PopAfter + Pay.PickAfter
+			local burst = cardAt + Pay.PickIn + Pay.PickHold
+			local spot = origin - Vector2.new(0, view.Y * Pay.PickUp)
+			pickCard(version, colour, spot, math.floor(view.Y * Pay.PickTall), cardAt, burst)
+			local rise = 1 + PAY_CLIMB + Pay.PopClimb * pops + Pay.PickClimb
+			popCoins(
+				spot,
+				view.Y * Pay.PickSpread,
+				burst - Pay.Scatter * 0.15,
+				rise,
+				floorCoins + pops * Pay.Trap + versionCoins,
+				Pay.split(versionCoins, Pay.PickFlyers),
+				colour
+			)
 		end
 	end
 

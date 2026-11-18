@@ -16,8 +16,9 @@
 	gate shuts (Keepers' `trappedOn`; one freed before then, or one the floor woke behind its own
 	door, doesn't count) adds `Pay.Trap` to every paid rider's coins.
 
-	Each paid rider's screen is told what they got (`Pay.Remote`: coins, the kept finds' keys, then
-	how many monsters shut in the coins count) before their count changes, so the coins are already on their way when it rises (CoinView) and
+	Each paid rider's screen is told what they got (`Pay.Remote`: coins, the kept finds' keys, how
+	many monsters shut in the coins count, then the picked version's name and its coins) before
+	their count changes, so the coins are already on their way when it rises (CoinView) and
 	each kept find rises out of its slot (KeepView). A rider whose save hasn't loaded yet (only just
 	joined) has their kept finds held here and added the moment it loads, so nothing kept is lost.
 
@@ -183,9 +184,10 @@ function GatePay.new(): GatePaySystem
 		local k = keepers
 		local trapped = if k then k:trappedOn(event.from.model) else 0
 		-- the version the team picked for the floor pays its share more (S4-03c1); on your screen
-		-- it pours with the floor's own coins until it has its own pop (S4-03c2)
+		-- its card pops last and bursts into those coins (S4-03c2), so the remote says which
 		local version = event.from.version
 		local picked = if version then NextFloor.payOf(version, event.from.number) else nil
+		local versionName = if version then version.name else ""
 		for _, player in event.riders do
 			if not (player.Parent and alive(player)) or Prompts.wrapped(player) then
 				continue -- wrapped (or gone): nothing for this floor
@@ -206,7 +208,15 @@ function GatePay.new(): GatePaySystem
 				continue
 			end
 			if remote then
-				remote:FireClient(player, owed, shown, if owed > 0 then trapped else 0)
+				local paidIt = owed > 0
+				remote:FireClient(
+					player,
+					owed,
+					shown,
+					if paidIt then trapped else 0,
+					if paidIt then versionName else "",
+					if paidIt then picked or 0 else 0
+				)
 			end
 			c:pay(player, owed)
 			if #kept > 0 then

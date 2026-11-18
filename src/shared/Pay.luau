@@ -17,8 +17,11 @@
 
 	Trapping pays (S4-04, D-188, D-402): each monster the team has shut in a unit as the gate shuts
 	pays everyone aboard `Trap` more coins, as R.E.P.O.'s beaten monsters drop an orb worth money.
-	On your screen each one pops its own burst of coins after the floor's pour (`parts`). Left
-	out: a harder floor picked on the ride paying more (S4-03).
+	On your screen each one pops its own burst of coins after the floor's pour (`parts`).
+
+	The version the team picked on the ride up (S4-03c, D-406) pays its share more, and on your
+	screen it pops last (S4-03c2): its card, small and lit in its own colour, bursts into its
+	coins with its own sound, as Balatro scores each joker in turn after the hand.
 ]]
 local Pay = {}
 
@@ -65,13 +68,15 @@ function Pay.owed(
 	return Pay.forFloor(floor) + Pay.Trap * count(trapped or 0) + count(picked or 0)
 end
 
--- What a pay of `coins` that counted `trapped` monsters shut in looks like on your screen: the
--- floor's own coins, poured as ever, and how many pops of `Trap` coins follow, one per monster
--- (only as many as `coins` holds).
-function Pay.parts(coins: number, trapped: number): (number, number)
+-- What a pay of `coins` that counted `trapped` monsters shut in and `picked` coins for the
+-- version the team picked (none if not given) looks like on your screen: the floor's own coins,
+-- poured as ever, how many pops of `Trap` coins follow, one per monster, and the version's coins,
+-- its own pop last (S4-03c2). Only as much as `coins` holds, the version's first, then the traps'.
+function Pay.parts(coins: number, trapped: number, picked: number?): (number, number, number)
 	local total = count(coins)
-	local pops = math.min(count(trapped), total // Pay.Trap)
-	return total - pops * Pay.Trap, pops
+	local version = math.min(count(picked or 0), total)
+	local pops = math.min(count(trapped), (total - version) // Pay.Trap)
+	return total - version - pops * Pay.Trap, pops, version
 end
 
 -- The coins drawn flying for a pay of `total`: at most `most` of them, each worth a share, the
@@ -92,8 +97,10 @@ function Pay.split(total: number, most: number): { number }
 	return out
 end
 
--- The one remote: server to a paid player's screen, with the coins paid and the catalog keys of
--- the finds kept, slot order. Nothing is ever sent the other way.
+-- The one remote: server to a paid player's screen, with the coins paid, the catalog keys of
+-- the finds kept (slot order), how many monsters shut in the coins count, and the version the
+-- team picked for the floor and its coins in them ("" and 0 for none). Nothing is ever sent the
+-- other way.
 Pay.RemoteFolder = "Remotes"
 Pay.Remote = "GatePay"
 
@@ -139,6 +146,20 @@ Pay.PopChink = {
 	volume = 0.6,
 	pitch = 1.15,
 } :: Sound
+
+-- The feel of the picked version's pop on your screen (S4-03c2, CoinView): after the traps'
+-- pops (or the pour, with none), its card pops up small over the pour, lit in its own colour
+-- with its own sound (`NextFloor`'s row), hangs a beat, then flashes and bursts into its coins,
+-- which fly to your count; the "+" swells to the whole pay as the last lands.
+Pay.PickAfter = 0.4 -- after the last pop sets off (or the pour's last coin): its own beat
+Pay.PickUp = 0.15 -- how far above the pour the card pops, as a share of the screen's height
+Pay.PickTall = 0.2 -- the card's height, as a share of the screen's height: its picture reads
+Pay.PickIn = 0.28 -- the card punching up out of nothing, overshooting and settling
+Pay.PickHold = 0.5 -- the card held up, lit, so you see which one it is before it bursts
+Pay.PickFlyers = 8 -- the most of its coins drawn: each worth a share
+Pay.PickSpread = 0.1 -- how far its burst throws the coins, as a share of the screen's height
+Pay.PickHang = 0.2 -- its coins hang a beat, lit in its colour, before they fly to the count
+Pay.PickClimb = 0.18 -- its landing ticks start this much higher than the last trap pop's
 
 -- The feel of a kept find on your screen (KeepView).
 Pay.KeepAfter = 0.55 -- after the gate hits its post: as the first coins burst, not before the slam

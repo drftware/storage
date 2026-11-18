@@ -61,6 +61,20 @@ export type Version = {
 	-- Its face's own colour of light, red, green and blue from 0 to 1, as art/cards/spec.py lights
 	-- it: the card glows in it when pressed and as it wins, so the three tell apart at a glance.
 	light: { number },
+	-- Its own sound, flat in a rider's ears, no words (S4-03c2): heard as its card flies into the
+	-- floor when the gate opens, and again as its coins pop at that floor's gate. Hits from the
+	-- game's own sounds of what the version is, each `at` seconds after the first.
+	sound: { Hit },
+}
+
+--- One hit of a version's sound: `length` seconds of the recording from `from`.
+export type Hit = {
+	id: string,
+	from: number,
+	length: number,
+	volume: number,
+	pitch: number,
+	at: number,
 }
 
 local NextFloor = {}
@@ -101,6 +115,17 @@ NextFloor.Versions = table.freeze({
 		dark = true,
 		face = "rbxassetid://91517401639848",
 		light = { 0.42, 0.58, 1.0 }, -- cold moonlight
+		-- the floor's power dying: the hall lights' cut (HallLight.CutSound), its whine falling
+		sound = table.freeze({
+			table.freeze({
+				id = "rbxassetid://106554188841955",
+				from = 0,
+				length = 1.4,
+				volume = 0.6,
+				pitch = 0.85,
+				at = 0,
+			}),
+		}),
 	}) :: Version,
 	-- two padlocks hanging on a steel door
 	table.freeze({
@@ -110,6 +135,25 @@ NextFloor.Versions = table.freeze({
 		padlocks = 2,
 		face = "rbxassetid://131197171716537",
 		light = { 1.0, 0.62, 0.32 }, -- the warm bulb
+		-- two shackles snapping shut, one after the other (DoorSound's PadlockShut)
+		sound = table.freeze({
+			table.freeze({
+				id = "rbxassetid://9117185722",
+				from = 0.39,
+				length = 0.23,
+				volume = 0.9,
+				pitch = 0.95,
+				at = 0,
+			}),
+			table.freeze({
+				id = "rbxassetid://9117185722",
+				from = 0.39,
+				length = 0.23,
+				volume = 0.9,
+				pitch = 1.05,
+				at = 0.17,
+			}),
+		}),
 	}) :: Version,
 	-- the Packrat comes too, from its own lowest floor on (KeeperMix never brings one below it);
 	-- two Mannequins standing at the end of a dark hall
@@ -121,6 +165,26 @@ NextFloor.Versions = table.freeze({
 		lean = table.freeze({ Packrat = 1 }),
 		face = "rbxassetid://94818091969519",
 		light = { 0.70, 1.0, 0.78 }, -- a sick fluorescent
+		-- two hollow feet on concrete, a Mannequin's step and another's (KeeperRows' Shell),
+		-- pitched down: something heavier than one
+		sound = table.freeze({
+			table.freeze({
+				id = "rbxassetid://9117557254",
+				from = 0.625,
+				length = 0.155,
+				volume = 1,
+				pitch = 0.8,
+				at = 0,
+			}),
+			table.freeze({
+				id = "rbxassetid://9117570260",
+				from = 0.085,
+				length = 0.215,
+				volume = 1,
+				pitch = 0.72,
+				at = 0.24,
+			}),
+		}),
 	}) :: Version,
 	-- the harshest: a team meets being caught and freed on floors 1 and 2 first; looking down the
 	-- shaft at the car far below, lit red
@@ -131,6 +195,17 @@ NextFloor.Versions = table.freeze({
 		caughtToLobby = true,
 		face = "rbxassetid://72304998325928",
 		light = { 1.0, 0.16, 0.10 }, -- the emergency red
+		-- the low dark hit of being caught (Kept.Dread, APM's "Evil Mind 9"), cut short
+		sound = table.freeze({
+			table.freeze({
+				id = "rbxassetid://1846887425",
+				from = 0,
+				length = 2.2,
+				volume = 0.75,
+				pitch = 1,
+				at = 0,
+			}),
+		}),
 	}) :: Version,
 })
 

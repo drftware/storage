@@ -2326,7 +2326,11 @@ Done when two climbs in a row feel different and players talk about their best f
       Play, seed 7: floor 2 picked twice the padlocks (3 against a plain 2: it rounded the
       doubled share then; now it doubles the count, by spec, not seen), its gate paid 18 (12 and 6); floor 3 picked twice the monsters: Mannequin and Packrat, 9 asleep, 4 loose
       at most. The coins pour with the floor's own until c2 gives them their pop.
-    - [ ] **S4-03c2 The arrival and the version's pop.** The moment: the gate rises and you know
+    - [x] **S4-03c2 The arrival and the version's pop.** Done Nov 18 (D-407): seen in Studio
+      Play at A16 size, floor 1 to 2 (the card flew in, the hall lit green, the wash caught
+      fading) and the pop fired from the server with floor 2's numbers (captures
+      `docs/art/S4-03c2-*`). Polish: the pop's card picture reads dark at 50 px (brighten or
+      frame it); catch the arrival's flight mid-air in a capture (S4-03d). The moment: the gate rises and you know
       which floor you chose before you see it: the winning card leaves the screen into the
       floor in its own colour of light with its own sound (no words), as Hades' door reward
       flies to you as you walk through. At the gate, the version's coins burst as their own pop

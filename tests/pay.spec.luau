@@ -85,6 +85,32 @@ do
 	ok(f3 == 10 and p3 == 0, "a count that isn't a number pops nothing")
 end
 
+-- The version the team picked pays its coins as their own pop, after the pour and the traps'
+-- (S4-03c2).
+do
+	local owed = Pay.owed({}, 2, false, 1, 6)
+	local f, p, v = Pay.parts(owed, 1, 6)
+	ok(
+		f == Pay.forFloor(2) and p == 1 and v == 6,
+		"the floor's pour, one trap's pop, then the version's six"
+	)
+	local f0, p0, v0 = Pay.parts(12, 0)
+	ok(f0 == 12 and p0 == 0 and v0 == 0, "no version picked: no version pop")
+	local f1, _, v1 = Pay.parts(12, 0, 0)
+	ok(f1 == 12 and v1 == 0, "a version that pays nothing: no pop")
+	local f2, p2, v2 = Pay.parts(8, 1, 20)
+	ok(
+		v2 == 8 and p2 == 0 and f2 == 0,
+		"more than the pay holds: only what fits, the version first"
+	)
+	local f3, p3, v3 = Pay.parts(20, 2, 6)
+	ok(v3 == 6 and p3 == 2 and f3 == 4, "the version's coins come out before the traps'")
+	local f4, _, v4 = Pay.parts(12, 0, 0 / 0)
+	ok(f4 == 12 and v4 == 0, "a version's coins that aren't a number pop nothing")
+	local f5, _, v5 = Pay.parts(12, 0, 2.7)
+	ok(f5 == 10 and v5 == 2, "a version's coins are whole")
+end
+
 -- The coins drawn flying add up to the pay.
 do
 	local all = true
