@@ -23,6 +23,7 @@ pushed (`origin` drftware/storage); Brix pinned at `7f25310`, NOT on Brix's `ori
   monsters from the climb's seed (`KeeperMix`; the Packrat from floor 3 on about three in five),
   leanable by a floor version. Next: S4-04 Trapping pays (5 coins each to everyone aboard per
   monster shut in a unit as the gate shuts; a trapped one counts toward the awake limit).
+  Uncommitted `ArrangeView`, `Home/*` and `layout.spec` are the home chain's work in progress.
 
 ## Next task: S5-03i1b The server lays the starter pieces as rows
 The moment: your Small unit's shelf stands on the back wall, not mid-room; an XL home laid
