@@ -3503,3 +3503,22 @@ verified: a doc page, Studio, or "untested".
   every Take and Open button for the capture; set it back after.
 - **The A16 phone in a capture**: the Studio window is 1386 by 972; the phone's screen is
   `crop=668:312:358:362` (ffmpeg) at the device emulator's default zoom.
+- **Edit's `execute_luau` keeps old module copies** (S5-02c, Nov 18): a `require` of
+  `ReplicatedStorage.Shared.Deal` from Edit returned a copy cached by an earlier session (its
+  error lines named `ReplicatedStorage.SharedProbe.Deal`, a folder long gone), its `Deal.Finds`
+  cut to four finds, so floor 10 read as all Common and Uncommon. Require from a fresh clone
+  (`RS.Shared:Clone()` named `SharedFresh`, parented to ReplicatedStorage, destroyed after) and
+  call `Deal.onlyWith` as the server does (`Tools.template(key) ~= nil`). Play has its own copy.
+- **A full home shelf keeps a kept find in the box** (Save.keep lands it on the first empty
+  cubby only). To stand one: Server `ServerStorage.ShelfTest:Invoke(player, "", i)` empties
+  cubby `i`, then with the job box open a Client
+  `Remotes.JobBoxTake:FireServer("Teddy:Sealed", "Shelf")`; `Remotes.JobBoxTook` answers each
+  ask (`key, way, ok`). `ShelfTest(player, key)` takes only a plain catalog key.
+- **`user_mouse_input` doesn't reach the phone's buttons in Play** (S5-02c): clicks at a
+  button's `instance_path` or at its AbsolutePosition returned Success, but the button's
+  `Activated` and `InputBegan` never fired (the device emulator, A16). Press actions stay the
+  owner's, or call the module the button calls.
+- **A find out of your job box settles Back when you leave**: Server `player:Kick()` recalls it
+  (Slots' `recall`), GatePay prints "<name> out of <id>'s job box: Back" and the save's last
+  write lands within a few seconds (a torn sealed one came home plain). Studio's Stop settles
+  nothing.

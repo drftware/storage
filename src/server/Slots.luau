@@ -1951,15 +1951,12 @@ function Slots.new(): Slots
 				local home = t.home
 				if home then
 					-- a friend's, taken up: theirs now (S5-03d2), told apart for both saves
-					table.insert(
-						moved,
-						{
-							home = home,
-							name = named(t),
-							cracked = t.chipped == true,
-							torn = t.torn == true,
-						}
-					)
+					table.insert(moved, {
+						home = home,
+						name = named(t),
+						cracked = t.chipped == true,
+						torn = t.torn == true,
+					})
 				else
 					table.insert(keys, named(t))
 					if t.chipped then

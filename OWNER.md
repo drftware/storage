@@ -213,16 +213,18 @@ nowhere else.
   Look for: the rip lands with the hit, not after; the pieces read as torn packaging at phone
   size; the bare teddy now sells at its plain price. Note: a drop at the very top of a jump may
   not count as hard, since the server sees a jump's speed a moment late (running does count).
-- [ ] **Bring a sealed find home** (S5-02b2c1, D-427; passes checks, untested in Studio: S5-02c
-  plays it first). Play on floor 2, deal one with `workspace:SetAttribute("DealFind", "Teddy
-  sealed")`, open its box and ride the gate with it in your hand. Look for: it rises out of your
-  slot in its window box; at home it stands on your shelf in its box, window out (one turned
-  sideways in its cubby is a bug); the job box's panel has a card "Sealed Teddy bear" just
-  before your loose teddies, its Sell price three times theirs, and no Gold button even with four;
-  Take puts it in your hand still sealed. With a friend: carry a sealed one out of your box, tear
-  it on a floor (sprint and drop it), and ride with it: it comes home plain. Decide (my defaults):
-  the card's word "Sealed"; a sealed find can't be worn (the hard hat in its carton) or set out
-  in your home yet (S5-02b2c2 will stand it in its pack).
+- [ ] **Bring a sealed find home** (S5-02b2c1, D-427; seen in Studio Play by S5-02c, Nov 18:
+  kept at the gate, the shelf, the panel's card, Take, a torn one coming home plain; pictures
+  `docs/art/S5-02c-*.jpg`). What Studio couldn't do is press the phone's buttons. Play on floor
+  2, deal one with `workspace:SetAttribute("DealFind", "Teddy sealed")` and open its box. Press
+  Hug: only a crinkle of the plastic and a shake of the box (by ear). Ride the gate with it: it
+  rises out of your slot in its window box. At home, open your job box: tap the "Sealed Teddy"
+  card (after your Gold Teddy, before the loose one) and look for a Sell price of 12 against the
+  loose teddy's 4, and no Gold button even with four. A full shelf keeps it in the box: free a
+  cubby and put it there from the box; it stands window out. With a friend: carry a sealed one
+  out of your box, tear it on a floor (sprint and drop it), and ride with it: it's theirs plain.
+  Decide (my defaults): the card's word "Sealed"; a sealed find can't be worn (the hard hat in
+  its carton) or set out in your home yet (S5-02b2c2 will stand it in its pack).
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

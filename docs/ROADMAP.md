@@ -2594,7 +2594,16 @@ Done when players watch the results to the end and change their perks between cl
           (one torn in the lobby before a car leaves is sealed again across the trip). The
           Packrat's snatched flyer (ToolView) in its pack. The shelf's fit may turn a pack
           sideways in a cubby: judge it in Studio and keep the window out.
-  - [ ] **S5-02c Seen in Studio.** A sealed find dealt (a dev pick), lifted out of its box,
+  - [x] **S5-02c Seen in Studio.** Done Nov 18: seen in Studio Play on floor 2 (seed 7). The
+    sealed teddy dealt by `DealFind`, opened into your hand in its window box, carried aboard,
+    kept at the gate ("kept Teddy:Sealed", rising in its pack in the gold ring), saved as
+    "Teddy:Sealed" with the sealed page stamped; at home its card "Sealed Teddy" sits before the
+    loose teddy (the panel prices it 12 to the loose one's 4), Gold refused, sent to an empty
+    cubby it stands in its box window out, Take puts it in your hand still sealed; torn by a hard
+    drop on floor 2 it came home plain (`Teddy=2`, no sealed one, on a leave). Floors 2, 10 and 12
+    deal the same twice; 10 and 12's padlocked finds all Uncommon or better. Captures
+    `docs/art/S5-02c-*.jpg`. The press's crinkle and the Sell button: `OWNER.md`.
+    A sealed find dealt (a dev pick), lifted out of its box,
     carried through the gate and shown on the home shelf and the selling panel at 3x; the
     padlock's better grade on floors 2, 10 and 12. Captures to `docs/art/`.
 - [ ] **S5-03 Your home: a unit of your own on the ground floor** (the owner's plan, Nov 16, D-251
