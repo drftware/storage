@@ -31,6 +31,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local SoundPrimer = require(script.Parent.SoundPrimer)
+local ToLobby = require(ReplicatedStorage.Shared.ToLobby)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 
 -- Studio only: Workspace's `DevCatchHold` (seconds after the catch) holds every wind at that
@@ -64,6 +65,11 @@ function KeptWrapOn.new(): Brix.System
 	local studio = RunService:IsStudio()
 
 	local function squeal(player: Player)
+		if player:GetAttribute(ToLobby.Attribute) ~= nil then
+			-- sent down the back-to-the-lobby card's shaft: no film goes on, so no screech; the
+			-- card's own hit plays instead (ToLobbyView on theirs, ToLobbyDrag on everyone else's)
+			return
+		end
 		if
 			Kept.brought(player:GetAttribute(Kept.BroughtAttribute), Workspace:GetServerTimeNow())
 		then
@@ -74,7 +80,11 @@ function KeptWrapOn.new(): Brix.System
 		if player == Players.LocalPlayer then
 			-- in the black, once its face has rushed you
 			task.delay(Caught.Dark, function()
-				if running and player:GetAttribute(Kept.Attribute) == true then
+				if
+					running
+					and player:GetAttribute(Kept.Attribute) == true
+					and player:GetAttribute(ToLobby.Attribute) == nil
+				then
 					Tools.play(Kept.Squeal, SoundService, Kept.SquealReach)
 				end
 			end)
@@ -101,7 +111,9 @@ function KeptWrapOn.new(): Brix.System
 		watching[player] = player:GetAttributeChangedSignal(Kept.Attribute):Connect(function()
 			local now = player:GetAttribute(Kept.Attribute) == true
 			if now and not was[player] then
-				squeal(player)
+				-- after this frame's other marks: the server sends someone down in the same step
+				-- it marks them caught, and the sent-down mark may land just after this one
+				task.defer(squeal, player)
 			end
 			was[player] = now
 		end)

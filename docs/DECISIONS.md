@@ -9364,3 +9364,24 @@ size out of one floor with movable steel walls).
   any wipe (EndView is over the fall), and Again brings the whole team back to the car.
 - **Your screen.** CaughtView lets go at the cut to black for a sent-down player; ToLobbyView
   (DisplayOrder 45, between the catch's 30 and the end's 50) has the fall and the lift.
+
+## D-410 A friend sent down the shaft, seen from the floor: dragged under in red (S4-03c4b, Nov 18)
+
+- **What friends see.** As the monster lunges at someone on the back-to-the-lobby card's floor,
+  the floor under them glows the card's red (a light and a flat red pool, the hall flooding red
+  round them); as its hands close they're yanked down a little; from the moment their own screen
+  cuts to black they're dragged down through the floor, faster and faster, with the card's low
+  hit, and are under at the moment their own fall lands on the car, with a far, low slam from
+  under the floor. The red fades; the server's swap takes the body a beat later. A friend close
+  by feels a small jolt. No words. The precedent: a Dead by Daylight survivor taken off the hook
+  while the rest play on; the shaft and its red are the card's own picture, so the stakes read.
+- **The film's screech is gone for these catches**, on the caught one's screen and everyone
+  else's: no film goes on, so the card's hit takes its place (KeptWrapOn waits a frame for the
+  sent-down mark before it screeches).
+- **Only on each screen.** The body's root is anchored by the server and moved down locally
+  (`ToLobby.drag`), as the film's wind turns it; nothing extra goes over the network. Its name
+  tag is hidden once it's under (it shows through floors). If the mark comes off with the body
+  still there (the last friend caught: nobody is swapped, the end covers), it goes back where it
+  stood, unless the server has moved it meanwhile.
+- **Studio:** `DevCatchHold` holds the drag on one frame, and a stand-in friend given the mark on
+  its model is dragged, so one player can see it.

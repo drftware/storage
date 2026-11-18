@@ -81,6 +81,7 @@ local TripView = require(script.TripView)
 local RideView = require(script.RideView)
 local ShopView = require(script.ShopView)
 local TapView = require(script.TapView)
+local ToLobbyDrag = require(script.ToLobbyDrag)
 local ToLobbyView = require(script.ToLobbyView)
 local UnderDoor = require(script.UnderDoor)
 local UnitLights = require(script.UnitLights)
@@ -191,6 +192,8 @@ local host = Brix.Host.new({
 		{ slot = "caughtView", system = CaughtView.new(kick, driving.leave) },
 		-- caught on the back-to-the-lobby card's floor: the fall down its shaft to the lobby car
 		{ slot = "toLobbyView", system = ToLobbyView.new(kick) },
+		-- a friend caught there, seen from the floor: dragged down through it in the card's red
+		{ slot = "toLobbyDrag", system = ToLobbyDrag.new(kick) },
 		-- a caught friend's face under the corner map, to pay to free them (S3-03b)
 		{ slot = "freeFriendView", system = FreeFriendView.new() },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },

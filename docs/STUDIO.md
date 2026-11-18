@@ -3325,3 +3325,20 @@ verified: a doc page, Studio, or "untested".
 - **First person hides your body**: for a capture, a render step after the camera
   (`Camera + 2`) setting every character part's `LocalTransparencyModifier` to 0 shows it.
 
+
+## A catch on the back-to-the-lobby floor, from the MCP (S4-03c4b, Nov 18)
+
+- Edit `DevFloorNumber` 3 (put it back to 1 after), Play, then from the Server set
+  `DevCorridor.Floor3`'s `FloorVersion` to "CaughtToLobby" and clone a stand-in friend (the
+  left-behind recipe) so the catch doesn't end the climb. `StandMannequin` true, then
+  `ServerStorage.CatchTest:Invoke(player)` answered "Caught" at once from (0, 3, -610); left
+  alone ~5 minutes, a woken Mannequin caught me there by itself. You land at (45, 3, 606.5).
+- The friend's drag on one player: Server `stand-in:SetAttribute("SentDownAt",
+  workspace:GetServerTimeNow())` on the stand-in model; `DevCatchHold` 0.9 holds the yank, 1.95
+  mid-drag. The dev floor's hall is pitch dark: the red is the only light.
+- **A Humanoid's name tag shows through the floor**: a body sunk under it still had its name
+  floating over the spot until `DisplayDistanceType` went to None.
+- `screen_capture` timed out every time; the macOS window capture (above) worked. The A16's
+  phone is at (334, 360), 664 by 304, in the full-size capture of a 1386-wide window:
+  `ffmpeg -i f%02d.jpg -vf "crop=664:304:334:360,scale=264:-2,tile=5x6"` makes a contact sheet
+  of a burst.

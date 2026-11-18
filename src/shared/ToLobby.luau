@@ -47,6 +47,28 @@ ToLobby.Most = 12
 -- Seconds after the catch a screen still plays the fall (one arriving late, or a rejoin, doesn't).
 ToLobby.Fresh = 4
 
+-- Taken, on every other screen (S4-03c4b, ToLobbyDrag): a friend caught there is dragged down
+-- through the floor in the card's red light, as a Dead by Daylight survivor is taken off the hook
+-- while the others play on. The red comes up under them as the hands close, the body jerks down,
+-- then sinks faster and faster, gone under the floor at `Land`, the moment their own screen lands
+-- on the car; the server's swap takes the body a beat later.
+-- Seconds after the catch the hands close (the lunge has reached them): the body jerks down.
+ToLobby.DragGrab = Caught.Dread + Caught.Lunge
+-- Studs the body drops as the hands close, and the seconds the jerk takes: a yank, not a sink.
+ToLobby.DragJerk = 0.8
+ToLobby.DragJerkIn = 0.1
+-- Studs under where it stood the body ends at `Land`: a tall avatar's head well under the floor.
+ToLobby.DragDepth = 8
+-- Seconds the red takes to fade once they're under.
+ToLobby.DragFade = 0.6
+-- How wide the red pool on the floor is at full (studs): wider than shoulders, so it reads as a
+-- hole opening under them from across the hall on a phone.
+ToLobby.DragHole = 4.4
+-- The friend's camera jolt as the drag starts (CameraShake trauma), close by, gone by `DragReach`
+-- studs: you feel a friend taken beside you; down the hall you only see it.
+ToLobby.DragKick = 0.35
+ToLobby.DragReach = 24
+
 -- Whether a catch on a floor of version `name` (the floor model's `FloorVersion`) sends the
 -- caught player down to the lobby.
 function ToLobby.sends(name: unknown): boolean
@@ -75,6 +97,29 @@ function ToLobby.fall(since: number): (number, number, number)
 	end
 	local u = into / ToLobby.Fall
 	return smooth(into / ToLobby.Reveal), 1 + (ToLobby.Zoom - 1) * u * u * u, 1
+end
+
+-- The drag on a friend's screen `since` seconds after the catch: how far under where they stood
+-- the body is (studs) and how lit the red under them is (0 to 1). The red pools in as the lunge
+-- comes; the hands close and the body jerks down; from the cut to black (when their own fall
+-- starts) it sinks faster and faster, under by the landing; then the red fades.
+function ToLobby.drag(since: number): (number, number)
+	if since <= 0 then
+		return 0, 0
+	end
+	local glow = smooth(since / ToLobby.DragGrab)
+	if since >= ToLobby.Land then
+		return ToLobby.DragDepth, 1 - smooth((since - ToLobby.Land) / ToLobby.DragFade)
+	end
+	local sink = 0
+	if since >= Caught.Dark then
+		local u = (since - Caught.Dark) / ToLobby.Fall
+		sink = ToLobby.DragJerk + (ToLobby.DragDepth - ToLobby.DragJerk) * u * u
+	elseif since > ToLobby.DragGrab then
+		local u = math.min((since - ToLobby.DragGrab) / ToLobby.DragJerkIn, 1)
+		sink = ToLobby.DragJerk * (1 - (1 - u) * (1 - u))
+	end
+	return sink, glow
 end
 
 -- How black the screen is `t` seconds after you were stood in the car: whole, then lifting.

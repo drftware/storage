@@ -14,9 +14,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Studio hooks: `ShelfTest` "take"; `ArrangeTest` "take", "own", "place", "rows", "fromShelf",
   "shelfAway", "size" (STUDIO.md). Home doc: https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww
 - **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), the cards' vote,
-  faces and screen (D-403 to D-405), c1 to c3 (D-406 to D-408), c4a down the shaft to the lobby
-  car (D-409, the fall seen in Play; Trips' `mayStand` now skips `SentDownAt`). Next: S4-03c4b
-  friends see you taken (the body dragged down in red), and a real catch there seen; then S4-03d.
+  faces and screen (D-403 to D-405), c1 to c3 (D-406 to D-408), c4a and c4b caught there: down
+  the shaft, friends see you dragged under in red, a real catch seen (D-409, D-410). Next:
+  S4-03c4c (the lobby car you land in counts down and takes you up alone: hold it), then S4-03d.
 
 ## Next task: S5-03h5b Small's narrower doorway (after seeing h5a)
 The moment: your first unit is snug, a Small home with a doorway to match; grow it to Medium and

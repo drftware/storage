@@ -78,6 +78,39 @@ ok(ClimbEnd.over({ "Kept", "Kept" }), "the last friend caught: the end lands")
 state = ClimbEnd.look(nil, 3, false, false, nil, false)
 ok(state == "Climbing", "neither kept nor sent: climbing")
 
+-- 4. Friends see you taken (S4-03c4b): nothing before the catch; the red up and the body jerked
+-- down as the hands close; sinking faster and faster from the cut to black, never rising; under
+-- the floor by the landing (when your own fall lands), before the server swaps the body; the red
+-- gone after.
+local sink, glow = ToLobby.drag(0)
+ok(sink == 0 and glow == 0, "nothing at the catch's first instant")
+sink, glow = ToLobby.drag(ToLobby.DragGrab - 0.01)
+ok(sink == 0 and glow > 0.95, `the red is up before the hands close ({glow}), the body still`)
+sink = ToLobby.drag(ToLobby.DragGrab + ToLobby.DragJerkIn)
+ok(math.abs(sink - ToLobby.DragJerk) < 1e-9, "the hands close: a yank down")
+ok(ToLobby.DragGrab + ToLobby.DragJerkIn <= Caught.Dark, "the yank is over by the cut to black")
+local lastSink, lastDrop, downward, quicker = 0, 0, true, true
+for i = 1, 40 do
+	local s = ToLobby.drag(ToLobby.Land * i / 40)
+	if s < lastSink - 1e-9 then
+		downward = false
+	end
+	if i > 33 and s - lastSink < lastDrop - 1e-9 then
+		quicker = false -- the drag's last stretch keeps speeding up
+	end
+	lastDrop, lastSink = s - lastSink, s
+end
+ok(downward, "the body only ever goes down")
+ok(quicker, "it's dragged faster and faster")
+sink, glow = ToLobby.drag(ToLobby.Land - 0.001)
+ok(sink > ToLobby.DragDepth * 0.99 and glow == 1, "nearly under, still lit, as the fall lands")
+sink, glow = ToLobby.drag(ToLobby.Land)
+ok(sink == ToLobby.DragDepth and glow == 1, "under by the landing")
+ok(ToLobby.DragDepth >= 7, "deep enough that a tall avatar's head is under the floor")
+ok(ToLobby.Land < ToLobby.Swap, "under before the server swaps the body")
+sink, glow = ToLobby.drag(ToLobby.Land + ToLobby.DragFade)
+ok(sink == ToLobby.DragDepth and glow == 0, "the red gone after, the body still under")
+
 print(`tolobby.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

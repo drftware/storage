@@ -2356,12 +2356,23 @@ Done when two climbs in a row feel different and players talk about their best f
         at A16 size: the screen's whole timeline, driven by the sent-down marks from the server
         (captures `docs/art/S4-03c4-*`). Not seen: a real catch there and the server's swap
         (floor 1 has no monsters; a ride to floor 3 didn't fit): `OWNER.md`.
-      - [ ] **S4-03c4b Friends see you taken.** On friends' screens the caught body is dragged
+      - [x] **S4-03c4b Friends see you taken.** On friends' screens the caught body is dragged
         down through the floor in the card's red light with its low hit, as a Dead by Daylight
-        survivor is taken; today it just vanishes at the swap. Then see a real catch on a
-        back-to-the-lobby floor in Play (ride to floor 3 with the card, `WakeSleepers`,
-        `CatchTest`, a stand-in friend) and the swap into the car. Polish: a falling rush under
-        the fall (no wind sound in the project yet).
+        survivor is taken. Done Nov 18 (D-410): `ToLobby.drag` (spec in `tests/tolobby.spec`),
+        the client's `ToLobbyDrag`: the red light and pool coming up as the lunge comes, the
+        yank as the hands close, the drag from the cut to black, under at the landing with a far
+        slam, the name tag hidden once under; the film's screech no longer plays for these
+        catches (KeptWrapOn). Seen in Studio Play at A16 size on floor 3 set to the card: a
+        stand-in friend dragged (held frames by `DevCatchHold`, put back when the mark came off)
+        and a real Mannequin's catch through `CatchTest`: the fall, Output's "back in the lobby
+        car", the black lifting in the car (captures `docs/art/S4-03c4b-*`). Two players:
+        `OWNER.md`. Polish: a falling rush under the fall (no wind sound in the project yet).
+      - [ ] **S4-03c4c The car waits for your team.** Seen in Studio (c4b): the lobby car you
+        land in counts down (20, 19 ...) and carries you up into a new climb alone while your
+        team is still on theirs, your sent-down mark still on. Default: hold that car's gate
+        open with no countdown while you're sent down and your team's climb is on; its end
+        (Again) brings everyone back to it. Check what the trip's own car does on a group's
+        server first (`Boarding`, Departure); an `OWNER.md` line for the default.
   - [ ] **S4-03d The whole climb in Studio.** Ride floors 1 to 5 in Play with the cards, each
     version picked once, captures; fixes. Two-player vote and phones go to `OWNER.md`. First,
     what S4-03b2 didn't see: step `DevRideHold` through one ride (4, 9.3 with a capture burst
