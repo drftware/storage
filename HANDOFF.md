@@ -20,8 +20,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   OWNER, CODEMAP and DECISIONS are the climb run's work in progress; the home leaves them alone.
 - **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403
   to D-413), S4-05 the big find (D-414 to D-419), F-G1b4a2 the hat's beam (D-420), F-G1b4b the hat
-  runs down, stutters, cracks off your head (D-421). Next: S5-02 (rarer finds higher up, sealed
-  finds; read its ROADMAP lines and `Deal`), then S5-01.
+  runs down, stutters, cracks off your head (D-421), S5-02a finds better each floor, a padlock's
+  a grade up (D-422). Next: S5-02b sealed finds (its ROADMAP lines, `Deal.open`, `Save`), then S5-01.
 
 ## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
 The home's look settling without a seam. One line a session if they won't fit together; split

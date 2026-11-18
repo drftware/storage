@@ -9932,3 +9932,34 @@ with a crack, leaving you in the dark with whatever's coming.
 - **Studio's `DevHatSeconds`** shortens the minute for a hat worn off the ground floor.
 - Defaults for the owner (OWNER.md "The hard hat running out"): the 15 s, the sag, losing it.
 
+
+## D-422 · 2026-11-18 · Finds a little better every floor up, a padlock's a grade better (S5-02a)
+
+The moment: a team that pushes from floor 4 to floor 8 opens doors on better things each floor,
+and the padlock cut on floor 12 is worth the bolt cutters, its box's light blue, purple or gold
+about half the time. Precedents: Lethal Company's scrap worth more on each riskier moon, Diablo's
+deeper levels dropping better items level by level; Escape from Tarkov's locked rooms holding
+its best loot (the GDD's padlock line: "the best chance of something great").
+
+- **The grade odds climb every floor** (`Grades.odds`): the catalog's three bands stand on the
+  floors they start (1, 10, 25), and each floor between moves evenly from one band's odds to the
+  next, so floor 5 deals a Legendary about 1 in 93 (floor 1: 1 in 200, floor 9: 1 in 60). A grade
+  a band has none of stays none until the band that has it, so no Secret below floor 10, the rest
+  sharing its chance so the odds still add to 100. Past 25 they hold; Secret doubles from 50 as
+  before. The catalog had the odds change only at 10 and 25, which left floors 2 to 9 dealing
+  alike and contradicted `FloorRules`' "its finds keep rising"; `OWNER.md` asks.
+- **A padlocked unit's find is one grade better** (`Deal.PadlockedBetter`, `findFrom`'s new
+  `better`): the same pick rolls the plain grade, then steps one up the grades the floor deals
+  (each with a find and a chance there), and lands the same place among that grade's finds, so
+  every find of a grade stays as likely. The floor's best grade stays its best: on floors 10 to 24
+  that's Legendary, the one Secret built (the unplugged lamp) dealing from 25. So never a common
+  behind a padlock; on floor 12 an Epic or Legendary 23 times in 100 (an ordinary door: 8.5).
+- **No grade at the door** (D-204): the marked box's light tells it as it opens (B-02b).
+- Studio's deal line names each find's grade and "behind its padlock". `stuffdeal.spec`'s
+  fingerprint moved for the finds alone (everything else a seed deals was checked unchanged).
+- Seen in Studio Play: seed 7 dealt twice on floors 2, 10 and 12 came out the same; floor 10's
+  seven padlocked finds were each its plain roll one grade up (Teddy to Boombox, Mega goo ball to
+  Galaxy goo ball); floor 2's two padlocks held tools.
+
+Not chosen: rolling a padlock's grade on better odds (a pick-for-pick step is provable and keeps
+the seed's deal); two grades better (no commons and few uncommons already).

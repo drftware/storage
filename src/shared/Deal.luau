@@ -157,7 +157,7 @@ Deal.Odds = {
 	great and the highest chance of a monster. Escape from Tarkov's locked rooms hold its best loot
 	the same way, and Lethal Company's best scrap lies where its monsters are. So a padlocked unit
 	never deals nothing: it holds a find or a tool, out of 100, whatever the mood (a find most
-	often: the great ones, once finds have grades, ROADMAP "rarity ladder"). And a keeper may
+	often, a grade better than an ordinary door's: `PadlockedBetter`). And a keeper may
 	stand in there with it, twice as often as an ordinary door's (`PadlockedKeeper`): 20 in 100
 	asleep, placed with the floor, and in Build 10 awake, the cap and the guard's place as anywhere.
 	You cut the lock, the door rolls up on a boombox in the bulb's light, and behind it something
@@ -165,6 +165,12 @@ Deal.Odds = {
 ]]
 Deal.PadlockedHolds = { Find = 70, Tool = 30 } :: { [string]: number }
 Deal.PadlockedKeeper = 2
+-- How many grades better a padlocked unit's find is than the same roll behind an ordinary door
+-- (S5-02a, `findFrom`): never a common, and on floor 12 an Epic or a Legendary about one time in
+-- four where an ordinary door gives one in twelve. The box's light tells it as it opens (B-02b):
+-- blue, purple or gold about half the time (an ordinary door's, under a quarter), so the bolt
+-- cutters feel worth their slot.
+Deal.PadlockedBetter = 1
 
 -- The keepers a door can hold, each from the floor it joins on (GDD "The building"). A keeper
 -- joins this list when its ticket builds it: the Mannequin first (L-06). Dale and the Moth are
@@ -255,9 +261,11 @@ end
 	Which find a unit on floor `number` holds, from its roll `pick` (0 to 1): first a grade, by the
 	floor's odds (`Grades.odds`) among the grades with a find that floor can deal, then one find
 	of that grade, each as likely. `taken` (the finds already in the Packrat's pile) are left out.
-	Nil only if nothing is left to deal.
+	`better` (none: 0) moves the grade that many up the grades the floor deals, its best staying
+	its best: a padlocked unit's is `PadlockedBetter`, so the same pick behind a padlock lands on
+	the next grade up and the same place among its finds. Nil only if nothing is left to deal.
 ]]
-function Deal.findFrom(number: number, pick: number, taken: { string }?): string?
+function Deal.findFrom(number: number, pick: number, taken: { string }?, better: number?): string?
 	local byGrade: { [string]: { string } } = {}
 	for _, name in Deal.Finds do
 		local row = Catalog[name]
@@ -273,29 +281,30 @@ function Deal.findFrom(number: number, pick: number, taken: { string }?): string
 		end
 	end
 	local odds = Grades.odds(number)
+	-- the grades this floor deals, commonest first: each with a find and a chance here
+	local ladder: { string } = {}
 	local total = 0
 	for _, grade in Grades.Names do
-		if byGrade[grade] then
+		if byGrade[grade] and odds[grade] > 0 then
+			table.insert(ladder, grade)
 			total += odds[grade]
 		end
 	end
 	if total <= 0 then
 		return nil
 	end
+	local up = math.max(0, math.floor(better or 0))
 	local at = math.clamp(pick, 0, 1) * total
-	local last: { string }? = nil
-	for _, grade in Grades.Names do
-		local list = byGrade[grade]
+	for i, grade in ladder do
 		local chance = odds[grade]
-		if list and chance > 0 then
-			last = list
-			if at < chance then
-				return list[math.min(#list, math.floor(at / chance * #list) + 1)]
-			end
-			at -= chance
+		if at < chance or i == #ladder then -- the last takes a pick of exactly 1
+			local within = math.clamp(at / chance, 0, 1)
+			local list = byGrade[ladder[math.min(#ladder, i + up)]]
+			return list[math.min(#list, math.floor(within * #list) + 1)]
 		end
+		at -= chance
 	end
-	return if last then last[#last] else nil -- a pick of exactly 1
+	return nil
 end
 
 --[[
@@ -971,7 +980,8 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 	elseif kind == "Tool" then
 		contents.tool = Deal.drawTool(deck)
 	elseif kind == "Find" then
-		contents.find = Deal.findFrom(deck.floor.number, deck.picks[index])
+		local better = if deck.padlocked[index] then Deal.PadlockedBetter else 0
+		contents.find = Deal.findFrom(deck.floor.number, deck.picks[index], nil, better)
 		if not contents.find then
 			contents.kind = "Nothing" -- never: the floor-1 commons are always left to deal
 		end

@@ -176,6 +176,18 @@ nowhere else.
   whether 15 seconds of warning is right, whether the stutter is too much or too little, and
   whether losing the hat for good feels fair. My defaults: the last 15 s stutter (the torch's
   last 30); it sags to 0.6 of its light; it's lost when it breaks, as a worn-out tool is.
+- [ ] **Better finds higher up, and better behind a padlock** (S5-02a, D-422; the deal checked in
+  Studio Play on seed 7, floors 2, 10 and 12; no padlocked door opened by hand yet). In Edit set
+  Workspace's `DevFloorNumber` to 12, then Play. On the Server, `GiveFind` "BoltCutters", cut the
+  two or three padlocks on the floor and open their boxes, then open a dozen ordinary doors. Look
+  for: behind a padlock the box's light is blue, purple or gold about half the time, never the
+  plain warm light of a common (Output's `Deals: UnitN behind its padlock held a find, the X
+  (Rare)` names each grade); ordinary doors mostly commons. Say whether the padlock feels worth
+  the bolt cutters. Two defaults to say yes or no to: the finds now get a little better every
+  floor up, from the catalog's odds on floor 1 to floor 10's and on to floor 25's (the catalog
+  had them change only at 10 and 25); and a padlock's find is exactly one grade better than an
+  ordinary door's roll (its best grade stays its best: on floors 10 to 24 that's Legendary,
+  since the one Secret built, the unplugged lamp, comes only from floor 25).
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

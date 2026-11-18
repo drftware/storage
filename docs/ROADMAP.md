@@ -2496,6 +2496,37 @@ Done when players watch the results to the end and change their perks between cl
   six grades (Secret on top, from floor 10; D-188); about one in
   twenty still in its packaging, worth three times as much. A padlocked unit's find draws a
   grade better (GDD: "the best chance of something great"; S1-07a left it a plain find).
+  F-G1a already deals a grade by the floor (`Grades.Bands`: the catalog's odds for floors 1, 10
+  and 25, a step at each), so the pieces are:
+  - [x] **S5-02a Better finds every floor up, and the padlock's grade one better** (pure, Lune
+    specs first). Done Nov 18 (D-422): seen in Studio Play on seed 7, floors 2, 10 and 12; a
+    padlocked door opened by hand is `OWNER.md`'s. The moment: a team that pushes from floor 4 to 8 opens doors on better things
+    each floor, not only at 10 and 25, and the padlock you cut on floor 12 is worth the bolt
+    cutters, its box's light blue or purple more often than not. Precedents: Lethal Company's
+    scrap worth more on each riskier moon, Diablo's deeper levels dropping better items floor
+    by floor; Escape from Tarkov's locked rooms holding its best loot. `Grades.odds` climbs
+    evenly from one catalog floor to the next (the catalog's numbers stand at 1, 10 and 25;
+    Secret none below 10; doubled from 50 as before); `Deal.findFrom` takes how many grades
+    better and a padlocked unit's find rolls one better among the grades the floor deals (the
+    same pick: the plain roll's grade, one up; a top grade stays top). The same seed deals the
+    same floor. Studio's Output names each find's grade and its padlock. No grade shows at the
+    door (D-204): the marked box's light already tells it when it opens (B-02b).
+  - [ ] **S5-02b Now and then a find still sealed in its packaging.** The moment: a box opens
+    on a find still in its blister pack or window box, and you carry it home carefully, worth
+    three times the loose one. Precedent: a small chance on any find of a variant worth far
+    more, as Pet Simulator's shiny pets and Grow a Garden's gold crops are (Adopt Me and
+    Bloxburg have no sealed-in-box premium we know of; the toy collectors' "mint in box" is
+    the look, not the mechanic). About 1 in 20 finds rolls sealed (`Deal`, from the unit's own
+    pick so the seed still deals it); worth 3x (`Grades`/`Chip.worth` beside the cracked rule);
+    kept sealed through the gate (`GatePay`, `Save.keep`'s `sealed` count, already in Save v1)
+    and on the home's shelves and selling panel. Its look the finds' art way: one shared
+    packaging per find size (a card-backed blister for Small, a window box for Medium, a taped
+    carton for Large) in `art/finds/`, its find shown through the window, judged at phone size.
+    Defaults for `OWNER.md`: a sealed find takes no press (it's in its packaging) and a hard
+    drop tears the packaging, leaving it a plain find (the way fragile finds crack, F-G1e5e).
+  - [ ] **S5-02c Seen in Studio.** A sealed find dealt (a dev pick), lifted out of its box,
+    carried through the gate and shown on the home shelf and the selling panel at 3x; the
+    padlock's better grade on floors 2, 10 and 12. Captures to `docs/art/`.
 - [ ] **S5-03 Your home: a unit of your own on the ground floor** (the owner's plan, Nov 16, D-251
   and D-259). The plan is its own Claude Doc, "Your unit: the home in the lobby"
   (https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, read with the docs tools, never WebFetch):

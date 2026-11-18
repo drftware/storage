@@ -156,7 +156,9 @@ local function said(contents: Deal.Contents): string
 	if kind == "Tool" then
 		return `a tool, {contents.tool}{with}`
 	elseif kind == "Find" then
-		return `a find, the {contents.find}{with}`
+		local row = if contents.find then Tools.Catalog[contents.find] else nil
+		local grade = if row and row.grade then ` ({row.grade})` else ""
+		return `a find, the {contents.find}{grade}{with}`
 	elseif kind == "Asleep" or kind == "Awake" then
 		local pile = contents.pile
 		local among = if pile then `, among its pile: {table.concat(pile, ", ")}` else ""
@@ -786,7 +788,8 @@ function Deals.new(): Deals
 				local low = if corner then ", a low stack in its corner" else ""
 				held ..= ` (packed: its clearing round the bend to your {side} from the hall{low})`
 			end
-			print(`Deals: {unit.Name} held {held}{guard}`)
+			local lock = if deck.padlocked[index] then " behind its padlock" else ""
+			print(`Deals: {unit.Name}{lock} held {held}{guard}`)
 		end
 		dealt:fire({
 			unit = unit,
