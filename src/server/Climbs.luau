@@ -57,6 +57,7 @@ local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Floor = require(ReplicatedStorage.Shared.Floor)
+local KeeperMix = require(ReplicatedStorage.Shared.KeeperMix)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
 local Trip = require(ReplicatedStorage.Shared.Lobby.Trip)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
@@ -276,7 +277,20 @@ function Climbs.new(): Climbs
 		local floor = Floor.generate(number, random)
 		-- the floor's deal carries on from its layout's Random: its code, notes and padlocks laid
 		-- with it, each unit's contents dealt as its door first lifts (Deals)
-		local deck = Deal.new(floor, random)
+		-- the floor's monsters, mixed from the climb's seed (S4-02); a floor version the team picks
+		-- on the ride (S4-03) leans it with `KeeperMix.on`'s third argument
+		local cast =
+			KeeperMix.on(number, Brix.Random.new({ seed = KeeperMix.seedOf(o.seed, number) }))
+		local deck = Deal.new(floor, random, cast)
+		if STUDIO then
+			local names = {}
+			for _, name in KeeperMix.Order do
+				if cast[name] then
+					table.insert(names, name)
+				end
+			end
+			print(`Climbs: floor {number} of climb {o.seed} has {table.concat(names, " and ")}`)
+		end
 		local origin = o.origin * CFrame.new(0, 0, -Climb.offset(o.number, number))
 		local model, laid = FloorBuilder.lay(floor, origin, o.parent, deck)
 		local on: OnFloor = {

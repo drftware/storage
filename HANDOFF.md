@@ -19,10 +19,10 @@ pushed (`origin` drftware/storage); Brix pinned at `7f25310`, NOT on Brix's `ori
   https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools only.
 - Studio hooks: `GrowTest` (a size; "cash"/"price", n; "gift", size, friendPlayer; "friend",
   name, size), `ArrangeTest` "size", `DevReceipt`. Test save: Small, cash 188 (v13 till loaded).
-- **Climb run:** item 1 done (F-G1e6q2, D-400): a box's find no longer takes back a hand you
-  switched during its reveal; a press during your own switch waits for it; the jar's light was
-  never lost; the coin count's 0 is Studio's test hall. Next: S4-02 Monsters by lowest floor.
-  Uncommitted `Home/*`, `Save` and their specs are the home chain's work in progress, not ours.
+- **Climb run:** items 1 (F-G1e6q2, D-400) and 2 done: S4-02 (D-401) mixes each floor's
+  monsters from the climb's seed (`KeeperMix`; the Packrat from floor 3 on about three in five),
+  leanable by a floor version. Next: S4-04 Trapping pays (5 coins each to everyone aboard per
+  monster shut in a unit as the gate shuts; a trapped one counts toward the awake limit).
 
 ## Next task: S5-03i1b The server lays the starter pieces as rows
 The moment: your Small unit's shelf stands on the back wall, not mid-room; an XL home laid

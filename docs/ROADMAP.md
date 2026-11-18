@@ -2265,11 +2265,21 @@ Done when two climbs in a row feel different and players talk about their best f
     12 with a third plan, "Two notes behind padlocks" 15, "More doors still" 20, "Five loose"
     25), then it holds; the notes stay four (`OWNER.md` decides). Floors 8, 11 and 25 laid in
     Studio Play, 11 rode to 12; laying's worst frame is 6 ms.
-- [ ] **S4-02 Monsters by lowest floor.** Each monster's row carries the lowest floor it can
-  appear on; above it the game mixes it in at random.
+- [x] **S4-02 Monsters by lowest floor.** Each monster's row carries the lowest floor it can
+  appear on; above it the game mixes it in at random. The moment: last climb you lifted a door
+  on floor 3 onto the Packrat asleep on its pile; this climb floor 3 is only Mannequins, and it's
+  waiting for you on floor 4. Done Nov 17 (D-401): each row has `lowest` and `share` (the
+  Mannequin every floor, the Packrat from 3 on about three floors in five); `KeeperMix.on` rolls
+  each floor's monsters from the climb's seed and the floor's number, a floor version can lean it
+  (bring a monster or keep it away), and a floor always keeps one that hunts; the deal places
+  only the floor's monsters. Seen in Studio Play: floor 4 of climb 7 had only Mannequins, of
+  climb 4 the Packrat on its pile too. `tests/keepermix.spec.luau`.
 - [ ] **S4-03 The choice on the elevator's buttons.** Three buttons light up on the car's
   panel, each a version of the next floor and what it pays; most presses wins, a tie at random;
-  it lasts that one floor (GDD "The team's choice").
+  it lasts that one floor (GDD "The team's choice"). A version that brings or keeps away a
+  monster passes a lean as `KeeperMix.on`'s third argument (D-401). Today the next floor is laid
+  as the code opens the gate (`Climbs` `prepare`), before anyone rides: it has to be laid after
+  the vote instead, or once for each version.
 - [ ] **S4-04 Trapping pays.** Each monster shut in a unit as the gate shuts pays everyone
   aboard 5 more coins (owner agreed Nov 14, D-188). A trapped monster now counts toward the floor's limit on awake monsters
   (today `Keepers.awakeOn` leaves it out).

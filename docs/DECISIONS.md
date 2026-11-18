@@ -8912,3 +8912,21 @@ of them yours to lift and move (D-345; Animal Crossing's house, Bloxburg's build
   weapon swap).
 - **The jar** was never dark: its fireflies blink by its art, so its real lights are off between
   blinks. Whether it lights a unit enough is a feel question for the owner's look at the Lights.
+
+## D-401 Monsters by lowest floor: a seeded mix each floor (S4-02, Nov 17)
+
+- **What:** each monster's row (`KeeperRows`) carries `lowest`, the lowest floor it turns up on,
+  and `share`, the chance a floor above that has it at all. `KeeperMix.on` rolls one number per
+  monster for each floor, from a Random seeded by the climb's seed and the floor's number (salted
+  away from the layout's and the deal's seeds), and the deal places only those monsters
+  (`Deal.new`'s `cast`; without one, everyone who has joined, as the specs and the test hall lay
+  floors). As DOORS' entities each start at a door number and then turn up at random past it.
+- **Numbers:** the Mannequin on every floor (share 1): it guards a note on each (D-072) and is the
+  only one that hunts. The Packrat from floor 3 on about three floors in five (0.6), where it was
+  on every one. No monster is promised on its lowest floor. Both go to `OWNER.md`.
+- **Room for the next-floor cards (S4-03):** a floor version passes a `Lean`, its own chance for a
+  monster in place of the row's share (1 brings it, 0 keeps it away). It never brings one below
+  its lowest floor and moves no other monster's roll. Whatever a version asks, a floor keeps one
+  monster that hunts (the closest roll comes in), so the guarded note always has its guard.
+- **Fixed draw order** (`KeeperMix.Order`): a new monster goes on the end, so old seeds keep their
+  floors' monsters; the spec checks every row is in it.

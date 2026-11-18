@@ -31,6 +31,12 @@ export type Collect = {
 
 export type Row = {
 	name: string,
+	-- The lowest floor it can turn up on (GDD "Floor rules"): it's never on a floor below it.
+	lowest: number,
+	-- From its lowest floor up, the chance a floor has it at all (`KeeperMix`, S4-02), 0 to 1:
+	-- under 1, two climbs meet it on different floors, as DOORS' entities turn up at random past
+	-- the door each starts at. A floor version can lean it (S4-03).
+	share: number,
 	-- Its top speed, as a share of a player's full run. The GDD's speed rule: never over 1, so
 	-- nothing outruns you in a straight hall; the maze, a slow door and greed catch you instead.
 	speed: number,
@@ -99,6 +105,10 @@ export type Row = {
 
 local Mannequin: Row = {
 	name = "Mannequin",
+	-- every floor: it stands guard over a note on each (D-072), and it's the only one that hunts,
+	-- so it's in every mix until a second hunter joins and can take its place on some floors
+	lowest = 1,
+	share = 1,
 	-- just under your run: when it hunts (L-06b3) it closes in only while you stop or slow
 	speed = 0.9,
 	-- going to look, about 0.45 of your run: a slam two halls off gives you about seven seconds
@@ -398,6 +408,10 @@ local PackratFull: KeeperTell.Tell = {
 
 local Packrat: Row = {
 	name = "Packrat",
+	-- from floor 3, about three floors in five: often enough that you know it, and on a floor
+	-- without it your finds stay where you dropped them (OWNER.md tunes it)
+	lowest = 3,
+	share = 0.6,
 	-- just under your run (the GDD's "just under walking speed"; your walk is your run): with
 	-- empty arms it comes for you (S2-06c) and closes in only while you stop or slow
 	speed = 0.9,

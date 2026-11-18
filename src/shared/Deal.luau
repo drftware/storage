@@ -25,6 +25,8 @@ local Catalog = require("./Tools/Catalog")
 local Floor = require("./Floor")
 local FloorRules = require("./FloorRules")
 local Grades = require("./Grades")
+local KeeperMix = require("./KeeperMix")
+local KeeperRows = require("./KeeperRows")
 local Rows = require("./Finds/Rows")
 
 type Floor = Floor.Floor
@@ -89,6 +91,8 @@ export type Deck = {
 	-- the medium units packed with boxes to the ceiling, a path through to the back (B-05b1), by
 	-- slot index (the floor rules' `packed`; their layout is `PackedLayout`'s)
 	packed: { [number]: boolean },
+	-- the monsters on this floor (S4-02, `KeeperMix`): a keeper not in it is never dealt or placed
+	cast: KeeperMix.Cast,
 	-- where the floor's one breaker box hangs (S2-02b), or nil on a floor with nowhere outside
 	-- the lobby's hall to hang it (`Breaker.spots`)
 	breaker: Breaker.Spot?,
@@ -145,7 +149,7 @@ Deal.PadlockedKeeper = 2
 -- joins this list when its ticket builds it: the Mannequin first (L-06). Dale and the Moth are
 -- their floors' set pieces and are never dealt.
 Deal.Keepers = {
-	{ name = "Mannequin", from = 1 },
+	{ name = "Mannequin", from = KeeperRows.Mannequin.lowest },
 } :: { { name: string, from: number } }
 
 --[[
@@ -158,7 +162,7 @@ Deal.Keepers = {
 	small one has room at the back for it and one big find, not its pile (tests/dealspot). Its
 	finds are all different, from `Deal.Finds`.
 ]]
-Deal.Packrat = { name = "Packrat", from = 3 }
+Deal.Packrat = { name = "Packrat", from = KeeperRows.Packrat.lowest }
 Deal.PileMin = 2
 Deal.PileMax = 3
 
@@ -460,11 +464,12 @@ local function refill(deck: Deck)
 	deck.bag = bag
 end
 
--- The name of a keeper that has joined by ``floor`, from `pick` (0 to 1), or nil if none.
-local function keeperFrom(floor: Floor, pick: number): string?
+-- The name of a keeper that has joined by `deck`'s floor and is in its mix (`deck.cast`), from
+-- `pick` (0 to 1), or nil if none.
+local function keeperFrom(deck: Deck, pick: number): string?
 	local joined = {}
 	for _, keeper in Deal.Keepers do
-		if keeper.from <= floor.number then
+		if keeper.from <= deck.floor.number and deck.cast[keeper.name] then
 			table.insert(joined, keeper.name)
 		end
 	end
@@ -488,9 +493,12 @@ end
 
 --[[
 	Lays a floor's deal from its seed: `random` is a fresh Brix Random for this floor (not the one
-	`Floor.generate` used up), so the deal and the layout each repeat from their seeds.
+	`Floor.generate` used up), so the deal and the layout each repeat from their seeds. `cast` is
+	the floor's monsters (`KeeperMix.on`, S4-02); without one, every monster that has joined by its
+	floor, as before the mix. The mix draws nothing from `random`, so it moves nothing else a seed
+	lays.
 ]]
-function Deal.new(floor: Floor, random: Random): Deck
+function Deal.new(floor: Floor, random: Random, cast: KeeperMix.Cast?): Deck
 	local units = Deal.units(floor)
 
 	local code = {}
@@ -612,6 +620,7 @@ function Deal.new(floor: Floor, random: Random): Deck
 		sleepers = {},
 		piles = {},
 		packed = {},
+		cast = cast or KeeperMix.all(floor.number),
 		random = random,
 	}
 	--[[
@@ -660,7 +669,7 @@ function Deal.new(floor: Floor, random: Random): Deck
 	-- another unit's sleeper.
 	for _, i in units do
 		local roll, pick = random:nextNumber(), random:nextNumber()
-		local keeper = keeperFrom(floor, pick)
+		local keeper = keeperFrom(deck, pick)
 		if keeper and roll < Deal.sleeperShare(deck, i) then
 			deck.sleepers[i] = keeper
 		end
@@ -684,11 +693,12 @@ function Deal.new(floor: Floor, random: Random): Deck
 	return deck
 end
 
--- The units the Packrat may sleep in on `deck`'s floor, in number order: none below its floor,
+-- The units the Packrat may sleep in on `deck`'s floor, in number order: none below its floor or
+-- on a floor whose mix left it out,
 -- never a note's unit, a padlocked one or another sleeper's, and only medium units if any are.
 function Deal.packratUnits(deck: Deck): { number }
 	local out: { number } = {}
-	if deck.floor.number < Deal.Packrat.from then
+	if deck.floor.number < Deal.Packrat.from or not deck.cast[Deal.Packrat.name] then
 		return out
 	end
 	local noted: { [number]: boolean } = {}
@@ -921,7 +931,7 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 			contents.kind = "Nothing" -- never: the floor-1 commons are always left to deal
 		end
 	elseif kind == "Asleep" or kind == "Awake" then
-		contents.keeper = deck.sleepers[index] or keeperFrom(deck.floor, deck.picks[index])
+		contents.keeper = deck.sleepers[index] or keeperFrom(deck, deck.picks[index])
 		if not contents.keeper then
 			contents.kind = "Nothing"
 		end
@@ -930,7 +940,7 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 		-- the keeper standing with it, from where the unit's roll fell within its find or tool
 		local beside, which = landOn(Deal.besideOdds(deck, index, situation), within)
 		if beside == "Asleep" or beside == "Awake" then
-			contents.keeper = deck.sleepers[index] or keeperFrom(deck.floor, which)
+			contents.keeper = deck.sleepers[index] or keeperFrom(deck, which)
 			contents.beside = if contents.keeper then beside else nil
 		end
 	end

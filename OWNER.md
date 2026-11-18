@@ -16,6 +16,12 @@ nowhere else.
   button squashes the moment you tap it. Then open a marked box and, while its find is still
   rising, switch to another slot: the find drops into a free slot with its sound, and your hand
   stays where you put it.
+- [ ] **Two climbs, different monsters** (S4-02, D-401; seen in Studio's Output, not played
+  through). Climb to floor 5 twice from the lobby. Look for: the Packrat (asleep on its pile) on
+  different floors each climb, and some floors from 3 up without it. Studio's Output names each
+  floor's monsters as it's laid ("floor 4 of climb 7 has Mannequin"). My defaults, yours to
+  change: the Packrat is on about three floors in five from floor 3 (it was every floor), and it
+  isn't promised on floor 3, its first.
 - [ ] **Your home, with a friend** (S5-03a3b, D-275; seen with one player only). Studio's Test
   tab, Clients and Servers, 2 players. Look for: each player gets a home by the front door (1 then
   7), their name sprays onto its card with a soft hiss and the door rolls up. Player 1 pulls their
