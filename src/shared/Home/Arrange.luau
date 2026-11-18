@@ -6,9 +6,10 @@
 	over the room and it goes red in the shelf and green on the job box, and when you let it down
 	the server agrees, because both judged it with the same areas, frames and blocks.
 
-	`room` builds a `Brix.Placements` (D-306) from the unit's slot: the room's areas (`Spots.room`,
-	from the slot's XL inside box), the shelf's and the job box's tops where those pieces stand, and
-	the room's own things placed first so nothing is set inside them (`Spots.blocks`, D-309). Each
+	`room` builds a `Brix.Placements` (D-306) from the unit's slot and its size: the room's areas
+	(`Spots.room`, from the size's box in the slot, `Home.Sizes`, D-340), the shelf's and the job
+	box's tops where those pieces stand, and the room's own things placed first so nothing is set
+	inside them (`Spots.blocks`, D-309); a thing the size doesn't hold is left out. Each
 	area's world frame is kept by name, so `poseFrame` turns any pose into a CFrame, a find's own
 	top included (lifted by its drawn height, `heights`, or its art's) and a piece of furniture's
 	(its art's own top, `Spots.pieceTop`, D-338).
@@ -25,13 +26,15 @@ local Furniture = require(script.Parent.Furniture)
 local Gold = require(script.Parent.Gold)
 local HomeSpecs = require(script.Parent.Specs)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
+local Sizes = require(script.Parent.Sizes)
 local Spots = require(script.Parent.Spots)
 
 local Arrange = {}
 
 -- One home's room: its judge, each area's world frame by name, the unit's frame (`Arranged.face`),
 -- the inside box in that frame (middle and size: across, tall, deep), and the drawn height of each
--- find set out whose top is stood on (filled as they're drawn).
+-- find set out whose top is stood on (filled as they're drawn); its size's name and how many finds
+-- it holds set out.
 export type Room = {
 	placements: Brix.Placements,
 	frames: { [string]: CFrame },
@@ -39,6 +42,8 @@ export type Room = {
 	centre: Vector3,
 	size: Vector3,
 	heights: { [string]: number },
+	sizeName: string,
+	limit: number,
 }
 
 -- The box remote (in `Spots.RemoteFolder`): the screen fires it with nothing to ask what's in its
@@ -209,13 +214,27 @@ function Arrange.shapeOf(id: string): Brix.PlacementShape?
 	return if name then Spots.shape(name, Arrange.boxOf(name)) else nil
 end
 
--- The room of the home in `unit`, lobby slot `slot`, the lobby laid at `pivot` (`Lobby.Origin`):
--- its judge holding the room's own things, up to `limit` finds besides them. Its starter pieces
--- are read from the unit as they stand (a piece not there offers no top and blocks nothing).
-function Arrange.room(unit: Model, slot: LobbySpecs.Slot, pivot: CFrame, limit: number): Room
+-- The unit's frame (`Arranged.face`) of lobby slot `slot`, the lobby laid at `pivot`
+-- (`Lobby.Origin`), and the room's areas there at size `size` (a `Home.Sizes` name), as
+-- `Spots.room` gives them.
+function Arrange.areas(
+	slot: LobbySpecs.Slot,
+	pivot: CFrame,
+	size: string
+): (CFrame, { [string]: Spots.RoomArea }, Spots.Vec, Spots.Vec)
 	local face = Arranged.face(pivot, slot.Door, slot.Out)
-	local centre, size = Arranged.inside(pivot, face, slot.Inside.Centre, slot.Inside.Size)
-	local room = Spots.room(centre, size)
+	local xlCentre, xlSize = Arranged.inside(pivot, face, slot.Inside.Centre, slot.Inside.Size)
+	local centre, box = Sizes.inside(size, xlCentre, xlSize)
+	return face, Spots.room(centre, box), centre, box
+end
+
+-- The room of the home in `unit`, lobby slot `slot`, the lobby laid at `pivot` (`Lobby.Origin`), at
+-- size `size`: its judge holding the room's own things, up to the size's limit of finds besides
+-- them. Its starter pieces are read from the unit as they stand (a piece not there, or not in this
+-- size's room, offers no top and blocks nothing).
+function Arrange.room(unit: Model, slot: LobbySpecs.Slot, pivot: CFrame, size: string): Room
+	local face, room, centre, box = Arrange.areas(slot, pivot, size)
+	local limit = Spots.limit(size)
 	local areas: { [string]: Brix.PlacementArea } = {}
 	local frames: { [string]: CFrame } = {}
 	for name, r in room do
@@ -229,15 +248,22 @@ function Arrange.room(unit: Model, slot: LobbySpecs.Slot, pivot: CFrame, limit: 
 			table.insert(present, s)
 		end
 	end
+	local blocks: { Spots.Block } = {}
+	local held: { [string]: boolean } = {}
+	for _, b in Spots.blocks(room, present, HomeSpecs.Pieces, HomeSpecs.Parts, Arrange.Fixed) do
+		if Spots.within(room, b) then
+			table.insert(blocks, b)
+			held[b.id] = true
+		end
+	end
 	for name, f in Spots.Furniture do
-		local piece = if starter then starter:FindFirstChild(f.piece) else nil
+		local piece = if starter and held[f.piece] then starter:FindFirstChild(f.piece) else nil
 		local part = HomeSpecs.Parts[f.part]
 		if piece and piece:IsA("Model") and part then
 			areas[name] = (Spots.furnitureTop(part.Size, part.Centre))
 			frames[name] = Arranged.furniture(piece:GetPivot(), part.Size, part.Centre)
 		end
 	end
-	local blocks = Spots.blocks(room, present, HomeSpecs.Pieces, HomeSpecs.Parts, Arrange.Fixed)
 	local placements = Brix.Placements.new({ areas = areas, limit = limit + #blocks })
 	for _, b in blocks do
 		local refusal = placements:place(b.id, b.shape, b.pose)
@@ -250,8 +276,10 @@ function Arrange.room(unit: Model, slot: LobbySpecs.Slot, pivot: CFrame, limit: 
 		frames = frames,
 		face = face,
 		centre = Vector3.new(centre[1], centre[2], centre[3]),
-		size = Vector3.new(size[1], size[2], size[3]),
+		size = Vector3.new(box[1], box[2], box[3]),
 		heights = {},
+		sizeName = Sizes.of(size).name,
+		limit = limit,
 	}
 end
 

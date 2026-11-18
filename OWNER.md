@@ -193,6 +193,19 @@ nowhere else.
   Tell me: is the moon's glow on the wall enough with the door down? (Mine was faint with the
   door up: the art's 1.1; the neon card needed 2.6.) And should the lit pieces ever switch off
   with the lamp? I left them always on, as Adopt Me's string lights are.
+- [ ] **Your home starts Small now** (S5-03h1, D-340; checked in Studio Play from the server
+  only, not looked at on screen). Every home is Small, 8 by 8 studs at the front of the unit,
+  though it still looks like the whole XL unit until its walls are drawn (S5-03h5), and the
+  starter set still stands at the back until S5-03h4 lays it by size. Your test save went Small
+  as it loaded; I then put everything away while testing, so nothing is set out. Play, walk in
+  and tap Arrange. Look for: the grid covering only the front 8 by 8, and a find dragged past it
+  going red. To get the whole unit back (say for the string lights item above), run this on the
+  Server in Studio's command bar:
+  `game.ServerStorage.ArrangeTest:Invoke(game.Players:GetPlayers()[1], "size", "XL")`.
+  Shrinking puts back in the box whatever the smaller home doesn't hold. My defaults, say which to
+  change: Small 8 by 8, Medium 12 by 12, Large 16 by 20, XL 20 by 30; a Small home holds only
+  what's snug, the shelf, the job box, the mirror and the rail (the rug, the beanbag and the floor
+  lamp come with Medium).
 - [ ] **Furniture set out at home: my defaults** (S5-03g4c1, D-335, D-336, D-337, D-338). Say
   which to change:
   1. A piece set out counts against your home's limit, the same as a find (Bloxburg's budget).

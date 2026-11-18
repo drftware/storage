@@ -44,6 +44,7 @@ local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Holding = require(ReplicatedStorage.Shared.Home.Holding)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
 local Save = require(ReplicatedStorage.Shared.Save)
+local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local FrontOffice = require(script.Parent.FrontOffice)
@@ -260,6 +261,7 @@ function Arranging.new(): ArrangingSystem
 			end
 		end
 		data.placed = { form = saved.form, rows = rows }
+		data.placedSize = home.room.sizeName -- laid at the room's size now (S5-03h1)
 	end
 
 	local function clear(player: Player)
@@ -267,6 +269,7 @@ function Arranging.new(): ArrangingSystem
 		if home then
 			homes[player] = nil
 			home.folder:Destroy()
+			home.unit:SetAttribute(Spots.SizeAttribute, nil)
 		end
 	end
 
@@ -284,13 +287,23 @@ function Arranging.new(): ArrangingSystem
 		if have or not (data and unit and slot and laid and player.Parent) then
 			return
 		end
-		local most = Spots.limit(Spots.Start) -- S5-03h: the unit's own size
-		local room = Arrange.room(unit, slot, laid.pivot, most)
+		-- the home's size from its holder's save (S5-03h1, D-340); rows laid at another size (it
+		-- grew, or a save from before sizes) carried to it, what it doesn't hold back in the box
+		local size = Sizes.of(data.homeSize).name
+		local room = Arrange.room(unit, slot, laid.pivot, size)
+		local most = room.limit
 		local placements = room.placements
 		local folder = Instance.new("Folder")
 		folder.Name = FOLDER
 		folder.Parent = unit
-		local rows = Spots.owned(data.placed.rows, settable(player, data))
+		local saved = data.placed.rows
+		local resized = data.placedSize ~= size
+		if resized then
+			local _, from = Arrange.areas(slot, laid.pivot, data.placedSize)
+			local _, to = Arrange.areas(slot, laid.pivot, size)
+			saved = Spots.carry(saved, from, to)
+		end
+		local rows = Spots.owned(saved, settable(player, data))
 		local dropped = placements:load({ form = data.placed.form, rows = rows }, shapeOf)
 		local home: HomeSet = {
 			unit = unit,
@@ -302,7 +315,8 @@ function Arranging.new(): ArrangingSystem
 			stale = dropped == nil,
 		}
 		homes[player] = home
-		if dropped and (#dropped > 0 or #rows < #data.placed.rows) then
+		unit:SetAttribute(Spots.SizeAttribute, size)
+		if dropped and (resized or #dropped > 0 or #rows < #data.placed.rows) then
 			keep(home, data) -- what no longer fits is back in the box
 		end
 		apply(home, player, false)
@@ -478,7 +492,9 @@ function Arranging.new(): ArrangingSystem
 			-- answers the save's placed rows and the job box's counts; `:Invoke(player, "relay")`
 			-- sets the home up again from the save, as a rejoin does; `:Invoke(player, "own", piece)`
 			-- puts one more of furniture `piece` in their job box, saved as a buy is (S5-03g4d, for
-			-- a piece not in this week's stock). No client reaches it.
+			-- a piece not in this week's stock); `:Invoke(player, "size", name)` makes their home
+			-- that size (a `Home.Sizes` name) and sets it up again, as a resize will (S5-03h1).
+			-- No client reaches it.
 			if RunService:IsStudio() then
 				local test = Instance.new("BindableFunction")
 				test.Name = "ArrangeTest"
@@ -520,6 +536,16 @@ function Arranging.new(): ArrangingSystem
 					elseif verb == "relay" then
 						clear(player)
 						lay(player)
+						return homes[player] ~= nil
+					elseif verb == "size" then
+						local data = if saving then saving:data(player) else nil
+						if not (data and type(a) == "string" and table.find(Sizes.Names, a)) then
+							return false
+						end
+						data.homeSize = a
+						clear(player)
+						lay(player)
+						sendBox(player)
 						return homes[player] ~= nil
 					end
 					return nil

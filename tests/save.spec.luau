@@ -54,6 +54,8 @@ local function played(): Save.Data
 	}
 	data.furniture.CampBed = 1
 	data.furniture.MilkCrate = 2
+	data.homeSize = "Large"
+	data.placedSize = "Medium"
 	return data
 end
 
@@ -77,9 +79,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 12.
+-- A new player: nothing yet, at version 13.
 do
-	ok(format:latest() == 12, "the save is at version 12")
+	ok(format:latest() == 13, "the save is at version 13")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -98,6 +100,7 @@ do
 	ok(next(fresh.chipped) == nil, "a new player has nothing cracked")
 	ok(fresh.placed.form == 1 and #fresh.placed.rows == 0, "a new player has nothing set out")
 	ok(next(fresh.furniture) == nil, "a new player owns no furniture")
+	ok(fresh.homeSize == "Small" and fresh.placedSize == "Small", "a new home is small, laid small")
 	ok(
 		fresh.looks.paint == "WarmWhite"
 			and fresh.looks.floor == "Boards"
@@ -115,7 +118,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(12, stored)
+	local back, decodeProblem = format:decode(13, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -147,6 +150,12 @@ do
 	end)
 	refused("half a piece of furniture", function(data)
 		data.furniture.CampBed = 1.5
+	end)
+	refused("a home of a size there isn't", function(data)
+		data.homeSize = "Huge"
+	end)
+	refused("rows laid at a size there isn't", function(data)
+		data.placedSize = ""
 	end)
 	refused("a field the save doesn't have", function(data)
 		data.gems = 3
@@ -354,7 +363,7 @@ do
 		card = "Chalk",
 	}
 	local kept = format:encode(dressed)
-	local dressedBack = format:decode(12, kept)
+	local dressedBack = format:decode(13, kept)
 	ok(
 		dressedBack ~= nil
 			and dressedBack.looks.paper == "Leaves"
@@ -363,7 +372,21 @@ do
 			and dressedBack.looks.card == "Chalk",
 		"a home's look, its door and its card are kept"
 	)
-	local newer, newerProblem = format:decode(13, v1)
+	-- Version 12 as the DataStore holds it (Nov 17): every home was the XL box, its rows laid
+	-- there. It comes back small (everyone starts small, D-259), its rows still laid at XL, so
+	-- the home carries them in and puts back in the box what small doesn't hold (S5-03h1).
+	local v12 = table.clone(v11)
+	v12.furniture = { CampBed = 1 }
+	local twelve, twelveProblem = format:decode(12, v12)
+	ok(
+		twelve ~= nil
+			and twelve.homeSize == "Small"
+			and twelve.placedSize == "XL"
+			and twelve.furniture.CampBed == 1
+			and #twelve.placed.rows == 1,
+		`version 12 loads small, its rows laid at XL ({twelveProblem})`
+	)
+	local newer, newerProblem = format:decode(14, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 

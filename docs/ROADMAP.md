@@ -2746,7 +2746,36 @@ Done when players watch the results to the end and change their perks between cl
         seen on the A16; the moon's glow with the door down and two clients wait on the owner.
   - [ ] **S5-03h Four sizes and the walls that move** (ideas 30, 31): small to start, medium for
     cash, large and XL for Robux; the partitions grind back and the door widens, everything set
-    out staying where it was.
+    out staying where it was. Split Nov 17: the save's and the purchases' rules first, each with
+    a failing spec, then the layout, the walls and the moment.
+      - [x] **S5-03h1 The size in the save, the room from it**: Small 8 by 8, Medium 12 by 12,
+        Large 16 by 20, XL 20 by 30 (`Home.Sizes`), each a box cut from the slot's XL one at the
+        door; save v13 `homeSize` and `placedSize` (a v12 save loads Small, laid at XL); rows
+        laid at another size carried to it as the home is set up (floor and ceiling keep their
+        place in the unit, wall finds ride their wall), what it doesn't hold back in the box;
+        the room's own things a size doesn't hold left out of it. Done Nov 17, D-340: checked
+        in Studio Play from the server at all four sizes; the grid at Small not yet looked at.
+      - [ ] **S5-03h2 Medium for cash at the counter**: the rules in a spec first (the price a
+        feel number in Config; no sale when you're short or already Medium or bigger; the cash
+        taken and `homeSize` written in one save before anything else happens), a validated,
+        rate-limited remote, then the counter's offer and its answer (sound, motion, a short
+        headline), as Bloxburg's and Adopt Me's house upgrades are bought.
+      - [ ] **S5-03h3 Large and XL for Robux** (moved here from S5-07): developer products through
+        Brix's Purchases as S3-02's are: granted only after the save, never lost on a failed save
+        or a server hop (the purchase ledger), every offer switchable off in Config, prices read
+        from Roblox, never sold smaller than you have; spec first.
+      - [ ] **S5-03h4 The starter set laid by size**: where the shelf, the job box, the rug, the
+        beanbag, the floor lamp, the mirror, the rail and the ceiling lamp stand at each size,
+        from `art/home/home_spec.py` (Small holds what's "snug": the shelf, the box, the mirror
+        and the rail, idea 30); each piece rides its wall as the home grows; look sheets at
+        phone size.
+      - [ ] **S5-03h5 The walls drawn by size**: the partitions and the back wall where the size
+        ends (the unit kit's steel, the home's panels following, D-325), the door frame per size
+        (Small's doorway narrower than the M door), the room depth and width the door counts you
+        in by, and the Arrange button's inside box from the size. Art first, the unit's way.
+      - [ ] **S5-03h6 The walls grind back** (idea 31): when it grows, you're there to watch: the
+        partitions slide along their rails, the back wall rolls away, the door frame widens, dust
+        drifts down, with the steel's grind (Animal Crossing's house growing).
   Later, each its own ticket: finds doing things at home, a find at a time (idea 16); living
   finds (17); the home score, visits to friends on other servers, photos (27 to 29; 29 is
   untested and waits on the owner). Trading comes later still.
@@ -2759,8 +2788,8 @@ Done when players watch the results to the end and change their perks between cl
   decor. Then the friend's matching beam colour for joining on your link, and cart cosmetics
   (D-112). The luck boost: one use, used in the elevator, better odds of rare finds next floor;
   its odds shown before buying and while it's on, never sold where Roblox restricts paid random
-  items (D-188). The home's Robux sizes, large and XL
-  (D-259; medium is bought with cash, S5-03h); the chest holds everything for everyone.
+  items (D-188). The home's Robux sizes, large and XL,
+  are S5-03h3 now (D-340); the chest holds everything for everyone.
 
 ### Step 6: Coming back
 

@@ -44,6 +44,11 @@
 	  style (S5-03g3b, D-331), an id from `Home.Specs.Cards`; a new home's are the first of each.
 	- `furniture`: the counter's furniture you own (S5-03g4a, D-333), by piece id
 	  (`Home.Furniture`, "CampBed"), each with how many. A piece is listed only while you own one.
+	- `homeSize`: your home's size, a name from `Home.Sizes` (S5-03h1, D-340): everyone starts
+	  Small. `placedSize`: the size `placed`'s rows were laid at. When they differ (the home grew,
+	  or a version 12 save, laid in the XL box every home was), the home carries the rows to its
+	  size as it's set up (`Spots.carry`), puts back in the box what it doesn't hold, and writes
+	  both the same. So growing writes one value, and nothing set out is ever lost.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -64,6 +69,7 @@
 -- How many of each find you keep, by its name.
 -- your home's paint, paper and floor (S5-03g2b)
 local Looks = require("./Home/Looks")
+local Sizes = require("./Home/Sizes")
 
 export type Counts = { [string]: number }
 -- When each page was first stamped, by name, in `os.time` seconds.
@@ -100,6 +106,8 @@ export type Data = {
 	placed: Placed,
 	looks: Looks.Chosen,
 	furniture: Counts,
+	homeSize: string,
+	placedSize: string,
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -146,6 +154,8 @@ function Save.fresh(): Data
 		placed = { form = 1, rows = {} },
 		looks = Looks.start(),
 		furniture = {},
+		homeSize = Sizes.Start,
+		placedSize = Sizes.Start,
 	}
 end
 
@@ -704,6 +714,13 @@ function Save.format(brix: any): Format
 	twelfthFields.furniture = Schema.map(name, count)
 	local twelfth = Schema.shape(twelfthFields)
 
+	-- Version 13 (S5-03h1, Nov 17): version 12 plus your home's size and the size its rows were
+	-- laid at, names from `Home.Sizes`.
+	local thirteenthFields = table.clone(twelfthFields)
+	thirteenthFields.homeSize = Schema.oneOf(Sizes.Names)
+	thirteenthFields.placedSize = Schema.oneOf(Sizes.Names)
+	local thirteenth = Schema.shape(thirteenthFields)
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -902,6 +919,16 @@ function Save.format(brix: any): Format
 				migrate = function(old: any): any
 					local after = table.clone(old)
 					after.furniture = {} -- nothing bought at the counter yet
+					return after
+				end,
+			},
+			{
+				schema = thirteenth,
+				-- any: a version 12 save as Brix hands it over, already checked against `twelfth`
+				migrate = function(old: any): any
+					local after = table.clone(old)
+					after.homeSize = Sizes.Start -- everyone starts small (D-259)
+					after.placedSize = Sizes.Biggest -- every home was the XL box till now
 					return after
 				end,
 			},

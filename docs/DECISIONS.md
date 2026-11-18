@@ -8662,3 +8662,29 @@ lights hung from the tile you point at.
   faint with the door up (its 1.1 drowned by the hall's light as the card's 1.4 was, D-332;
   2.4 didn't show with the door up either). Pictures `docs/art/S5-03g4d-lit-*.jpg`.
 
+
+## D-340 The home's four sizes live in the save, and rows are carried between them (S5-03h1, 2026-11-17)
+
+The moment it serves: you pay to grow your home and everything you'd set out stays where it was.
+- **Four sizes** (`Home.Sizes`, pure, no requires so `Save` and `Spots` both read it): Small 8 by
+  8, Medium 12 by 12, Large 16 by 20, XL 20 by 30 studs, across by deep, limits 25, 50, 100 and
+  150. Each size's box is the slot's XL box cut down: as tall, its front at the door's frame,
+  centred across (Small: 8 across, 7.75 in from the door's inner face).
+- **Save v13**: `homeSize` (everyone starts Small) and `placedSize`, the size `placed`'s rows were
+  laid at, both `Schema.oneOf(Sizes.Names)`. A v12 save loads Small, laid at XL (every home was the
+  XL box). Growing writes only `homeSize`; whichever server lays the home next carries the rows
+  (`Spots.carry`) and writes both the same, so a purchase granted after its save can't strand a
+  half-moved room, on this server or after a hop.
+- **Carrying**: a find on the floor or the ceiling keeps its place in the unit; one on a wall rides
+  with its wall (as far along it, as high); a find on a top is the top's to carry. What the new
+  size doesn't hold Brix drops as it loads, back in the box (only shrinking does that: the v12
+  migration and the Studio test verb).
+- **The room's own things a size doesn't hold** (`Spots.within`) are left out of its room: no top,
+  no block, no warning. Until S5-03h4 lays the starter set by size, Small's room holds none of it
+  (the set still stands at XL's places).
+- **The unit's `HomeSize` attribute**, set by Arranging from the holder's save, is how the
+  holder's screen builds the same room. Studio: `ArrangeTest:Invoke(player, "size", name)`.
+- The test save went Small on load: the neon moon rode the back wall in; the string lights, the
+  boombox, the camp lantern, the capybara and the moon lamp went back to the box. Checked in
+  Studio Play from the server (Medium, XL and back, two boomboxes kept their places); the Arrange
+  grid at Small not looked at on screen.

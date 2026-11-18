@@ -6,6 +6,7 @@
 local Brix = require("../vendor/brix/src")
 local HomeSpecs = require("../src/shared/Home/Specs")
 local Save = require("../src/shared/Save")
+local Sizes = require("../src/shared/Home/Sizes")
 local Spots = require("../src/shared/Home/Spots")
 
 local failures, checks = 0, 0
@@ -493,6 +494,126 @@ do
 		set:check("NeonSign:Furniture#2", moon, { on = "Floor", x = 0, y = 0, turn = 0 }) ~= nil,
 		"never stood on the floor"
 	)
+end
+
+-- The four sizes (S5-03h1, D-340): each a box cut from the slot's XL one, its front at the door
+-- and centred across; a size not known is the smallest. Rows laid at one size are carried to
+-- another: on the floor or the ceiling a find keeps its place in the unit, on a wall it rides with
+-- the wall; what the new room doesn't hold is dropped as it loads, back to the box.
+do
+	ok(#Spots.Sizes == 4 and Spots.Sizes[1].name == "Small", "four sizes, small first")
+	ok(Spots.Sizes[4].name == "XL" and Sizes.Biggest == "XL", "XL the biggest")
+	ok(Sizes.of("Small").across == 8 and Sizes.of("Small").deep == 8, "small 8 by 8")
+	ok(Sizes.of("Medium").across == 12 and Sizes.of("Medium").deep == 12, "medium 12 by 12")
+	ok(Sizes.of("Large").across == 16 and Sizes.of("Large").deep == 20, "large 16 by 20")
+	ok(Sizes.of("XL").across == 20 and Sizes.of("XL").deep == 30, "XL 20 by 30")
+	ok(Sizes.of("Huge").name == "Small", "a size not known: the smallest")
+	ok(Sizes.rank("Small") == 1 and Sizes.rank("XL") == 4, "small first, XL last")
+	ok(Sizes.rank("Huge") == 1, "a size not known ranks as the smallest")
+	ok(Spots.limit("Medium") == Sizes.of("Medium").limit, "each size's limit is its own")
+	ok(#Sizes.Names == 4 and Sizes.Names[2] == "Medium", "the names, smallest first")
+
+	local xc, xs = { 0, 5, 15.125 }, { 20, 10, 29.75 }
+	local c, s = Sizes.inside("XL", xc, xs)
+	ok(
+		near(c[1], 0) and near(c[3], 15.125) and near(s[1], 20) and near(s[3], 29.75),
+		"XL: the whole slot"
+	)
+	ok(c ~= xc and s ~= xs, "new tables")
+	c, s = Sizes.inside("Small", xc, xs)
+	ok(
+		near(s[1], 8) and near(s[2], 10) and near(s[3], 7.75),
+		"small: 8 across, as tall, 8 in less the door's frame"
+	)
+	ok(
+		near(c[1], 0) and near(c[2], 5) and near(c[3] - s[3] / 2, 0.25),
+		"its front at the door, centred across"
+	)
+	local mc, ms = Sizes.inside("Medium", xc, xs)
+	ok(near(ms[1], 12) and near(mc[3] + ms[3] / 2, 12), "medium's back wall 12 in")
+	local lc, ls = Sizes.inside("Large", xc, xs)
+	ok(near(ls[1], 16) and near(lc[3] + ls[3] / 2, 20), "large's back wall 20 in")
+	c, s = Sizes.inside("Huge", xc, xs)
+	ok(near(s[1], 8), "a size not known: small's box")
+
+	-- carried from the XL room to the small one
+	local xl = Spots.room(xc, xs)
+	local small = Spots.room(Sizes.inside("Small", xc, xs))
+	ok(near(small.Floor.width, 8) and near(small.BackWall.origin[3], 8), "small's back wall 8 in")
+	local rows: { Save.PlacedRow } = {
+		{ id = "BlobLamp#1", on = "Floor", x = 1, y = 12.125, turn = 90 }, -- 3 in from the door
+		{ id = "BlobLamp#2", on = "Floor", x = 0, y = 0, turn = 0 }, -- the XL room's middle
+		{ id = "NeonSign#1", on = "BackWall", x = 1.5, y = 2, turn = 0 }, -- rides the wall in
+		{ id = "NeonSign#2", on = "LeftWall", x = -12, y = 1, turn = 0 }, -- 3 in, on the left
+		{ id = "NeonSign#3", on = "LeftWall", x = 5, y = 1, turn = 0 }, -- 20 in: past small's wall
+		{ id = "Teddy#1", on = "ShelfTop", x = 0.5, y = 0, turn = 0 }, -- the shelf's to carry
+	}
+	local carried = Spots.carry(rows, xl, small)
+	ok(#carried == #rows and carried ~= rows and carried[1] ~= rows[1], "every row, as new tables")
+	local lamp = carried[1]
+	ok(
+		lamp.on == "Floor" and near(lamp.x, 1) and near(lamp.y, 1.125) and lamp.turn == 90,
+		"a lamp keeps its place on the floor"
+	)
+	ok(near(carried[2].y, -11), "the XL middle is 11 past small's back")
+	ok(
+		near(carried[3].x, 1.5) and near(carried[3].y, 2),
+		"a sign on the back wall rides it, as far across and as high"
+	)
+	ok(
+		near(carried[4].x, -1) and near(carried[4].y, 1),
+		"a sign on a side wall keeps how far in it hangs"
+	)
+	ok(near(carried[6].x, 0.5) and carried[6].on == "ShelfTop", "a find on a top is left as it was")
+	local back = Spots.carry(carried, small, xl)
+	ok(
+		near(back[1].y, 12.125) and near(back[2].y, 0) and near(back[4].x, -12),
+		"carried back, where it was"
+	)
+
+	local areas: { [string]: Spots.Area } = {}
+	for name, a in small do
+		areas[name] = { kind = a.kind, width = a.width, depth = a.depth }
+	end
+	areas.ShelfTop = { kind = Spots.Kinds.Top, width = 7, depth = 1.2 }
+	local set = Brix.Placements.new({ areas = areas, limit = Spots.limit("Small") })
+	local function shapeOf(id: string): Spots.Shape?
+		local name = Spots.name(id)
+		local box = if name == "NeonSign" then { 2.4, 1.2, 0.3 } else { 0.61, 1.62, 0.583 }
+		return if name then Spots.shape(name, box) else nil
+	end
+	local dropped = set:load({ form = 1, rows = carried }, shapeOf)
+	local gone: { string } = {}
+	for _, d in dropped or {} do
+		table.insert(gone, d.id)
+	end
+	table.sort(gone)
+	ok(
+		#gone == 2 and gone[1] == "BlobLamp#2" and gone[2] == "NeonSign#3",
+		"what small doesn't hold goes back in the box"
+	)
+	ok(
+		set:poseOf("BlobLamp#1") ~= nil
+			and set:poseOf("NeonSign#1") ~= nil
+			and set:poseOf("Teddy#1") ~= nil,
+		"the rest stays out"
+	)
+
+	-- the room's own things a size doesn't hold are left out of it
+	local block: Spots.Block = {
+		id = "Shelf",
+		shape = { width = 7.46, depth = 1.6, fits = { Spots.Kinds.Floor } },
+		pose = { on = "Floor", x = 0, y = -0.5, turn = 0 },
+	}
+	ok(Spots.within(small, block), "a shelf across small's middle stands in it")
+	block.pose = { on = "Floor", x = 0, y = -11, turn = 0 }
+	ok(not Spots.within(small, block), "one at the XL's back doesn't")
+	block.pose = { on = "Floor", x = 0, y = -1, turn = 90 }
+	ok(not Spots.within(small, block), "turned and set back, it pokes through the back wall")
+	block.pose = { on = "Ceiling", x = 0, y = 0, turn = 0 }
+	ok(Spots.within(small, block), "judged on its own area")
+	block.pose = { on = "ShelfTop", x = 0, y = 0, turn = 0 }
+	ok(not Spots.within(small, block), "an area the room hasn't: no")
 end
 
 print(`spots.spec: {checks - failures}/{checks} passed`)

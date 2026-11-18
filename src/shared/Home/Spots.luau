@@ -13,8 +13,10 @@
 	- Its footprint (`shape`) from its art's box (Finds.box: across its front, up, front to back):
 	  across by front-to-back on a floor, a top or the ceiling, across by up on a wall. A few finds
 	  with a flat top offer it for others to stand on (`Rows`' `top`).
-	- The room (`room`): the unit's floor, ceiling, back wall and side walls, from its XL slot's
-	  inside box; the front wall is the door's. And the starter set's tops (`Furniture`).
+	- The room (`room`): the unit's floor, ceiling, back wall and side walls, from its size's box
+	  in the slot (`Home.Sizes`); the front wall is the door's. And the starter set's tops
+	  (`Furniture`). What's set out at one size is carried to another (`carry`), and the room's own
+	  things a size doesn't hold are left out of it (`within`).
 	- The limit by the unit's size (`Sizes`): 25, 50, 100 and 150 (the home doc's idea 15).
 	- A find set out is named by its id (`id`): its find's name and a number, "Teddy#2".
 	- What a screen sends is checked here before anything reads it (`ask`).
@@ -29,6 +31,7 @@
 local Save = require("../Save")
 local Furniture = require("./Furniture")
 local HomeSpecs = require("./Specs")
+local Sizes = require("./Sizes")
 
 local Spots = {}
 
@@ -86,15 +89,12 @@ Spots.Least = 0.25
 -- What a top keeps clear round its edge (studs a side): a find set on one doesn't overhang.
 Spots.Rim = 0.1
 
--- The unit's sizes (D-259 idea 30, S5-03h), smallest first, and how many finds each holds set
--- out (idea 15). Everyone starts Small.
-Spots.Sizes = table.freeze({
-	{ name = "Small", limit = 25 },
-	{ name = "Medium", limit = 50 },
-	{ name = "Large", limit = 100 },
-	{ name = "XL", limit = 150 },
-})
-Spots.Start = "Small"
+-- The unit's sizes (D-259 idea 30, S5-03h, `Home.Sizes`), smallest first, and how many finds
+-- each holds set out (idea 15). Everyone starts Small.
+Spots.Sizes = Sizes.List
+Spots.Start = Sizes.Start
+-- A home's size, by name, on its unit (the server's, from its holder's save) for every screen.
+Spots.SizeAttribute = "HomeSize"
 
 -- The starter set's pieces whose tops take a find (`Home.Specs.Starter`), by area name: the piece
 -- and the part whose box is its top (`Home.Specs.Parts`).
@@ -251,12 +251,7 @@ end
 
 -- The finds a home of size `name` holds set out; the smallest's for a size not known.
 function Spots.limit(name: string): number
-	for _, s in Spots.Sizes do
-		if s.name == name then
-			return s.limit
-		end
-	end
-	return Spots.Sizes[1].limit
+	return Sizes.of(name).limit
 end
 
 -- How many of a room's placed things (`rows`, as Placements saves them) are finds set out: the
@@ -331,6 +326,61 @@ function Spots.room(centre: Vec, size: Vec): { [string]: RoomArea }
 			across = { 0, 0, -1 },
 		},
 	}
+end
+
+-- An area's `y`: square to its normal and its `across`, `normal` crossed with `across`.
+local function ahead(a: RoomArea): Vec
+	local n, x = a.normal, a.across
+	return { n[2] * x[3] - n[3] * x[2], n[3] * x[1] - n[1] * x[3], n[1] * x[2] - n[2] * x[1] }
+end
+
+-- Saved rows laid in room `from` re-laid in room `to` (each as `room` gives it, the same unit at
+-- another size, S5-03h): a find on the floor or the ceiling keeps its place in the unit; one on a
+-- wall rides with the wall as it moves, as far along it and as high. A row on a top (a piece's,
+-- a find's) is left as it was: it rides with what it stands on. What `to` doesn't hold is
+-- Brix's to drop as it loads. New rows.
+function Spots.carry(
+	rows: { Save.PlacedRow },
+	from: { [string]: RoomArea },
+	to: { [string]: RoomArea }
+): { Save.PlacedRow }
+	local out: { Save.PlacedRow } = {}
+	for _, row in rows do
+		local a, b = from[row.on], to[row.on]
+		if not (a and b) then
+			table.insert(out, table.clone(row))
+			continue
+		end
+		local ax, ay, bx, by = a.across, ahead(a), b.across, ahead(b)
+		local d = {}
+		for i = 1, 3 do
+			d[i] = a.origin[i] + row.x * ax[i] + row.y * ay[i] - b.origin[i]
+		end
+		table.insert(out, {
+			id = row.id,
+			on = row.on,
+			x = d[1] * bx[1] + d[2] * bx[2] + d[3] * bx[3],
+			y = d[1] * by[1] + d[2] * by[2] + d[3] * by[3],
+			turn = row.turn,
+		})
+	end
+	return out
+end
+
+-- Whether the room's own thing `block` lies wholly on its area in `room` (a smaller size may not
+-- hold a piece laid for a bigger one, S5-03h): a thing it doesn't hold is left out of the room,
+-- offering no top and blocking nothing.
+function Spots.within(room: { [string]: RoomArea }, block: Block): boolean
+	local area = room[block.pose.on]
+	if not area then
+		return false
+	end
+	local t = math.rad(block.pose.turn)
+	local c, sn = math.abs(math.cos(t)), math.abs(math.sin(t))
+	local w, d = block.shape.width / 2, block.shape.depth / 2
+	local EPSILON = 1e-4
+	return math.abs(block.pose.x) + w * c + d * sn <= area.width / 2 + EPSILON
+		and math.abs(block.pose.y) + w * sn + d * c <= area.depth / 2 + EPSILON
 end
 
 -- A starter piece's top as an area, from its top part's box (`Home.Specs.Parts`: its size and
