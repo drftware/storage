@@ -22,8 +22,8 @@ nowhere else.
   floor's monsters as it's laid ("floor 4 of climb 7 has Mannequin"). My defaults, yours to
   change: the Packrat is on about three floors in five from floor 3 (it was every floor), and it
   isn't promised on floor 3, its first.
-- [ ] **The next-floor cards' defaults** (S4-03a, D-403; nothing to press yet, the cards come in
-  S4-03b2). My defaults, yours to change: the four versions are the design doc's (the power's out,
+- [ ] **The next-floor cards' defaults** (S4-03a, D-403; the cards to press came in S4-03b2,
+  D-405). My defaults, yours to change: the four versions are the design doc's (the power's out,
   twice the padlocks, twice the monsters with the Packrat brought in from floor 3, anyone caught
   goes back to the lobby). The lobby one is held back to floor 3, so floor 2's ride always offers
   the other three. The dark and the padlocks pay half the floor's coins again, the other two
@@ -34,6 +34,18 @@ nowhere else.
   card size): a dead caged bulb in the dark, two padlocks on a steel door, two Mannequins at the
   end of a hall, looking down the shaft at the car far below. Each in its own light (cold blue,
   warm, sick green, red) so the three on a panel tell apart at a glance. Say if one doesn't read.
+  On the panel (S4-03b2, D-405; my defaults): no name on a card, only its picture and its coins
+  (the design rule: no text that explains a rule); the cards take the bottom middle and the tool
+  wheel slides away under them for the ride; they tuck away while the machine's menu is open.
+- [ ] **Vote with a friend, on phones** (S4-03b2, D-405; seen with one player and stand-in
+  presses). Two phones (or Studio's Test tab, 2 players), both in one car leaving floor 1 (any
+  later floor's ride works; floor 1's from the lobby has no vote). Look for: as the car lurches
+  off three cards slide up with a latch and three ticks; a tap clunks, the card dips, lights in
+  its colour and your head drops on it; your friend's head drops on theirs with a lighter tick;
+  tap another card and your head hops across. On the cable's second knock (about 9 s) a thunk,
+  the others go dark and sink, the winner flares with the elevator's ding, slides to the middle
+  and stays lit through the change of cars until the gate opens. Say if the cards are too big or
+  too small on your phone, and if 9 seconds is enough to agree.
 - [ ] **Your home, with a friend** (S5-03a3b, D-275; seen with one player only). Studio's Test
   tab, Clients and Servers, 2 players. Look for: each player gets a home by the front door (1 then
   7), their name sprays onto its card with a soft hiss and the door rolls up. Player 1 pulls their

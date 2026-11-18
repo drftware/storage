@@ -17,10 +17,10 @@ Brix `7f25310`. Uncommitted NextFloor, NextFloorCards and their specs: the climb
 - Test save: XL, everything set out, six finds in the shelf, the hard hat worn. Hooks:
   `ArrangeTest` "place", "putAway", "rows", "relay", "size" (STUDIO.md's last section). Home
   doc: https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww
-- **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), S4-03a the vote (D-403,
-  seen working live in Play), S4-03b1 the cards' faces (`art/cards/`, each row's `face`; D-404).
-  Next: S4-03b2 the cards on the panel (ROADMAP's b2 lines; the faces on
-  `art/sheets/cards-phone.png`; the riders change cars at 13.4 s, keep the cards up across it).
+- **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), S4-03a the vote (D-403),
+  S4-03b1 the faces (D-404), S4-03b2 the cards on screen (D-405, seen on the A16: press, heads,
+  change of mind, the winner lit). Next: S4-03c each version felt on its floor (ROADMAP's c
+  lines); S4-03d first sees the flare, the car change and the bigger coin strip.
 
 ## Next task: S5-03i2a Take a find from where it stands
 The moment: you walk up to the teddy in your shelf, press Take, and it hops into your hand with

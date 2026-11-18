@@ -1588,11 +1588,12 @@ function ToolView.new(
 			)
 		end
 		table.insert(connections, UserInputService.LastInputTypeChanged:Connect(layout))
-		-- kept in a unit, or the machine's menu up: the wheel slides down off the screen, and back
+		-- kept in a unit, the machine's menu or the next-floor cards up: the wheel slides down off the screen, and back
 		-- up when you're let out or the menu shuts
 		local function keptChanged()
 			local now = player:GetAttribute(Kept.Attribute) == true
 				or player:GetAttribute(Tools.StowAttribute) == true
+				or player:GetAttribute(Tools.CardsStowAttribute) == true
 			if now == stowed then
 				return
 			end
@@ -1609,6 +1610,10 @@ function ToolView.new(
 		table.insert(
 			connections,
 			player:GetAttributeChangedSignal(Tools.StowAttribute):Connect(keptChanged)
+		)
+		table.insert(
+			connections,
+			player:GetAttributeChangedSignal(Tools.CardsStowAttribute):Connect(keptChanged)
 		)
 		keptChanged()
 		for i = 1, Carry.Slots do

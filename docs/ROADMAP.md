@@ -2298,7 +2298,7 @@ Done when two climbs in a row feel different and players talk about their best f
       (`art/cards/`), each in its own colour of light, uploaded; each row's `face`. Done Nov 17
       (D-404), and S4-03a's vote seen working live in Play (floor 1 to 2: offer, a press, a
       change of mind, junk ignored, "picked TwiceMonsters" on the knock).
-    - [ ] **S4-03b2 The cards on the panel.** Three cards slide up from the bottom as the car
+    - [x] **S4-03b2 The cards on the panel.** Three cards slide up from the bottom as the car
       lurches off (screen-space, as the lobby car's panel does), each its face, its coins
       (`NextFloor.payOf`, the coin icon) and a short name at most, big enough to tap at Galaxy
       A16 size; a press clunks, lights the card and drops your avatar's head on it (every
@@ -2307,6 +2307,14 @@ Done when two climbs in a row feel different and players talk about their best f
       opens on the floor (the riders change cars at 13.4 s: keep the cards up across it).
       Reads the riding car's attributes, presses `NextFloorPress`. Captures into `docs/art/`:
       the three lit, a mark on one, the winner flared.
+      Done Nov 18 (D-405): `NextFloorCards` (pure: layout, heads, phase;
+      `tests/nextfloorcards.spec.luau`), the client's `NextFloorView`, each row's `light`, the
+      wheel stowed under them (`Tools.CardsStowAttribute`). Seen in Studio Play on the A16, floor
+      1 to 2: the three up, a real tap lighting TwiceMonsters with my head on it, friends' heads
+      (stand-in presses), a change of mind carrying my head to PowerOut, and on the knock PowerOut
+      alone in the middle, lit; Output "picked PowerOut". Captures `docs/art/S4-03b2-*.jpg`. Not
+      seen: the flare's first half second, the cards across the 13.4 s car change, the coin strip
+      after it was made bigger (S4-03d).
   - [ ] **S4-03c Each version felt on its floor.** The moment: the gate opens on a pitch-dark
     lobby, or two Mannequins at the end of the hall. The deal reads the version (twice the
     padlocks, twice the monsters awake through `FloorRules`' cap and `KeeperMix`'s lean), the
@@ -2314,7 +2322,10 @@ Done when two climbs in a row feel different and players talk about their best f
     the gate pays the version's coins (`NextFloor.payOf` through `Pay`/`GatePay`, its own pop).
     Floor model's `FloorVersion` attribute says which.
   - [ ] **S4-03d The whole climb in Studio.** Ride floors 1 to 5 in Play with the cards, each
-    version picked once, captures; fixes. Two-player vote and phones go to `OWNER.md`.
+    version picked once, captures; fixes. Two-player vote and phones go to `OWNER.md`. First,
+    what S4-03b2 didn't see: step `DevRideHold` through one ride (4, 9.3 with a capture burst
+    running for the flare, 14 for the cards still up in the new car, 19.6 for them leaving, then
+    clear it) and judge the bigger coin strip at A16 size (STUDIO.md, "The next-floor cards").
 - [x] **S4-04 Trapping pays** (Nov 17, D-402). Each monster the team has shut in a unit as the
   gate shuts pays everyone aboard 5 more coins (`Pay.Trap`, D-188; Keepers' `trappedOn`); one
   freed first, or one the floor woke behind its own door, doesn't count. On your screen each
@@ -3412,6 +3423,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
 
 ## Polish waiting for a slot
 
+- **The padlock with its shackle shut** (S4-03b2): `art/padlock` builds the padlock as one mesh
+  with its shackle lifted and swung open (`LIFT`, `SWING`), so the doors' padlocks and the
+  TwicePadlocks card face both read as unlocked. Build it shut (the click's moment), rebuild with
+  `scripts/art.sh`, re-render and re-upload the TwicePadlocks face (`art/cards/`).
 - **A mirror's first look in a session** (S5-03f4b3, D-320): the first time a mirror's picture
   goes live in a play session, its room can show dark behind you for a beat (about a quarter
   second) while you show lit; every later look, and a mirror rebuilt later, came in whole. Most

@@ -58,6 +58,9 @@ export type Version = {
 	-- art/cards/build.py. No words on it. The image inside the Decal art/cards/assets.json names
 	-- (`InsertService:LoadAsset`, art/cards/README.md).
 	face: string,
+	-- Its face's own colour of light, red, green and blue from 0 to 1, as art/cards/spec.py lights
+	-- it: the card glows in it when pressed and as it wins, so the three tell apart at a glance.
+	light: { number },
 }
 
 local NextFloor = {}
@@ -97,6 +100,7 @@ NextFloor.Versions = table.freeze({
 		pay = 0.5,
 		dark = true,
 		face = "rbxassetid://91517401639848",
+		light = { 0.42, 0.58, 1.0 }, -- cold moonlight
 	}) :: Version,
 	-- two padlocks hanging on a steel door
 	table.freeze({
@@ -105,6 +109,7 @@ NextFloor.Versions = table.freeze({
 		pay = 0.5,
 		padlocks = 2,
 		face = "rbxassetid://131197171716537",
+		light = { 1.0, 0.62, 0.32 }, -- the warm bulb
 	}) :: Version,
 	-- the Packrat comes too, from its own lowest floor on (KeeperMix never brings one below it);
 	-- two Mannequins standing at the end of a dark hall
@@ -115,6 +120,7 @@ NextFloor.Versions = table.freeze({
 		monsters = 2,
 		lean = table.freeze({ Packrat = 1 }),
 		face = "rbxassetid://94818091969519",
+		light = { 0.70, 1.0, 0.78 }, -- a sick fluorescent
 	}) :: Version,
 	-- the harshest: a team meets being caught and freed on floors 1 and 2 first; looking down the
 	-- shaft at the car far below, lit red
@@ -124,6 +130,7 @@ NextFloor.Versions = table.freeze({
 		pay = 1,
 		caughtToLobby = true,
 		face = "rbxassetid://72304998325928",
+		light = { 1.0, 0.16, 0.10 }, -- the emergency red
 	}) :: Version,
 })
 

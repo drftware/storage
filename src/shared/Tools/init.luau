@@ -43,6 +43,10 @@ Tools.PocketedAttribute = "ToolPocketed"
 -- Set on your own Player by one of your screens (the machine's menu, S1-10d1) while it fills the
 -- screen: the wheel and its Lay and Drop buttons slide off the bottom, as when you're kept.
 Tools.StowAttribute = "ToolStow"
+-- Set on your own Player by the next-floor cards while they're up on a ride (S4-03b2): the wheel
+-- slides off the bottom under them. Apart from `StowAttribute`, so the machine's menu shutting
+-- mid-ride doesn't bring the wheel back up under the cards.
+Tools.CardsStowAttribute = "ToolStowCards"
 -- On a tool's model: its catalog key (so a screen knows a model's row).
 Tools.KindAttribute = "Tool"
 Tools.RemoteFolder = "Remotes"

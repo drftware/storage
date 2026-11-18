@@ -3268,3 +3268,14 @@ verified: a doc page, Studio, or "untested".
   its name, `"Rug:Furniture"`, and a rider by its base's id (`"Rug:Furniture#1"`).
 - **Console output is long** (the Config misses repeat on every save): read Output with a
   filtered `execute_luau` (`LogService:GetLogHistory()`) rather than `get_console_output`.
+
+## The next-floor cards (S4-03b2, Nov 18)
+
+- **Set `DevRideHold` only once a car is armed** (its `Ride` attribute gone). Set before floor 2's
+  car had re-armed after a ride, it held that finished ride again and the car never re-armed
+  that Play. Releasing a hold also jumps the ride's clock to the real time since it left, so a
+  release mid-ride skips the car change: step it (4, 9.3, 14, 19.6) and clear it after 19.6.
+- **A tap on a card from the shell**: `user_mouse_input` at (gui x + 47, gui y) lands on the
+  A16, as the Arrange notes say; it fired `Activated` and the press reached the server.
+- **Stand-in friends' heads**: a Server `SetAttribute` of the car's `NextFloorPresses` with other
+  UserIds draws their heads; the next real press rewrites the attribute from the server's table.

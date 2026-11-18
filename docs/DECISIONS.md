@@ -9092,3 +9092,29 @@ S4-03a live and on the art). Built in b1:
 Not chosen: words or a symbol on the face (the owner: no text that explains a rule); a hand-drawn
 icon (art is code); a wide view of the whole floor per card (at 130 points the detail reads as
 mush; one thing, big, reads).
+
+
+## D-405 The next-floor cards on a rider's screen (S4-03b2, Nov 18)
+
+- **Three cards up from the bottom middle as the car lurches off** (`Ride.moves()`), between the
+  thumbstick and the jump button, 44% of the screen's height (78 by 123 on a Galaxy A16): big
+  enough to tap and to read a picture, the top half left for the shaft. Proven: Hades shows each
+  door's reward before you pick; a lobby's map vote shows who voted for which map.
+- **No name on a card**, only its picture and its coins ("+12" by the coin): the owner's rule
+  against text that explains a rule, and D-404's pictures carry the meaning.
+- **Your head, and every rider's, on the card they pressed**, yours first with a light ring:
+  avatar headshots dropped on with a bounce, carried across on a change of mind. A press shows at
+  once and the car's word takes over within 0.6 s (the server owns the vote).
+- **Each card glows in its face's own colour** (each version's `light` row): yours fully, one
+  only friends are on faintly. At the knock the losers go dark and sink, the winner flares
+  (white, a punch, the elevator's ding), glides to the middle and breathes until the gate opens.
+  The state is kept on the screen, not the car: the car the vote was on is cleared at the
+  13.4 s change of cars.
+- **The tool wheel slides away while the cards are up** (`Tools.CardsStowAttribute`, its own so
+  the machine's menu shutting doesn't bring it back under them), and the cards tuck away while
+  the machine's menu is open, so the machine the ride sells from is never covered. Keys 1 to 3
+  and the d-pad press them on a computer or pad; the mouse is freed for the vote.
+- Not chosen: a fanned hand of cards round the wheel's button (taps land on a tilted card's
+  unturned box); cards on the car's 3D panel (unreadable at phone size from across the car).
+- The padlock face's open shackles come from the padlock model itself (built open), so the fix
+  is the model's, in ROADMAP's polish list, not a card re-render.

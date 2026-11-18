@@ -66,6 +66,7 @@ local LobbyView = require(script.LobbyView)
 local MachineMenu = require(script.MachineMenu)
 local MachineView = require(script.MachineView)
 local MarkedBoxView = require(script.MarkedBoxView)
+local NextFloorView = require(script.NextFloorView)
 local NotePlaces = require(script.NotePlaces)
 local NoteView = require(script.NoteView)
 local FaintMarkView = require(script.FaintMarkView)
@@ -159,6 +160,8 @@ local host = Brix.Host.new({
 		{ slot = "buttonView", system = ButtonView.new() },
 		{ slot = "gateClock", system = GateClock.new() },
 		{ slot = "rideView", system = RideView.new(holdView) },
+		-- the next-floor cards: the team's vote on the ride, every rider's head on their pick (S4-03b2)
+		{ slot = "nextFloorView", system = NextFloorView.new(needCursor) },
 		-- the machine in the car, waking on the ride (S1-10b2)
 		{ slot = "machineView", system = machineView },
 		-- the machine's menu: its one button opens its front on your screen (S1-10d1)
