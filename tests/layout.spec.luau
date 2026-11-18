@@ -213,6 +213,30 @@ do
 	ok(#judge(medium, grown) == 0, "Brix takes the grown home whole")
 end
 
+-- What's settable and what's in the box count every starter piece, one each (S5-03i1b).
+do
+	local can = Layout.settable({ MilkCrate = 2, Shelf = 3 })
+	ok(can["MilkCrate:Furniture"] == 2, "bought furniture as owned")
+	ok(can["Shelf:Furniture"] == 1 and can["JobBox:Furniture"] == 1, "a starter piece, one each")
+	local boxed = Layout.boxed({ MilkCrate = 2 }, {
+		["MilkCrate:Furniture"] = 1,
+		["JobBox:Furniture"] = 1,
+		["Shelf:Furniture"] = 1,
+		["Mirror:Furniture"] = 1,
+	})
+	ok(boxed.MilkCrate == 1, "a crate left in the box")
+	ok(boxed.Shelf == nil and boxed.JobBox == nil, "a piece set out isn't in the box")
+	ok(boxed.Rug == 1 and boxed.Rail == 1 and boxed.FloorLamp == 1, "Small's leftovers are")
+	local rows: { Save.PlacedRow } = {
+		{ id = "Teddy#1", on = "Floor", x = 0, y = 0, turn = 0 },
+		{ id = "JobBox:Furniture#1", on = "Floor", x = 1, y = 0, turn = 90 },
+		{ id = "Lamp#1", on = "JobBox:Furniture#1", x = 0, y = 0, turn = 0 },
+	}
+	local first = Layout.boxFirst(rows)
+	ok(first[1].id == "JobBox:Furniture#1" and first[2].id == "Teddy#1", "the job box loads first")
+	ok(first[3].id == "Lamp#1" and #first == 3, "the rest keep their order")
+end
+
 print(`layout: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

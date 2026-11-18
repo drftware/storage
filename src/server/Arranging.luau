@@ -6,11 +6,18 @@
 	mode (floor, wall and tabletop items), Animal Crossing's things on tables.
 
 	Each held home gets one Brix Placements (D-306), the judge of every move: the room's areas from
-	its slot's inside box (`Spots.room`), the shelf's and the job box's tops, and the room's own
-	things stood in it first so nothing is set inside them (`Spots.blocks`: the starter pieces on the
-	floor, the ceiling's lamp, the mirror). It's loaded from the save's `placed`, trimmed to what you
-	own (`Spots.owned`); what no longer fits goes back in the job box and the save is written so. A
-	save newer than this server is never written over: that home refuses every move (`notYours`).
+	its slot's inside box at its size (`Arrange.room`) with the ceiling's lamp stood in it first.
+	It's loaded from the save's `placed`, trimmed to what you own (`Spots.owned`); what no longer
+	fits goes back in the job box and the save is written so. A save newer than this server is never
+	written over: that home refuses every move (`notYours`).
+
+	The home's own pieces (the job box, shelf, mirror, rail, rug, beanbag and floor lamp) are rows
+	too (S5-03i1b, D-346), one each and free of the limit, drawn as bought pieces are: a home laid
+	before them adopts them where they stood (`Layout.adopt`, then the save's `starterLaid`), a
+	home that grew keeps them on their walls (`Layout.grow`), the job box always loads first and is
+	never put away (`kept`). A spare's set (Lobby.front's `Starter`) is taken away while the home
+	is held and put back when it's let go. `drawn` fires after each lay and change, so the shelf's
+	finds, the job box's button and the rail's hangers find their piece (`pieceOf`).
 
 	A find set out is still yours, in `finds`; `Save.boxed` takes it off the job box, so it's never
 	in the box and set out at once, and nothing is ever lost: a refused or unsaved move leaves it in
@@ -42,6 +49,7 @@ local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Holding = require(ReplicatedStorage.Shared.Home.Holding)
+local Layout = require(ReplicatedStorage.Shared.Home.Layout)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
 local Save = require(ReplicatedStorage.Shared.Save)
 local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
@@ -51,8 +59,9 @@ local FrontOffice = require(script.Parent.FrontOffice)
 local Saving = require(script.Parent.Saving)
 local Slots = require(script.Parent.Slots)
 
--- A find as drawn: its model, and its box (`Arranged.bounds`) measured once.
-type Drawn = { model: Model, size: Vector3, centre: Vector3 }
+-- A find as drawn: its model, and its box (`Arranged.bounds`) measured once; a starter piece's
+-- kind, which stands by its spec box instead (`Arrange.starterPivot`).
+type Drawn = { model: Model, size: Vector3, centre: Vector3, starter: string? }
 
 -- One held home: its unit, its room (`Arrange.room`: its judge, each area's frame), how many
 -- finds it holds set out, what's drawn, and whether its save is newer than this server (then it's
@@ -65,6 +74,7 @@ type HomeSet = {
 	drawn: { [string]: Drawn },
 	folder: Folder,
 	stale: boolean,
+	spare: Instance?, -- the spare's set (Lobby.front's Starter), put back when the home is let go
 }
 
 local Arranging = {}
@@ -73,6 +83,12 @@ export type ArrangingSystem = Brix.System & {
 	-- Sets `player`'s home up again from their save, as a rejoin does: after its size was written
 	-- (a sale at the counter, Growing; S5-03h2), so its rows are carried to the new size.
 	relay: (self: any, player: Player) -> (),
+	-- Fires after a player's home is laid, changed or let go (S5-03i1b): the shelf's finds, the
+	-- job box's button and the rail's hangers follow their pieces (Shelves, JobBoxes, Rails).
+	drawn: Brix.Signal<Player>,
+	-- Starter piece `kind`'s model in `player`'s home as drawn (S5-03i1b), nil when it's put away
+	-- or they hold none.
+	pieceOf: (self: any, player: Player, kind: string) -> Model?,
 }
 
 local FOLDER = Arrange.Folder
@@ -81,6 +97,7 @@ local shapeOf = Arrange.shapeOf
 
 function Arranging.new(): ArrangingSystem
 	local homes: { [Player]: HomeSet } = {}
+	local drawnSignal = Brix.Signal.new() :: Brix.Signal<Player>
 	local signals: { Brix.SignalConnection } = {}
 	local connections: { RBXScriptConnection } = {}
 	local plotWatch: { [Player]: RBXScriptConnection } = {}
@@ -119,9 +136,21 @@ function Arranging.new(): ArrangingSystem
 		if not (template and Home.has(template, kind)) then
 			return nil
 		end
-		local model = Home.piece(template, kind, CFrame.identity, home.folder)
-		local n = tonumber(string.match(id, "#(%d+)$")) or 1
 		local row = Furniture.byId(kind)
+		local starter = row ~= nil and row.starter == true
+		local model: Model
+		if kind == "Mirror" then
+			-- the frame leaning on its foot with its glass (MirrorView draws on it), pivoted upright
+			-- at the foot so the lean rides every move; the glass knows the unit's door for the
+			-- walls it stands in the picture
+			local glass: Part
+			model, glass = Home.mirrorAt(template, CFrame.identity, home.folder)
+			model.WorldPivot = CFrame.identity
+			glass:SetAttribute("Face", home.room.face)
+		else
+			model = Home.piece(template, kind, CFrame.identity, home.folder)
+		end
+		local n = tonumber(string.match(id, "#(%d+)$")) or 1
 		local hung = row ~= nil and row.stands ~= "Floor" -- the string lights, the neon moon (g4d)
 		local crate = Home.CrateColours[(n - 1) % #Home.CrateColours + 1] -- each crate the next colour
 		for _, d in model:GetDescendants() do
@@ -130,8 +159,11 @@ function Arranging.new(): ArrangingSystem
 			end
 			if d:IsA("BasePart") then
 				-- a bed or a shelf stops you, as the starter set's pieces do; what hangs on a wall
-				-- or from the ceiling is never walked into, and its lit parts are Home.paint's
-				d.CanCollide = not hung
+				-- or from the ceiling is never walked into, and its lit parts are Home.paint's; a
+				-- starter piece's are Home.piece's (the rug and a seat never stop you)
+				if not starter then
+					d.CanCollide = not hung
+				end
 				d.CanTouch = false
 				d.CanQuery = true
 			end
@@ -146,25 +178,32 @@ function Arranging.new(): ArrangingSystem
 		model:SetAttribute(Spots.OwnerAttribute, owner.UserId)
 		model:AddTag(Spots.Tag)
 		model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
-		local drawn = { model = model, size = size, centre = centre }
+		local drawn: Drawn = {
+			model = model,
+			size = size,
+			centre = centre,
+			starter = if starter then kind else nil,
+		}
 		home.drawn[id] = drawn
 		home.room.heights[id] = size.Y
 		return drawn
 	end
 
 	-- What `player` may set out, by name: their finds less the shelf's and what's out of the box
-	-- (`Save.settable`), and each piece of furniture they own by its placed name (D-336).
+	-- (`Save.settable`), and each piece of furniture they own by its placed name (D-336), every
+	-- home's own pieces one each (D-346).
 	local function settable(player: Player, data: Save.Data): Save.Counts
 		local out = Save.settable(data, outOf(player))
-		for name, n in Furniture.settable(data.furniture) do
+		for name, n in Layout.settable(data.furniture) do
 			out[name] = n
 		end
 		return out
 	end
 
-	-- The furniture in `data`'s job box, by piece id: owned less set out.
+	-- The furniture in `data`'s job box, by piece id: owned less set out, and the home's own pieces
+	-- put away (D-346).
 	local function boxedPieces(data: Save.Data): { [string]: number }
-		return Furniture.boxed(data.furniture, Save.placedCounts(data))
+		return Layout.boxed(data.furniture, Save.placedCounts(data))
 	end
 
 	-- Draws find `id` where it stands now (made the first time), then whatever stands on it.
@@ -216,7 +255,11 @@ function Arranging.new(): ArrangingSystem
 			home.room.heights[id] = size.Y -- a top's height is the drawn box's
 		end
 		local d = drawn :: Drawn
-		d.model:PivotTo(Arranged.pivot(t, Spots.spot(name), d.size, d.centre))
+		d.model:PivotTo(
+			if d.starter
+				then Arrange.starterPivot(t, d.starter)
+				else Arranged.pivot(t, Spots.spot(name), d.size, d.centre)
+		)
 		local pose = home.placements:poseOf(id)
 		if pose then -- the owner's screen loads its judge from these (ArrangeView)
 			d.model:SetAttribute(Arrange.OnAttribute, pose.on)
@@ -266,6 +309,7 @@ function Arranging.new(): ArrangingSystem
 		end
 		data.placed = { form = saved.form, rows = rows }
 		data.placedSize = home.room.sizeName -- laid at the room's size now (S5-03h1)
+		data.starterLaid = true -- its own pieces are rows now (D-346)
 	end
 
 	local function clear(player: Player)
@@ -274,6 +318,10 @@ function Arranging.new(): ArrangingSystem
 			homes[player] = nil
 			home.folder:Destroy()
 			home.unit:SetAttribute(Spots.SizeAttribute, nil)
+			if home.spare and home.unit.Parent then
+				home.spare.Parent = home.unit -- a spare again: its set back as Lobby.front laid it
+			end
+			drawnSignal:fire(player)
 		end
 	end
 
@@ -294,20 +342,26 @@ function Arranging.new(): ArrangingSystem
 		-- the home's size from its holder's save (S5-03h1, D-340); rows laid at another size (it
 		-- grew, or a save from before sizes) carried to it, what it doesn't hold back in the box
 		local size = Sizes.of(data.homeSize).name
-		local room = Arrange.room(unit, slot, laid.pivot, size)
+		local room = Arrange.room(slot, laid.pivot, size)
 		local most = room.limit
 		local placements = room.placements
 		local folder = Instance.new("Folder")
 		folder.Name = FOLDER
 		folder.Parent = unit
+		-- its own pieces are rows (D-346): a home laid before them adopts them where they stood
+		-- (`Layout.adopt`, once); a home that grew keeps its pieces on their walls (`Layout.grow`)
 		local saved = data.placed.rows
 		local resized = data.placedSize ~= size
+		local adopting = not data.starterLaid
+		local _, to = Arrange.areas(slot, laid.pivot, size)
 		if resized then
 			local _, from = Arrange.areas(slot, laid.pivot, data.placedSize)
-			local _, to = Arrange.areas(slot, laid.pivot, size)
-			saved = Spots.carry(saved, from, to)
+			saved = if adopting then Spots.carry(saved, from, to) else Layout.grow(saved, from, to)
 		end
-		local rows = Spots.owned(saved, settable(player, data))
+		if adopting then
+			saved = Layout.adopt(saved, to)
+		end
+		local rows = Spots.owned(Layout.boxFirst(saved), settable(player, data))
 		local dropped = placements:load({ form = data.placed.form, rows = rows }, shapeOf)
 		local home: HomeSet = {
 			unit = unit,
@@ -317,13 +371,18 @@ function Arranging.new(): ArrangingSystem
 			drawn = {},
 			folder = folder,
 			stale = dropped == nil,
+			spare = unit:FindFirstChild("Starter"),
 		}
 		homes[player] = home
+		if home.spare then
+			home.spare.Parent = nil -- the spare's set goes: the holder's own rows stand instead
+		end
 		unit:SetAttribute(Spots.SizeAttribute, size)
-		if dropped and (resized or #dropped > 0 or #rows < #data.placed.rows) then
+		if dropped and (resized or adopting or #dropped > 0 or #rows < #data.placed.rows) then
 			keep(home, data) -- what no longer fits is back in the box
 		end
 		apply(home, player, false)
+		drawnSignal:fire(player)
 	end
 
 	-- Place: sets `what` (a find's name, out of the box; or an id set out, moved) at `pose`. The id
@@ -344,6 +403,10 @@ function Arranging.new(): ArrangingSystem
 			local template = Home.template()
 			if (boxedPieces(data)[piece.id] or 0) < 1 then
 				return "", Spots.Refusals.NotInBox
+			elseif
+				not piece.starter and Spots.setOut(home.placements:save().rows) >= home.limit
+			then
+				return "", "full" -- as a find's, below
 			elseif not (template and Home.has(template, piece.id)) then
 				return "", Spots.Refusals.Unknown
 			end
@@ -351,7 +414,9 @@ function Arranging.new(): ArrangingSystem
 				return home.placements:poseOf(each) ~= nil
 			end)
 		else
-			if (Save.boxed(data, outOf(player))[what] or 0) < 1 then
+			if Spots.setOut(home.placements:save().rows) >= home.limit then
+				return "", "full" -- the starter pieces are free, so Brix's own count runs over
+			elseif (Save.boxed(data, outOf(player))[what] or 0) < 1 then
 				return "", Spots.Refusals.NotInBox
 			elseif not Tools.template(Gold.base(what) or what) then
 				return "", Spots.Refusals.Unknown
@@ -367,6 +432,7 @@ function Arranging.new(): ArrangingSystem
 		end
 		keep(home, data)
 		apply(home, player, true)
+		drawnSignal:fire(player)
 		return id, ""
 	end
 
@@ -379,6 +445,11 @@ function Arranging.new(): ArrangingSystem
 		elseif not home.placements:poseOf(id) then
 			return "notPlaced"
 		end
+		local kind = Layout.kind(id)
+		local piece = if kind then Furniture.byId(kind) else nil
+		if piece and piece.kept then
+			return Spots.Refusals.Kept -- the job box holds everything: it moves, never away
+		end
 		local function away(each: string)
 			for _, rider in home.placements:standingOn(each) do
 				away(rider)
@@ -388,6 +459,7 @@ function Arranging.new(): ArrangingSystem
 		away(id)
 		keep(home, data)
 		apply(home, player, true)
+		drawnSignal:fire(player)
 		return ""
 	end
 
@@ -463,6 +535,12 @@ function Arranging.new(): ArrangingSystem
 
 	return {
 		name = "Arranging",
+		drawn = drawnSignal,
+		pieceOf = function(_: any, player: Player, kind: string): Model?
+			local home = homes[player]
+			local drawn = if home then home.drawn[Layout.id(kind)] else nil
+			return if drawn then drawn.model else nil
+		end,
 		relay = function(_: any, player: Player)
 			clear(player)
 			lay(player)

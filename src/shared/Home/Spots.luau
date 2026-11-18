@@ -118,8 +118,13 @@ Spots.IdAttribute = "PlacedId"
 Spots.OwnerAttribute = "PlacedOwner"
 -- The refusals the home adds to Brix's: a find you have none of in your box, a find the game
 -- doesn't know, a home that isn't yours (or a save newer than this server).
-Spots.Refusals =
-	table.freeze({ NotInBox = "notInBox", Unknown = "unknownFind", NotYours = "notYours" })
+-- The job box can't be put away: it holds everything (D-346).
+Spots.Refusals = table.freeze({
+	NotInBox = "notInBox",
+	Unknown = "unknownFind",
+	NotYours = "notYours",
+	Kept = "kept",
+})
 
 -- The longest name or id a screen may send, and how far from an area's middle a pose may be.
 local LONGEST = 80

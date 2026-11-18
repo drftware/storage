@@ -73,6 +73,48 @@ local function has(rows: { Save.PlacedRow }, kind: string): boolean
 end
 Layout.has = has
 
+-- What may be set out, by placed name (S5-03i1b): the furniture you own (`Furniture.settable`)
+-- and every starter piece, one each, free.
+function Layout.settable(furniture: { [string]: number }): { [string]: number }
+	local out = Furniture.settable(furniture)
+	for _, piece in Furniture.Starter do
+		out[Furniture.placed(piece.id)] = 1
+	end
+	return out
+end
+
+-- The pieces in your job box, by id (S5-03i1b): the furniture you own less what's set out
+-- (`Furniture.boxed`), and each starter piece not set out (`placed`, counts by placed name as
+-- `Save.placedCounts` gives them): put away, or one the floor couldn't hold.
+function Layout.boxed(
+	furniture: { [string]: number },
+	placed: { [string]: number }
+): { [string]: number }
+	local out = Furniture.boxed(furniture, placed)
+	for _, piece in Furniture.Starter do
+		if (placed[Furniture.placed(piece.id)] or 0) < 1 then
+			out[piece.id] = 1
+		end
+	end
+	return out
+end
+
+-- `rows` with the job box's first (S5-03i1b): Brix loads in order and always stands the first, and
+-- the job box holds everything else. The rest keep their order (a piece before what stands on it).
+-- A new list.
+function Layout.boxFirst(rows: { Save.PlacedRow }): { Save.PlacedRow }
+	local box = Layout.id("JobBox")
+	local out: { Save.PlacedRow } = {}
+	for _, row in rows do
+		if row.id == box then
+			table.insert(out, 1, row)
+		else
+			table.insert(out, row)
+		end
+	end
+	return out
+end
+
 -- A piece's footprint across (floor x) and deep (floor y) at `turn`: its box's bounds turned.
 local function extent(kind: string, turn: number): (number, number)
 	local box = Spots.pieceBox(kind) or Spots.Unknown

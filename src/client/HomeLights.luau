@@ -287,6 +287,43 @@ function HomeLights.new(): Brix.System
 		end
 	end
 
+	-- The floor lamp is a row its holder sets out, drawn after the home is shown and again each
+	-- time it's set out (S5-03i1b): its light joins its home's switch as it comes, and leaves it as
+	-- it's put away.
+	local function lampAdded(inst: Instance)
+		if not (inst:IsA("PointLight") and inst:HasTag(Home.LampTag)) then
+			return
+		end
+		for unit, s in shown do
+			if inst:IsDescendantOf(unit) and not table.find(s.lights, inst) then
+				table.insert(s.lights, inst)
+				local shade = inst.Parent
+				if shade and shade:IsA("BasePart") then
+					table.insert(s.shades, shade)
+					s.floorAt = shade.Position
+				end
+				follow(s, true)
+				return
+			end
+		end
+	end
+
+	local function lampRemoved(inst: Instance)
+		for _, s in shown do
+			local i = table.find(s.lights, inst :: any) -- any: a removed light is a PointLight
+			if i then
+				table.remove(s.lights, i)
+				local shade = inst.Parent
+				local j = if shade then table.find(s.shades, shade :: any) else nil -- any: as above
+				if j then
+					table.remove(s.shades, j)
+				end
+				s.floorAt = if s.shades[1] then s.shades[1].Position else nil
+				return
+			end
+		end
+	end
+
 	return {
 		name = "HomeLights",
 		start = function(_: any, _context: Brix.Context)
@@ -301,6 +338,16 @@ function HomeLights.new(): Brix.System
 			table.insert(
 				connections,
 				CollectionService:GetInstanceRemovedSignal(UnitKit.Tag):Connect(remove)
+			)
+			table.insert(
+				connections,
+				CollectionService:GetInstanceAddedSignal(Home.LampTag):Connect(function(inst)
+					task.defer(lampAdded, inst)
+				end)
+			)
+			table.insert(
+				connections,
+				CollectionService:GetInstanceRemovedSignal(Home.LampTag):Connect(lampRemoved)
 			)
 			for _, inst in CollectionService:GetTagged(UnitKit.Tag) do
 				add(inst)

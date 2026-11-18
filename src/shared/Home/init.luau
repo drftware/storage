@@ -470,27 +470,4 @@ function Home.mirrorAt(template: Model, at: CFrame, parent: Instance): (Model, P
 	return model, glass
 end
 
--- The mirror (Specs.Mirror) in `unit`, whose doorway's outer face is `face`: leaning on the unit's
--- left wall by the rug (`Home.mirrorAt`), its glass marked with the door's face for the walls
--- MirrorView stands in the picture.
-function Home.mirror(template: Model, unit: Model, face: CFrame): Model
-	local m = Specs.Mirror
-	local at = face * CFrame.new(vec(m.At)) * CFrame.Angles(0, math.rad(m.Turn), 0) -- the glass looks across the unit, off its wall
-	local model, glass = Home.mirrorAt(template, at, unit)
-	glass:SetAttribute("Face", face) -- the unit's door face, for the walls MirrorView stands
-	return model
-end
-
--- The clothes rail (Specs.Rail, S5-03f2a, D-315) in `unit`, whose doorway's outer face is `face`:
--- a rolling oak garment rail along the mirror's wall past it, its front toward the room, from the
--- place's Home `template`. Nil when the template predates it.
-function Home.rail(template: Model, unit: Model, face: CFrame): Model?
-	if not Home.has(template, "Rail") then
-		return nil
-	end
-	local r = Specs.Rail
-	local at = face * CFrame.new(vec(r.At)) * CFrame.Angles(0, math.rad(r.Turn), 0)
-	return Home.piece(template, "Rail", at, unit)
-end
-
 return Home

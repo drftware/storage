@@ -2,52 +2,51 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-18, S5-03i1a (D-346) · **Checks:** green · **Git:** `main`, committed, not
-pushed (`origin` drftware/storage); Brix pinned at `7f25310`, NOT on Brix's `origin` yet.
+**Updated:** 2026-11-18, S5-03i1b (D-347) · **Checks:** green for the home (climb's uncommitted
+CoinView, Pay fail selene) · **Git:** `main`, not pushed; Brix pinned `7f25310`, not on its origin.
 
 ## State
-- Nov 18, the owner (D-345): everything in a home moves, lifts and works. ROADMAP's S5-03i, ahead
-  of h5 and h6. S5-03i1 is split: i1a (the rules) done, i1b (the server lays them), i1c (lift
-  them in Arrange, the views follow, Studio).
-- i1a done (D-346), pure only, nothing wired: the starter pieces are furniture rows
-  (`Furniture.Starter`, "Shelf:Furniture#1", never sold, free of the limit, the job box `kept`);
-  `Home/Layout.luau` lays them by size (`default`; Small: shelf, box, mirror), adopts a home laid
-  before (`adopt`: where they stood, ShelfTop/JobBoxTop finds moved onto the pieces) and lets a
-  growing home's pieces ride their walls (`grow`); the shelf, box and rug have piece tops (the
-  rug's is floor-kind); save v14 adds `starterLaid` (false until the server lays them).
-  `tests/layout.spec.luau` judges every size's layout whole with Brix. The home doc (D-259):
-  https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools only.
-- Studio hooks: `GrowTest` (a size; "cash"/"price", n; "gift", size, friendPlayer; "friend",
-  name, size), `ArrangeTest` "size", `DevReceipt`. Test save: Small, cash 188 (v13 till loaded).
+- Nov 18, the owner (D-345): everything in a home moves, lifts and works (ROADMAP S5-03i, ahead
+  of h5 and h6). i1a (the rules, D-346) and i1b (the server lays them, D-347) done; i1c next.
+- i1b, passes checks, untested in Studio (Studio was in another session's Play): `Arranging`
+  adopts a home's pieces once (`starterLaid` written true), grows them on a resize, loads the job
+  box first, draws them by their spec box (`Arrange.starterPivot`; the mirror via `mirrorAt`,
+  upright pivot at its foot), refuses "kept" for the job box and "full" past the finds' limit;
+  `Arrange.room` holds only the ceiling lamp; a spare home shows Small's layout (`Lobby.front`,
+  hidden while held). `Arranging.drawn` + `pieceOf` feed Shelves (finds are the shelf's
+  children), JobBoxes (button follows the box), Rails; JobBoxView's lid riders are on
+  "JobBox:Furniture#1"; HomeLights takes a lamp drawn later. `Home.mirror`/`Home.rail` removed.
+- Studio hooks: `GrowTest`, `ArrangeTest` "size"/"rows"/"relay", `DevReceipt`. Test save: Small,
+  cash 188 (adopts its set on its next load). Home doc (D-259), docs tools only:
+  https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww
 - **Climb run:** items 1 (F-G1e6q2, D-400) and 2 done: S4-02 (D-401) mixes each floor's
   monsters from the climb's seed (`KeeperMix`; the Packrat from floor 3 on about three in five),
   leanable by a floor version. Next: S4-04 Trapping pays (5 coins each to everyone aboard per
   monster shut in a unit as the gate shuts; a trapped one counts toward the awake limit).
   Uncommitted `ArrangeView`, `Home/*` and `layout.spec` are the home chain's work in progress.
 
-## Next task: S5-03i1b The server lays the starter pieces as rows
-The moment: your Small unit's shelf stands on the back wall, not mid-room; an XL home laid
-before keeps its set where it stood, with the finds on its shelf and box.
-1. `Arranging`: as a home is laid, `Layout.adopt` while `starterLaid` is false (then write it
-   true), `Layout.grow` instead of `Spots.carry` on a size change; the starter rows settable at
-   one each (`Furniture.Starter`) and boxed when put away; refuse putting the job box away (a
-   new refusal, the screen's press does nothing); draw them as bought pieces are drawn.
-2. `Arrange.room`: no fixed set's blocks or ShelfTop/JobBoxTop areas for a held home (the
-   mirror's and rail's `Fixed` rows go too; the ceiling lamp stays). `Lobby.front` lays a spare
-   home's set by `Layout.default` at Small; the held home's `Starter` folder is cleared.
-3. Each piece keeps working by its row: `Shelves` (the shelf's spots), `JobBoxes` and
-   `JobBoxView` (the lid, the panel), `Home.mirror`/`MirrorView` (the glass), `Rails`. Find the
-   drawn model by `Layout.id(kind)`; follow its pivot when it moves (i1c moves it).
-4. Studio Play at Galaxy A16 size: Small (shelf on the back wall), "size" to XL and back, a
-   rejoin; the job box opens, the mirror reflects, the rail hangs. Split if it won't fit.
-**Acceptance:** check green; a spec for any new pure rule; in Studio a Small home's set stands
-by the walls and works, and the test save's finds come through.
-**Read first:** D-346; `src/shared/Home/Layout.luau`; `src/server/Arranging.luau` (lay, draw,
-putAway); `src/shared/Home/Arrange.luau` (room); `src/server/Shelves.luau` (grep Starter);
-`src/shared/Lobby/init.luau` (Lobby.front).
+## Next task: S5-03i1c Lift the starter pieces in Arrange, seen in Studio
+The moment: you lift your shelf, finds and all, slide it to the side wall and set it down; the
+mirror leans on its new wall and still shows you; you rejoin and it's all where you left it.
+1. Studio Play i1b first (`get_studio_state`; one Play at a time; stop after): a Small home's
+   shelf on the back wall, box left, mirror right; `ArrangeTest "rows"` shows the test save
+   adopted; shelf finds stand in the shelf; the job box opens; the mirror reflects; "size" XL
+   and back; "relay". Fix what's off before step 2.
+2. `ArrangeView`: lift, move, turn and put away a starter piece (the shelf's finds are its
+   children, so a tap on one lifts the shelf for now); the mirror sets only with its back to a
+   wall (a pure rule with a spec, the server's refusal too); the job box's Put away does nothing.
+3. The views follow a moved piece: the rail's press spots (`Rails` re-poses on `drawn`), the job
+   box's lid and riders (`JobBoxView`), the lamp's light and `floorAt` (`HomeLights`).
+4. Studio Play at Galaxy A16 size: move the shelf with finds, the mirror and the box; rejoin;
+   change size. Captures into `docs/art/`. Split if it won't fit.
+**Acceptance:** check green for the home's files; a spec for the mirror's wall rule; in Studio
+the moves hold through a rejoin and a resize, with captures.
+**Read first:** D-347; `src/client/ArrangeView.luau` (build, lift, put away);
+`src/server/Arranging.luau` (drawPiece, draw, place); `src/server/Rails.luau` (lay, placeAt);
+`src/client/JobBoxView.luau` (gather, the lid); `src/shared/Home/Layout.luau`.
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03i1c lift them in Arrange; S5-03i2 take anything, i3 every find's button, i4 sit
+1. S5-03i2 take anything, i3 every find's button, i4 sit
    (D-345); then S5-03h5, h6; S5-03g3c a card's style; S5-03d4; S5-03a2d the cars' triangles.
 2. The steel shelf's lower tiers. In Arrange the job box's "Open" shows over the room. A lifted
    lit piece's light stays where it was until it's set down. The looks' polish (g2b2, g2b3,

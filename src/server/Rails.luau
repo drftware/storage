@@ -61,6 +61,13 @@ type Spot = {
 }
 type Mine = { unit: Model, rail: Model, spots: { [string]: Spot } }
 
+-- The home's pieces as Arranging draws them (its type would require it, and it requires the
+-- systems that require this one).
+type Pieces = {
+	drawn: Brix.Signal<Player>,
+	pieceOf: (self: any, player: Player, kind: string) -> Model?,
+}
+
 local Rails = {}
 
 function Rails.new(): Brix.System
@@ -73,16 +80,18 @@ function Rails.new(): Brix.System
 	local saving: Saving.SavingSystem? = nil
 	local slots: Slots.Slots? = nil
 	local findUses: FindUses.FindUsesSystem? = nil
+	local pieces: Pieces? = nil
 	local sweeping = true
 
-	-- `player`'s home unit and its rail, if they hold one and its rail stands.
+	-- `player`'s home unit and its rail, if they hold one and its rail is set out: their Rail
+	-- row as Arranging draws it (S5-03i1b).
 	local function railOf(player: Player): (Model?, Model?)
 		local plot = player:GetAttribute("Plot")
 		local n = if type(plot) == "string" then Holding.number(plot) else nil
 		local laid = if frontOffice then frontOffice:laid() else nil
 		local unit = if n and laid then laid.units[n] else nil
-		local rail = if unit then unit:FindFirstChild("Rail") else nil
-		if unit and rail and rail:IsA("Model") then
+		local rail = if pieces then pieces:pieceOf(player, "Rail") else nil
+		if unit and rail then
 			return unit, rail
 		end
 		return nil, nil
@@ -313,6 +322,10 @@ function Rails.new(): Brix.System
 			slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
 			findUses = (registry:get("findUses") :: any) :: FindUses.FindUsesSystem -- any: as above
 			local shelves = (registry:get("shelves") :: any) :: Shelves.ShelvesSystem -- any: as above
+			local arranging = (registry:get("arranging") :: any) :: Pieces -- any: as above
+			pieces = arranging
+			-- the rail drawn, moved or put away (S5-03i1b): its hangers follow it
+			table.insert(signals, arranging.drawn:connect(lay))
 
 			local sv = saving :: Saving.SavingSystem
 			table.insert(

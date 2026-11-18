@@ -19,6 +19,7 @@
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Arrange = require(script.Parent.Home.Arrange)
 local Arranged = require(script.Parent.Home.Arranged)
 local CardPlate = require(script.Parent.Home.CardPlate)
 local Boarding = require(script.Boarding)
@@ -29,9 +30,11 @@ local Elevator = require(script.Parent.Elevator)
 local Gate = require(script.Parent.Elevator.Gate)
 local HallLight = require(script.Parent.HallLight)
 local Home = require(script.Parent.Home)
+local Layout = require(script.Parent.Home.Layout)
 local Mirror = require(script.Parent.Mirror)
 local Shop = require(script.Parent.Shop)
 local Specs = require(script.Specs)
+local Spots = require(script.Parent.Home.Spots)
 local StorageUnit = require(script.Parent.StorageUnit)
 local UnitLight = require(script.Parent.UnitLight)
 
@@ -332,6 +335,36 @@ local function unitTemplate(): Model?
 	return if found and found:IsA("Model") then found else nil
 end
 
+-- A spare home's own pieces (S5-03i1b, D-346) under `parent`: Small's layout
+-- (`Home.Layout.default`) in lobby slot `slot`, the lobby laid at `pivot`, each piece stood by its
+-- spec box as Arranging stands a held home's rows (`Arrange.starterPivot`), from the place's Home
+-- `home`. Looks only: while the home is held its holder's rows stand instead (Arranging).
+local function spareSet(home: Model, parent: Instance, slot: Specs.Slot, pivot: CFrame)
+	local face, room = Arrange.areas(slot, pivot, Spots.Start)
+	local frames: { [string]: CFrame } = { Floor = Arranged.area(face, room.Floor) }
+	for _, row in Layout.default(room) do
+		local kind = Layout.kind(row.id)
+		local under = frames[row.on]
+		if not (kind and under) then
+			continue
+		end
+		local t = Arranged.pose(under, row.x, row.y, row.turn)
+		local at = Arrange.starterPivot(t, kind)
+		if kind == "Mirror" then
+			local model, glass = Home.mirrorAt(home, CFrame.identity, parent)
+			model.WorldPivot = CFrame.identity -- upright at its foot, so it leans as it's moved
+			model:PivotTo(at)
+			glass:SetAttribute("Face", face) -- the unit's door, for the walls MirrorView stands
+		elseif Home.has(home, kind) then
+			Home.piece(home, kind, at, parent)
+		end
+		local _, top = Spots.pieceTop(kind)
+		if top then -- the beanbag stands on the rug
+			frames[row.id] = t * CFrame.new(top[1], top[2], top[3])
+		end
+	end
+end
+
 -- Slot `slot`'s front (Specs.Slots): a copy of the climb's M unit with Lobby.Dropped left out, its
 -- doorway's outer face on the slot's Door looking Out onto the floor, as FloorBuilder.unit stands a
 -- climb's unit at a door face, then dressed as a home (Home.dress: the home's facade, casing,
@@ -354,14 +387,8 @@ function Lobby.front(template: Model, home: Model?, pivot: CFrame, slot: Specs.S
 		part(unit, "Lamp"):SetAttribute(UnitLight.HomeAttribute, true)
 		local starter = Instance.new("Folder")
 		starter.Name = "Starter"
-		for _, s in Home.Specs.Starter do
-			if Home.has(home, s.Kind) then
-				Home.piece(home, s.Kind, Arranged.piece(face, s.At, s.Turn), starter)
-			end
-		end
+		spareSet(home, starter, slot, pivot)
 		starter.Parent = unit
-		Home.mirror(home, unit, face)
-		Home.rail(home, unit, face)
 	else
 		StorageUnit.UnitKit.paint(unit, Lobby.UnitDoor, Lobby.Paint.Walls)
 		StorageUnit.UnitKit.number(unit, tostring(slot.Number))

@@ -6,7 +6,8 @@
 	shelf, Fortnite's locker marking what's new.
 
 	A player's home is the unit for their `Plot` attribute (Brix's PlayerPlots, FrontOffice), and its
-	shelf the Starter set's Shelf. Each spot of their save's `shelf` (Save.keep lands a kept find on
+	shelf their Shelf row as Arranging draws it (S5-03i1b, D-346); the finds stand in it, so they
+	go wherever it's set, and come back when it's set out again. Each spot of their save's `shelf` (Save.keep lands a kept find on
 	the first empty one) gets a copy of that find, inert, fitted into its cubby (Shelf.fit: shrunk,
 	never grown, its bottom on the board), tagged Shelf.Tag with its spot, its owner and how new it
 	is. It's laid when the save loads, when they're handed a home, and each time GatePay keeps finds
@@ -24,14 +25,19 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
-local Holding = require(ReplicatedStorage.Shared.Home.Holding)
 local HomeSpecs = require(ReplicatedStorage.Shared.Home.Specs)
 local Save = require(ReplicatedStorage.Shared.Save)
 local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
 local Tools = require(ReplicatedStorage.Shared.Tools)
-local FrontOffice = require(script.Parent.FrontOffice)
 local GatePay = require(script.Parent.GatePay)
 local Saving = require(script.Parent.Saving)
+
+-- The home's pieces as Arranging draws them (any: its type would require it, and it requires
+-- the systems that require this one).
+type Pieces = {
+	drawn: Brix.Signal<Player>,
+	pieceOf: (self: any, player: Player, kind: string) -> Model?,
+}
 
 -- One player's shelf as laid: the shelf piece, and the find standing on each spot.
 type Standing = { shelf: Model, finds: { [number]: Model } }
@@ -120,18 +126,12 @@ function Shelves.new(): ShelvesSystem
 	local limit = Brix.RateLimit.bucket(Shelf.Limit)
 	local remote: RemoteEvent? = nil
 	local shelfTest: BindableFunction? = nil
-	local frontOffice: FrontOffice.FrontOffice? = nil
 	local saving: Saving.SavingSystem? = nil
+	local pieces: Pieces? = nil
 
-	-- `player`'s home shelf: the Starter set's Shelf in the unit for their Plot, if they hold one.
+	-- `player`'s home shelf: their Shelf row as drawn in the unit they hold, if it's set out.
 	local function shelfOf(player: Player): Model?
-		local plot = player:GetAttribute("Plot")
-		local n = if type(plot) == "string" then Holding.number(plot) else nil
-		local laid = if frontOffice then frontOffice:laid() else nil
-		local unit = if n and laid then laid.units[n] else nil
-		local starter = if unit then unit:FindFirstChild("Starter") else nil
-		local shelf = if starter then starter:FindFirstChild("Shelf") else nil
-		return if shelf and shelf:IsA("Model") then shelf else nil
+		return if pieces then pieces:pieceOf(player, "Shelf") else nil
 	end
 
 	local function clear(player: Player)
@@ -233,9 +233,10 @@ function Shelves.new(): ShelvesSystem
 		start = function(_: any, context: Brix.Context)
 			local registry = context.registry
 			-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)
-			frontOffice = (registry:get("frontOffice") :: any) :: FrontOffice.FrontOffice
 			saving = (registry:get("saving") :: any) :: Saving.SavingSystem -- any: as above
 			local gatePay = (registry:get("gatePay") :: any) :: GatePay.GatePaySystem -- any: as above
+			local arranging = (registry:get("arranging") :: any) :: Pieces -- any: as above
+			pieces = arranging
 
 			local folder = ReplicatedStorage:FindFirstChild(Shelf.RemoteFolder)
 			if not folder then
@@ -291,6 +292,8 @@ function Shelves.new(): ShelvesSystem
 					task.defer(lay, each.player)
 				end)
 			)
+			-- the shelf drawn, moved or put away (S5-03i1b): its finds follow it
+			table.insert(signals, arranging.drawn:connect(lay))
 			table.insert(
 				signals,
 				gatePay.kept:connect(function(each: GatePay.Kept)

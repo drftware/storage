@@ -456,6 +456,8 @@ nowhere else.
       default layout; say if you'd rather it reset to that (D-346).
   18. The rug is floor you can stand things on: a beanbag or a find set on it moves with it when
       you move the rug (D-346).
+  19. An empty home nobody holds shows Small's starter layout behind its padlocked door; yours
+      replaces it while you hold the home (D-347).
 - [ ] **Walk into your home** (S5-03a2b3 and b4, D-268; seen in Studio Play by me, the switch
   pressed with T and with a tap on the A16 simulator, but I couldn't take a single picture, so
   how it looks is yours). Press Play, or publish and play on a phone (Galaxy A16):

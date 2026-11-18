@@ -300,12 +300,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 		-- the home's size, as the server set it from the holder's save (S5-03h1)
 		local sized = unit:GetAttribute(Spots.SizeAttribute)
-		local r = Arrange.room(
-			unit,
-			slot,
-			Lobby.Origin,
-			if type(sized) == "string" then sized else Spots.Start
-		)
+		local r =
+			Arrange.room(slot, Lobby.Origin, if type(sized) == "string" then sized else Spots.Start)
 		table.clear(tops)
 		local waiting: { { id: string, on: string, at: Vector3, model: Model } } = {}
 		local folder = placed()

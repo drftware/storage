@@ -2821,17 +2821,20 @@ Done when players watch the results to the end and change their perks between cl
         stood with the finds on the shelf's and box's tops moved onto them (`adopt`), a growing
         home's pieces riding their walls (`grow`), the shelf's, box's and rug's tops as piece
         tops, save v14's `starterLaid`. Done Nov 18, D-346: Lune specs; nothing wired yet.
-      - [ ] **S5-03i1b The server lays them**: `Arranging` lays the rows (`adopt` while
+      - [x] **S5-03i1b The server lays them** (done Nov 18, D-347: passes checks, untested in
+        Studio; the Studio pass moved to i1c): `Arranging` lays the rows (`adopt` while
         `starterLaid` is false, then writes it true; `grow` on a size change), draws them like
         bought pieces, refuses putting the job box away; `Arrange.room` drops the fixed set's
         blocks and the ShelfTop and JobBoxTop areas; `Lobby.front` lays a spare home by
         `Layout.default`; the job box's panel lists the starter pieces put away. The shelf's
         spots (`Shelves`), the job box's lid and panel (`JobBoxes`, `JobBoxView`), the mirror
         (`Home.mirror`, `MirrorView`) and the rail (`Rails`) find their piece by its row.
-      - [ ] **S5-03i1c Lift them in Arrange**: lift, move, turn and put away the shelf with finds
-        on it, the mirror (leaning only against a wall), the rail and the rest; the views follow
-        a moved piece; seen in Studio Play at Galaxy A16 size (move the shelf, the mirror, the
-        box; rejoin; grow a size), captures in `docs/art/`.
+      - [ ] **S5-03i1c Lift them in Arrange**: first Studio Play i1b (a Small home's shelf, box and
+        mirror by the walls; the test save adopted; the job box opens, the mirror reflects); then
+        lift, move, turn and put away the shelf with finds on it, the mirror (leaning only against
+        a wall), the rail and the rest; the views follow a moved piece (the rail's hangers, the
+        job box's lid, the lamp's light); seen in Studio Play at Galaxy A16 size (move the shelf,
+        the mirror, the box; rejoin; grow a size), captures in `docs/art/`. Split if it won't fit.
     - [ ] **S5-03i2 Take anything directly**: outside Arrange, walk up to any find set out (shelf,
       a top, the floor, a wall) and Take puts it in your hands; in Arrange, lift a find straight
       off the shelf or any top. Server-checked, never lost or doubled.

@@ -25,6 +25,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Brix = require(ReplicatedStorage.Brix)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local Home = require(ReplicatedStorage.Shared.Home)
+local Layout = require(ReplicatedStorage.Shared.Home.Layout)
 local Save = require(ReplicatedStorage.Shared.Save)
 local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
 local ShelfView = require(script.Parent.ShelfView)
@@ -34,9 +35,9 @@ local Tools = require(ReplicatedStorage.Shared.Tools)
 
 local JobBox = Home.JobBox
 
--- The lid's top as Arrange names it (`Spots.Furniture`): what stands on it rides the lid.
-local TOP = "JobBoxTop"
-assert(Spots.Furniture[TOP], "the job box's top is an area finds stand on")
+-- The lid's top: the job box's own row (S5-03i1b, its top `Spots.pieceTop`); what stands on it
+-- rides the lid.
+local TOP = Layout.id("JobBox")
 
 -- A find riding the lid: where the server drew it (on the lid shut), and where this screen last
 -- put it (so a move by the server is noticed and taken up).
@@ -76,11 +77,11 @@ local function same(a: CFrame, b: CFrame): boolean
 		and a.UpVector:Dot(b.UpVector) > 0.99999
 end
 
--- The folder of what's set out in the home whose job box is `box` (Starter, then the unit).
+-- The folder of what's set out in the home whose job box is `box`: the one it's drawn in (a spare
+-- home's box, Lobby.front's, has none).
 local function placedBy(box: Model): Instance?
-	local starter = box.Parent
-	local unit = if starter then starter.Parent else nil
-	return if unit then unit:FindFirstChild(Arrange.Folder) else nil
+	local folder = box.Parent
+	return if folder and folder.Name == Arrange.Folder then folder else nil
 end
 
 function JobBoxView.new(): Brix.System

@@ -7,9 +7,9 @@
 	the server agrees, because both judged it with the same areas, frames and blocks.
 
 	`room` builds a `Brix.Placements` (D-306) from the unit's slot and its size: the room's areas
-	(`Spots.room`, from the size's box in the slot, `Home.Sizes`, D-340), the shelf's and the job
-	box's tops where those pieces stand, and the room's own things placed first so nothing is set
-	inside them (`Spots.blocks`, D-309); a thing the size doesn't hold is left out. Each
+	(`Spots.room`, from the size's box in the slot, `Home.Sizes`, D-340) and the ceiling's lamp
+	placed first (`Spots.blocks`, D-309). The starter pieces are rows like bought furniture
+	(S5-03i1b, D-346), their tops their own (`Spots.pieceTop`). Each
 	area's world frame is kept by name, so `poseFrame` turns any pose into a CFrame, a find's own
 	top included (lifted by its drawn height, `heights`, or its art's) and a piece of furniture's
 	(its art's own top, `Spots.pieceTop`, D-338).
@@ -160,16 +160,10 @@ function Arrange.slot(n: number): LobbySpecs.Slot?
 	return slotOf[n]
 end
 
--- What's fixed in every home besides its starter pieces: the round lamp in the ceiling, the
--- mirror leaning on the right wall (its glass on the wall, its foot on the floor), and the
--- clothes rail standing past it on that wall (D-315; turned as the mirror is, so its length runs
--- along the wall and its depth across the floor).
+-- What's fixed in every home: the round lamp in the ceiling, wired to the room as a real unit's
+-- is (D-345). Everything else, the starter pieces too, is a row you arrange (S5-03i1b).
 Arrange.Fixed = (function(): { Spots.Fixed }
 	local lamp = HomeSpecs.Parts.Lamp
-	local m = HomeSpecs.Mirror
-	local wide, tall = m.Size[1], m.Size[2]
-	local r = HomeSpecs.Rail
-	local long, high, deep = r.Size[1], r.Size[2], r.Size[3]
 	return {
 		{
 			id = "Lamp",
@@ -178,24 +172,19 @@ Arrange.Fixed = (function(): { Spots.Fixed }
 			width = lamp.Size[1],
 			depth = lamp.Size[3],
 		},
-		{
-			id = "Mirror",
-			on = "RightWall",
-			at = { m.At[1], tall / 2, m.At[3] },
-			width = wide,
-			depth = tall,
-		},
-		{ id = "MirrorFoot", on = "Floor", at = m.At, width = 1.5, depth = wide },
-		{
-			id = "Rail",
-			on = "RightWall",
-			at = { r.At[1], high / 2, r.At[3] },
-			width = long,
-			depth = high,
-		},
-		{ id = "RailFoot", on = "Floor", at = r.At, width = deep, depth = long },
 	}
 end)()
+
+-- Where starter piece `kind` (`Furniture.Starter`) is pivoted to stand at pose frame `t`: its
+-- spec box (`Spots.pieceBox`, not the drawn one, so the mirror keeps its lean) stood on the face,
+-- its middle on the pose. `Home.Layout` lays the rows by that box.
+function Arrange.starterPivot(t: CFrame, kind: string): CFrame
+	local box, mid = Spots.pieceBox(kind)
+	if not (box and mid) then
+		return t
+	end
+	return t * CFrame.new(-mid[1], box[2] / 2 - mid[2], -mid[3])
+end
 
 -- Find `name`'s art box as Spots takes it (across, up, front to back), nil when the place lacks it;
 -- a piece of the counter's furniture's ("CampBed:Furniture", D-336) from its parts' boxes.
@@ -228,11 +217,10 @@ function Arrange.areas(
 	return face, Spots.room(centre, box), centre, box
 end
 
--- The room of the home in `unit`, lobby slot `slot`, the lobby laid at `pivot` (`Lobby.Origin`), at
--- size `size`: its judge holding the room's own things, up to the size's limit of finds besides
--- them. Its starter pieces are read from the unit as they stand (a piece not there, or not in this
--- size's room, offers no top and blocks nothing).
-function Arrange.room(unit: Model, slot: LobbySpecs.Slot, pivot: CFrame, size: string): Room
+-- The room of the home in lobby slot `slot`, the lobby laid at `pivot` (`Lobby.Origin`), at size
+-- `size`: its judge holding the ceiling's lamp, up to the size's limit of finds besides it and the
+-- starter pieces (rows, free of the limit: `Spots.setOut`; Arranging checks the finds' count).
+function Arrange.room(slot: LobbySpecs.Slot, pivot: CFrame, size: string): Room
 	local face, room, centre, box = Arrange.areas(slot, pivot, size)
 	local limit = Spots.limit(size)
 	local areas: { [string]: Brix.PlacementArea } = {}
@@ -241,30 +229,16 @@ function Arrange.room(unit: Model, slot: LobbySpecs.Slot, pivot: CFrame, size: s
 		areas[name] = { kind = r.kind, width = r.width, depth = r.depth }
 		frames[name] = Arranged.area(face, r)
 	end
-	local starter = unit:FindFirstChild("Starter")
-	local present: { HomeSpecs.Placed } = {}
-	for _, s in HomeSpecs.Starter do
-		if starter and starter:FindFirstChild(s.Kind) then
-			table.insert(present, s)
-		end
-	end
 	local blocks: { Spots.Block } = {}
-	local held: { [string]: boolean } = {}
-	for _, b in Spots.blocks(room, present, HomeSpecs.Pieces, HomeSpecs.Parts, Arrange.Fixed) do
+	for _, b in Spots.blocks(room, {}, HomeSpecs.Pieces, HomeSpecs.Parts, Arrange.Fixed) do
 		if Spots.within(room, b) then
 			table.insert(blocks, b)
-			held[b.id] = true
 		end
 	end
-	for name, f in Spots.Furniture do
-		local piece = if starter and held[f.piece] then starter:FindFirstChild(f.piece) else nil
-		local part = HomeSpecs.Parts[f.part]
-		if piece and piece:IsA("Model") and part then
-			areas[name] = (Spots.furnitureTop(part.Size, part.Centre))
-			frames[name] = Arranged.furniture(piece:GetPivot(), part.Size, part.Centre)
-		end
-	end
-	local placements = Brix.Placements.new({ areas = areas, limit = limit + #blocks })
+	local placements = Brix.Placements.new({
+		areas = areas,
+		limit = limit + #blocks + #Furniture.Starter,
+	})
 	for _, b in blocks do
 		local refusal = placements:place(b.id, b.shape, b.pose)
 		if refusal then

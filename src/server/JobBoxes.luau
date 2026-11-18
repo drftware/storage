@@ -5,9 +5,9 @@
 	up with a soft steel creak. Precedents: Resident Evil's item box, Animal Crossing's house storage,
 	Fortnite's locker marks.
 
-	Each home's JobBox piece (the Starter set, Home.piece tags it) gets an Open button in front of
-	it, on a spot of its own in the unit (JobBox.Spot) that HomeCards shows to the home's holder
-	alone. The server owns the box's two attributes and every screen draws them (JobBoxView):
+	Each held home's job box (its JobBox row as Arranging draws it, S5-03i1b; Home.piece tags it)
+	gets an Open button in front of it, on a spot of its own in the unit (JobBox.Spot) that follows
+	the box when it's drawn again, and that HomeCards shows to the home's holder alone. The server owns the box's two attributes and every screen draws them (JobBoxView):
 	- Fresh: how new what went in since its holder last opened it is (Save's `boxFresh`), brought up
 	  to date each time Shelves lays that player's home finds and when the home changes hands.
 	- Lid: 0 shut; up, 1 plus how new what was in it as it opened (Save.Fresh), so the opener's
@@ -70,7 +70,22 @@ local Gold = Home.Gold
 local JobBox = Home.JobBox
 
 -- One home's box as wired: its unit, the piece, its button and when it last answered a press.
-type Box = { unit: Model, model: Model, prompt: ProximityPrompt, last: number }
+type Box = {
+	unit: Model,
+	model: Model,
+	prompt: ProximityPrompt,
+	last: number,
+	owner: Player,
+	spot: BasePart,
+	conns: { RBXScriptConnection },
+}
+
+-- The home's pieces as Arranging draws them (its type would require it, and it requires the
+-- systems that require this one).
+type Pieces = {
+	drawn: Brix.Signal<Player>,
+	pieceOf: (self: any, player: Player, kind: string) -> Model?,
+}
 
 -- The Studio-only hook's name in ServerStorage: Invoke(player, name) cracks one of `name` in their
 -- save, as a climb's gate does (S5-03c3a2's test).
@@ -273,13 +288,25 @@ function JobBoxes.new(): Brix.System
 		end
 	end
 
-	-- The box in `unit`'s starter set, its button set in front of it. Nil for a unit with none.
-	local function wire(unit: Model): Box?
-		local starter = unit:FindFirstChild("Starter")
-		local model = if starter then starter:FindFirstChild("JobBox") else nil
-		if not (model and model:IsA("Model")) then
-			return nil
+	-- Where box `model`'s button stands: just in front of its lid, as the box stands now.
+	local function spotFrame(model: Model): CFrame
+		local front = Home.Specs.Parts.JobBox
+		return model.WorldPivot
+			* CFrame.new(0, JobBox.Button.Up, -(front.Size[3] / 2 + JobBox.Button.Out))
+	end
+
+	-- Takes box `box`'s button away (its home let go, or its box drawn anew).
+	local function unwire(box: Box)
+		open[box] = nil
+		box.spot:Destroy()
+		for _, c in box.conns do
+			c:Disconnect()
 		end
+		table.clear(box.conns)
+	end
+
+	-- Box `model` in `unit`, `owner`'s, its button set in front of it.
+	local function wire(unit: Model, model: Model, owner: Player): Box
 		-- on a spot of its own in the unit, just in front of the lid: the box's collider would stand
 		-- in the way of the line-of-sight check, as the front's wall does for the switch
 		local spot = Instance.new("Part")
@@ -291,9 +318,7 @@ function JobBoxes.new(): Brix.System
 		spot.CastShadow = false
 		spot.Transparency = 1
 		spot.Size = Vector3.one * 0.2
-		local front = Home.Specs.Parts.JobBox
-		spot.CFrame = model.WorldPivot
-			* CFrame.new(0, JobBox.Button.Up, -(front.Size[3] / 2 + JobBox.Button.Out))
+		spot.CFrame = spotFrame(model)
 		spot.Parent = unit
 		local at = Instance.new("Attachment")
 		at.Name = "JobBoxButton"
@@ -305,17 +330,25 @@ function JobBoxes.new(): Brix.System
 			pad = Enum.KeyCode.ButtonX,
 			reach = JobBox.Button.Reach,
 		})
-		local box: Box = { unit = unit, model = model, prompt = prompt, last = -math.huge }
+		local box: Box = {
+			unit = unit,
+			model = model,
+			prompt = prompt,
+			last = -math.huge,
+			owner = owner,
+			spot = spot,
+			conns = {},
+		}
 		model:SetAttribute(JobBox.LidAttribute, 0)
 		show(box)
 		table.insert(
-			connections,
+			box.conns,
 			prompt.Triggered:Connect(function(player: Player)
 				press(box, player)
 			end)
 		)
 		table.insert(
-			connections,
+			box.conns,
 			unit:GetAttributeChangedSignal(Door.HolderAttribute):Connect(function()
 				shut(box) -- a home changing hands never keeps the last one's lid up
 				show(box)
@@ -406,12 +439,35 @@ function JobBoxes.new(): Brix.System
 					writing[player] = nil -- their save is written as it's let go
 				end)
 			)
-			for _, unit in laid.units do
-				local box = wire(unit)
-				if box then
-					boxes[unit] = box
-				end
-			end
+			-- each held home's box as Arranging draws it (S5-03i1b): wired as it's laid, its button
+			-- following it when it's drawn again, gone when the home is let go
+			local arranging = (registry:get("arranging") :: any) :: Pieces -- any: as above
+			table.insert(
+				signals,
+				arranging.drawn:connect(function(player: Player)
+					local model = arranging:pieceOf(player, "JobBox")
+					local drawnIn = if model then model.Parent else nil
+					local unit = if drawnIn then drawnIn.Parent else nil
+					for at, box in boxes do
+						if box.owner == player and box.model ~= model then
+							unwire(box)
+							boxes[at] = nil
+						end
+					end
+					if not (model and unit and unit:IsA("Model")) then
+						return
+					end
+					local have = boxes[unit]
+					if have and have.model == model then
+						have.spot.CFrame = spotFrame(model) -- the box moved: its button with it
+					else
+						if have then
+							unwire(have)
+						end
+						boxes[unit] = wire(unit, model, player)
+					end
+				end)
+			)
 			-- the box follows each lay of a player's home finds (a load, a home handed over, a keep)
 			table.insert(
 				signals,
@@ -447,10 +503,7 @@ function JobBoxes.new(): Brix.System
 			end
 			table.clear(connections)
 			for _, box in boxes do
-				local spot = box.prompt.Parent and box.prompt.Parent.Parent
-				if spot then
-					spot:Destroy()
-				end
+				unwire(box)
 			end
 			table.clear(boxes)
 			table.clear(open)

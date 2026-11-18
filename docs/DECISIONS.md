@@ -8899,6 +8899,34 @@ of them yours to lift and move (D-345; Animal Crossing's house, Bloxburg's build
 - **Split**: the server and the views are S5-03i1b, lifting them in Arrange S5-03i1c. Nothing in
   the game uses the rows yet; save v14 only adds the flag.
 
+## D-347 The server lays every home's own pieces as rows, and each piece's job follows it (S5-03i1b, 2026-11-18)
+
+The moment: your Small unit's shelf stands on the back wall, not mid-room; an XL home laid before
+keeps its set where it stood, with the finds on its shelf and box.
+- **Laid by the server** (`Arranging`): a save whose `starterLaid` is false adopts the pieces once
+  (`Layout.adopt`, after carrying its rows to the home's size) and is written with the flag true;
+  a home that changed size since grows them (`Layout.grow`: a piece against a wall rides it);
+  the job box's row always loads first (`Layout.boxFirst`).
+- **Free, one each**: the starter pieces are settable and boxed one each (`Layout.settable`,
+  `Layout.boxed`), so a put-away rug is in the job box's list. Brix's own count now holds them,
+  so the server refuses a new find or bought piece past the size's limit itself ("full", Brix's
+  word, so the screen's answer is unchanged).
+- **The job box is never put away**: `PutAway` answers "kept" (`Spots.Refusals.Kept`); the
+  screen's press does nothing (i1c).
+- **Drawn by the spec's box**, not the measured one (`Arrange.starterPivot`), so a row stands
+  exactly where `Layout` laid it and the mirror keeps its lean (its model pivoted upright at its
+  foot, its glass marked with the unit's door for MirrorView's walls). A starter piece keeps
+  `Home.piece`'s collision: the rug and the beanbag's seat never stop you.
+- **The fixed set is gone**: `Arrange.room` holds only the ceiling lamp; no ShelfTop or JobBoxTop
+  areas. A spare home shows Small's layout (`Lobby.front`), taken away while it's held and put
+  back when it's let go (my default: the door's shut and padlocked, so it's rarely seen).
+- **Each piece's job by its row**: `Arranging.drawn` fires after every lay and change; Shelves
+  stands the finds in the drawn shelf (they're its children, so they ride it), JobBoxes wires the
+  drawn box's Open button and moves it with the box, Rails hangs from the drawn rail, the lid's
+  riders are what stands on the box's row (JobBoxView), and a floor lamp drawn later joins its
+  home's switch (HomeLights).
+- **Not seen yet**: Studio was in another session's Play; the pass moves to S5-03i1c, first.
+
 ## D-400 A find that lands after you chose what to hold keeps your hand where you put it (F-G1e6q2, Nov 17)
 - **The rule**: a marked box's find reaches your hand as its reveal ends (about 2.4 s for an
   Epic). If you switched slots or put your tool away since the box opened, the find goes into a
