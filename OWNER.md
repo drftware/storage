@@ -429,6 +429,11 @@ nowhere else.
       drag, and do you want it to ride above your thumb rather than under it? Set something on
       the portable TV or the toy drum, then move that: the find on top should jump with it (my
       test save has neither, so I couldn't watch it).
+  13. Everything in a home moves (D-345) except the ceiling bulb and the light switch by the
+      door, which stay with the room as a real unit's wiring does.
+  14. The job box can be moved anywhere but never put away, since it holds everything (D-345).
+  15. Friends in your home can press a find's button (switch your lamp, play your boombox) but
+      can't move or take anything (D-345).
 - [ ] **Walk into your home** (S5-03a2b3 and b4, D-268; seen in Studio Play by me, the switch
   pressed with T and with a tap on the A16 simulator, but I couldn't take a single picture, so
   how it looks is yours). Press Play, or publish and play on a phone (Galaxy A16):

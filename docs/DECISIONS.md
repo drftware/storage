@@ -8826,3 +8826,40 @@ its corner), "More room!" and your name; the roll lands on the knock and it ease
 - Passes checks. In Studio Play on the A16 the friend's banner arrived with the giver's name, face
   and headline and hid after, no errors; Studio stopped drawing frames, so the motion, the Units
   tab's Gift and the friend cards weren't watched (the owner's two-player test, `OWNER.md`).
+
+## D-345 Everything in a home moves, lifts and works (the owner, 2026-11-18)
+
+The owner, trying the home in Studio: "All objects should be movable, placeable, and clickable. In
+other words if I buy an end stand and put a lamp on it, I'd expect to be able to walk up and click
+it. Right now none of the objects placed in the room are able to be interacted with." And: "This
+is absolutely how I'd expect it to act. Anything in the room can be moved around. It makes 0 sense
+to have a shelf in the middle, and the whole point is that players will be able to fully decorate
+and modify a room to their liking."
+
+As built up to b727b5c, the starter set (shelf, job box, mirror, clothes rail, rug, beanbag, floor
+lamp) stood fixed in every home, so at Small the shelf stood mid-room; finds on it came and went
+only through the job box's panel; and a find set out was looks only, since the home doc's idea 16
+(finds doing things at home) was left for later, a find at a time. That's replaced:
+
+- **Every piece in a home is furniture you arrange.** The starter pieces become rows in the home's
+  layout like bought furniture: lifted, moved, turned and put away in Arrange, saved. A new home,
+  and a home that grows, starts from a default layout for its size (this replaces S5-03h4's fixed
+  set by size). A home laid before this gets its starter pieces as rows where they stood.
+- **What stays with the room** (my default, `OWNER.md`): the ceiling bulb and the light switch by
+  the door, as a real unit's wiring does. The job box moves but can't be put away, since it holds
+  everything. The shelf's spots, the mirror's reflection and the rail's hangers go wherever their
+  piece is set.
+- **Take anything directly.** Outside Arrange, walk up to any find set out in your home (on the
+  shelf, a table, the floor, a wall) and Take puts it in your hands, as on a climb. In Arrange, a
+  find lifts straight off the shelf or any top.
+- **Every find set out keeps its button.** Walk up to it and its own verb shows, the climb's press
+  (Switch for a lamp, Play for the boombox, Wind for a wind-up): all finds at once through their
+  existing rows (`Finds/Use`), not one at a time. Lights still under the phone's caps (D-271).
+  Friends in your home can press a find's button but can't move or take anything (my default,
+  `OWNER.md`; Animal Crossing's visitors use the furniture but don't pick it up).
+- **Furniture works too**: sit on a crate, the beanbag, the cushion, the camp bed (the Seats
+  already queued).
+- **Precedents**: Animal Crossing (everything in your house moves, the pieces you start with too,
+  and you walk up to use them) and Bloxburg's build mode (every object movable; lamps switch).
+- **Order**: this comes next, as S5-03i, before the rest of the sizes: there's no point laying
+  fixed pieces by size when they're about to move. S5-03h4 folds into S5-03i1.

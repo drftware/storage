@@ -2782,7 +2782,7 @@ Done when players watch the results to the end and change their perks between cl
                 own "More room!" with the giver's face wherever they stand; Studio's 2-player test.
                 Done Nov 17, D-344: friends dealt as cards; the banner seen arriving in Studio Play,
                 the rest untested in Studio (Studio stopped drawing); the 2-player test the owner's.
-      - [ ] **S5-03h4 The starter set laid by size**: where the shelf, the job box, the rug, the
+      - [x] **S5-03h4 The starter set laid by size** (folded into S5-03i1, D-345): where the shelf, the job box, the rug, the
         beanbag, the floor lamp, the mirror, the rail and the ceiling lamp stand at each size,
         from `art/home/home_spec.py` (Small holds what's "snug": the shelf, the box, the mirror
         and the rail, idea 30); each piece rides its wall as the home grows; look sheets at
@@ -2794,7 +2794,25 @@ Done when players watch the results to the end and change their perks between cl
       - [ ] **S5-03h6 The walls grind back** (idea 31): when it grows, you're there to watch: the
         partitions slide along their rails, the back wall rolls away, the door frame widens, dust
         drifts down, with the steel's grind (Animal Crossing's house growing).
-  Later, each its own ticket: finds doing things at home, a find at a time (idea 16); living
+  - [ ] **S5-03i Everything in the room moves, lifts and works** (the owner, Nov 18, D-345;
+    Animal Crossing's house, Bloxburg's build mode). Next, ahead of S5-03h5 and h6. The moment:
+    you buy an end table, set it by the bed, stand your lamp on it, walk up and press Switch, and
+    the corner glows; the shelf goes wherever you want it. In this order:
+    - [ ] **S5-03i1 The starter pieces become furniture**: the shelf, job box, mirror, clothes
+      rail, rug, beanbag and floor lamp as rows in the home's layout, lifted, moved, turned and
+      put away in Arrange like bought pieces (the job box moved but never put away); the shelf's
+      spots, the mirror's reflection and the rail's hangers go with their piece; a default layout
+      per size for a new or grown home, none mid-room (this is S5-03h4, folded in); a home laid
+      before gets its pieces as rows where they stood (a save version with a migration). The
+      ceiling bulb and the switch stay with the room.
+    - [ ] **S5-03i2 Take anything directly**: outside Arrange, walk up to any find set out (shelf,
+      a top, the floor, a wall) and Take puts it in your hands; in Arrange, lift a find straight
+      off the shelf or any top. Server-checked, never lost or doubled.
+    - [ ] **S5-03i3 Every find set out keeps its button**: walk up and its own verb shows, the
+      climb's press from its `Finds/Use` row (Switch, Play, Wind, Squeeze...), for every find at
+      once; lights under D-271's caps; friends may press, not move or take.
+    - [ ] **S5-03i4 Sit on the furniture**: the crates, the beanbag, the cushion, the camp bed.
+  Later, each its own ticket (finds doing things at home moved into S5-03i3, D-345): living
   finds (17); the home score, visits to friends on other servers, photos (27 to 29; 29 is
   untested and waits on the owner). Trading comes later still.
 - [ ] **S5-04 The collection book.** A page for every kind of find, stamped "New" the first
