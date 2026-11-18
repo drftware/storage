@@ -179,6 +179,20 @@ nowhere else.
   3. Rejoin: the find is still on the pallet. Tap the pallet, Put away: both go back to the box.
   Try a crate and the folding table too. Look for: a find sitting right on the top (not
   floating, not sunk), nothing snapping when the piece lands.
+- [ ] **The string lights and the neon moon, two of you, door down** (S5-03g4d, D-339; I saw
+  them alone on the A16 with the door up: `docs/art/S5-03g4d-*.jpg`). Play with two clients,
+  both in the first player's home. To own them, the counter (when they're in the week's stock)
+  or, in Studio, `ServerStorage.ArrangeTest:Invoke(player, "own", "StringLights")` on the server.
+  1. First player: the job box's Set out on the string lights: they rise onto the ceiling. Drag
+     over the floor: they follow above your finger; Place. The moon: Set out, it goes up on the
+     back wall; drag it to a side wall; Place.
+  2. Switch the lamp off and pull the door down. Look for: the bulbs and the moon glowing, a
+     warm pool on the ceiling under the lights and a glow round the moon, nothing popping on.
+  3. Second player: the same glow. Walk out to the lobby: the light fades off, the bulbs keep
+     glowing.
+  Tell me: is the moon's glow on the wall enough with the door down? (Mine was faint with the
+  door up: the art's 1.1; the neon card needed 2.6.) And should the lit pieces ever switch off
+  with the lamp? I left them always on, as Adopt Me's string lights are.
 - [ ] **Furniture set out at home: my defaults** (S5-03g4c1, D-335, D-336, D-337, D-338). Say
   which to change:
   1. A piece set out counts against your home's limit, the same as a find (Bloxburg's budget).

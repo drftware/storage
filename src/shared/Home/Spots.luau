@@ -225,6 +225,25 @@ function Spots.pieceTop(kind: string): (Area?, Vec?)
 	}, { top.At[1] - mid[1], top.At[2] - (mid[2] - box[2] / 2), top.At[3] - mid[3] }
 end
 
+-- The room's areas a piece of `spot` starts on as it comes out of the job box (S5-03g4d), the
+-- first with room for it: the floor's; the ceiling's; the back wall's, the one you face coming
+-- in, then the side walls'. Names as `room` gives them. A new list.
+function Spots.starts(spot: Spot): { string }
+	if spot == "Ceiling" then
+		return { "Ceiling" }
+	elseif spot == "Wall" then
+		return { "BackWall", "LeftWall", "RightWall" }
+	end
+	return { "Floor" }
+end
+
+-- The light a piece set out under placed name `name` throws (`Specs.Glows`: the string lights,
+-- the neon moon), or nil for any other piece or a find (S5-03g4d).
+function Spots.glow(name: string): HomeSpecs.Glow?
+	local piece = Furniture.ofPlaced(name)
+	return if piece then HomeSpecs.Glows[piece.id] else nil
+end
+
 -- How far a find's top stands above what it stands on, from its art's box (studs): its height.
 function Spots.topHeight(box: Vec?): number
 	return (box or Spots.Unknown)[2]

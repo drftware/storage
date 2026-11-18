@@ -378,11 +378,10 @@ function BoxPanel.pieces(furniture: { [string]: number }): { Card }
 	return out
 end
 
--- Whether the panel offers Set out for `card`: a piece that stands on the floor. Wall and ceiling
--- pieces come with their lights (S5-03g4d); a find is never set out from here.
+-- Whether the panel offers Set out for `card`: any piece of furniture, on the floor, a wall or the
+-- ceiling (S5-03g4d); a find is never set out from here.
 function BoxPanel.settable(card: Card): boolean
-	local p = if card.piece then Furniture.byId(card.piece) else nil
-	return p ~= nil and p.stands == "Floor"
+	return card.piece ~= nil and Furniture.byId(card.piece) ~= nil
 end
 
 -- Whether the panel offers to make `card` Gold: four or more of a find that can be, not a Gold.

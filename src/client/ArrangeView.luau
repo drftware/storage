@@ -372,16 +372,21 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		local ray = camera:ScreenPointToRay(at.X, at.Y)
 		local best: string? = nil
 		local nearest, bx, by = math.huge, 0, 0
+		-- something hung from the ceiling follows the finger over the floor under it, as The Sims
+		-- hangs a ceiling light from the tile you point at: the corner camera looks down on the
+		-- room, so the ceiling itself is seldom on the screen (S5-03g4d)
+		local under = r.frames.Floor
 		local function try(on: string, f: CFrame, area: Brix.PlacementArea)
 			if not table.find(l.shape.fits, area.kind) then
 				return
 			end
-			local n = f.YVector
+			local plane = if area.kind == Spots.Kinds.Ceiling and under then under else f
+			local n = plane.YVector
 			local facing = ray.Direction:Dot(n)
 			if facing > -1e-4 then
 				return -- seen from behind or edge on
 			end
-			local t = (f.Position - ray.Origin):Dot(n) / facing
+			local t = (plane.Position - ray.Origin):Dot(n) / facing
 			if t <= 0 or t >= nearest then
 				return
 			end
@@ -658,23 +663,28 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		lift(id, id, name, ghost, model)
 	end
 
-	-- The floor spot nearest its middle where `l` fits, in rings of grid steps outward; the middle
-	-- itself when none does (it shows red, and the thumb takes it from there).
+	-- The spot nearest its middle where `l` fits on the first of its starting areas with room
+	-- (`Spots.starts`: the floor; the ceiling; the back wall, then the sides), in rings of grid
+	-- steps outward; the first area's middle when none does (it shows red, and the thumb takes it
+	-- from there).
 	local function freeSpot(r: Arrange.Room, l: Lifted): Brix.PlacementPose?
-		local first = settle(r, l, "Floor", 0, 0)
-		local area = areaOf(r, "Floor")
-		if not (first and area) then
-			return first
-		end
+		local starts = Spots.starts(l.spot)
+		local first = settle(r, l, starts[1], 0, 0)
 		local step = Arrange.Step
-		local reach = math.ceil(math.max(area.width, area.depth) / 2 / step)
-		for ring = 0, reach do
-			for i = -ring, ring do
-				for j = -ring, ring do
-					if math.max(math.abs(i), math.abs(j)) == ring then
-						local pose = settle(r, l, "Floor", i * step, j * step)
-						if pose and r.placements:check(l.id, l.shape, pose) == nil then
-							return pose
+		for _, on in starts do
+			local area = areaOf(r, on)
+			if not area then
+				continue
+			end
+			local reach = math.ceil(math.max(area.width, area.depth) / 2 / step)
+			for ring = 0, reach do
+				for i = -ring, ring do
+					for j = -ring, ring do
+						if math.max(math.abs(i), math.abs(j)) == ring then
+							local pose = settle(r, l, on, i * step, j * step)
+							if pose and r.placements:check(l.id, l.shape, pose) == nil then
+								return pose
+							end
 						end
 					end
 				end
@@ -723,7 +733,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		if l and not l.pose then -- over nothing it fits: start it on the floor's middle
 			-- out of the job box with no thumb on it: the free spot nearest the middle, so it
 			-- arrives green (S5-03g4c2)
-			local pose = if from then freeSpot(r, l) else settle(r, l, "Floor", 0, 0)
+			local pose = if from
+				then freeSpot(r, l)
+				else settle(r, l, Spots.starts(l.spot)[1], 0, 0)
 			if pose then
 				setPose(r, l, pose)
 			end
@@ -1018,7 +1030,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 		table.clear(cards)
 		local template = Home.template()
-		-- the furniture first, floor pieces only (the lit ones wait for g4d), then the finds
+		-- the furniture first, then the finds
 		local dealt: { BoxPanel.Card } = {}
 		for _, card in BoxPanel.pieces(pieces) do
 			if BoxPanel.settable(card) then
@@ -2045,7 +2057,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	-- isn't a floor piece, or while something's already lifted.
 	local function hold(piece: string, from: CFrame?)
 		local p = Furniture.byId(piece)
-		if not (running and p and p.stands == "Floor") or lifted or not (open or standingIn()) then
+		if not (running and p) or lifted or not (open or standingIn()) then
 			return
 		end
 		if onTab ~= FINDS then

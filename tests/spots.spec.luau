@@ -441,6 +441,60 @@ do
 	)
 end
 
+-- The lit pieces (S5-03g4d): the string lights hang from the ceiling, the neon moon on a wall,
+-- each sized by its art, started on its own surface, and lit by its row in Specs.Glows.
+do
+	local lights = Spots.shape("StringLights:Furniture", Spots.pieceBox("StringLights"))
+	ok(
+		#lights.fits == 1 and lights.fits[1] == Spots.Kinds.Ceiling,
+		"the string lights fit only the ceiling"
+	)
+	ok(near(lights.width, 9.65) and near(lights.depth, 0.3), "the lights' run across the ceiling")
+	local moon = Spots.shape("NeonSign:Furniture", Spots.pieceBox("NeonSign"))
+	ok(#moon.fits == 1 and moon.fits[1] == Spots.Kinds.Wall, "the moon fits only a wall")
+	ok(near(moon.width, 2.9) and near(moon.depth, 2.8), "the moon's footprint is across by up")
+	ok(Spots.glow("StringLights:Furniture") == HomeSpecs.Glows.StringLights, "the lights glow")
+	ok(Spots.glow("NeonSign:Furniture") == HomeSpecs.Glows.NeonSign, "the moon glows")
+	ok(Spots.glow("CampBed:Furniture") == nil, "a bed doesn't")
+	ok(Spots.glow("NeonSign") == nil, "nor does the find called NeonSign")
+	ok(Spots.starts("Floor")[1] == "Floor", "a floor piece starts on the floor")
+	ok(Spots.starts("Ceiling")[1] == "Ceiling", "the lights start on the ceiling")
+	local walls = Spots.starts("Wall")
+	ok(walls[1] == "BackWall" and #walls == 3, "the moon starts on the back wall, facing the door")
+	-- in a home, round the ceiling's lamp
+	local room = Spots.room({ 0, 5, 14.875 }, { 20, 10, 29.75 })
+	local areas = {}
+	for name, r in room do
+		areas[name] = { kind = r.kind, width = r.width, depth = r.depth }
+	end
+	local set = Brix.Placements.new({ areas = areas, limit = 25 })
+	local lamp = HomeSpecs.Parts.Lamp
+	local blocks = Spots.blocks(room, {}, HomeSpecs.Pieces, HomeSpecs.Parts, {
+		{
+			id = "Lamp",
+			on = "Ceiling",
+			at = HomeSpecs.Lamp,
+			width = lamp.Size[1],
+			depth = lamp.Size[3],
+		},
+	})
+	for _, b in blocks do
+		set:place(b.id, b.shape, b.pose)
+	end
+	local on = { on = "Ceiling", x = 0, y = 0, turn = 0 }
+	ok(set:check("StringLights:Furniture#1", lights, on) ~= nil, "not through the lamp")
+	on.y = 3
+	ok(set:place("StringLights:Furniture#1", lights, on) == nil, "the lights strung past the lamp")
+	ok(
+		set:place("NeonSign:Furniture#1", moon, { on = "BackWall", x = 0, y = 1, turn = 0 }) == nil,
+		"the moon hung on the back wall"
+	)
+	ok(
+		set:check("NeonSign:Furniture#2", moon, { on = "Floor", x = 0, y = 0, turn = 0 }) ~= nil,
+		"never stood on the floor"
+	)
+end
+
 print(`spots.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

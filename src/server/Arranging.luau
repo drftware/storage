@@ -116,13 +116,17 @@ function Arranging.new(): ArrangingSystem
 		end
 		local model = Home.piece(template, kind, CFrame.identity, home.folder)
 		local n = tonumber(string.match(id, "#(%d+)$")) or 1
+		local row = Furniture.byId(kind)
+		local hung = row ~= nil and row.stands ~= "Floor" -- the string lights, the neon moon (g4d)
 		local crate = Home.CrateColours[(n - 1) % #Home.CrateColours + 1] -- each crate the next colour
 		for _, d in model:GetDescendants() do
 			if d:IsA("BasePart") and d.Name == "MilkCrate" then
 				d.Color = crate
 			end
 			if d:IsA("BasePart") then
-				d.CanCollide = true -- a bed or a shelf stops you, as the starter set's pieces do
+				-- a bed or a shelf stops you, as the starter set's pieces do; what hangs on a wall
+				-- or from the ceiling is never walked into, and its lit parts are Home.paint's
+				d.CanCollide = not hung
 				d.CanTouch = false
 				d.CanQuery = true
 			end
@@ -320,9 +324,7 @@ function Arranging.new(): ArrangingSystem
 		elseif Furniture.ofPlaced(what) then
 			local piece = Furniture.ofPlaced(what) :: Furniture.Piece
 			local template = Home.template()
-			if piece.stands ~= "Floor" then
-				return "", "notYet" -- the lit pieces on walls and ceilings come with their lights (g4d)
-			elseif (boxedPieces(data)[piece.id] or 0) < 1 then
+			if (boxedPieces(data)[piece.id] or 0) < 1 then
 				return "", Spots.Refusals.NotInBox
 			elseif not (template and Home.has(template, piece.id)) then
 				return "", Spots.Refusals.Unknown
@@ -474,7 +476,9 @@ function Arranging.new(): ArrangingSystem
 			-- asks as the screen does, unthrottled, and answers (id, refusal);
 			-- `:Invoke(player, "putAway", id)` answers the refusal or ""; `:Invoke(player, "rows")`
 			-- answers the save's placed rows and the job box's counts; `:Invoke(player, "relay")`
-			-- sets the home up again from the save, as a rejoin does. No client reaches it.
+			-- sets the home up again from the save, as a rejoin does; `:Invoke(player, "own", piece)`
+			-- puts one more of furniture `piece` in their job box, saved as a buy is (S5-03g4d, for
+			-- a piece not in this week's stock). No client reaches it.
 			if RunService:IsStudio() then
 				local test = Instance.new("BindableFunction")
 				test.Name = "ArrangeTest"
@@ -505,6 +509,14 @@ function Arranging.new(): ArrangingSystem
 						return if data then data.placed.rows else nil,
 							if data then Save.boxed(data, outOf(player)) else nil,
 							if data then boxedPieces(data) else nil
+					elseif verb == "own" then
+						local data = if saving then saving:data(player) else nil
+						if not (data and type(a) == "string" and Furniture.byId(a)) then
+							return false
+						end
+						data.furniture[a] = (data.furniture[a] or 0) + 1
+						sendBox(player)
+						return true
 					elseif verb == "relay" then
 						clear(player)
 						lay(player)

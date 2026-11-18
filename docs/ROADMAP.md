@@ -2739,10 +2739,11 @@ Done when players watch the results to the end and change their perks between cl
         lamp aboard, the firefly jar aimed green onto it and set down, both still there after a
         re-lay, all three put away together; a jar on a crate's rim. The camp bed and the floor
         cushion are sat on (Seats, later); the shelf's lower tiers wait.
-      - [ ] **S5-03g4d The lit pieces**: the string lights hang from the ceiling by their
+      - [x] **S5-03g4d The lit pieces**: the string lights hang from the ceiling by their
         origin, the neon moon from a wall like a name card; their Neon parts Neon in `Colour`,
         clear parts Glass (`Specs.Glows`), their one light made only near you as the neon
-        cards' are (HomeCards' wash, D-332) within the A16's budget (D-271).
+        cards' are (HomeCards' wash, D-332) within the A16's budget (D-271). Done Nov 17, D-339:
+        seen on the A16; the moon's glow with the door down and two clients wait on the owner.
   - [ ] **S5-03h Four sizes and the walls that move** (ideas 30, 31): small to start, medium for
     cash, large and XL for Robux; the partitions grind back and the door widens, everything set
     out staying where it was.

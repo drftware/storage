@@ -170,6 +170,18 @@ Home.FloorLamp = {
 	Fade = 0.4, -- seconds a lamp's real light takes to come or go, so the pick never pops
 }
 
+-- The lit pieces set out in homes (S5-03g4d: the string lights, the neon moon). Their bulbs and
+-- tube glow everywhere (Neon, Home.paint); only the few nearest a point just ahead of the camera
+-- throw their real light (Specs.Glows) on a screen (D-271), as the floor lamps do.
+Home.LitPiece = {
+	-- a home holds up to four strings and two moons; three lights fill the room you're in
+	-- without a hall of them costing a phone a light each
+	Near = 3,
+	Reach = 40, -- studs: your home's back wall from the camera behind you at its doorway (24 left
+	-- the moon on a 30-deep home's back wall dark)
+	Fade = 0.8, -- seconds a piece's light takes to warm up or go, slower than a lamp: a glow
+}
+
 -- The parts of a home's front only its insides see (S5-03a2c): the drum the door rolls onto and
 -- its head plates and axle, above the doorway behind the front wall. A screen draws them only
 -- while its camera is in that home or within InsideMargin studs out of its doorway: from the

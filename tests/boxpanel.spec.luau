@@ -335,8 +335,8 @@ do -- the furniture in the box (S5-03g4c2): a card a piece, in the counter's ord
 		"the moon isn't the find NeonSign"
 	)
 	ok(
-		BoxPanel.settable(pieces[2]) and not BoxPanel.settable(pieces[3]),
-		"a bed sets out; the moon waits"
+		BoxPanel.settable(pieces[2]) and BoxPanel.settable(pieces[3]),
+		"a bed sets out, and the moon (S5-03g4d)"
 	)
 	local finds = BoxPanel.cards({ Teddy = 1, Crown = 1 }, catalog)
 	ok(not BoxPanel.settable(finds[1]), "a find is never set out from the panel")

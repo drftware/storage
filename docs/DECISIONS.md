@@ -8631,3 +8631,34 @@ and the lamp rides with it; put the pallet away and the lamp goes back to the bo
   pallet at 1.204 (the boards' 1.205), the pallet slid by the screen with the lamp aboard, the
   firefly jar aimed green onto it and placed, both back after a re-lay, all put away together;
   a jar on a crate's rim at 1.650. Not seen by a second client (`OWNER.md`).
+
+## D-339 The lit pieces hang and glow, their light near you only (S5-03g4d, 2026-11-17)
+
+The moment: home after a climb, you string the lights across your ceiling and hang the neon moon
+on the wall; they glow warm as you walk in, and with the lamp off the room is a sleepover
+(D-324). Precedents: Bloxburg's and Adopt Me's string lights and neon signs; The Sims' ceiling
+lights hung from the tile you point at.
+- **They hang by their art's origin**, as a find on a wall or the ceiling does (`Arranged.box`,
+  `pivot`; nothing new): the moon's back flat on the wall facing the room, the lights' clips on
+  the ceiling (0.0025 above, the art's gap). Footprints from `Spots.pieceBox`: the lights 9.65 by
+  0.3 on the ceiling (not through its lamp), the moon 2.9 across by 2.8 up on a wall. Specs first.
+- **Out of the job box onto their own surface** (`Spots.starts`): a ceiling piece onto the
+  ceiling, a wall piece onto the back wall (the one you face coming in), then the side walls;
+  the free spot nearest the middle, as a floor piece's.
+- **A ceiling piece follows your finger over the floor under it** (ArrangeView's `aim`): the
+  corner camera looks down on the room, so the ceiling is seldom on the screen. The disco ball
+  find hangs the same way now.
+- **Hung pieces don't collide** (`Arranging.drawPiece`); the server makes no light. Their Neon and
+  the moon's clear backing were already `Home.paint`'s (D-335).
+- **The light is the screen's** (`HomeGlows`, new): the three lit pieces nearest a point just
+  ahead of the camera, within 40 studs (`Home.LitPiece`), each throw their `Specs.Glows` light
+  from an attachment on the piece, warmed up and faded out over 0.8 s, picked every 0.25 s only
+  while one is drawn. Three fills the room you're in; a home holds up to four strings and two
+  moons, the rest glow without light. 24 studs left a 30-deep home's back wall dark. Always on,
+  lamp or no lamp (the owner's to say, `OWNER.md`).
+- **Measured** in Studio Play on the A16, in home 1 with both set out: 35 lights on the screen
+  (D-271's 33, plus the two). Seen: both set out, laid again from the save after a restart,
+  moved, the bulbs reading warm and swagged at phone size, brighter with the lamp off; the moon
+  faint with the door up (its 1.1 drowned by the hall's light as the card's 1.4 was, D-332;
+  2.4 didn't show with the door up either). Pictures `docs/art/S5-03g4d-lit-*.jpg`.
+

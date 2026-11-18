@@ -44,6 +44,7 @@ local HallHaze = require(script.HallHaze)
 local HallLights = require(script.HallLights)
 local HeadView = require(script.HeadView)
 local HomeCards = require(script.HomeCards)
+local HomeGlows = require(script.HomeGlows)
 local HomeLights = require(script.HomeLights)
 local KeeperSounds = require(script.KeeperSounds)
 local KeeperView = require(script.KeeperView)
@@ -128,6 +129,7 @@ local host = Brix.Host.new({
 		-- a home's lamps on its switch (S5-03a2b3), before BehindDoors for the same reason
 		{ slot = "homeLights", system = HomeLights.new() },
 		{ slot = "homeCards", system = HomeCards.new() },
+		{ slot = "homeGlows", system = HomeGlows.new() },
 		-- the mirror in your home: you, the right way round, your unit behind you (S5-03b)
 		{ slot = "mirrorView", system = MirrorView.new() },
 		-- a wrap colour tried on at a mirror: the film winds on, stays, peels off (S5-03f4a)

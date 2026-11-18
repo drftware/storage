@@ -3181,3 +3181,15 @@ verified: a doc page, Studio, or "untested".
   call needs a `moveTo` before its `mouseButtonUp`. A world point is tapped at (X + 47, Y - 58)
   as the A16 note says; find one on the piece by raycasting `ViewportPointToRay` first (a
   rider's part answers before the boards under it).
+
+## The lit pieces, seen on the A16 (S5-03g4d, Nov 17)
+
+- **A `screen_capture` that fails in Play ("Target is closed") stops Play**: the next Client
+  `execute_luau` said Edit mode, and the macOS capture showed Edit's view, black. Use the macOS
+  window capture from the start in Play.
+- **Owning a piece out of the week's stock**: `ServerStorage.ArrangeTest:Invoke(player, "own",
+  "StringLights")` on the server (Studio only), then `"place"` as the screen asks.
+- **Home 1's room** runs x 60 to 90, z 468 to 488 in Play (the XL box; its partitions at z
+  468.15 and 487.85, its back wall at 90). A ShotCam past the starter shelf, (78.5, 4.4, 471)
+  looking at (90, 7.6, 478.5), shows the back wall and the ceiling's back half.
+

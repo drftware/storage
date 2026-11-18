@@ -122,6 +122,40 @@ ok(
 	"a model's box middle lands where its box stands"
 )
 
+-- The lit pieces hang by their art's own origin (S5-03g4d): the neon moon's back, its origin's
+-- plane, flat on the wall, facing the room; the string lights' clips on the ceiling, hanging down.
+do
+	local back = Arranged.area(face, room.BackWall)
+	local size, mid = Spots.pieceBox("NeonSign")
+	assert(size and mid, "the neon moon's box")
+	local sign = Arranged.pivot(
+		Arranged.pose(back, 1, 0.5, 0),
+		"Wall",
+		Vector3.new(size[1], size[2], size[3]),
+		Vector3.new(mid[1], mid[2], mid[3])
+	)
+	ok(
+		math.abs((sign.Position - back.Position):Dot(back.YVector)) < 1e-4,
+		"the moon's back is on the wall"
+	)
+	ok(same(sign.LookVector, back.YVector), "the moon faces the room")
+	ok(same(sign.UpVector, Vector3.new(0, 1, 0)), "the moon hangs upright")
+	local ceiling = Arranged.area(face, room.Ceiling)
+	local lsize, lmid = Spots.pieceBox("StringLights")
+	assert(lsize and lmid, "the string lights' box")
+	local lights = Arranged.pivot(
+		Arranged.pose(ceiling, 0, 4, 0),
+		"Ceiling",
+		Vector3.new(lsize[1], lsize[2], lsize[3]),
+		Vector3.new(lmid[1], lmid[2], lmid[3])
+	)
+	ok(
+		math.abs(lights.Position.Y - ceiling.Position.Y) < 0.01,
+		"the lights' clips are on the ceiling"
+	)
+	ok(same(lights.UpVector, Vector3.new(0, 1, 0)), "the lights hang below their clips")
+end
+
 print(`arranged.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)
