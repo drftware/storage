@@ -19,6 +19,8 @@
 	  `loose`), the floor point it lies on (`BigFind.AtAttribute`) or who hauls it
 	  (`BigFind.HolderAttribute`), so MinimapView's mark follows it; all three go as it's kept at
 	  the gate, lost or lifted by a monster, and the point comes back where a monster lays it down.
+	- As the gate shuts, GatePay asks who holds it (`aboard`, S4-05b3): it counts, and pays
+	  everyone aboard, only in a rider's arms; anywhere else it's left behind with the floor.
 
 	Every value is the server's; nothing here listens to a client.
 ]]
@@ -58,7 +60,17 @@ type Entry = {
 
 local BigFinds = {}
 
-function BigFinds.new(): Brix.System
+-- A floor's big find as its gate shuts (S4-05b3): its key, and who holds it (nil: nobody, so
+-- it's left behind on the floor, in a monster's arms or gone).
+export type Shut = { key: string, holder: Player? }
+
+export type BigFinds = Brix.System & {
+	-- The big find out on floor `floor` (its model) as its gate shuts; nil while it has none out
+	-- (floor 1, no unit was left for it, or the code never went in).
+	aboard: (self: any, floor: Model) -> Shut?,
+}
+
+function BigFinds.new(): BigFinds
 	local entries: { [Model]: Entry } = {}
 	local signals: { Brix.SignalConnection } = {}
 	local built: { BigFind.Find } = {}
@@ -205,6 +217,21 @@ function BigFinds.new(): Brix.System
 	end
 
 	local system = { name = "BigFinds" }
+
+	function system.aboard(_: any, floor: Model): Shut?
+		local e = entries[floor]
+		if not (e and e.unit) then
+			return nil
+		end
+		if not e.model then
+			track(e) -- dealt since anyone's slots last changed
+		end
+		local model = e.model
+		local holder = if model and model.Parent
+			then Players:GetPlayerFromCharacter(model.Parent)
+			else nil
+		return { key = e.find, holder = holder }
+	end
 
 	function system.start(_: any, context: Brix.Context)
 		local registry = context.registry

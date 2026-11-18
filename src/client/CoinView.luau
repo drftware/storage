@@ -60,6 +60,7 @@ local Workspace = game:GetService("Workspace")
 local Boxes = require(ReplicatedStorage.Shared.Boxes)
 local Brix = require(ReplicatedStorage.Brix)
 local Coins = require(ReplicatedStorage.Shared.Coins)
+local Finds = require(ReplicatedStorage.Shared.Finds)
 local Machine = require(ReplicatedStorage.Shared.Machine)
 local CoinSpecs = require(ReplicatedStorage.Shared.Coins.Specs)
 local Minimap = require(ReplicatedStorage.Shared.Minimap)
@@ -67,6 +68,7 @@ local NextFloor = require(ReplicatedStorage.Shared.NextFloor)
 local Opening = require(ReplicatedStorage.Shared.Boxes.Opening)
 local Pay = require(ReplicatedStorage.Shared.Pay)
 local SoundPrimer = require(script.Parent.SoundPrimer)
+local ToolPicture = require(script.Parent.ToolPicture)
 
 local me = Players.LocalPlayer
 
@@ -101,6 +103,14 @@ local PICK_AMBIENT = Color3.fromRGB(190, 175, 150)
 local PICK_IN = TweenInfo.new(Pay.PickIn, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local PICK_PUFF = TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local PICK_GONE = TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+-- The big find's pop (S4-05b3): dark as it punches up, then its glow stutters on as a valve
+-- set warms (a bounce, eased in), its halo's rings, inside out, how see-through when lit.
+local BIG_DARK = Color3.fromRGB(70, 64, 58)
+local BIG_TINT = Color3.fromRGB(255, 190, 120) -- a big find with no glow of its own
+local BIG_RINGS = { 0.5, 0.7, 0.85 }
+local BIG_IN = TweenInfo.new(Pay.BigIn, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local BIG_LIGHT = TweenInfo.new(Pay.BigLight, Enum.EasingStyle.Bounce, Enum.EasingDirection.In)
+local BIG_LOST = TweenInfo.new(Pay.BigLost.length, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 
 type Pile = {
 	model: Model,
@@ -841,25 +851,165 @@ function CoinView.new(): Brix.System
 		end)
 	end
 
+	-- The big find carried aboard (S4-05b3): at `at` it punches up at `origin`, `tall` pixels
+	-- tall, still dark; its glow stutters on as its tune plays; at `burst` it flashes and is gone
+	-- as its coins burst out of it. Its glow's colour, for its coins.
+	local function bigPop(
+		key: string,
+		origin: Vector2,
+		tall: number,
+		at: number,
+		burst: number
+	): Color3
+		local art = Finds.art(key)
+		local glow = if art then art.Glow else nil
+		local tint = if glow then glow.Tint else BIG_TINT
+		task.delay(math.max(0, at - os.clock()), function()
+			local holder = Instance.new("Frame")
+			holder.Name = "BigFind"
+			holder.AnchorPoint = Vector2.new(0.5, 0.5)
+			holder.Position = UDim2.fromOffset(origin.X, origin.Y)
+			holder.Size = UDim2.fromOffset(tall, tall)
+			holder.BackgroundTransparency = 1
+			holder.ZIndex = 1
+			local grow = Instance.new("UIScale")
+			grow.Scale = 0
+			grow.Parent = holder
+			-- its halo, round and soft, lit with it
+			local rings: { Frame } = {}
+			for i in BIG_RINGS do
+				local ring = Instance.new("Frame")
+				ring.AnchorPoint = Vector2.new(0.5, 0.5)
+				ring.Position = UDim2.fromScale(0.5, 0.5)
+				ring.Size = UDim2.fromScale(0.5 + i * 0.22, 0.5 + i * 0.22)
+				ring.BackgroundColor3 = tint
+				ring.BackgroundTransparency = 1
+				ring.BorderSizePixel = 0
+				ring.ZIndex = 1
+				local rc = Instance.new("UICorner")
+				rc.CornerRadius = UDim.new(0.5, 0)
+				rc.Parent = ring
+				ring.Parent = holder
+				table.insert(rings, ring)
+			end
+			local view = Instance.new("ViewportFrame")
+			view.Name = "Find"
+			view.Size = UDim2.fromScale(1, 1)
+			view.BackgroundTransparency = 1
+			view.Ambient = BIG_DARK
+			view.LightColor = Color3.fromRGB(255, 236, 200)
+			view.LightDirection = Vector3.new(-0.4, -1, -0.6)
+			view.ZIndex = 2
+			view.Parent = holder
+			local model = ToolPicture.draw(view, key)
+			local looks: { SurfaceAppearance } = {}
+			if model and glow then
+				for _, d in model:GetDescendants() do
+					local look = if d.Name == glow.Part
+						then d:FindFirstChildOfClass("SurfaceAppearance")
+						else nil
+					if look then
+						table.insert(looks, look)
+					end
+				end
+			end
+			local flash = Instance.new("Frame")
+			flash.AnchorPoint = Vector2.new(0.5, 0.5)
+			flash.Position = UDim2.fromScale(0.5, 0.5)
+			flash.Size = UDim2.fromScale(0.7, 0.9)
+			flash.BackgroundColor3 = Color3.new(1, 1, 1)
+			flash.BackgroundTransparency = 1
+			flash.ZIndex = 3
+			local fc = Instance.new("UICorner")
+			fc.CornerRadius = UDim.new(0.2, 0)
+			fc.Parent = flash
+			flash.Parent = holder
+			holder.Parent = gui
+			TweenService:Create(grow, BIG_IN, { Scale = 1 }):Play()
+			-- as it lands, its record drops and its glow comes up with the tune
+			task.delay(Pay.BigIn * 0.6, function()
+				local tune = sound(Pay.BigTune, gui)
+				tune:Play()
+				task.delay(Pay.BigTune.length + 0.6, function()
+					tune:Destroy()
+				end)
+				local lit = Instance.new("NumberValue")
+				lit.Changed:Connect(function(g: number)
+					for _, look in looks do
+						look.EmissiveStrength = (if glow then glow.Strength else 0) * g
+					end
+					view.Ambient = BIG_DARK:Lerp(PICK_AMBIENT:Lerp(tint, 0.45), g)
+					for i, ring in rings do
+						ring.BackgroundTransparency = 1 - (1 - BIG_RINGS[i]) * g
+					end
+				end)
+				TweenService:Create(lit, BIG_LIGHT, { Value = 1 }):Play()
+				task.delay(Pay.BigLight + 0.1, function()
+					lit:Destroy()
+				end)
+			end)
+			task.delay(math.max(0, burst - os.clock()), function()
+				flash.BackgroundTransparency = 0.1
+				local puff = TweenService:Create(grow, PICK_PUFF, { Scale = 1.18 })
+				puff.Completed:Once(function()
+					TweenService:Create(grow, PICK_GONE, { Scale = 0 }):Play()
+				end)
+				puff:Play()
+				pickChink.TimePosition = Pay.PopChink.from
+				pickChink:Play()
+				task.delay(PICK_PUFF.Time + PICK_GONE.Time + 0.05, function()
+					holder:Destroy()
+				end)
+			end)
+		end)
+		return tint
+	end
+
+	-- The big find left on the floor as the gate shut (S4-05b3): its tune from far below, muffled,
+	-- winding down and fading as the car climbs away from it.
+	local function leftBehind()
+		task.delay(Pay.BigLostAfter, function()
+			local s = sound(Pay.BigLost, gui)
+			local far = Instance.new("EqualizerSoundEffect")
+			far.HighGain = -40
+			far.MidGain = -14
+			far.LowGain = 3
+			far.Parent = s
+			s:Play()
+			TweenService:Create(s, BIG_LOST, { PlaybackSpeed = Pay.BigLostSlow, Volume = 0 }):Play()
+			task.delay(Pay.BigLost.length + 0.3, function()
+				s:Destroy()
+			end)
+		end)
+	end
+
 	-- Paid at the gate (S1-06): `coins` burst out a beat after the slam and pour into the count,
-	-- then one pop for each of the `trapped` monsters shut in that they count (S4-04).
-	-- Last, the picked version's card and its `picked` coins (S4-03c2).
+	-- then one pop for each of the `trapped` monsters shut in that they count (S4-04), the picked
+	-- version's card and its `picked` coins (S4-03c2), and last the big find carried aboard,
+	-- `bigKey`, bursting into its `bigCoins` (S4-05b3); one left behind (none) is heard going.
 	local function paid(
 		coins: unknown,
 		_kept: unknown,
 		trapped: unknown,
 		versionName: unknown,
-		picked: unknown
+		picked: unknown,
+		bigKey: unknown,
+		bigCoins: unknown
 	)
 		if typeof(coins) ~= "number" or coins ~= coins or coins < 1 then
 			return
 		end
 		local version = if type(versionName) == "string" then NextFloor.find(versionName) else nil
-		local floorCoins, pops, versionCoins = Pay.parts(
+		local big = if type(bigKey) == "string" and Finds.art(bigKey) then bigKey else nil
+		local floorCoins, pops, versionCoins, foundCoins = Pay.parts(
 			coins,
 			if type(trapped) == "number" then trapped else 0,
-			if version and type(picked) == "number" then picked else 0
+			if version and type(picked) == "number" then picked else 0,
+			if big and type(bigCoins) == "number" then bigCoins else 0
 		)
+		if big and foundCoins == 0 then
+			leftBehind()
+		end
 		local shares = Pay.split(floorCoins, Pay.Flyers)
 		local n = #shares
 		local now = os.clock()
@@ -922,6 +1072,36 @@ function CoinView.new(): Brix.System
 				floorCoins + pops * Pay.Trap + versionCoins,
 				Pay.split(versionCoins, Pay.PickFlyers),
 				colour
+			)
+		end
+		-- the big find carried aboard: it stands over the pour, lights up and plays, and bursts
+		if big and foundCoins > 0 then
+			local after = first - Pay.PopAfter
+			if version and versionCoins > 0 then
+				local cardAt = if pops > 0
+					then first + (pops - 1) * Pay.PopGap + Pay.PickAfter
+					else after + Pay.PickAfter
+				after = cardAt + Pay.PickIn + Pay.PickHold + Pay.PickHang
+			elseif pops > 0 then
+				after = first + (pops - 1) * Pay.PopGap + Pay.PopHang
+			end
+			local bigAt = after + Pay.BigAfter
+			local burst = bigAt + Pay.BigIn + Pay.BigLight + Pay.BigHold
+			local spot = origin - Vector2.new(0, view.Y * Pay.BigUp)
+			local tint = bigPop(big, spot, math.floor(view.Y * Pay.BigTall), bigAt, burst)
+			local rise = 1
+				+ PAY_CLIMB
+				+ Pay.PopClimb * pops
+				+ (if versionCoins > 0 then Pay.PickClimb else 0)
+				+ Pay.BigClimb
+			popCoins(
+				spot,
+				view.Y * Pay.BigSpread,
+				burst - Pay.Scatter * 0.15,
+				rise,
+				floorCoins + pops * Pay.Trap + versionCoins + foundCoins,
+				Pay.split(foundCoins, Pay.BigFlyers),
+				tint
 			)
 		end
 	end

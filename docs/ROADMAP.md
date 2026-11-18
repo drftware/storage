@@ -2453,10 +2453,17 @@ Done when two climbs in a row feel different and players talk about their best f
         gone once kept, lost or in a monster's arms (`BigFind.mark`, `rings`; BigFinds' where).
         Seen in Studio on floor 2. Polish: a far-off ping as the mark pops, if the door's
         rattle doesn't carry (the owner's call, OWNER.md).
-    - [ ] **S4-05b3 Counted at the gate.** The moment: the gate shuts with it aboard and it pays
-      out with its own pop, bigger than any find's. It is kept by GatePay as any find in a slot;
-      give it its own pop on the riders' screens (KeepView, CoinView) and its own pay (the owner's
-      call in OWNER.md: its worth into the save at home, coins on the climb, or both).
+    - [x] **S4-05b3 Counted at the gate** (D-418). In a rider's arms as the gate shuts, the hauler
+      keeps it (its worth into their save) and everyone aboard is paid the floor's pay again
+      (`Pay.bigOf`); last of the pay's pops, the jukebox punches up dark over the pour, its glow
+      stutters on with its swing tune, and it bursts into its coins, lit in its amber. Left
+      anywhere else, every rider hears its tune from far below, muffled, winding down. Passes
+      checks, unseen in Studio (S4-05c sees it).
+    - [ ] **S4-05b4 Set down in the car, it still counts.** The design doc counts it "inside the
+      elevator" as the gate shuts, but today a find lying on the car's floor goes with the floor,
+      so a hauler who sets it down in the car to grab a tool loses it. As the gate shuts, take it
+      off the car's floor (Climbs' `inCar`, a Slots take of a lying find with its glint) and keep
+      it for its last hauler if they ride, else the rider nearest it; it pays as one held.
   - [ ] **S4-05c The big find seen in Studio.** The moment: from floor 2's keypad, see the unit
     roll up, its mark on the corner map, carry the jukebox to the car, and watch the gate pay
     it. Captures to `docs/art/`; the two-player run (one hauls, one guards) in OWNER.md.

@@ -111,6 +111,43 @@ do
 	ok(f5 == 10 and v5 == 2, "a version's coins are whole")
 end
 
+-- The big find carried aboard as the gate shuts (S4-05b3, D-418): everyone aboard is paid the
+-- floor's pay again, and on screen it pops last, after the pour, the traps' and the version's.
+do
+	ok(Pay.bigOf(2) == Pay.forFloor(2), "floor 2's big find pays floor 2's pay again")
+	ok(Pay.bigOf(20) == Pay.forFloor(20), "and keeps pace with the floor up high")
+	ok(Pay.bigOf(20) > Pay.bigOf(2), "a big find higher up is worth more")
+	ok(Pay.bigOf(2) > Pay.Trap, "worth more than a monster shut in")
+	local plain = Pay.owed({}, 2, false, 1, 6)
+	local owed = Pay.owed({}, 2, false, 1, 6, Pay.bigOf(2))
+	ok(
+		owed == plain + Pay.bigOf(2),
+		"its coins on top of the floor's, the trap's and the version's"
+	)
+	ok(Pay.owed({}, 2, true, 0, 0, Pay.bigOf(2)) == 0, "nothing for it while wrapped")
+	local paid: { [number]: boolean } = {}
+	Pay.owed(paid, 2, false)
+	ok(Pay.owed(paid, 2, false, 0, 0, Pay.bigOf(2)) == 0, "nor on a floor already paid")
+	ok(
+		Pay.owed({}, 2, false, 0, 0, 0 / 0) == Pay.forFloor(2),
+		"coins that aren't a number add none"
+	)
+	local f, p, v, b = Pay.parts(owed, 1, 6, Pay.bigOf(2))
+	ok(
+		f == Pay.forFloor(2) and p == 1 and v == 6 and b == Pay.bigOf(2),
+		"the pour, the trap's pop, the version's, then the big find's"
+	)
+	local _, _, _, b0 = Pay.parts(12, 0, 0)
+	ok(b0 == 0, "no big find aboard: no big pop")
+	local f1, p1, v1, b1 = Pay.parts(14, 1, 6, 12)
+	ok(
+		b1 == 12 and v1 == 2 and p1 == 0 and f1 == 0,
+		"short: the big find's first, then the version's"
+	)
+	local _, _, _, b2 = Pay.parts(30, 0, 0, 12.6)
+	ok(b2 == 12, "its coins are whole")
+end
+
 -- The coins drawn flying add up to the pay.
 do
 	local all = true

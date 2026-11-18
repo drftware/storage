@@ -22,6 +22,11 @@
 	The version the team picked on the ride up (S4-03c, D-406) pays its share more, and on your
 	screen it pops last (S4-03c2): its card, small and lit in its own colour, bursts into its
 	coins with its own sound, as Balatro scores each joker in turn after the hand.
+
+	The floor's big find carried aboard as the gate shuts (S4-05b3, D-418) pays everyone aboard the
+	floor's pay again (`bigOf`), as Lethal Company's apparatus is the haul the whole crew's trip
+	was for; whoever carried it keeps it too, its worth into their save. On your screen it pops
+	after everything else: the find itself, lit and playing its tune, bursts into its coins.
 ]]
 local Pay = {}
 
@@ -38,6 +43,11 @@ Pay.Rise = 2
 -- The owner's starting guess (D-188): half of floor 1's pay.
 Pay.Trap = 5
 
+-- How much of the floor's own pay the big find carried aboard adds, to everyone aboard: the
+-- whole of it again, so the slow, guarded haul doubles the gate and stays worth it up high.
+-- My default (OWNER.md).
+Pay.BigShare = 1
+
 -- The coins floor `floor` pays each player aboard as its gate shuts.
 function Pay.forFloor(floor: number): number
 	local n = math.max(1, math.floor(floor))
@@ -49,34 +59,52 @@ local function count(n: number): number
 	return if n == n and n > 0 then math.floor(math.min(n, 1e6)) else 0
 end
 
+-- The coins floor `floor`'s big find pays each player aboard when it's in the car as the gate
+-- shuts (S4-05b3).
+function Pay.bigOf(floor: number): number
+	return math.floor(Pay.forFloor(floor) * Pay.BigShare + 0.5)
+end
+
 -- What a player standing aboard is paid as floor `floor`'s gate shuts with `trapped` monsters
 -- shut in on it (none if not given), and `picked` coins more for the version the team picked for
--- it on the ride up (`NextFloor.payOf`, S4-03c1; none if not given): nothing while wrapped, or for
--- a floor `paid` says they were paid for already this climb (a ride that came back, traps and
+-- it on the ride up (`NextFloor.payOf`, S4-03c1; none if not given), and `big` coins more for
+-- the floor's big find aboard (`bigOf`, S4-05b3; none if not given): nothing while wrapped, or
+-- for a floor `paid` says they were paid for already this climb (a ride that came back, traps and
 -- all). Marks the floor paid in `paid` when it pays.
 function Pay.owed(
 	paid: { [number]: boolean },
 	floor: number,
 	wrapped: boolean,
 	trapped: number?,
-	picked: number?
+	picked: number?,
+	big: number?
 ): number
 	if wrapped or paid[floor] then
 		return 0
 	end
 	paid[floor] = true
-	return Pay.forFloor(floor) + Pay.Trap * count(trapped or 0) + count(picked or 0)
+	return Pay.forFloor(floor)
+		+ Pay.Trap * count(trapped or 0)
+		+ count(picked or 0)
+		+ count(big or 0)
 end
 
--- What a pay of `coins` that counted `trapped` monsters shut in and `picked` coins for the
--- version the team picked (none if not given) looks like on your screen: the floor's own coins,
--- poured as ever, how many pops of `Trap` coins follow, one per monster, and the version's coins,
--- its own pop last (S4-03c2). Only as much as `coins` holds, the version's first, then the traps'.
-function Pay.parts(coins: number, trapped: number, picked: number?): (number, number, number)
+-- What a pay of `coins` that counted `trapped` monsters shut in, `picked` coins for the version
+-- the team picked and `big` coins for the big find aboard (none if not given) looks like on your
+-- screen: the floor's own coins, poured as ever, how many pops of `Trap` coins follow, one per
+-- monster, the version's coins (S4-03c2), then the big find's, its own pop last (S4-05b3). Only
+-- as much as `coins` holds: the big find's first, then the version's, then the traps'.
+function Pay.parts(
+	coins: number,
+	trapped: number,
+	picked: number?,
+	big: number?
+): (number, number, number, number)
 	local total = count(coins)
-	local version = math.min(count(picked or 0), total)
-	local pops = math.min(count(trapped), (total - version) // Pay.Trap)
-	return total - version - pops * Pay.Trap, pops, version
+	local found = math.min(count(big or 0), total)
+	local version = math.min(count(picked or 0), total - found)
+	local pops = math.min(count(trapped), (total - found - version) // Pay.Trap)
+	return total - found - version - pops * Pay.Trap, pops, version, found
 end
 
 -- The coins drawn flying for a pay of `total`: at most `most` of them, each worth a share, the
@@ -160,6 +188,37 @@ Pay.PickFlyers = 8 -- the most of its coins drawn: each worth a share
 Pay.PickSpread = 0.1 -- how far its burst throws the coins, as a share of the screen's height
 Pay.PickHang = 0.2 -- its coins hang a beat, lit in its colour, before they fly to the count
 Pay.PickClimb = 0.18 -- its landing ticks start this much higher than the last trap pop's
+
+-- The feel of the big find's pop on your screen (S4-05b3, CoinView): after every other pop, the
+-- find itself punches up over the pour, bigger than the card, dark, then its glow comes up as its
+-- tune plays, and it bursts into its coins, which hang in its light and fly to your count.
+Pay.BigAfter = 0.5 -- after the last pop before it sets off (or the pour's last coin): a breath
+Pay.BigUp = 0.12 -- how far above the pour it stands, as a share of the screen's height
+Pay.BigTall = 0.34 -- its height, as a share of the screen's height: the biggest thing in the pay
+Pay.BigIn = 0.32 -- punching up out of nothing, overshooting and settling
+Pay.BigLight = 0.45 -- its glow coming up, flickering, as its record starts
+Pay.BigHold = 1.0 -- held up lit with its tune playing, so everyone sees what the haul was
+Pay.BigFlyers = 12 -- the most of its coins drawn: each worth a share
+Pay.BigSpread = 0.16 -- how far its burst throws the coins, as a share of the screen's height
+Pay.BigClimb = 0.3 -- its landing ticks start this much higher than the pop before it
+-- Its tune: APM's "Duke of Harlem", 1940s big band swing, as the jukebox would play. Where it
+-- starts loud isn't measured yet (OWNER.md); on your screen only.
+Pay.BigTune = {
+	id = "rbxassetid://133184962618083",
+	from = 0,
+	length = 2.2,
+	volume = 0.6,
+} :: Sound
+-- Left on the floor as the gate shuts: the same tune from far below, muffled, winding down as a
+-- record does when the power goes, so the team hears what they left behind. Every rider hears it.
+Pay.BigLost = {
+	id = "rbxassetid://133184962618083",
+	from = 0,
+	length = 2.4,
+	volume = 0.45,
+} :: Sound
+Pay.BigLostAfter = 0.9 -- after the gate hits its post: the slam and the pour land first
+Pay.BigLostSlow = 0.25 -- the record winds down to this share of its speed as it fades out
 
 -- The feel of a kept find on your screen (KeepView).
 Pay.KeepAfter = 0.55 -- after the gate hits its post: as the first coins burst, not before the slam

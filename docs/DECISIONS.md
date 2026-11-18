@@ -9817,3 +9817,32 @@ S4-05b2 is split in two (ROADMAP): **a** the haul (done), **b** its mark on the 
   hauler, the diamond went round your dot a size up. Dropped: a ring, the diamond 2 studs in
   front where it lay. A friend's carry and the gate's clearing are the owner's (OWNER.md).
   Captures timed out twice, so none saved.
+
+## D-418 · 2026-11-18 · The big find counted at the gate (S4-05b3)
+
+The moment: the gate slams with the jukebox aboard and the whole team is paid for the haul, with
+the jukebox itself lighting up and playing on everyone's screen before it bursts into coins.
+- **Both, as the design doc says.** "Whoever carried it in keeps it": the hauler keeps it as any
+  find in their slots (Slots' `keep`, its 800 worth into their save, KeepView's rise). And
+  everyone aboard who is paid gets the floor's pay again (`Pay.bigOf`, `Pay.BigShare` 1), as
+  Lethal Company's apparatus is the haul the whole crew's trip was for, so the guards earn it as
+  much as the hauler. A share of the floor's pay, not a flat sum, so it stays worth the slow walk
+  on floor 20 (as the versions' pay, D-403). My default (OWNER.md).
+- **It counts only in a paid rider's arms** as the gate hits its post (BigFinds' `aboard`, asked
+  before anyone's slots are kept): alive, aboard, not wrapped. In a monster's arms, lying in the
+  halls, or held by someone left outside, it's left behind with the floor. Set down on the car's
+  own floor it is still lost today, as any find lying there: S4-05b4 makes that count, as the
+  design doc's "inside the elevator" says.
+- **Its pop, last of the pay** (`Pay.parts`' fourth part, taken first so it always shows; Balatro
+  scores each joker in turn, D-407). After the pour, the traps' pops and the version's card, the
+  find itself (its slot picture, ToolPicture) punches up over the pour, a third of the screen
+  tall, dark; as it lands its record drops (APM's "Duke of Harlem", 1940s swing) and its glow
+  stutters on (its glow part's emissive, a halo of rings in its tint, the view's light warming),
+  held a second, then it flashes and bursts into its coins, which hang lit in its amber and fly
+  to the count, the "+" swelling to the whole pay.
+- **Left behind, heard going.** Every paid rider hears its tune from far below, muffled (the high
+  end cut), winding down to a quarter speed and fading over 2.4 s, as a record does when the
+  power goes: the team learns what they left without a word (no text that explains a rule).
+- Not chosen: coins only to the hauler (the guards would earn nothing for the riskiest job);
+  a grade-based pay (one jukebox built, so every big find would pay the same today anyway).
+- Passes checks, unseen in Studio: S4-05c sees the pop and the loss (context ran out here).

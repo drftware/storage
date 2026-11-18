@@ -16,8 +16,13 @@
 	gate shuts (Keepers' `trappedOn`; one freed before then, or one the floor woke behind its own
 	door, doesn't count) adds `Pay.Trap` to every paid rider's coins.
 
+	The floor's big find (S4-05b3, D-418) counts only in the arms of a rider who is paid: then
+	every paid rider gets `Pay.bigOf` more (the hauler keeps it too, as any find in their slots).
+	Anywhere else, it's left behind with the floor, and every paid rider's screen is told so.
+
 	Each paid rider's screen is told what they got (`Pay.Remote`: coins, the kept finds' keys, how
-	many monsters shut in the coins count, then the picked version's name and its coins) before
+	many monsters shut in the coins count, the picked version's name and its coins, then the big
+	find's key and its coins, 0 for one left behind) before
 	their count changes, so the coins are already on their way when it rises (CoinView) and
 	each kept find rises out of its slot (KeepView). A rider whose save hasn't loaded yet (only just
 	joined) has their kept finds held here and added the moment it loads, so nothing kept is lost.
@@ -41,6 +46,7 @@ local NextFloor = require(ReplicatedStorage.Shared.NextFloor)
 local Pay = require(ReplicatedStorage.Shared.Pay)
 local Save = require(ReplicatedStorage.Shared.Save)
 local Taken = require(ReplicatedStorage.Shared.Home.Taken)
+local BigFinds = require(script.Parent.BigFinds)
 local Climbs = require(script.Parent.Climbs)
 local Coins = require(script.Parent.Coins)
 local Keepers = require(script.Parent.Keepers)
@@ -77,6 +83,7 @@ function GatePay.new(): GatePaySystem
 	local remote: RemoteEvent? = nil
 	local coins: Coins.CoinsSystem? = nil
 	local keepers: Keepers.Keepers? = nil
+	local bigFinds: BigFinds.BigFinds? = nil
 	local slots: Slots.Slots? = nil
 	local saving: Saving.SavingSystem? = nil
 	local closing = false
@@ -188,13 +195,24 @@ function GatePay.new(): GatePaySystem
 		local version = event.from.version
 		local picked = if version then NextFloor.payOf(version, event.from.number) else nil
 		local versionName = if version then version.name else ""
+		-- the floor's big find counts in a paid rider's arms only (S4-05b3); else it's left behind
+		local b = bigFinds
+		local big = if b then b:aboard(event.from.model) else nil
+		local hauler = if big then big.holder else nil
+		local counted = hauler ~= nil
+			and table.find(event.riders, hauler) ~= nil
+			and hauler.Parent ~= nil
+			and alive(hauler)
+			and not Prompts.wrapped(hauler)
+		local bigCoins = if counted then Pay.bigOf(event.from.number) else nil
+		local bigKey = if big then big.key else ""
 		for _, player in event.riders do
 			if not (player.Parent and alive(player)) or Prompts.wrapped(player) then
 				continue -- wrapped (or gone): nothing for this floor
 			end
 			local mine = paid[player] or {}
 			paid[player] = mine
-			local owed = Pay.owed(mine, event.from.number, false, trapped, picked)
+			local owed = Pay.owed(mine, event.from.number, false, trapped, picked, bigCoins)
 			local kept, chipped, moved = sl:keep(player)
 			-- everything that rose out of their slots, a friend's taken-up finds too
 			local shown = kept
@@ -215,7 +233,9 @@ function GatePay.new(): GatePaySystem
 					shown,
 					if paidIt then trapped else 0,
 					if paidIt then versionName else "",
-					if paidIt then picked or 0 else 0
+					if paidIt then picked or 0 else 0,
+					if paidIt then bigKey else "",
+					if paidIt then bigCoins or 0 else 0
 				)
 			end
 			c:pay(player, owed)
@@ -230,8 +250,12 @@ function GatePay.new(): GatePaySystem
 			end
 			if RunService:IsStudio() then
 				local list = if #shown > 0 then table.concat(shown, ", ") else "no finds"
+				local found = if bigKey == ""
+					then "no big find"
+					elseif counted then `the {bigKey} aboard`
+					else `the {bigKey} left behind`
 				print(
-					`GatePay: {player.Name} paid {owed} for floor {event.from.number} ({trapped} shut in), kept {list}`
+					`GatePay: {player.Name} paid {owed} for floor {event.from.number} ({trapped} shut in, {found}), kept {list}`
 				)
 			end
 		end
@@ -244,6 +268,7 @@ function GatePay.new(): GatePaySystem
 		-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)
 		coins = (registry:get("coins") :: any) :: Coins.CoinsSystem
 		keepers = (registry:get("keepers") :: any) :: Keepers.Keepers -- any: as above
+		bigFinds = (registry:get("bigFinds") :: any) :: BigFinds.BigFinds -- any: as above
 		slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
 		saving = (registry:get("saving") :: any) :: Saving.SavingSystem -- any: as above
 		local climbs = (registry:get("climbs") :: any) :: Climbs.Climbs -- any: as above
