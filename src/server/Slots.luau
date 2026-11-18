@@ -224,6 +224,9 @@ export type Slots = Brix.System & {
 	-- as `give` with `quiet` (their screen plays the pick-up as the picture lands), marked as
 	-- from their box. The slot it went into, or nil when it can't (as `give`).
 	unbox: (self: any, player: Player, key: string) -> number?,
+	-- Whether a find could go into `player`'s hands now, as `unbox` asks (S5-03i2a): a living
+	-- character, no big tool held in both hands, and a free slot.
+	room: (self: any, player: Player) -> boolean,
 	-- How many of each find out of `player`'s job box are in the world now (in anyone's hands,
 	-- on a head, lying or set down), by name: Save.boxed takes them off what's in the box.
 	fromBox: (self: any, player: Player) -> { [string]: number },
@@ -1997,6 +2000,11 @@ function Slots.new(): Slots
 			return nil
 		end
 		return make(player, base or key, true, player.UserId, base ~= nil)
+	end
+
+	function system.room(_: any, player: Player): boolean
+		local h = handOfPlayer(player)
+		return rootOf(player) ~= nil and not bothHands(h) and Carry.room(h.carry) ~= nil
 	end
 
 	function system.fromBox(_: any, player: Player): { [string]: number }

@@ -2901,8 +2901,13 @@ Done when players watch the results to the end and change their perks between cl
       - [ ] **S5-03i2a Take from where it stands**: a Take button on every find in your shelf's
         cubbies and every find set out, yours only; the server frees its spot or row and puts it
         in a free slot in one step (`Slots:unbox`, its pick-up heard), so it's never lost or
-        doubled; hands full, the press does nothing. Its copy hops into your hand. Failing spec
-        first; seen in Studio Play at Galaxy A16 size.
+        doubled; hands full, the press does nothing. Its copy hops into your hand. Split Nov 18:
+        - [x] **S5-03i2a1 Built** (D-350): `Save.unshelf`, `Spots.takeable`/`lift` (spec first,
+          `tests/hometake.spec`), Takes' button on cubby and set-out finds, `Slots:room`, the
+          flight (HomeTakeView). Passes checks, untested in Studio.
+        - [ ] **S5-03i2a2 Seen in Studio Play at Galaxy A16 size**: Take a cubby find, one on a
+          top and one on the floor (the E key by each); rejoin: none doubled or lost (rows and
+          the box's count). Captures `docs/art/S5-03i2a-*.jpg`.
       - [ ] **S5-03i2b Lift a find out of the shelf in Arrange**: a tap on a cubby's find lifts
         that find, not the shelf (the shelf's own boards still lift the shelf); set it anywhere
         or Put away; the server moves it from the shelf spot to a row in one step.

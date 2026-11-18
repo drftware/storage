@@ -49,6 +49,13 @@ export type Shape = { width: number, depth: number, fits: { string }, top: Area?
 -- A pose, as Brix's Placements takes it (`Brix.PlacementPose`).
 export type Pose = { on: string, x: number, y: number, turn: number }
 
+-- The part of Brix's Placements a lift uses (`Spots.lift`).
+export type Judge = {
+	poseOf: (self: any, id: string) -> Pose?,
+	standingOn: (self: any, id: string) -> { string },
+	remove: (self: any, id: string) -> string?,
+}
+
 -- One of the room's areas in the unit's frame: its Brix area, and where its face is.
 export type RoomArea = Area & { origin: Vec, normal: Vec, across: Vec }
 
@@ -540,6 +547,32 @@ end
 function Spots.askId(id: unknown): string?
 	local w = word(id)
 	return if w and Spots.name(w) then w else nil
+end
+
+-- The find a Take on set-out `id` hands you (S5-03i2a, D-350), or nil when `id` names furniture
+-- or one of the home's own pieces: those are moved in Arrange, never carried.
+function Spots.takeable(id: string): string?
+	local name = Spots.name(id)
+	return if name and not Furniture.ofPlaced(name) then name else nil
+end
+
+-- Lifts `id` out of `placements` with whatever stands on it, the riders first (the judge never
+-- leaves one floating), all back in the box as a put-away does. The ids that went, in the order
+-- they went, or nil when `id` isn't set out.
+function Spots.lift(placements: Judge, id: string): { string }?
+	if not placements:poseOf(id) then
+		return nil
+	end
+	local gone: { string } = {}
+	local function away(each: string)
+		for _, rider in placements:standingOn(each) do
+			away(rider)
+		end
+		placements:remove(each)
+		table.insert(gone, each)
+	end
+	away(id)
+	return gone
 end
 
 -- Saved rows trimmed to what you may set out (`available` by name: what you own less your shelf

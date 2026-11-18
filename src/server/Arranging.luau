@@ -35,6 +35,13 @@
 	by a move carries the server's time (`Arrange.WhenAttribute`), so another screen settles it in
 	with a knock rather than letting it appear; one drawn as the home is laid carries none.
 	The room's set-up is shared with the screen (`Arrange.room`), so both judge alike.
+
+	Each find set out (not furniture, not the home's own pieces) has a Take button (S5-03i2a,
+	D-350; Takes), shown on its holder's screen only. A press counts only from its holder, rate-
+	limited, within reach, not wrapped, with a hand free (else it's ignored): the copy is stamped
+	taken (every screen flies it into their hand), its row and whatever rides on it go back to the
+	box (`Spots.lift`), and the find goes into their hands out of the box (`Slots:unbox`) in the
+	same step, so it's never lost or doubled.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -58,6 +65,7 @@ local Tools = require(ReplicatedStorage.Shared.Tools)
 local FrontOffice = require(script.Parent.FrontOffice)
 local Saving = require(script.Parent.Saving)
 local Slots = require(script.Parent.Slots)
+local Takes = require(script.Parent.Takes)
 
 -- A find as drawn: its model, and its box (`Arranged.bounds`) measured once; a starter piece's
 -- kind, which stands by its spec box instead (`Arrange.starterPivot`).
@@ -108,6 +116,7 @@ function Arranging.new(): ArrangingSystem
 	local frontOffice: FrontOffice.FrontOffice? = nil
 	local saving: Saving.SavingSystem? = nil
 	local slots: Slots.Slots? = nil
+	local takeOut: (player: Player, id: string, model: Model) -> ()
 
 	-- `player`'s home unit and its slot, if they hold one.
 	local function unitOf(player: Player): (Model?, LobbySpecs.Slot?)
@@ -250,6 +259,10 @@ function Arranging.new(): ArrangingSystem
 			model:SetAttribute(Spots.OwnerAttribute, owner.UserId)
 			model:AddTag(Spots.Tag)
 			model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- a screen gets it whole
+			local each = model
+			Takes.offer(model, function(by: Player)
+				takeOut(by, id, each)
+			end)
 			drawn = { model = model, size = size, centre = centre }
 			home.drawn[id] = drawn
 			home.room.heights[id] = size.Y -- a top's height is the drawn box's
@@ -462,13 +475,7 @@ function Arranging.new(): ArrangingSystem
 		if piece and piece.kept then
 			return Spots.Refusals.Kept -- the job box holds everything: it moves, never away
 		end
-		local function away(each: string)
-			for _, rider in home.placements:standingOn(each) do
-				away(rider)
-			end
-			home.placements:remove(each)
-		end
-		away(id)
+		Spots.lift(home.placements, id)
 		keep(home, data)
 		apply(home, player, true)
 		drawnSignal:fire(player)
@@ -491,6 +498,35 @@ function Arranging.new(): ArrangingSystem
 				boxedPieces(data)
 			)
 		end
+	end
+
+	-- Take on find `id` set out (`model`), pressed by `player`: only their own, as drawn now.
+	function takeOut(player: Player, id: string, model: Model)
+		if not limit:take(player, os.clock()) then
+			return
+		end
+		local home = homes[player]
+		local data = if saving then saving:data(player) else nil
+		local drawn = if home then home.drawn[id] else nil
+		local name = Spots.takeable(id)
+		local s = slots
+		if
+			not (home and data and drawn and name and s)
+			or home.stale
+			or drawn.model ~= model
+			or not Takes.near(player, model)
+			or not s:room(player)
+		then
+			return -- a friend's press, a far one, or full hands: nothing happens
+		end
+		home.drawn[id] = nil -- it flies from here: the removal below leaves it to Takes
+		Takes.leave(model, player)
+		Spots.lift(home.placements, id)
+		keep(home, data)
+		apply(home, player, true)
+		s:unbox(player, name)
+		drawnSignal:fire(player)
+		sendBox(player)
 	end
 
 	-- Answers the asker, then sends their box when the move changed it.
@@ -592,7 +628,8 @@ function Arranging.new(): ArrangingSystem
 			-- sets the home up again from the save, as a rejoin does; `:Invoke(player, "own", piece)`
 			-- puts one more of furniture `piece` in their job box, saved as a buy is (S5-03g4d, for
 			-- a piece not in this week's stock); `:Invoke(player, "size", name)` makes their home
-			-- that size (a `Home.Sizes` name) and sets it up again, as a resize will (S5-03h1).
+			-- that size (a `Home.Sizes` name) and sets it up again, as a resize will (S5-03h1);
+			-- `:Invoke(player, "take", id)` presses find `id`'s Take as them (S5-03i2a).
 			-- No client reaches it.
 			if RunService:IsStudio() then
 				local test = Instance.new("BindableFunction")
@@ -616,6 +653,14 @@ function Arranging.new(): ArrangingSystem
 							return "", "badAsk"
 						end
 						return place(player, w, pose)
+					elseif verb == "take" then
+						-- presses find `a`'s Take as `player`: true when it went into their hands
+						local home = homes[player]
+						local drawn = if home and type(a) == "string" then home.drawn[a] else nil
+						if drawn then
+							takeOut(player, a, drawn.model)
+						end
+						return drawn ~= nil and home ~= nil and home.drawn[a] == nil
 					elseif verb == "putAway" then
 						local w = Spots.askId(a)
 						return if w then putAway(player, w) else "badAsk"

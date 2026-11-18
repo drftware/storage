@@ -17,6 +17,12 @@
 	Seen(spot) (Shelf.Remote): checked for its type and range, that the spot holds a new find of
 	yours, that you stand within reach of it, and rate-limited; then the save marks it seen
 	(Save.seen) and the find stops sparkling for everyone. The autosave keeps that.
+
+	Each find in a cubby has a Take button (S5-03i2a, D-350; Takes), shown on its holder's screen
+	only. A press counts only from the shelf's holder, rate-limited, within reach, not wrapped,
+	with a hand free (else it's ignored): the copy is stamped taken (every screen flies it into
+	their hand), the cubby is emptied (`Save.unshelf`) and the find goes into their hands out of
+	their box (`Slots:unbox`) in the same step, so it's never lost or doubled.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -31,6 +37,8 @@ local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local GatePay = require(script.Parent.GatePay)
 local Saving = require(script.Parent.Saving)
+local Slots = require(script.Parent.Slots)
+local Takes = require(script.Parent.Takes)
 
 -- The home's pieces as Arranging draws them (any: its type would require it, and it requires
 -- the systems that require this one).
@@ -127,7 +135,9 @@ function Shelves.new(): ShelvesSystem
 	local remote: RemoteEvent? = nil
 	local shelfTest: BindableFunction? = nil
 	local saving: Saving.SavingSystem? = nil
+	local slots: Slots.Slots? = nil
 	local pieces: Pieces? = nil
+	local take: (player: Player, i: number, model: Model) -> ()
 
 	-- `player`'s home shelf: their Shelf row as drawn in the unit they hold, if it's set out.
 	local function shelfOf(player: Player): Model?
@@ -179,6 +189,9 @@ function Shelves.new(): ShelvesSystem
 						model:SetAttribute(Shelf.OwnerAttribute, player.UserId)
 						model:SetAttribute(Shelf.FreshAttribute, saved.fresh)
 						model:AddTag(Shelf.Tag)
+						Takes.offer(model, function(by: Player)
+							take(by, i, model)
+						end)
 						model.Parent = shelf
 						mine.finds[i] = model
 					end
@@ -213,6 +226,31 @@ function Shelves.new(): ShelvesSystem
 		end
 	end
 
+	-- Take on the find standing on spot `i` (`model`), pressed by `player`: only their own.
+	function take(player: Player, i: number, model: Model)
+		if not limit:take(player, os.clock()) then
+			return
+		end
+		local st: Standing? = standing[player]
+		local data = if saving then saving:data(player) else nil
+		local saved = if data then data.shelf[i] else nil
+		local s = slots
+		if
+			not (st and data and saved and s and st.finds[i] == model)
+			or saved.find == ""
+			or not Takes.near(player, model)
+			or not s:room(player)
+		then
+			return -- a friend's press, a far one, or full hands: nothing happens
+		end
+		local name = saved.find
+		st.finds[i] = nil
+		Takes.leave(model, player)
+		Save.unshelf(data, i, name)
+		s:unbox(player, name)
+		lay(player)
+	end
+
 	local function watch(player: Player)
 		plotWatch[player] = player:GetAttributeChangedSignal("Plot"):Connect(function()
 			lay(player)
@@ -236,6 +274,7 @@ function Shelves.new(): ShelvesSystem
 			saving = (registry:get("saving") :: any) :: Saving.SavingSystem -- any: as above
 			local gatePay = (registry:get("gatePay") :: any) :: GatePay.GatePaySystem -- any: as above
 			local arranging = (registry:get("arranging") :: any) :: Pieces -- any: as above
+			slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
 			pieces = arranging
 
 			local folder = ReplicatedStorage:FindFirstChild(Shelf.RemoteFolder)
@@ -253,7 +292,9 @@ function Shelves.new(): ShelvesSystem
 			-- Studio only: `ServerStorage.ShelfTest:Invoke(player, key)` keeps find `key` for
 			-- `player` as a gate does (Save.keep), so a test sees it land without a climb;
 			-- `ShelfTest:Invoke(player, "", i)` empties cubby `i`, its find back in the job box, so
-			-- a test can shelve one. A BindableFunction on the server: no client reaches it.
+			-- a test can shelve one; `ShelfTest:Invoke(player, "take", i)` presses cubby `i`'s Take
+			-- as `player` (true when it came off). A BindableFunction on the server: no client
+			-- reaches it.
 			if RunService:IsStudio() then
 				local test = Instance.new("BindableFunction")
 				test.Name = "ShelfTest"
@@ -264,6 +305,14 @@ function Shelves.new(): ShelvesSystem
 							and player:IsA("Player")
 						then saving:data(player)
 						else nil
+					if data and key == "take" and type(spot) == "number" then
+						local st: Standing? = standing[player]
+						local model = if st then st.finds[spot] else nil
+						if model then
+							take(player, spot, model)
+						end
+						return model ~= nil and (data.shelf[spot] or { find = "" }).find == ""
+					end
 					if data and key == "" and type(spot) == "number" then
 						local cubby = data.shelf[spot]
 						if not (cubby and cubby.find ~= "") then

@@ -9118,3 +9118,27 @@ mush; one thing, big, reads).
   unturned box); cards on the car's 3D panel (unreadable at phone size from across the car).
 - The padlock face's open shackles come from the padlock model itself (built open), so the fix
   is the model's, in ROADMAP's polish list, not a card re-render.
+
+## D-350 Take a find straight from where it stands (S5-03i2a1, 2026-11-18)
+
+The moment: you walk up to the teddy in your shelf, press Take, and it hops off its cubby into
+your hand with its pick-up sound, as a find on a climb comes up off the floor (D-345's "Take
+anything directly"; precedents: Animal Crossing's house, where you pick up what you set out, and
+the climb's own Take on a find lying loose).
+- **One button, the climb's word.** Every find in a cubby and every find set out (not furniture,
+  not the home's own pieces) carries a Take button (`Takes.offer`). Only its holder's screen shows
+  it, and never while Arrange is open (your tools are stowed then). Friends see none (D-345).
+- **Never lost or doubled.** The server checks the press (rate limit, the cubby or row is the
+  presser's own and still drawn, within reach, not wrapped, a hand free: `Slots:room`), then in
+  one step stamps the copy taken, frees the spot (`Save.unshelf`) or lifts the row
+  (`Spots.lift`) and puts the find in their hands out of the box (`Slots:unbox`, marked as from
+  it, D-293). What you own never changes; a crash before the autosave leaves it on its spot, one
+  after leaves it in the box. Lune specs: `tests/hometake.spec`.
+- **Hands full: nothing happens** (my default, OWNER.md; no refusal text, the hands are on
+  screen). What rides on a find you take goes back in the box, as a put-away does.
+- **The flight:** the copy is stamped with its taker (`Take.Attribute`) and stays a moment
+  unseen; every screen flies its own copy: a quick hop (0.55 studs, 0.12 s), then into the hand
+  (0.3 s), turning a little and growing back from a cubby's shrunk size; the pick-up sound plays
+  as it lands, heard by friends close by. Your hand stays empty until it lands (InFlight), then
+  it's simply there. Numbers in `Shared/Home/Take`.
+- **Split** (context): i2a1 this, built and green; i2a2 sees it in Studio Play and captures it.

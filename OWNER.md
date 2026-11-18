@@ -129,6 +129,13 @@ nowhere else.
   rubber mats; walls are plain (a home's), stripes, leaves and daisies; eight paints from warm
   white to ink; eight door colours from clay; carpet, checker and mats each come in five colours;
   every paper takes the wall's paint as its ground.
+- [ ] **Take a find straight off your shelf or a table, on a real phone** (S5-03i2a1, D-350;
+  passes checks, untested in Studio: the next session sees it in Studio Play first). Walk up to a
+  find in a cubby: Take shows over it. Press it: it hops up and flies into your hand with its
+  pick-up sound, and the cubby is empty. Do the same with a find on the job box's top and one on
+  the floor. Open the job box: the count hasn't changed. Leave and come back: nothing doubled or
+  lost. My defaults to judge: with your hands full the press does nothing (no words); a friend in
+  your home sees no Take on your things; a find riding on one you take goes back in the box.
 - [ ] **Move your own shelf, mirror and job box in Arrange, on a real phone** (S5-03i1c1, D-348;
   seen in Studio Play on the Galaxy A16 simulator). Tap Arrange, then press on the shelf and drag
   it to the back wall: its finds ride with it, it shows green, Place sets it down with a thud.

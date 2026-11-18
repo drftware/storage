@@ -55,6 +55,7 @@ local MinimapView = require(script.MinimapView)
 local MirrorView = require(script.MirrorView)
 local TryOnView = require(script.TryOnView)
 local ShelfView = require(script.ShelfView)
+local HomeTakeView = require(script.HomeTakeView)
 local StrandView = require(script.StrandView)
 local JobBoxView = require(script.JobBoxView)
 local BoxPanelView = require(script.BoxPanelView)
@@ -137,6 +138,8 @@ local host = Brix.Host.new({
 		-- a wrap colour tried on at a mirror: the film winds on, stays, peels off (S5-03f4a)
 		{ slot = "tryOnView", system = TryOnView.new() },
 		{ slot = "shelfView", system = ShelfView.new() },
+		-- take a find straight from your shelf or where it's set out (S5-03i2a)
+		{ slot = "homeTakeView", system = HomeTakeView.new() },
 		{ slot = "jobBoxView", system = JobBoxView.new() },
 		{ slot = "boxPanelView", system = BoxPanelView.new(needCursor, holdPiece) },
 		-- lift, drag and set down your finds in your home (S5-03e3a)

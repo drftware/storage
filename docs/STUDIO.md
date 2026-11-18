@@ -3242,6 +3242,10 @@ verified: a doc page, Studio, or "untested".
   world extent from its parts' corners.
 - **Opening a job box from a script**: set its model's `Lid` attribute to 1 on the server; the
   client's lid reads 88 degrees about the hinge (`WorldPivot:ToObjectSpace(lid.CFrame)`).
+- **Pressing a home find's Take from a script** (S5-03i2a1): `ShelfTest:Invoke(player, "take", i)`
+  presses cubby `i`'s, `ArrangeTest:Invoke(player, "take", id)` a set-out find's ("Teddy#1"),
+  each through the server's own checks (reach too: stand the character by it first). Both answer
+  true when it went into the hands. A real press is the E key by the find on the A16.
 
 
 ## The next-floor cards' faces (S4-03b1, Nov 17)

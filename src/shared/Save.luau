@@ -236,6 +236,19 @@ function Save.shelve(data: Data, name: string, fresh: number, spots: number): nu
 	return nil
 end
 
+-- Takes `name` off the shelf's spot `i` (S5-03i2a, D-350: a Take on a cubby), so it's counted in
+-- the box until the same step puts it in your hand (Slots' `unbox`). What you own never changes.
+-- False, and nothing touched, when spot `i` doesn't hold `name`.
+function Save.unshelf(data: Data, i: number, name: string): boolean
+	local spot = data.shelf[i]
+	if not (spot and name ~= "" and spot.find == name) then
+		return false
+	end
+	spot.find = ""
+	spot.fresh = Save.Fresh.Seen
+	return true
+end
+
 -- Lifts every find you wear off the shelf (D-316: a save from before the rail kept the hard hat
 -- there), so it's in the box and stands on your rail. How many it lifted.
 function Save.unshelve(data: Data): number
