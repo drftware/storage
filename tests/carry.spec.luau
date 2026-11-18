@@ -237,10 +237,18 @@ end
 -- finds, with a grip inside its art's box and a heft
 -- (the generated Specs and sets build Vector3s, which Lune lacks: the fixture loads them)
 local FindBoxes = require("./fixtures/finds").boxes
+local BigFinds = {}
+for _, f in require("../src/shared/BigFind").Finds do
+	table.insert(BigFinds, f.key)
+end
 for key, row in Catalog do
 	ok(type(row.name) == "string" and #row.name > 0, `{key}: a name`)
 	if row.find then
-		ok(table.find(Deal.Finds, key) ~= nil, `{key}: one of the deal's finds`)
+		-- (a big find is the floor's big-find unit's alone, S4-05b1: tests/bigfind.spec)
+		ok(
+			table.find(Deal.Finds, key) ~= nil or table.find(BigFinds, key) ~= nil,
+			`{key}: one of the deal's finds`
+		)
 		ok(table.find(Deal.Tools, key) == nil, `{key}: a find, not a tool`)
 		local box = FindBoxes[row.template]
 		ok(box ~= nil, `{key}: its art's sizes`)

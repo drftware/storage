@@ -2540,5 +2540,5 @@ Wave 1 takes these eight of the sixteen (catalog build order); the rest come in 
 | Moped | Epic | At home: sit on it; the horn beeps |  | |
 | Pinball machine | Legendary | At home: you can play it |  | |
 | Arcade cabinet | Legendary | At home: a short game with a high-score board for visitors to beat | Named in the design doc. A decision, because it's a game to build | |
-| Jukebox | Legendary | At home: it plays every record you own | Named in the design doc | |
+| Jukebox | Legendary | At home: it plays every record you own | Named in the design doc | Nov 18, S4-05b1 |
 | 1940s motorcycle | Secret | At home: sit on it and it rumbles | A 1940 motorcycle really did turn up in a storage unit | |

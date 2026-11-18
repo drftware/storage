@@ -107,6 +107,9 @@ export type Deck = {
 	-- the medium units packed with boxes to the ceiling, a path through to the back (B-05b1), by
 	-- slot index (the floor rules' `packed`; their layout is `PackedLayout`'s)
 	packed: { [number]: boolean },
+	-- the floor's big find (S4-05b1, `BigFind`): its unit, by slot index, and its find's key, set
+	-- as the right code goes in; that unit is dealt the big find alone (`Deal.open`)
+	big: { [number]: string },
 	-- the monsters on this floor (S4-02, `KeeperMix`): a keeper not in it is never dealt or placed
 	cast: KeeperMix.Cast,
 	-- the version the team picked for the floor, as it bends the deal (an empty one for none)
@@ -224,7 +227,8 @@ Deal.Bag = {
 ]]
 Deal.Finds = { "Boombox", "Television", "Teddy", "Skates" } :: { string }
 for _, row in Rows do
-	if row.judged then
+	-- a big find is never in a unit's deal: only the floor's big-find unit stands one (`BigFind`)
+	if row.judged and row.set ~= "Big" then
 		table.insert(Deal.Finds, row.key)
 	end
 end
@@ -646,6 +650,7 @@ function Deal.new(floor: Floor, random: Random, cast: KeeperMix.Cast?, bend: Ben
 		bag = {},
 		sleepers = {},
 		piles = {},
+		big = {},
 		packed = {},
 		cast = cast or KeeperMix.all(floor.number),
 		bend = bent,
@@ -943,6 +948,13 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 	end
 	local roll = deck.rolls[index]
 	assert(roll, "Deal.open: not a unit")
+	local big = deck.big[index]
+	if big then
+		-- the floor's big find stands alone in the dark (S4-05b1): nothing else, nothing drawn
+		local alone: Contents = { kind = "Find", find = big, coins = 0 }
+		deck.dealt[index] = alone
+		return alone
+	end
 	local note = Deal.noteIn(deck, index) ~= nil
 
 	local kind: Kind, within: number = landOn(Deal.odds(deck, index, situation), roll)

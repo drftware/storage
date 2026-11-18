@@ -103,6 +103,13 @@ Lobby.InkLight = 0.35 -- the SurfaceGuis' LightInfluence: 0 glows, 1 is lit only
 Lobby.CardDepth = 0.185
 Lobby.Words = { Name = "EVERKEEP SELF STORAGE", Carts = "CARTS" } :: { [string]: string }
 
+-- A car's parts drawn only on a screen near it (S5-03a2d, D-359; LobbyCarsNear): the lamp's
+-- wire cage and fitting (1,164 triangles a car) hang up behind the car's fascia, so from farther
+-- than Reach studs (from the car's threshold) not a pixel of them shows. Measured in Studio Play
+-- on the Galaxy A16: nothing at 50 studs, a one-pixel line at 30. The lamp's glass, the warm glow
+-- you see from across the room, is always drawn. Ground floor only: a climb's car is ridden.
+Lobby.CarNear = { Parts = { "Lamp" }, Reach = 60 }
+
 -- The room's light. The hall lights hang only over the cars (the climb's edge stays there) and
 -- glow (Neon) but throw no light of their own: the room is lit by wide fills that cast no shadow, a
 -- pair in each of three rows down its 156 studs, and the cars by their own lamps, so the six cars

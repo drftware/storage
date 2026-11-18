@@ -2428,17 +2428,25 @@ Done when two climbs in a row feel different and players talk about their best f
     its glow off as found and on when played, its record on its own turntable. Its game row is
     written but not ticked built: a ticked find joins every unit's deal, and a big find is dealt
     only by a floor's big-find place (piece b).
-  - [ ] **S4-05b The big find on the climb.** Waits for the home chain to free `Climbs`,
-    `GatePay`, `Slots`. The moment: the code goes in, a unit down the hall rolls up by itself
-    with its own loud rattle, its place lights on the corner map, and one friend hauls the
-    jukebox out in both hands, slower than any monster, no tools, while the others keep the
-    monsters off; it pays only if it's in the car as the gate shuts. Parts: the place on each
-    floor from 2 (a unit picked per floor, its door opened by the server once the code is in);
-    the deal (grade rolled as the catalog says: Epic 75%, Legendary 22%, Secret 3%, falling back
-    to the jukebox while it's the only one built); its own `size` "Big" and how it sits in your
-    arms (hugged low so you see over it); the walk speed under every monster's; tools and the
-    other slots locked while you hold it; dropped where you're caught; banked only by the gate
-    shutting with it inside; tick the jukebox built in `WAVES.md`.
+  - [ ] **S4-05b The big find on the climb.** Split (D-415) into b1, b2, b3:
+    - [x] **S4-05b1 The deal and the door** (D-415). The jukebox imported; from floor 2 the
+      code going in rolls up a unit nobody has opened, down the halls when one is left, by
+      itself with the door's rattle, and the big find stands alone in it with its Take prompt
+      (`BigFind`, `BigFinds`, `deck.big`); its grade rolled Epic 75, Legendary 22, Secret 3 with
+      the jukebox standing in; ticked built in `WAVES.md` but never in a unit's own deal; carried
+      in both hands (`bothHands`). Seen in Studio on floor 2 (Unit228).
+    - [ ] **S4-05b2 Its mark on the corner map, and the haul.** The moment: the mark pops on
+      the map with a ring as the door rolls up, so everyone knows where; one friend hugs it low
+      so they see over it and walks slower than any monster. The map's mark from
+      `BigFind.SlotAttribute` on the floor model (as MinimapView's bang dot: ring, held on the
+      edge while off the window; it follows the find once taken, or goes); its own hold (low,
+      in both arms) and a walk speed under every monster's (the catalog's `walkSpeed`, as the
+      ladder's); check the drop where you're caught and the pick up again (Slots already does
+      both for two-handed finds).
+    - [ ] **S4-05b3 Counted at the gate.** The moment: the gate shuts with it aboard and it pays
+      out with its own pop, bigger than any find's. It is kept by GatePay as any find in a slot;
+      give it its own pop on the riders' screens (KeepView, CoinView) and its own pay (the owner's
+      call in OWNER.md: its worth into the save at home, coins on the climb, or both).
   - [ ] **S4-05c The big find seen in Studio.** The moment: from floor 2's keypad, see the unit
     roll up, its mark on the corner map, carry the jukebox to the car, and watch the gate pay
     it. Captures to `docs/art/`; the two-player run (one hauls, one guards) in OWNER.md.
@@ -2531,10 +2539,12 @@ Done when players watch the results to the end and change their perks between cl
         The spawn view 160k triangles down to 145k: a front's drum and head plates are drawn
         only from inside that home. The run from the spawn to a car is 8.5 s. Nothing warm was
         cut. Left over the triangle default: the cars' 51k (below).
-      - [ ] **S5-03a2d The cars' hidden triangles** (D-271): the six cars are 51k of the spawn
-        view's 145k, 8.5k each. Find the parts nobody sees from the ground floor and draw them
-        only where they're seen, as the fronts' drums are. The cars are the climb's Elevator,
-        so the climb is checked too. After a3, by the owner's order.
+      - [x] **S5-03a2d The cars' hidden triangles** (D-359; seen in Studio Play on the A16):
+        measured part by part and settled by the pixels. Only the lamps' wire cages are unseen
+        from afar (behind the fascia: not a pixel from 50 studs), so a lobby car's cage is drawn
+        only within 60 studs of it (`LobbyCarsNear`): the spawn view 174,404 down to 167,420.
+        The gates (29k) are seen; drawing them simply from afar waits on the owner's phone test.
+        Climb floors untouched.
     - [ ] **S5-03a3 A unit each**: a unit for each player as they join (12; a plots system
       built in Brix first, D-252), your name over your door, doors open by default, pulled down
       keeping everyone out with a locked rattle, spare units padlocked. Split if it won't fit:
@@ -3570,7 +3580,8 @@ actions themselves and dealing the new finds on floors are later game tickets.
 - **The jukebox's window and photo pass** (S4-05a, D-414): its bay window is a flat leaning
   pane, so up close it still reads a little like a screen; the arch-tops had a curved glass dome
   over the record. Do a photo pass (three or more arch-tops, `CRAFT.md`), then curve the glass
-  and the bay's lid, and add fluted ribs across the plastics, before it's ticked built (S4-05b).
+  and the bay's lid, and add fluted ribs across the plastics (it was ticked built in S4-05b1
+  so the climb could deal it; this pass changes only its look).
 - **The padlock with its shackle shut** (S4-03b2): `art/padlock` builds the padlock as one mesh
   with its shackle lifted and swung open (`LIFT`, `SWING`), so the doors' padlocks and the
   TwicePadlocks card face both read as unlocked. Build it shut (the click's moment), rebuild with

@@ -3,6 +3,9 @@
 -- Each find's uploaded Model asset and, if it lights, its glow mask's image (Finds/Kit.luau).
 
 return {
+	Big = {
+		Jukebox = { Model = 94008035937300, Emissive = 95288426716538 },
+	},
 	Figures = {
 		DiecastCar = { Model = 131428797300221 },
 		RCCar = { Model = 91595938207558 },

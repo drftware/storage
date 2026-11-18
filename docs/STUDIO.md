@@ -2918,6 +2918,16 @@ verified: a doc page, Studio, or "untested".
   (S5-03a2c): the twelve drums and head plates left the spawn view's count at once. It's the way
   to hide a world part from one screen without touching its `Transparency`, which scripts like
   RollUpDoor own.
+- **Whether a hidden part was seen, by the pixels** (S5-03a2d): capture Studio's window
+  (`screencapture -x -o -l <window>`, the A16 view comes out about 1:1), hide the parts on the
+  Client, capture again, convert both with `sips -s format bmp` and count pixels changed by more
+  than 12 of 255 in the region that matters (plain Python reads a BMP; the Mac's python3 has no
+  PIL). Leave out the held flashlight: its sway changes about a thousand pixels between frames.
+  A camera set Scriptable from one `execute_luau` is put back to Custom by the next call: keep
+  the ShotCam bind (above) for the whole run, or every capture is the spawn view.
+- **Tiny parts aren't drawn from afar** (S5-03a2d): the elevator keypad's keys (0.22 studs) add
+  nothing to `Stats.RenderBreakdown.Opaque` from 100 studs and are back by 50 (6,480 triangles
+  for six keypads): Roblox leaves parts that small out by itself.
 - **`Humanoid:MoveTo` gives up after 8 s** (S5-03a2c): `MoveToFinished` fires false and the body
   stops where it got to. Time a longer walk in legs, or from where it stopped.
 - **Testing a set-down wind-up, from the MCP** (F-G1e2b, Nov 17): with a Scriptable camera, a

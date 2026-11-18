@@ -2341,7 +2341,7 @@ local Rows: { Game.Row } = {
 	{
 		key = "Jukebox",
 		set = "Big",
-		judged = false,
+		judged = true,
 		name = "Jukebox",
 		grade = "Legendary",
 		worth = 800,
@@ -2349,6 +2349,7 @@ local Rows: { Game.Row } = {
 		grip = { 0, 2.3, 0 },
 		heft = 1.0,
 		size = "Large",
+		bothHands = true,
 		pickUp = {
 			id = "rbxassetid://9114008989",
 			from = 0,

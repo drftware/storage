@@ -110,10 +110,15 @@ for _, name in Deal.Finds do
 	end
 end
 -- A row whose line isn't ticked built yet (its art made, not yet judged and in the place: S1a)
--- is in the game nowhere.
+-- is in the game nowhere. A big find (S4-05b1) is in the catalog but never a unit's deal: only
+-- the floor's big-find unit stands one (tests/bigfind.spec).
 local judged = {}
 for _, row in Rows do
-	if row.judged then
+	if row.judged and row.set == "Big" then
+		local c = Catalog[row.key]
+		ok(c ~= nil and c.find == true and c.bothHands == true, `{row.key}: carried in both hands`)
+		ok(table.find(Deal.Finds, row.key) == nil, `{row.key}: never in a unit's deal`)
+	elseif row.judged then
 		table.insert(judged, row)
 	else
 		ok(

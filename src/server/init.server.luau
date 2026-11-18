@@ -30,6 +30,7 @@ local Arranging = require(script.Arranging)
 local Decorating = require(script.Decorating)
 local Furnishing = require(script.Furnishing)
 local Growing = require(script.Growing)
+local BigFinds = require(script.BigFinds)
 local GatePay = require(script.GatePay)
 local Horns = require(script.Horns)
 local Keepers = require(script.Keepers)
@@ -115,6 +116,8 @@ local systems: { Brix.HostEntry } = {
 	-- The team's pick of the next floor on the ride: three versions lit, one press each, most wins.
 	{ slot = "nextFloors", system = NextFloors.new() },
 	{ slot = "climbs", system = Climbs.new() },
+	-- The floor's big find: as the code goes in, a unit rolls up by itself with it standing inside.
+	{ slot = "bigFinds", system = BigFinds.new() },
 	-- Pay and keeping as a floor's gate shuts: coins to everyone aboard, their finds theirs for good.
 	{ slot = "gatePay", system = GatePay.new() },
 	-- The climb's end: everyone kept or left, or the top; the results under it, and "Again".

@@ -66,6 +66,7 @@ local ArrangeView = require(script.ArrangeView)
 local LooksView = require(script.LooksView)
 local SettleView = require(script.SettleView)
 local LadderView = require(script.LadderView)
+local LobbyCarsNear = require(script.LobbyCarsNear)
 local LobbyView = require(script.LobbyView)
 local MachineMenu = require(script.MachineMenu)
 local MachineView = require(script.MachineView)
@@ -136,6 +137,8 @@ local host = Brix.Host.new({
 		{ slot = "unitLights", system = UnitLights.new() },
 		-- a home's lamps on its switch (S5-03a2b3), before BehindDoors for the same reason
 		{ slot = "homeLights", system = HomeLights.new() },
+		-- a lobby car's lamp cage only on a screen near it (S5-03a2d)
+		{ slot = "lobbyCarsNear", system = LobbyCarsNear.new() },
 		{ slot = "homeCards", system = HomeCards.new() },
 		{ slot = "homeGlows", system = HomeGlows.new() },
 		-- the mirror in your home: you, the right way round, your unit behind you (S5-03b)

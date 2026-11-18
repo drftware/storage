@@ -114,6 +114,9 @@ export type Deals = Brix.System & {
 	-- Unit `unit` holds someone kept (L-07a): it's never dealt, so the friend who opens it finds
 	-- only them, never a keeper beside them. Whether it was still to be dealt.
 	hold: (self: any, unit: Model) -> boolean,
+	-- Whether unit `unit` is still to be dealt: never lifted, holed or holding someone kept
+	-- (the floor's big find goes only into such a unit, BigFinds, S4-05b1).
+	waiting: (self: any, unit: Model) -> boolean,
 	-- Deals unit `unit` now though its door is still shut (S2-03b): a sleeper behind it is waking,
 	-- so it must stand where the deal lays it. Whether it was still to be dealt.
 	dealShut: (self: any, unit: Model) -> boolean,
@@ -914,6 +917,10 @@ function Deals.new(): Deals
 		end
 		open(unit, nil)
 		return true
+	end
+
+	function system.waiting(_: any, unit: Model): boolean
+		return units[unit] ~= nil
 	end
 
 	function system.hold(_: any, unit: Model): boolean

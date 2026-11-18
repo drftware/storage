@@ -9596,6 +9596,50 @@ holds every find out of a box, so a crash, a failed teleport or a server hop cos
   lobby floor, where its owner's leave recalls it (its crack written there) and the group's
   server deals it too, so the crack could count twice; never the find.
 
+## D-359 The cars' lamp cages drawn only from near: the one part of a car nobody sees from afar (S5-03a2d, 2026-11-18)
+
+The moment: on a cheap phone the calm ground floor runs smooth from the spawn to a car, the six
+cars as solid as ever.
+
+- **Measured** in Studio Play on the Galaxy A16 simulator (685x338), first person (the eye 4.5
+  studs up), looking straight at the cars from the middle of the room. The ground floor has grown
+  since D-271 (the counter's furniture, shelves, cards), so the spawn view starts at 174k, not 145k:
+
+  | Spot (studs from the cars) | Whole view | The six cars | Their lamp cages |
+  |---|---|---|---|
+  | Spawn (150) | 174,404 tris | 51,108 | 6,984 |
+  | 100 | 136,084 | 52,476 | 6,984 |
+  | 50 | 85,464 | 58,956 | 6,984 |
+  | 15, before cars 3 and 4 | 44,148 | 31,960 | 2,328 |
+
+  The cars from the spawn, part by part: gate straps 20,736, pickets 8,400, lamp cages 6,984,
+  trim (bumper boards and hatch) 6,840, keypads 3,096, car fronts 2,664, landing frames 2,004,
+  sills 252, shells 132. The keypads' keys are already 0 there: Roblox leaves parts that small
+  undrawn from afar by itself (they're back by 50 studs, 6,480).
+- **Which parts nobody sees** was settled by the pixels, not by guessing: Studio's window was
+  captured (macOS `screencapture -l`, the A16 view about 1:1) with a part set hidden on the
+  Client and without, and the cars' strip compared (a pixel changed by more than 12 of 255). From
+  the spawn: the back layer of the gate's straps changed 42 pixels, the trim 136, the lamp cages
+  0. The lamp cages again: 0 at 75 and at 50 studs, 20 at 30 (a one-pixel line under each
+  fascia), 134 at 12. The cage and fitting hang behind the fascia; only their bottom ever peeks
+  out, and only from near.
+- **So a lobby car's lamp cage is drawn only on a screen within 60 studs of its threshold**
+  (`Lobby.CarNear`, `LobbyCarsNear` on the Client: `LocalTransparencyModifier`, checked four
+  times a second, as the fronts' drums are). 60 leaves room over the 50 measured for a kneeling
+  eye, which sees a little farther under the fascia. The lamp's glass, its light and its glow
+  across the room are untouched. **After,** seen in Studio Play
+  with this code: the spawn view 174,404 down to 167,420 (the six cages, 6,984), not a pixel
+  different; 40 studs out the four nearest cars' cages are drawn and cars 1 and 6 (60.4 away)
+  not; 15 studs out and inside a car, all six, unchanged at 44,148.
+- **Ground floor only.** A climb floor's car is the one you ride and wait by; nothing there is
+  hidden (Lobby cars carry `Boarding.CarAttribute`, the climb's don't).
+- **Not chosen:** the folded gates (29k from the spawn, 57% of the cars) are seen: their back
+  straps alone change 42 pixels. A folded gate drawn from afar as one simple mesh baked from the
+  real one would cut about 28k, but it's new art; it waits on the owner's phone test (OWNER.md),
+  only if the ground floor stutters there. The trim's boards show through the open gate and its
+  hatch shares their mesh. Still over a climb floor's busiest view (112k) at the spawn: the
+  fronts and furnishings stay (D-271).
+
 ## D-414 · 2026-11-18 · The big find split, and the jukebox first (S4-05a)
 
 S4-05 is split in three (ROADMAP): **a** the first big find's art, **b** the big find on the
@@ -9612,3 +9656,32 @@ climb (waits for the home chain to free `Climbs`, `GatePay`, `Slots`), **c** see
   whose session needs it in the place anyway; this session ran out of room after the sheets.
 - **Left to the owner** (OWNER.md): the pick, its grade against the big finds' Epic-heavy roll,
   and its height in your arms.
+
+## D-415 · 2026-11-18 · The big find's deal and door (S4-05b1)
+
+S4-05b is split in three (ROADMAP): **b1** the deal and the door (done), **b2** its mark on the
+corner map and the haul, **b3** counted at the gate.
+- **Chosen as the code goes in, from the units nobody has opened.** Picking the unit when the
+  floor is laid would let a team open it early by hand and find the big find before the code,
+  or need a lock with no reason players can see. Choosing at the code, among units still shut
+  and to be dealt (Deals' `waiting`: never one searched, holed or holding a caught friend), and
+  never one padlocked, a note's, a sleeper's, guarded, packed or the Packrat's, means the door
+  that rolls up is always one nobody touched, and nothing searched is undone. One outside the
+  lobby's hall when any is left, so it's down the halls and the haul is a real trip (Lethal
+  Company's apparatus sits deep in the facility). Every one of 120 test floors had one.
+- **Its rolls come from the floor's seed, not the deal's** (`BigFinds`, seed * 7 + 4051): the
+  grade, the find, which unit. The deal's draws are untouched, so `tests/stuffdeal.spec`'s
+  fingerprint is the same.
+- **The deal stands it alone** (`deck.big`, `Deal.open`): no coins, no stuff, no monster, so
+  the door rolls up on the jukebox alone in the dark. Deals lays it standing with its Take
+  prompt, as any find too big for a box.
+- **Ticked built, never in a unit's deal.** `Deal.Finds` leaves out the Big set; the catalog
+  takes it, so it's carried as any find, in both hands (`bothHands`, as the mega goo ball:
+  no other slot, no picking up). Its own hold and its slower walk are b2's.
+- **Its sound is the door's own rattle** ("Open", as a wrong code's unit rolls up), heard by
+  keepers as by players, so pulling the code draws monsters toward the find, as pulling the
+  apparatus wakes Lethal Company's facility. Players far away learn where from the map (b2).
+- **Seen in Studio** (floor 2, seed 7, code 9199): "BigFinds: floor 2's Jukebox rolls up in
+  Unit228", the jukebox standing on the unit's floor at its back (3.25 by 5.95 by 2.68 studs, 4
+  parts, 1 light) with its Take prompt on the client. Screen captures timed out, so none saved.
+

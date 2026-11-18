@@ -74,6 +74,11 @@ nowhere else.
   that are yours: it's Legendary in the catalog while big finds roll Epic three times in four,
   so until more are built every floor's big find would be this one Legendary; and it stands
   about 6 studs tall, a head over you, which is real size but a lot to carry in your arms.
+- [ ] **The big find rolls up as the code goes in** (S4-05b1, D-415; seen in Studio with one
+  player). Play from floor 2 (Studio: Edit `DevFloorNumber` 2, then back to 1). Find the code and
+  put it in. Look for: somewhere down the halls a unit nobody opened rolls up by itself with the
+  door's rattle, and the jukebox stands alone in it, dark, with Take. Is the rattle enough to
+  make you go look before the map's mark comes (S4-05b2)? My default: the door's own rattle.
 - [ ] **Vote with a friend, on phones** (S4-03b2, D-405; seen with one player and stand-in
   presses). Two phones (or Studio's Test tab, 2 players), both in one car leaving floor 1 (any
   later floor's ride works; floor 1's from the lobby has no vote). Look for: as the car lurches
@@ -646,7 +651,10 @@ nowhere else.
   4. On a phone, walk from the spawn down past the homes to a car (D-271): does it stay smooth?
      With a few doors up, does a floor lamp's warm pool ease in as you come near and out as you
      go, never popping? Does any home look dark from the lobby? Look up at your own door from
-     inside: the drum and its head plates over the doorway should be there.
+     inside: the drum and its head plates over the doorway should be there. Walking up to a
+     car (D-359), its lamp's wire cage should never pop in: from afar only the glass glows.
+     If the walk stutters on your phone, the next cut is the folded gates drawn simply from
+     afar (about 28k triangles, new art): say so and it becomes a ticket.
 - [ ] **Walk the new ground floor** (S5-03a2a, D-262; seen in Studio Play by me, not on a
   phone). Press Play in Studio (or publish and play on your phone, Galaxy A16 or similar):
   1. You load in just inside the glass door, facing the six cars 150 studs away, twelve roll-up

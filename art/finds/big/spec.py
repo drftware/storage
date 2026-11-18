@@ -41,8 +41,8 @@ from game import (  # noqa: E402
 )
 
 GAME = [
-    # The jukebox's row is written but not ticked built in WAVES.md: a ticked find joins every
-    # unit's deal, and a big find is dealt only by a floor's big-find place (ROADMAP S4-05b).
+    # Ticked built in WAVES.md (S4-05b1): the deal leaves the Big set out of every unit's deal, and
+    # only the floor's big-find unit stands one (src/shared/BigFind.luau).
     dict(
         key="Jukebox",
         catalog="Jukebox",
@@ -53,6 +53,7 @@ GAME = [
         grip=(0, 2.3, 0),  # hugged round its middle, under the bay window
         heft=1.0,  # the heaviest thing you carry: both hands, slower than any monster
         size="Large",
+        bothHands=True,  # hugged in both arms: no other slot, no picking up (Lethal Company's heavy scrap)
         pickUp=pitched(STEEL, 0.6),
         drop=pitched(STEEL, 0.5),
     ),
