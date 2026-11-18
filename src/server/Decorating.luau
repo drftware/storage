@@ -211,7 +211,7 @@ function Decorating.new(): DecoratingSystem
 		if not (home and data) then
 			return Spots.Refusals.NotYours
 		end
-		local after = Looks.pick(home.chosen, kind, id)
+		local after = Looks.pick(home.chosen, kind, id, data.cards) -- a card style once bought (D-360)
 		if not after then
 			return "notALook"
 		end

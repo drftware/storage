@@ -2473,7 +2473,7 @@ Done when players watch the results to the end and change their perks between cl
   you decided (Nov 16)" section wins where an idea differs. Built next, ahead of S4-02 (owner,
   Nov 16), by a chain of sessions at 300k context. In this order; a session splits a piece
   further (a1, a2...) when it won't fit:
-  - [ ] **S5-03a The ground floor** (ideas 1 to 5; the doc's "Where it goes", re-laid). The
+  - [x] **S5-03a The ground floor** (ideas 1 to 5; the doc's "Where it goes", re-laid). The
     moment: you walk out of the car across the ground floor, every open unit down both walls
     shows someone's finds, and yours has your name over it. a1 the art: `art/lobby` re-laid
     (deeper; six XL unit slots, 20 by 30, down each side wall, their roll-up doors the climb's
@@ -2490,7 +2490,7 @@ Done when players watch the results to the end and change their perks between cl
       split off the deck, a name card per unit; sheets `lobby-unit` and `lobby-inside` added, the
       M's front, bulb and stand-in boxes in every gap. Export checked (every part under 20,000,
       87,446 triangles); not imported: Specs.luau waits for a2a.
-    - [ ] **S5-03a2 The floor in the game**, split (D-261):
+    - [x] **S5-03a2 The floor in the game**, split (D-261):
       - [x] **S5-03a2a Into the game with its unit fronts** (D-262): the new FBX exported,
         uploaded and imported with its Specs (`Slots`); `Lobby.prepare` squares the joists and
         units' parts; `Lobby.front` stands the climb's M unit in each gap (walls, floor and top
@@ -2545,7 +2545,7 @@ Done when players watch the results to the end and change their perks between cl
         only within 60 studs of it (`LobbyCarsNear`): the spawn view 174,404 down to 167,420.
         The gates (29k) are seen; drawing them simply from afar waits on the owner's phone test.
         Climb floors untouched.
-    - [ ] **S5-03a3 A unit each**: a unit for each player as they join (12; a plots system
+    - [x] **S5-03a3 A unit each**: a unit for each player as they join (12; a plots system
       built in Brix first, D-252), your name over your door, doors open by default, pulled down
       keeping everyone out with a locked rattle, spare units padlocked. Split if it won't fit:
       Split in two:
@@ -2566,7 +2566,7 @@ Done when players watch the results to the end and change their perks between cl
     their reflections, your right hand on your right), the picture itself not yet seen (Studio
     wasn't drawing). The owner judges it before S5-03f (OWNER.md); if it doesn't convince, a fix
     ticket goes in here first.
-  - [ ] **S5-03c The shelf and the chest** (ideas 6 to 9, D-251): finds that come home land on
+  - [x] **S5-03c The shelf and the chest** (ideas 6 to 9, D-251): finds that come home land on
     the shelf (6, 10, 16, 24 spots by size), sparkling until you walk up to them, a never-owned
     kind chiming and turning; when it's full they go in the job box. Press it: the panel (each
     kind once with its count, a search box, rarity filters): into your hands, out in your unit,
@@ -2670,7 +2670,7 @@ Done when players watch the results to the end and change their perks between cl
       owner's own word only, deals what their save backs (`Taken.backed`) into the holder's
       slots, already up, once the save loads. Seen with Studio's stand-in (`DevTripFinds`); the
       live trip and a live shutdown are OWNER.md steps.
-  - [ ] **S5-03e Arrange** (ideas 11 to 15), after a placements system built in Brix (D-252):
+  - [x] **S5-03e Arrange** (ideas 11 to 15), after a placements system built in Brix (D-252):
     lift, drag, a half-stud grid, quarter turns, Free for everyone, floor, tabletop, wall and
     ceiling spots (a column in the catalog), red where it can't go, Place, Put away, Done, the
     limit bar (25, 50, 100, 150 by size); saved in a new save version; every move checked on the
@@ -2682,7 +2682,7 @@ Done when players watch the results to the end and change their perks between cl
       the pin moves here. No game code beyond the pin.
       Done (D-306): Brix's ENG-26a at `7f25310`, `Brix.Placements` and `Brix.PlacementSnap`
       (grid and free); the pin moved; nothing wired here yet.
-    - [ ] **S5-03e2 Arranged, saved and checked**: a new save version holding each home's
+    - [x] **S5-03e2 Arranged, saved and checked**: a new save version holding each home's
       placements (with its migration), the catalog's spot column, every move checked on the
       server through e1 and rate-limited. The spot column lives in a home file of its own, not
       the find run's `Rows.luau`; the unit's areas come from its XL slot, the limit from its size;
@@ -2699,8 +2699,8 @@ Done when players watch the results to the end and change their perks between cl
         PutAway rate-limited and checked, each change saved and drawn for everyone. Seen in
         Studio Play: four set out, six refused, kept through a set-up from the save and the
         DataStore, all put away; a true Stop and Play rejoin not yet watched.
-    - [ ] **S5-03e3 The Arrange screen** (split for context):
-      - [ ] **S5-03e3a Lift, drag and set down** (split for context):
+    - [x] **S5-03e3 The Arrange screen** (split for context):
+      - [x] **S5-03e3a Lift, drag and set down** (split for context):
         - [x] **S5-03e3a1 The screen, built** (D-311): `ArrangeView` (the Arrange button in your
           own home, the camera up in the corner, a faint grid, the box's tray, lift from the tray
           or the room, drag snapped on the client's own judge, green or red, Turn, Place, Put
@@ -2721,7 +2721,7 @@ Done when players watch the results to the end and change their perks between cl
         at 88 degrees; now 60, seen). A friend's find set out drops in with a knock
         (SettleView; needs two players, OWNER.md). `docs/art/S5-03e3b-*`.
         S5-03e (Arrange) is done.
-  - [ ] **S5-03f The mirror and the clothes rail** (ideas 21 to 24), split five ways:
+  - [x] **S5-03f The mirror and the clothes rail** (ideas 21 to 24), split five ways:
     - [x] **S5-03f1 The mirror's real frame** (D-314): a moulded oak frame mitred round the glass,
       the glass's bevelled edge catching the light, felt pads under its foot and on its top's
       back, leaning so the pads just touch the wall; built the unit's way in `art/home`, in every
@@ -2833,7 +2833,7 @@ Done when players watch the results to the end and change their perks between cl
             tabs while a floor rolls, or lift the camera a touch on this tab.
     - [ ] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby, in
       three:
-      - [ ] **S5-03g3a The door's colour**, in two:
+      - [x] **S5-03g3a The door's colour**, in two:
         - [x] **S5-03g3a1 The door's colour saved, painted and rolled** (D-329): `looks.door` (save
           version 10, clay for older saves), a fifth kind for `PickLook`, the id on the unit
           (`Looks.DoorAttribute`), apart from the room's look so a door pick never stops a wall's
@@ -2848,7 +2848,7 @@ Done when players watch the results to the end and change their perks between cl
           its second row), the camera swung round to face the door from 13.4 studs in, the limit
           bar risen away, finds in the room not lifted on this tab. Seen in Play on the A16 (open
           door; the coil rolls), pictures `docs/art/S5-03g3a2-*.jpg`.
-      - [ ] **S5-03g3b The name card plates**, in two:
+      - [x] **S5-03g3b The name card plates**, in two:
         - [x] **S5-03g3b1 The style saved and its plate over the door** (D-331): `looks.card` (save
           version 11, the stencil for older saves), a sixth kind for `PickLook` (Starter styles
           only until g3c), the id on the unit (`Looks.CardAttribute`). The lobby's plain plates are
@@ -2870,10 +2870,19 @@ Done when players watch the results to the end and change their perks between cl
         Done Nov 18, D-357 (passes checks, untested in Studio; steps in `OWNER.md`): a second
         row on the front tab, the camera dipping out to the hall, the new plate swinging down.
       - [ ] **S5-03g3d The other card styles sold at the counter**: the painted board and the
-        chalk for cash, the neon for Robux, as the furniture is (S5-03g4b's tab, Shop's rules,
-        granted only after the save writes); owned styles saved with a migration, `Looks.cardLock`
-        reading them, so a bought style's mark goes and its chip picks. Prices wait on `OWNER.md`.
-    - [ ] **S5-03g4 Furniture at the counter in a weekly stock** (idea 19; Animal Crossing's
+        chalk for cash, the neon for Robux, as the furniture is. Split Nov 18 (D-360):
+        - [x] **S5-03g3d1 Owned, saved and picked** (done Nov 18, D-360; seen in Studio Play at
+          Galaxy A16 size): `Home.CardSale` (the board 120 cash, the chalk 200, the neon as the
+          product "Neon Name Card"), save v15's `cards`, `CardSales` on the server (written before
+          it answers; the neon through Roblox's prompt, granted in the save first), `Looks.cardLock`
+          and the server's pick reading what you own, the paint tab's mark popping away. Prices
+          wait on `OWNER.md`.
+        - [ ] **S5-03g3d2 The styles' cards at the counter**: the painted board, the chalk and the
+          neon as cards on the Furniture tab after this week's pieces (`CardSale.ShelfRemote`),
+          each its plate in a viewport with your name on it; Buy held till `CardBought` answers,
+          the coins' tick and the job box lid's clunk, then Owned; the neon at Roblox's price with
+          the Robux mark and the real prompt.
+    - [x] **S5-03g4 Furniture at the counter in a weekly stock** (idea 19; Animal Crossing's
       Nook's Cranny and Fortnite's item shop for the stock that changes, Lethal Company's ship
       store for buying furniture with what the run earned). The moment: back from a climb with
       cash, you see this week's pieces at the counter, buy the camp bed, and it's in your job
@@ -2926,7 +2935,7 @@ Done when players watch the results to the end and change their perks between cl
         clear parts Glass (`Specs.Glows`), their one light made only near you as the neon
         cards' are (HomeCards' wash, D-332) within the A16's budget (D-271). Done Nov 17, D-339:
         seen on the A16; the moon's glow with the door down and two clients wait on the owner.
-  - [ ] **S5-03h Four sizes and the walls that move** (ideas 30, 31): small to start, medium for
+  - [x] **S5-03h Four sizes and the walls that move** (ideas 30, 31): small to start, medium for
     cash, large and XL for Robux; the partitions grind back and the door widens, everything set
     out staying where it was. Split Nov 17: the save's and the purchases' rules first, each with
     a failing spec, then the layout, the walls and the moment.
@@ -2998,7 +3007,7 @@ Done when players watch the results to the end and change their perks between cl
     Animal Crossing's house, Bloxburg's build mode). Next, ahead of S5-03h5 and h6. The moment:
     you buy an end table, set it by the bed, stand your lamp on it, walk up and press Switch, and
     the corner glows; the shelf goes wherever you want it. In this order:
-    - [ ] **S5-03i1 The starter pieces become furniture**: the shelf, job box, mirror, clothes
+    - [x] **S5-03i1 The starter pieces become furniture**: the shelf, job box, mirror, clothes
       rail, rug, beanbag and floor lamp as rows in the home's layout, lifted, moved, turned and
       put away in Arrange like bought pieces (the job box moved but never put away); the shelf's
       spots, the mirror's reflection and the rail's hangers go with their piece; a default layout

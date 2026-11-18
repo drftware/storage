@@ -49,6 +49,9 @@
 	  or a version 12 save, laid in the XL box every home was), the home carries the rows to its
 	  size as it's set up (`Spots.carry`), puts back in the box what it doesn't hold, and writes
 	  both the same. So growing writes one value, and nothing set out is ever lost.
+	- `cards`: the name card styles you own (S5-03g3d, D-360), by style id (`Home.CardSale`),
+	  stamped with when each was first owned: bought at the counter, owned for good. The stencil
+	  is everyone's and never listed.
 	- `starterLaid`: whether `placed` holds the home's own pieces, the shelf, the job box, the mirror
 	  and the rest, as rows you arrange (S5-03i1a, D-346). False in a new save and in one laid
 	  before: the server lays them as it sets the home up (`Home.Layout`: a size's layout, or where
@@ -113,6 +116,7 @@ export type Data = {
 	homeSize: string,
 	placedSize: string,
 	starterLaid: boolean,
+	cards: Stamps,
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -162,6 +166,7 @@ function Save.fresh(): Data
 		homeSize = Sizes.Start,
 		placedSize = Sizes.Start,
 		starterLaid = false, -- the server lays the home's own pieces as it sets it up (D-346)
+		cards = {}, -- the stencil is everyone's; the rest are bought (D-360)
 	}
 end
 
@@ -745,6 +750,12 @@ function Save.format(brix: any): Format
 	fourteenthFields.starterLaid = Schema.boolean()
 	local fourteenth = Schema.shape(fourteenthFields)
 
+	-- Version 15 (S5-03g3d, Nov 18): version 14 plus the name card styles you own, by style id,
+	-- stamped with when each was first owned.
+	local fifteenthFields = table.clone(fourteenthFields)
+	fifteenthFields.cards = Schema.map(name, stamped)
+	local fifteenth = Schema.shape(fifteenthFields)
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -962,6 +973,15 @@ function Save.format(brix: any): Format
 				migrate = function(old: any): any
 					local after = table.clone(old)
 					after.starterLaid = false -- its pieces stood fixed: laid where they stood (D-346)
+					return after
+				end,
+			},
+			{
+				schema = fifteenth,
+				-- any: a version 14 save as Brix hands it over, already checked against `fourteenth`
+				migrate = function(old: any): any
+					local after = table.clone(old)
+					after.cards = {} -- every home had the stencil alone (D-360)
 					return after
 				end,
 			},

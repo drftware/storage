@@ -29,6 +29,7 @@ local JobBoxes = require(script.JobBoxes)
 local Arranging = require(script.Arranging)
 local Decorating = require(script.Decorating)
 local Furnishing = require(script.Furnishing)
+local CardSales = require(script.CardSales)
 local Growing = require(script.Growing)
 local BigFinds = require(script.BigFinds)
 local GatePay = require(script.GatePay)
@@ -162,6 +163,9 @@ local systems: { Brix.HostEntry } = {
 	-- a bigger home at the counter, Medium for cash and Large and XL for Robux: written first,
 	-- then the home laid again (after arranging and purchasing: it calls the one, hears the other)
 	{ slot = "growing", system = Growing.new() },
+	-- the name card's other styles at the counter, the chalk and board for cash and the neon for
+	-- Robux, saved before they're yours (after saving and purchasing: it hears both)
+	{ slot = "cardSales", system = CardSales.new() },
 }
 -- The test hall and its "Walk a floor" post: Studio only now the lobby is the way in (D-109).
 if RunService:IsStudio() then

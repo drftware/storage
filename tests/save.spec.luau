@@ -79,9 +79,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 14.
+-- A new player: nothing yet, at version 15.
 do
-	ok(format:latest() == 14, "the save is at version 14")
+	ok(format:latest() == 15, "the save is at version 15")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -119,7 +119,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(14, stored)
+	local back, decodeProblem = format:decode(15, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -364,7 +364,7 @@ do
 		card = "Chalk",
 	}
 	local kept = format:encode(dressed)
-	local dressedBack = format:decode(14, kept)
+	local dressedBack = format:decode(15, kept)
 	ok(
 		dressedBack ~= nil
 			and dressedBack.looks.paper == "Leaves"
@@ -407,9 +407,22 @@ do
 	)
 	local laid = Save.fresh()
 	laid.starterLaid = true
-	local laidBack = format:decode(14, format:encode(laid))
+	local laidBack = format:decode(15, format:encode(laid))
 	ok(laidBack ~= nil and laidBack.starterLaid == true, "a laid home stays laid")
-	local newer, newerProblem = format:decode(15, v1)
+	-- Version 14 as the DataStore holds it (Nov 18): the stencil over the door, nothing bought.
+	-- It comes back owning no styles (S5-03g3d, D-360); a bought one is kept.
+	local v14 = table.clone(v13)
+	v14.starterLaid = true
+	local fourteen, fourteenProblem = format:decode(14, v14)
+	ok(
+		fourteen ~= nil and next(fourteen.cards) == nil and fourteen.starterLaid == true,
+		`version 14 loads owning no card styles ({fourteenProblem})`
+	)
+	local styled = Save.fresh()
+	styled.cards.Neon = 1700000000
+	local styledBack = format:decode(15, format:encode(styled))
+	ok(styledBack ~= nil and styledBack.cards.Neon == 1700000000, "a bought style is kept")
+	local newer, newerProblem = format:decode(16, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 

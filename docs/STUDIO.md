@@ -3198,7 +3198,15 @@ verified: a doc page, Studio, or "untested".
 - **The Arrange button didn't open from the MCP** (S5-03g3c, Nov 18, A16, Unit1): a
   `user_mouse_input` click and a slow press on `Arrange.CanvasGroup.TextButton` (the button
   showed at the top right, the cursor on it) left the tray closed (FrontTab at gui y 350,
-  camera still Custom). Untried: clicking by coordinates, or the D-330 session's way in.
+  camera still Custom). Tried again in S5-03g3d1 by coordinates, standing in the home with the
+  button showing (gui 601,4, 66 square, gui inset 58): clicks at (681, 95) and (634, 95) both
+  left it shut. What works instead for the paint tab: on the Client, `require` PlayerScripts'
+  `LooksTab`, `LooksTab.new(frame, { press, pick, focus, rim }, "front")`, show its `root` and
+  `attach(unit)`: the real chips, marks and all, in a test ScreenGui.
+- **Card styles from a script** (S5-03g3d1): `ServerStorage.CardTest:Invoke(player, id)` buys a
+  cash style as `BuyCard` does (saved; "cash" when short, "had" when owned), owns the neon with no
+  purchase, and `(player, id, false)` takes a style away. `GrowTest:Invoke(player, "cash", n)`
+  sets cash; `FurnitureTest:Invoke(player)` reads it back second.
 - **A burst of `screencapture -l` jpgs runs about 10 a second**: 40 to 50 in a background loop
   started just before a `user_mouse_input` tap catch a 0.5 to 0.7 second swing or roll; `md5` of
   the crops shows which frames moved. There's no PIL or ImageMagick here; `sips` crops and scales.

@@ -19,6 +19,8 @@
 	plate with your name on it in that style's paint, font and ink (Animal Crossing's catalogue),
 	the style read from `Looks.CardAttribute`. One you don't have yet wears a small coin or the
 	Robux mark (`Looks.cardLock`) and a tap only shakes it and pops the mark: no popup, no words.
+	Bought at the counter (S5-03g3d, D-360), the mark pops away and the shade lifts as the tray
+	next shows, read from the styles you own on your Player (`CardSale.Attribute`).
 	A door or card tap also asks the host to show what it changes (`focus`): the door from inside,
 	the plate from the hall, where it swings down into place (HomeCards).
 
@@ -31,6 +33,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local CardPlate = require(ReplicatedStorage.Shared.Home.CardPlate)
+local CardSale = require(ReplicatedStorage.Shared.Home.CardSale)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local LooksView = require(script.Parent.LooksView)
@@ -56,6 +59,9 @@ type Chip = {
 	stroke: UIStroke,
 	scale: UIScale,
 	mark: GuiObject?, -- a card style's coin or Robux mark, while it isn't yours
+	dim: GuiObject?, -- the shade over a card style not yours yet
+	locked: boolean?, -- a card style not yours yet: a tap only shakes it
+	leaving: boolean?, -- bought since its mark last showed: the mark leaves as the tray reveals
 }
 
 local LooksTab = {}
@@ -75,6 +81,8 @@ local QUICK = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Ou
 local TINT = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local GONE = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local SHAKE = TweenInfo.new(0.05, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+-- A bought style's mark leaving its chip: it pops in on itself as the shade lifts.
+local MARK_OUT = TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.In)
 local ROBUX = utf8.char(0xE002) -- Roblox's own Robux mark in its fonts
 local COIN = Color3.fromHex("#F2C14E") -- a locked cash style's coin, and its rim
 local COIN_RIM = Color3.fromHex("#A8741A")
@@ -287,7 +295,7 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 	end
 
 	local function tapped(c: Chip)
-		if c.mark then
+		if c.locked then
 			nope(c)
 			return
 		end
@@ -427,8 +435,10 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 		name.Parent = b
 		local lock = Looks.cardLock(style.Id)
 		local mark: Frame? = nil
+		local shade: Frame? = nil
 		if lock then
 			local dim = Instance.new("Frame") -- not yours yet: a shade darker than the rest
+			shade = dim
 			dim.Size = UDim2.fromScale(1, 1)
 			dim.BackgroundColor3 = Color3.new(0, 0, 0)
 			dim.BackgroundTransparency = 0.7
@@ -489,6 +499,8 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 			stroke = stroke,
 			scale = scale,
 			mark = mark,
+			dim = shade,
+			locked = nil, -- `locks` reads what you own
 		}
 		ring(c, false, false)
 		b.Activated:Connect(function()
@@ -580,6 +592,66 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 	end
 
 	-- Reads the unit's look and shows it: tints, the floor's colours, the rings.
+	-- A bought style's mark pops away and its shade lifts: the chip is yours now.
+	local function unmark(c: Chip)
+		c.leaving = false
+		local m, d = c.mark, c.dim
+		if m then
+			local s = m:FindFirstChildOfClass("UIScale")
+			if s then
+				local out = TweenService:Create(s, MARK_OUT, { Scale = 0 })
+				out.Completed:Once(function(state: Enum.PlaybackState)
+					if state == Enum.PlaybackState.Completed and not c.locked then
+						m.Visible = false
+						s.Scale = 1
+					end
+				end)
+				out:Play()
+			else
+				m.Visible = false
+			end
+		end
+		if d and d:IsA("Frame") then
+			TweenService:Create(d, MARK_OUT, { BackgroundTransparency = 1 }):Play()
+		end
+	end
+
+	-- Each card style's mark from what you own (`CardSale.Attribute` on you, S5-03g3d): one bought
+	-- since it showed leaves where you can see it, now or as the tray next reveals.
+	local function locks()
+		local owned = CardSale.decode(Players.LocalPlayer:GetAttribute(CardSale.Attribute))
+		for _, c in chips do
+			if c.kind ~= "card" or not c.mark then
+				continue
+			end
+			local was = c.locked
+			c.locked = Looks.cardLock(c.id, owned) ~= nil
+			if c.locked then
+				c.leaving = false
+				local m, d = c.mark, c.dim
+				if m then
+					m.Visible = true
+				end
+				if d and d:IsA("Frame") then
+					d.BackgroundTransparency = 0.7
+				end
+			elseif was == nil then -- yours already as the tray is built: no mark at all
+				local m, d = c.mark, c.dim
+				if m then
+					m.Visible = false
+				end
+				if d and d:IsA("Frame") then
+					d.BackgroundTransparency = 1
+				end
+			elseif was then
+				c.leaving = true
+				if root.Visible then
+					unmark(c)
+				end
+			end
+		end
+	end
+
 	local function refresh(eased: boolean)
 		local u = unit
 		local read = if u
@@ -594,6 +666,7 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 			return
 		end
 		colours(eased)
+		locks()
 		for _, list in { chips, dots } do
 			for _, c in list do
 				if c.kind == "paper" or c.kind == "floor" then
@@ -618,6 +691,16 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 			table.clear(watches)
 			unit = u
 			if u then
+				if page == "front" then -- a style bought at the counter
+					table.insert(
+						watches,
+						Players.LocalPlayer
+							:GetAttributeChangedSignal(CardSale.Attribute)
+							:Connect(function()
+								locks()
+							end)
+					)
+				end
 				local names: { string } = if page == "front"
 					then { Looks.DoorAttribute, Looks.CardAttribute }
 					else { Looks.Attribute }
@@ -639,6 +722,13 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 					n += 1
 					c.scale.Scale = 0.6
 					TweenService:Create(c.scale, pop(0.012 * n), { Scale = 1 }):Play()
+					if c.leaving then
+						task.delay(0.25 + 0.012 * n, function()
+							if c.leaving then
+								unmark(c)
+							end
+						end)
+					end
 				end
 			end
 		end,

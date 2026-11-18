@@ -83,12 +83,12 @@ function Looks.cardOf(id: string): Specs.CardStyle?
 end
 
 -- What still stands between a player and name card style `id` (S5-03g3c): nil when it's theirs
--- (a Starter style, every home's), else how the counter will sell it ("Cash" or "Robux"), the
--- mark its chip wears. A style not offered is "Cash", never pickable. The counter doesn't sell
--- the rest yet, so only the Starter styles are anyone's.
-function Looks.cardLock(id: string): ("Cash" | "Robux")?
+-- (a Starter style, every home's, or one in `owned`, the save's `cards`, bought at the counter,
+-- S5-03g3d), else how the counter sells it ("Cash" or "Robux"), the mark its chip wears. A style
+-- not offered is "Cash", never pickable.
+function Looks.cardLock(id: string, owned: { [string]: number }?): ("Cash" | "Robux")?
 	local style = Looks.cardOf(id)
-	if style and style.Sold == "Starter" then
+	if style and (style.Sold == "Starter" or (owned and owned[id] ~= nil)) then
 		return nil
 	end
 	return if style and style.Sold == "Robux" then "Robux" else "Cash"
@@ -157,9 +157,10 @@ function Looks.ask(kind: unknown, id: unknown): (Kind?, string?)
 end
 
 -- `chosen` with `kind` set to `id`, or nil when `id` isn't one of that kind's looks (a floor
--- colour must be the chosen floor's own). A new floor keeps the colour when it has one by that
--- name (Sage carpet to Sage checker), else takes its first.
-function Looks.pick(chosen: Chosen, kind: Kind, id: string): Chosen?
+-- colour must be the chosen floor's own; a card style must be one `owned`, the save's `cards`,
+-- or a Starter). A new floor keeps the colour when it has one by that name (Sage carpet to Sage
+-- checker), else takes its first.
+function Looks.pick(chosen: Chosen, kind: Kind, id: string, owned: { [string]: number }?): Chosen?
 	local after = table.clone(chosen)
 	if kind == "paint" then
 		if not find(Specs.Looks.Paints, id) then
@@ -177,8 +178,8 @@ function Looks.pick(chosen: Chosen, kind: Kind, id: string): Chosen?
 		end
 		after.door = id
 	elseif kind == "card" then
-		if Looks.cardLock(id) then
-			return nil -- the rest wait for the counter
+		if Looks.cardLock(id, owned) then
+			return nil -- not yours till the counter sells it you
 		end
 		after.card = id
 	elseif kind == "floor" then

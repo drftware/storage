@@ -2,46 +2,49 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-18, S5-03a2d (D-359) · **Checks:** green · **Git:** `main`, not pushed; Brix `7f25310`.
+**Updated:** 2026-11-18, S5-03g3d1 (D-360) · **Checks:** green · **Git:** `main`, not pushed; Brix `7f25310`.
 
 ## State
-- S5-03a2d (the cars' hidden triangles) is done, seen in Studio Play on the A16 (D-359). Each
-  car part was measured, then settled by pixels (Studio's window captured with and without it,
-  STUDIO.md): only the lamps' wire cages are unseen from afar, hidden behind the fascia. A lobby
-  car's cage is now drawn only within 60 studs of it (`LobbyCarsNear`, `Lobby.CarNear`): the
-  spawn view 174,404 down to 167,420, not a pixel different. The folded gates (29k) are seen;
-  drawing them simply from afar waits on the owner's phone walk (OWNER.md). Climb untouched.
-- S5-03g3c (choosing a card's style, D-357) and h6's other grows are still unseen in Studio:
-  OWNER.md. This session ran out of room for them.
-- Studio hooks: `ShelfTest` "take"; `ArrangeTest` "take", "own", "place", "rows", "fromShelf",
-  "shelfAway", "size"; Trips' `DevTripFinds`. Home doc:
+- **The home (S5-03) is built** apart from S5-03g3d2 (the card styles' cards at the counter) and
+  its polish lines. Every other S5-03 parent is ticked in ROADMAP.
+- S5-03g3d1 is done (D-360), seen in Studio Play at A16 size from the server and the real
+  remotes: save v15 `cards`, `Home.CardSale` (board 120, chalk 200, the neon as "Neon Name
+  Card"), `CardSales` on the server, the paint tab's marks reading `CardStyles` on your Player.
+  Only a script buys a style so far (`CardTest`, STUDIO.md). Prices and the product: OWNER.md.
+- Arrange's own button still won't open from the MCP's clicks; build the real LooksTab in a test
+  screen instead (STUDIO.md). S5-03g3c's dip and swing and h6's other grows: OWNER.md.
+- Studio hooks: `CardTest`; `ShelfTest` "take"; `ArrangeTest` "take", "own", "place", "rows",
+  "fromShelf", "shelfAway", "size"; `GrowTest` "cash"; Trips' `DevTripFinds`. Home doc:
   https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww. Test save: Medium, card Stencil (Unit1),
-  Boombox 10, Skates 1.
+  cash 38, no card styles owned, Boombox 10, Skates 1.
 - **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403
   to D-413), S4-05a the jukebox's art (D-414), S4-05b1 its deal and door (D-415: imported, the
   code rolls up a unit with it inside). Next: F-G1b4a the hard hat's beam; S4-05b2 the map's
   mark and the haul (its hold, a walk under every monster's), then b3 its pay at the gate.
 
-## Next task: S5-03g3d The other card styles sold at the counter
-The last open piece of S5-03 (every other S5-03 ticket is done).
-The moment: you see a friend's neon card glowing over their door, walk to the counter, buy one,
-and the next time you open Arrange its chip is yours and picks with the plate swinging down.
-1. First see S5-03g3c in Studio Play at A16 size (OWNER.md's "Choosing your name card's style"):
-   Arrange's front tab, the second row of style chips, the camera dipping out to the hall, the
-   plate swinging down. The MCP's click on Arrange's button didn't open it last time (STUDIO.md):
-   try `ArrangeTest` or the button's own `Activated` path. Fix only what's wrong.
-2. Sell the painted board and the chalk for cash and the neon for Robux at the counter, the way
-   the furniture tab sells (S5-03g4b, D-334; Shop's rules), granted only after the save writes.
-3. Save owned styles with a migration; `Looks.cardLock` reads them, so a bought style's mark
-   goes and its chip picks. Prices: a default, and an OWNER.md line.
-4. Every action answers: the buy's sound and toast, the chip's mark leaving.
-**Acceptance:** a cash style bought in Studio Play saves, survives a rejoin and picks; a Robux
-one is offered through the store's prompt (its grant waits on the owner's real purchase); a new
-decision (D-360, below D-400); check green.
-**Read first:** ROADMAP S5-03g3c and g3d; D-357; D-334; `src/shared/Home/Looks.luau`
-(`cardLock`); `src/shared/Shop.luau`; `src/client/LooksTab.luau`.
+## Next task: S5-03g3d2 The styles' cards at the counter
+The last open piece of S5-03 before its polish.
+The moment: you see a friend's neon card glowing over their door, walk to the counter, flip to
+Furniture, and past this week's pieces there's your own name on a neon plate; you buy it, and
+the next time you open Arrange its chip is yours.
+1. On FurnitureTab, after this week's pieces, a card per `CardSale.Sold` style: its plate with
+   your name (LooksTab's `plate` draws one; or the plate's art in a viewport, as the pieces are),
+   the cash price, or the neon's Roblox price with the Robux mark (`CardShelf`'s `robux`).
+2. Owned states from `CardShelf` each time the tab shows; Owned on a style you have.
+3. Buy fires `BuyCard` and holds pressed until `CardBought` answers: "" spends the shared purse
+   (`Wallet`) with the coins' falling tick and a plate's clack, then Owned; "cash" nudges the
+   purse; "closed", "off" and "had" settle; no answer in 8 s settles and asks again.
+4. Seen in Studio Play at A16 size: open the shop from a script (STUDIO.md), give cash with
+   `GrowTest`, buy the board through the screen, then the neon (Studio's made-up receipt).
+**Acceptance:** a cash style bought on the screen saves, survives a rejoin and picks; the neon's
+press runs the prompt path; a new decision (D-361, below D-400); check green.
+**Read first:** ROADMAP S5-03g3d2; D-360; D-334; `src/shared/Home/CardSale.luau`;
+`src/client/FurnitureTab.luau`; `src/client/LooksTab.luau` (`plate`).
 
 ## Queue (next sessions, the owner's ticket order)
+0. After S5-03g3d2, the home's polish, one ticket a session: ROADMAP's three "Polish:" lines
+   under S5-03g2b (the hand-over's shade, the mirror keeping the old look, the floor's wipe
+   under the tray), then g3b's plate swapping in instead of snapping.
 1. Small's doorway's inside boards are oak, not the
    picked paint (D-355, my call). Sitting's leftovers (D-353): cross-legged on the blanket needs
    an animation of our own; lying on the bed.

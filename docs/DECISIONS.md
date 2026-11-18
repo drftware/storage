@@ -9640,6 +9640,39 @@ cars as solid as ever.
   hatch shares their mesh. Still over a climb floor's busiest view (112k) at the spawn: the
   fronts and furnishings stay (D-271).
 
+## D-360 The name card's other styles: owned in the save, picked once bought, sold beside the furniture (S5-03g3d1, 2026-11-18)
+
+The moment: you see a friend's neon card glowing over their door, buy one at the counter, and the
+next time you open Arrange its chip has lost its mark and picks, the plate swinging down. Animal
+Crossing's Nook's Cranny sells wallpaper beside the furniture; Roblox games sell cosmetics for
+Robux bought once and kept, as this game's wraps are (S3-04a).
+- **Owned for good, in the save.** Save version 15 adds `cards`: each style you own by id,
+  stamped with when you first owned it (the wraps' shape). A version 14 save comes back owning
+  none. The stencil is everyone's and never listed.
+- **Prices: the painted board 120 cash, the chalk slate 200** (12 and 20 floors' pay, `CardSale.Floors`;
+  near the camp bed's 150 and below the neon moon's 250, since a sign is the hall's to see). The
+  neon is the developer product "Neon Name Card" at the owner's Robux price (switch `sellNeonCard`).
+  Defaults; the owner's call (`OWNER.md`).
+- **The server's rules are the furniture's.** A cash buy takes the price and adds the style in
+  one step, writes the save, and answers only then; a failed write undoes it whole. The neon goes
+  through Roblox's prompt from the server and is granted in the save Brix writes before the
+  purchase counts; owned already, it's never prompted ("had"). A new system, `CardSales`, after
+  Purchasing in the start order (Furnishing starts before it, so it can't hear grants).
+- **One rule judges a pick.** `Looks.cardLock(id, owned)` and `Looks.pick(..., owned)` read the
+  save's `cards`; the server passes them, the paint tab reads the same list off your Player
+  (`CardSale.Attribute`, "Painted,Chalk"), so they can't disagree. A style bought while the tab
+  shows loses its mark there and then (the coin pops in on itself as the shade lifts); bought
+  away from home, it goes as the tray next reveals; one owned as the tray is built has none.
+- **Split.** The counter's cards for the three styles (on the Furniture tab, after this week's
+  pieces) are S5-03g3d2: this session's room ran out after the rules, the server and the chips.
+- **Seen in Studio Play at A16 size** (685x338), from the server and the real remotes: short of
+  cash refused with nothing taken; the board bought (300 to 180), "had" the second time; the
+  unbought chalk refused by `PickLook` and the bought board picked; a front tab built from the real
+  LooksTab showed the board unmarked and lost the chalk's mark the moment it was bought; a true
+  Stop and Play kept both and the board over the door; the neon through `BuyCard` asked its price
+  (`CardShelf`), ran Studio's made-up receipt, was answered "" only after the grant, and picked.
+  Arrange's own button still didn't open from the MCP (STUDIO.md). The test save was put back.
+
 ## D-414 · 2026-11-18 · The big find split, and the jukebox first (S4-05a)
 
 S4-05 is split in three (ROADMAP): **a** the first big find's art, **b** the big find on the

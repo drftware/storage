@@ -29,6 +29,7 @@
 	change as Brix's ledger, so a purchase counted once is a purchase granted once. Nothing random
 	is ever a product (GDD: nothing random is sold, for Robux or for cash).
 ]]
+local CardSale = require("./Home/CardSale")
 local Grow = require("./Home/Grow")
 local Save = require("./Save")
 local WrapColours = require("./WrapColours")
@@ -122,6 +123,24 @@ for _, colour in WrapColours.Shelf do
 		end,
 		owned = function(data: Save.Data): boolean
 			return WrapColours.owns(data, name)
+		end,
+	})
+end
+
+-- The name card's Robux styles (S5-03g3d, D-360): "Neon Name Card", bought once and kept, as the
+-- wraps are. The grant owns it in the save Brix writes before the purchase counts, so the counter's
+-- answer and the paint tab's chip come only once it's kept. Owned already, it's never prompted;
+-- a late one (two prompts bought at once) is still granted and counted, never refused.
+for id, offer in CardSale.Offers do
+	rows[offer] = table.freeze({
+		title = `{id} Name Card`,
+		switch = `sell{string.upper(string.sub(offer, 1, 1))}{string.sub(offer, 2)}`,
+		grant = function(_sale: Sale, data: Save.Data): string?
+			CardSale.own(data, id, os.time())
+			return nil
+		end,
+		owned = function(data: Save.Data): boolean
+			return CardSale.owns(data.cards, id)
 		end,
 	})
 end

@@ -225,6 +225,13 @@ nowhere else.
   home's own) while you look at it: the chalk plate falls on its top edge, bounces twice and
   clacks. Listen on a phone for the clack; say if the dip is too quick or the plate too small in
   the picture. My defaults: the plates dim a shade while locked; the camera stands 11 studs out.
+- [ ] **Name card styles for sale: prices and the neon's product** (S5-03g3d1, D-360). The
+  painted board and the chalk now sell for cash and the neon for Robux, saved before they're
+  yours; their cards at the counter come next (S5-03g3d2), so for now only a script buys them.
+  1. **Decide (defaults in):** the board 120 cash and the chalk 200 (the camp bed is 150, the
+     neon moon 250); the neon's Robux price, my guess 99.
+  2. Creator Hub > Developer Products: make one named exactly `Neon Name Card` at your price. Its
+     off switch in the experience's configs is `sellNeonCard`.
 - [ ] **Your home's walls by size and Small's doorway** (S5-03h5a and h5b, D-354, D-355; seen in
   Studio Play at all four sizes). Play and walk into your Small home: the walls close round you,
   the lamp over the middle, and from the hall the doorway is plainly narrower than a Medium's.
