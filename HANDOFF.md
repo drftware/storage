@@ -18,10 +18,10 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   cash 38, no card styles owned, Boombox 10, Skates 1.
 - Not the home's: the checkout's uncommitted `BigFinds`, `MinimapView` and the D-417 lines in
   OWNER, CODEMAP and DECISIONS are the climb run's work in progress; the home leaves them alone.
-- **Climb run:** done: the fix pass (D-400), S4-02 to S4-05, the hard hat, S5-02, S5-01 (to
-  D-431), S6-01a best floor and badges (D-432). Next: S6-01b the dial's "Best N" line and a
-  plaque beside each gate (ROADMAP's plan, read `CarDial.luau`), then S6-01c seen in Studio;
-  S5-01d's held-torch fix if time.
+- **Climb run (over):** done: the fix pass (D-400), S4-02 to S4-05, the hard hat, S5-02, S5-01,
+  S6-01a and b (best floor, badges, the dial's "Best N" and the gate plaque; D-432, D-433).
+  Left: S6-01c (see the best roll up in Studio, ride Car1 to floor 3 and back, floor 10's badge
+  line), S5-02b2c2, S5-01d's held-torch fix. Next: S6-01c (ROADMAP's line).
 
 ## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
 The home's look settling without a seam. One line a session if they won't fit together; split

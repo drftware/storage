@@ -3292,7 +3292,8 @@ Done when players come back the next day without a friend asking them to.
     player's best floor is on them as an attribute for the lobby's screens. Badge ids are the
     owner's to make (OWNER.md). In Play the test save loaded with best floor 0 and earned the
     night-lights' and the big finds' set badges (Output; nothing sent without ids).
-  - [ ] **S6-01b The dial and the plaque.** The moment: you walk into the lobby and the dial over
+  - [x] **S6-01b The dial and the plaque. Built Nov 18 (D-433); passes checks, the plaque seen
+    drawing in Studio Play (your row, your best, lit), the roll not yet seen.** The moment: you walk into the lobby and the dial over
     your car already reads your best, your friends' best floors on the plaque beside it. My plan
     (D-432): the line under the dial's bay number reads "Best 12" in gold for the best of those
     aboard whenever it has nothing more urgent to say ("Going up", "Floor N", "Full", "Friends
@@ -3302,7 +3303,10 @@ Done when players come back the next day without a friend asking them to.
     SurfaceGui as the dial is (`CarDial`). Both read each player's `BestFloor` attribute
     (`Badges.BestAttribute`). Read first: `CarDial.luau` (`lineFor`, `build`, `draw`); D-124;
     `art/lobby/spec.py` (`bay_xs`, `BAY_PITCH`, `NUMBER`, `JAMB`).
-  - [ ] **S6-01c Seen in Studio Play.** From lobby Car1 ride to floor 3 and back: Output says
+  - [ ] **S6-01c Seen in Studio Play.** First (S6-01b left it): with the dial on screen and
+    Studio drawing frames (the client steps on RenderStepped), see a best that rose roll up, a
+    clack a digit, a thunk, the chime; and a Full or Friends only car take turns with its best.
+    From lobby Car1 ride to floor 3 and back: Output says
     "best floor is now 2", then 3; the dial and the plaque read 3. Then start a climb at floor 9
     (Workspace `DevFloorNumber`) and ride to 10: Output says "earned the Floor10 badge (no badge
     id yet)". Captures `docs/art/S6-01c-*.jpg` at A16 size. Polish here or after: a "New best"

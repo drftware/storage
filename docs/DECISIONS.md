@@ -10283,3 +10283,32 @@ plaque in the lobby; c, seen in Studio Play. Piece a is built.
   beside one car only, and the people you climb with are the ones aboard); per-seat numbers on
   the dial (too small to read from the room on a phone).
 
+
+## D-433 The dial reads your best, a plaque lists those aboard (S6-01b, Nov 18)
+
+- **The dial's line** reads "Best N" in the coin gold for the best floor of those aboard, once
+  one of them has climbed. "Going up" and "Floor N" still win. With "Full" or "Friends only" it
+  takes turns (that line 3 s, the best 2 s, on the server's clock so every screen agrees), my
+  change to D-432's plan, which would have hidden the best from every full or friends-only car.
+- **A new best rolls up where you can see it.** Each screen keeps what a player's best was
+  before it rose (a rise from a value already known, so a save loading isn't one). The dial
+  shows the old best (nothing for a first climb) until it's on that screen, from the room's
+  side, within 90 studs; then the digits roll up, at most 8 numbers, a plastic clack each
+  (Tally.Knock's id, rising), slowing from 0.07 s to 0.2 s, a heavy thunk (Battery.Clack's) and
+  the board's best chink (Tally.Shine's), the line swelling and flashing white to gold. Proven:
+  a pinball table's score counting up to a new high score; the odometer roll is the classic
+  split-flap board's. Why wait: the team lands back inside the car facing its board, with the
+  dial behind them; the roll plays when they turn round, and a friend in the room sees it at
+  once.
+- **The plaque** is a brass plate (a Metal part, its face a SurfaceGui as the dial is) on the
+  bay wall left of each gate, the mirror of the keypad (bay frame x 7.8, eye height 4.6, 1.5 by
+  2.8 studs, between the landing frame and the post). Six ruled rows: photo and best floor,
+  best first, ties in boarding order, a dash for no best yet, your row lit warm. Rows pop in,
+  slide to a new place and shrink away; a risen number swells. No new model: a plate is a part.
+  As an arcade cabinet's high-score table.
+- **Pure core** `Bests` (spec 27 checks); `CarPlaque` draws; `CarDial` listens to each player's
+  `BestFloor` attribute and redraws the car they're in.
+- **Seen in Studio Play:** the plaque drew your row with your best (2) lit, beside the gate as
+  planned; the line waited blank as designed (a first best, not yet on screen). The roll wasn't
+  seen: the client steps on RenderStepped, which doesn't run while Studio isn't drawing frames,
+  and the car left with me before the camera turned. S6-01c sees it.
