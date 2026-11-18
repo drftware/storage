@@ -42,6 +42,7 @@ local Pack = require(ReplicatedStorage.Shared.Finds.Pack)
 local Packed = require(ReplicatedStorage.Shared.Packed)
 local PackedLayout = require(ReplicatedStorage.Shared.PackedLayout)
 local Saws = require(script.Parent.Saws)
+local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
 local Stuff = require(ReplicatedStorage.Shared.Stuff)
@@ -68,6 +69,8 @@ local DEV_BOX = "DevBox"
 -- server code can set it: Studio's command bar in Play, or the place's owner in the Developer
 -- Console's server command line (`workspace:SetAttribute("DealFind", "OilLamp")`). The tester is
 -- the first player in Studio, the place's owner on a live server. It goes back to "" at once.
+-- A key followed by " sealed" (`"CymbalMonkey sealed"`) deals it still in its pack (S5-02b2b2);
+-- `DevBox` reads the same.
 local DEAL_FIND = "DealFind"
 local DEAL_GAP = 1 -- seconds before the next one is taken: about a door's lift
 local DEAL_NEAR = 150 -- studs: the farthest shut unit it opens (no reaching into another floor)
@@ -658,6 +661,12 @@ function Deals.new(): Deals
 		return if laid then name else nil
 	end
 
+	-- A dev pick's catalog key, and whether it asked for the find still sealed (" sealed").
+	local function devAsk(asked: string): (string, boolean)
+		local key = string.match(asked, "^(%S+)%s+[Ss]ealed$")
+		return key or asked, key ~= nil
+	end
+
 	-- `DealFind`'s choice for `unit` (above), or else Studio's `DevBox`: deals `contents` the
 	-- find or tool it names, in place of what the unit was dealt. Whether it did.
 	local function devDeal(contents: Deal.Contents, unit: Model): boolean
@@ -672,16 +681,22 @@ function Deals.new(): Deals
 		if type(asked) ~= "string" or asked == "" then
 			return false
 		end
-		local row = Tools.Catalog[asked]
-		if not (row and Tools.template(asked)) then
+		local key, sealed = devAsk(asked)
+		local row = Tools.Catalog[key]
+		if not (row and Tools.template(key)) then
 			warn(`Deals: DevBox "{asked}" names no find or tool with its art in the place`)
 			return false
 		end
+		if sealed and not (row.find and Seal.packOf(row.size)) then
+			warn(`Deals: DevBox "{asked}": only a Small, Medium or Large find comes sealed`)
+			sealed = false
+		end
 		contents.kind = if row.find then "Find" else "Tool"
-		contents.find = if row.find then asked else nil
+		contents.find = if row.find then key else nil
 		-- any: a catalog key that isn't a find is a tool's (Deal.Tool's strings)
-		contents.tool = if row.find then nil else (asked :: any) :: Deal.Tool
+		contents.tool = if row.find then nil else (key :: any) :: Deal.Tool
 		contents.keeper, contents.beside, contents.pile, contents.stuff = nil, nil, nil, nil
+		contents.sealed = if sealed then true else nil
 		return true
 	end
 
@@ -858,8 +873,9 @@ function Deals.new(): Deals
 			return
 		end
 		lastDealFind = now
-		local row = if #asked <= DEAL_KEY then Tools.Catalog[asked] else nil
-		if not (row and Tools.template(asked)) then
+		local key = devAsk(asked)
+		local row = if #asked <= DEAL_KEY then Tools.Catalog[key] else nil
+		if not (row and Tools.template(key)) then
 			warn(`Deals: DealFind "{asked}" names no find or tool with its art in the place`)
 			return
 		end

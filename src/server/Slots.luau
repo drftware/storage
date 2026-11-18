@@ -95,6 +95,10 @@ local Wear = Tools.Wear
 
 local HAND_SOUND_REACH = 24 -- a hand closing on a tool, heard close by
 local FALL = TweenInfo.new(0.32, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+-- A sealed find whose pack tore as it landed (S5-02b2b2) drops the pack's height to the floor this
+-- fast, turned up to `SPILL_TURN` degrees either way: spilled out of its pack, not set down.
+local SPILL = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+local SPILL_TURN = 22
 -- A find the Packrat sets on its pile (S2-06b2): eased from its hands to the floor, unhurried
 local PUT_DOWN = TweenInfo.new(0.35, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 local DROP_AHEAD = 2.2 -- studs in front of your middle where a dropped tool lands
@@ -810,8 +814,40 @@ function Slots.new(): Slots
 		return Chip.cracks(Catalog[t.key].fragile, whole, speed, fall)
 	end
 
-	-- `hard`: it was let go hard enough to crack its glass as it lands (`cracks`).
-	local function layDown(t: Tool, pose: CFrame, from: CFrame?, hard: boolean?)
+	-- A sealed find let go hard (S5-02b2b2): its pack tears off as it lands, with a rip, its board,
+	-- film and a few scraps thrown clear (`Pack.tear`), and the bare find drops the pack's height
+	-- to the floor where it lay, turned a little askew as if spilled out, and lands with its own
+	-- clank: a plain find from now on, worth its plain price. Lying at `pose` in its pack.
+	local function rip(t: Tool, pose: CFrame)
+		local box = Tools.bounds(t.key)
+		local drop = Pack.lift(Catalog[t.key].size, box)
+		t.sealed = nil
+		Pack.tear(t.model)
+		Tools.play(Pack.Rip, t.body, Carry.DropHeard)
+		local middle = (pose * CFrame.new(box.Centre)).Position
+		local bare = CFrame.new(0, -drop, 0)
+			* CFrame.new(middle)
+			* CFrame.Angles(0, math.rad(math.random(-SPILL_TURN, SPILL_TURN)), 0)
+			* CFrame.new(-middle)
+			* pose
+		grounds[t.id] = (bare * CFrame.new(
+			box.Centre.X,
+			box.Centre.Y - box.Size.Y / 2,
+			box.Centre.Z
+		)).Position
+		local tween =
+			TweenService:Create(t.body, SPILL, { CFrame = bare * t.body.PivotOffset:Inverse() })
+		tween.Completed:Once(function()
+			if t.owner == nil and t.model.Parent == lying then
+				Tools.play(Catalog[t.key].drop, t.body, Carry.DropHeard)
+			end
+		end)
+		tween:Play()
+	end
+
+	-- `hard`: it was let go hard enough to crack its glass as it lands (`cracks`). `tear`: hard
+	-- enough to tear a sealed find's pack off (`Seal.tears`, `rip`); never both.
+	local function layDown(t: Tool, pose: CFrame, from: CFrame?, hard: boolean?, tear: boolean?)
 		t.owner = nil
 		stow(t)
 		t.model.Name = t.key
@@ -831,11 +867,15 @@ function Slots.new(): Slots
 			local tween = TweenService:Create(t.body, FALL, { CFrame = goal })
 			tween.Completed:Once(function()
 				if t.owner == nil and t.model.Parent == lying then
-					-- sealed, its pack lands: a soft cardboard thud, not the find's own clank
-					local sound = if t.sealed then Pack.Thud else Catalog[t.key].drop
-					Tools.play(sound, t.body, Carry.DropHeard)
-					if hard then
-						crack(t)
+					if tear and t.sealed then
+						rip(t, pose)
+					else
+						-- sealed, its pack lands: a soft cardboard thud, not the find's own clank
+						local sound = if t.sealed then Pack.Thud else Catalog[t.key].drop
+						Tools.play(sound, t.body, Carry.DropHeard)
+						if hard then
+							crack(t)
+						end
 					end
 					landed:fire({ key = t.key, at = t.body.Position, reach = Carry.DropHeard })
 				end
@@ -892,8 +932,10 @@ function Slots.new(): Slots
 				local at = if root then dropPoint(root) else Vector3.zero
 				local fromCF = if root then root.CFrame else nil
 				-- caught or fallen while running, a fragile find cracks as one let go does
-				local hard = root ~= nil
-					and cracks(t, root.AssemblyLinearVelocity.Magnitude, root.Position.Y - at.Y)
+				local speed = if root then root.AssemblyLinearVelocity.Magnitude else 0
+				local fall = if root then root.Position.Y - at.Y else 0
+				local hard = root ~= nil and cracks(t, speed, fall)
+				local tear = root ~= nil and Seal.tears(t.sealed == true, speed, fall)
 				layDown(
 					t,
 					resting(
@@ -903,7 +945,8 @@ function Slots.new(): Slots
 						t.sealed
 					),
 					fromCF,
-					hard
+					hard,
+					tear
 				)
 			end
 		end
@@ -1351,8 +1394,11 @@ function Slots.new(): Slots
 			else math.deg(facing) + 90 + math.random(-25, 25)
 		local at = dropPoint(root)
 		-- let go at a run, mid-fall or from high up, a fragile find cracks as it lands (F-G1e5e)
-		local hard = cracks(t, root.AssemblyLinearVelocity.Magnitude, from.Position.Y - at.Y)
-		layDown(t, resting(t.key, at, yaw, t.sealed), from, hard)
+		local speed, fall = root.AssemblyLinearVelocity.Magnitude, from.Position.Y - at.Y
+		local hard = cracks(t, speed, fall)
+		-- sealed, the same hard drop tears its pack off instead (S5-02b2b2)
+		local tear = Seal.tears(t.sealed == true, speed, fall)
+		layDown(t, resting(t.key, at, yaw, t.sealed), from, hard, tear)
 		changed:fire({ player = player, kind = "Drop" })
 	end
 

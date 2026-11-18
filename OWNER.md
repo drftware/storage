@@ -203,6 +203,16 @@ nowhere else.
   press on a sealed find with a button (the lamps' Switch, the windups' Wind) only crinkles the
   plastic and shakes the pack in your hand; set down, its window turns back toward you; the fairy
   lights, being flat, lie on their back in their blister, the coil facing up through the bubble.
+- [ ] **Tear a sealed find's pack on a hard drop** (S5-02b2b2, D-426; seen in Studio Play, not
+  on a phone or by ear). Play (floor 2 is fine), stand by a shut unit, and in the Server command
+  bar: `workspace:SetAttribute("DealFind", "Teddy sealed")`. Open its box: the teddy comes up in
+  its red window box into your hand. Press Wind: only a crinkle and a shake. Drop it standing
+  still: a soft cardboard thud, still sealed. Take it, sprint and drop it while running (or jump
+  off something and drop it as you fall): a rip, the box and film thrown apart with a few scraps
+  that fade in two seconds, and the teddy drops out bare, turned a little, with its own sound.
+  Look for: the rip lands with the hit, not after; the pieces read as torn packaging at phone
+  size; the bare teddy now sells at its plain price. Note: a drop at the very top of a jump may
+  not count as hard, since the server sees a jump's speed a moment late (running does count).
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

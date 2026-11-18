@@ -3483,3 +3483,23 @@ verified: a doc page, Studio, or "untested".
   stutters with the buzz from 16.5 s, closing in, 1.68 as the bulb's run-down starts at 20 s, out
   at 22.8, the hat off the head by 23.3. A side camera bound at `RenderPriority.Last + 1` didn't
   hold this time (the frames stayed first person), so the crack on the floor wasn't caught.
+
+## Sealed finds in Play (S5-02b2b2, Nov 18)
+
+- **A jump reaches the server after the drop does**: setting the client's root velocity (or a
+  jump) and firing `ToolDrop` 0.15 s later, the server read the root's speed as 0 and its height
+  barely risen as the drop arrived; it saw 39 studs a second later on. A hard drop by speed only
+  counts a sustained run. From a script, `Humanoid:Move` and `Jump` did nothing (the game's
+  controls win). What worked: a RenderStep-bound client callback that fires `ToolDrop` once the
+  root is above y 6, then a Server `PivotTo` lifting the character to y 7.5: the find falls more
+  than 4.5 studs (`Chip.HardFall`) and tears. A `task.spawn`ed client watcher from `execute_luau`
+  never fired; bind it to RenderStep instead.
+- **Throw a part a physics step after its weld goes**: `WeldConstraint:Destroy()` then setting
+  `AssemblyLinearVelocity` at once left the part still in the anchored find's assembly, and it
+  never moved. Wait one `Heartbeat`, then throw (`Pack.tear`).
+- **Play keeps its own copy of the code**: Rojo syncs the Edit place; an edit made during Play
+  reaches it only after Stop and Play.
+- **Hiding prompts for a shot**: `ProximityPromptService.Enabled = false` on the Client hides
+  every Take and Open button for the capture; set it back after.
+- **The A16 phone in a capture**: the Studio window is 1386 by 972; the phone's screen is
+  `crop=668:312:358:362` (ffmpeg) at the device emulator's default zoom.

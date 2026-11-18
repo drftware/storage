@@ -10050,3 +10050,29 @@ dev pick, seen in Studio). Context ran short for all of it in one session.
   box's flap slap, lower and softer) instead of its own clank, its window turned back toward
   you. It never cracks while sealed (`cracks` counts it whole); the tear is b2's.
 
+
+## D-426 A sealed find's pack tears on a hard drop (S5-02b2b2, Nov 18)
+
+- **When.** The crack's own measure (`Seal.tears`, `Chip.hard`: running at 10 studs a second or
+  more, or a fall of 4.5 studs or more from your hand), counted on its own in `onDrop` and in
+  `dropAll` (caught or fallen while carrying): a sealed find never cracks in the same drop, as
+  D-424 set. Set down standing still, it lands in its pack with the thud (D-425).
+- **What you see and hear.** As it lands, a rip (`Pack.Rip`: Kept.Rip's sheet torn from 0.31 s,
+  0.55 s of it, pitched up a little, heard as far as a dropped find) and the pack comes off:
+  its board and film flung opposite ways with seven scraps of card and film, tumbling, lying
+  1.4 s and fading in 0.5 s (`Pack.Torn`). The bare find then drops the pack's height to the
+  floor in 0.14 s, turned up to 22 degrees as if spilled out, and lands with its own drop sound
+  (`Slots`' `rip`, `SPILL`). From then it's a plain find: `Tool.sealed` cleared, the model's
+  `Sealed` attribute cleared, worth its plain price.
+- **How the pieces fly.** The server throws them (its network owner), so every screen sees the
+  same tumble. They sit in their own collision group (`TornPack`, which doesn't collide with
+  itself) so a scrap made inside the board isn't shot out, and they're thrown one physics step
+  after their welds go: thrown at once, the board was still part of the anchored find and went
+  nowhere (seen in Studio Play; fixed, all nine pieces thrown up to 2 studs and gone by 2.2 s).
+- **The dev pick.** `DealFind` (and Studio's `DevBox`) take a key followed by " sealed"
+  (`"CymbalMonkey sealed"`) to deal it still in its pack; a tool or a Big find is dealt plain
+  with a warning.
+- **Seen in Studio Play** on floor 2: the cymbal monkey and the teddy dealt sealed, opened from
+  their box into your hand (both read clearly in their packs at A16 size), set down with the
+  thud and still sealed, dropped from high and torn into a plain find. The press's crinkle
+  wasn't driven from a script (the Wind button can't be clicked from the MCP): `OWNER.md`.

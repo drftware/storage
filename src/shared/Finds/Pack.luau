@@ -13,9 +13,13 @@
 
 	The pack's sounds: a press answered with the plastic's crinkle (it's still sealed: nothing
 	happens but the pack shaking in your hand, `Rattle`), and a soft cardboard thud as it's set
-	down in place of the find's own clank.
+	down in place of the find's own clank. Let go hard (`Seal.tears`), the pack tears off as it lands
+	(`tear`, S5-02b2b2): a rip, its board and film flung apart with a few scraps, and a plain find.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PhysicsService = game:GetService("PhysicsService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local PackFit = require("./PackFit")
 local Seal = require("./Seal")
@@ -158,6 +162,159 @@ function Pack.lift(size: string?, box: Box): number
 			back
 		)
 	)
+end
+
+-- A hard drop tearing the pack off (S5-02b2b2): Kept.Rip's sheet torn hard ("Plastic Sheet Impacts
+-- Rips Paper Tears 9" from 0.31 s), cut to its first tear and pitched up a little for a smaller
+-- pack. Heard as far as a dropped find's clank, so a monster hears it too.
+Pack.Rip = table.freeze({
+	id = "rbxassetid://9117625280",
+	from = 0.31,
+	length = 0.55,
+	volume = 1.15,
+	pitch = 1.12,
+})
+-- How the torn pack comes apart: its board and film flung opposite ways (`speed` studs a second
+-- out, `up` up, tumbling at up to `spin` radians a second), `scraps` torn bits of card and film
+-- (`scrap` studs across) thrown wider, all lying `lies` seconds then fading over `fade`. Quick and
+-- small: the pack is gone in two seconds and the find lies bare where it landed.
+Pack.Torn = table.freeze({
+	speed = { 4, 7 },
+	up = { 6, 10 },
+	spin = 9,
+	scraps = 7,
+	scrap = { 0.1, 0.24 },
+	scrapSpeed = { 6, 12 },
+	lies = 1.4,
+	fade = 0.5,
+})
+-- The scraps' colours: the card's grey-brown core where it tore and its white print face, and the
+-- film's clear plastic.
+local CARD = { Color3.fromRGB(170, 140, 104), Color3.fromRGB(232, 228, 218) }
+local FILM = Color3.fromRGB(220, 232, 240)
+
+local function between(r: { number }): number
+	return r[1] + math.random() * (r[2] - r[1])
+end
+
+-- The collision group a torn pack's pieces are in: they land on the floor and bump people, never
+-- each other, so a scrap made inside the board isn't shot out of it.
+Pack.TornGroup = "TornPack"
+
+local function tornGroup(): string
+	local name = Pack.TornGroup
+	if not PhysicsService:IsCollisionGroupRegistered(name) then
+		PhysicsService:RegisterCollisionGroup(name)
+		PhysicsService:CollisionGroupSetCollidable(name, name, false)
+	end
+	return name
+end
+
+-- `part` loose from everything and ready to be thrown: it falls, lands on the floor (a lying find
+-- has no collision to push it about) and touches nothing else that matters.
+local function loosen(part: BasePart, group: string)
+	part.Anchored = false
+	part.Massless = false
+	part.CanCollide = true
+	part.CanQuery = false
+	part.CanTouch = false
+	part.CollisionGroup = group
+end
+
+-- Throws `part` at `velocity`, tumbling, the server's to move so every screen sees the same throw.
+local function fling(part: BasePart, velocity: Vector3)
+	local spin = Pack.Torn.spin
+	pcall(function() -- pcall: refused if the engine still has it joined to something anchored
+		part:SetNetworkOwner(nil)
+	end)
+	part.AssemblyLinearVelocity = velocity
+	part.AssemblyAngularVelocity = Vector3.new(
+		(math.random() * 2 - 1) * spin,
+		(math.random() * 2 - 1) * spin,
+		(math.random() * 2 - 1) * spin
+	)
+end
+
+-- A random way out across the floor, `speed` fast, with `up` thrown in.
+local function outward(a: number, speed: { number }): Vector3
+	return Vector3.new(math.cos(a), 0, math.sin(a)) * between(speed)
+		+ Vector3.new(0, between(Pack.Torn.up), 0)
+end
+
+-- Tears `model`'s pack off as it lands hard (the server's own find, S5-02b2b2): its board and film
+-- come away from the find and fly apart with a few scraps, lie a moment and fade; the find is
+-- marked sealed no longer. The rip's sound and the bare find settling to the floor are the
+-- caller's. False if it had no pack.
+function Pack.tear(model: Model): boolean
+	model:SetAttribute(Seal.Attribute, nil)
+	local pack = model:FindFirstChild(Pack.Name)
+	if not (pack and pack:IsA("Model")) then
+		return false
+	end
+	local torn = Pack.Torn
+	local group = tornGroup()
+	local middle = pack:GetBoundingBox().Position
+	pack.Name = "TornPack"
+	pack.Parent = workspace
+	local throws: { { part: BasePart, velocity: Vector3 } } = {}
+	local first = math.random() * 2 * math.pi
+	for _, part in pack:GetChildren() do
+		if not part:IsA("BasePart") then
+			continue
+		end
+		for _, weld in part:GetChildren() do
+			if weld:IsA("WeldConstraint") then
+				weld:Destroy()
+			end
+		end
+		loosen(part, group)
+		-- the board one way, the film the other, a little either side: pulled apart as they tear
+		local a = first + #throws * math.pi + (math.random() - 0.5) * 0.8
+		table.insert(throws, { part = part, velocity = outward(a, torn.speed) })
+	end
+	for i = 1, torn.scraps do
+		local film = i % 3 == 0
+		local bit = Instance.new("Part")
+		bit.Name = "Scrap"
+		bit.Size = Vector3.new(between(torn.scrap), 0.03, between(torn.scrap))
+		bit.Color = if film then FILM else CARD[i % #CARD + 1]
+		bit.Material = if film then Enum.Material.Glass else Enum.Material.Cardboard
+		bit.Transparency = if film then 0.55 else 0
+		bit.CastShadow = false
+		bit.CFrame = CFrame.new(middle)
+			* CFrame.Angles(math.random() * 6.28, math.random() * 6.28, math.random() * 6.28)
+		loosen(bit, group)
+		bit.Parent = pack
+		table.insert(throws, {
+			part = bit :: BasePart,
+			velocity = outward(math.random() * 2 * math.pi, torn.scrapSpeed),
+		})
+	end
+	-- a weld's end reaches the physics only at its next step: thrown before, a piece would still be
+	-- part of the anchored find and go nowhere (seen in Studio Play)
+	task.spawn(function()
+		RunService.Heartbeat:Wait()
+		for _, th in throws do
+			if th.part.Parent then
+				fling(th.part, th.velocity)
+			end
+		end
+	end)
+	task.delay(torn.lies, function()
+		if not pack.Parent then
+			return
+		end
+		local fade = TweenInfo.new(torn.fade, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+		for _, part in pack:GetDescendants() do
+			if part:IsA("BasePart") then
+				TweenService:Create(part, fade, { Transparency = 1 }):Play()
+			end
+		end
+		task.delay(torn.fade + 0.1, function()
+			pack:Destroy()
+		end)
+	end)
+	return true
 end
 
 return table.freeze(Pack)

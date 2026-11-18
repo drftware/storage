@@ -2549,7 +2549,7 @@ Done when players watch the results to the end and change their perks between cl
         cracked rule, the tear on a hard drop (`Chip.hard`), and whether a packed find still fits
         the marked box. `Deal.open` deals `sealed` on a find (never the big find, the Packrat's
         pile or a note's unit); the seed fingerprint unmoved. The packs imported in Studio's Edit.
-      - [ ] **S5-02b2b Sealed on the floor: in its box, in your hands, torn.** The find wrapped in
+      - [x] **S5-02b2b Sealed on the floor: in its box, in your hands, torn.** The find wrapped in
         its pack on the server (every screen, `Seal.fit`, turned when deep), in the marked box
         or loose where the packed size won't box (`Deal.packs`); the box's reveal and your view's
         copy wrapped too (as `ChipView` copies the crack); no press while sealed (the press
@@ -2566,7 +2566,11 @@ Done when players watch the results to the end and change their perks between cl
           box (or loose) into a slot and back to the floor; a press answered with a crinkle of
           the plastic and a small shake of the pack in your hand (nothing sent, the server
           ignores it too); a set-down's soft cardboard thud in place of the find's clank.
-        - [ ] **S5-02b2b2 The tear, and seen in Studio.** A hard drop tears the pack off as it
+        - [x] **S5-02b2b2 The tear, and seen in Studio.** Done Nov 18 (D-426): seen in Studio
+          Play on floor 2 (the monkey and teddy dealt sealed by `DealFind "<key> sealed"`, opened
+          from the box into your hand, set down gently with the thud, dropped from high and torn;
+          `docs/art/S5-02b2b2-*.jpg`); the press's crinkle not driven from a script (`OWNER.md`).
+          A hard drop tears the pack off as it
           lands (the rip, the board and film thrown clear with a few scraps, a plain find from
           then, never cracked in the same drop); `DealFind` deals one sealed; seen in Studio
           Play (in the box, in your hand, the press, the set-down, the tear) and captured.
