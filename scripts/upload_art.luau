@@ -266,10 +266,40 @@ local ART: { Art } = {
 		description = "A crack in a lamp's glass, where it was dropped",
 		image = true,
 	},
+	-- the next-floor cards' faces (art/cards/build.py), one per version of a floor; the image
+	-- inside each Decal goes in NextFloor.Versions by hand
+	{
+		key = "PowerOut",
+		path = "art/cards/out/PowerOut.png",
+		manifest = "art/cards/assets.json",
+		description = "A dead caged bulb hanging in a dark hall",
+		image = true,
+	},
+	{
+		key = "TwicePadlocks",
+		path = "art/cards/out/TwicePadlocks.png",
+		manifest = "art/cards/assets.json",
+		description = "Two padlocks hanging on a steel door",
+		image = true,
+	},
+	{
+		key = "TwiceMonsters",
+		path = "art/cards/out/TwiceMonsters.png",
+		manifest = "art/cards/assets.json",
+		description = "Two mannequins standing at the end of a dark hall",
+		image = true,
+	},
+	{
+		key = "CaughtToLobby",
+		path = "art/cards/out/CaughtToLobby.png",
+		manifest = "art/cards/assets.json",
+		description = "Looking down an elevator shaft at the car far below",
+		image = true,
+	},
 }
 local MODEL: OpenCloud.Kind = { assetType = "Model", contentType = "model/fbx" }
--- An Open Cloud "Decal" upload answers with the image's own ID, which a SurfaceAppearance's
--- EmissiveMaskContent takes (docs/STUDIO.md, "A find's glow mask").
+-- An Open Cloud "Decal" upload answers with the Decal's ID, not its image's: the image inside it
+-- (`InsertService:LoadAsset`) is what an ImageLabel or EmissiveMaskContent takes (docs/STUDIO.md).
 local IMAGE: OpenCloud.Kind = { assetType = "Decal", contentType = "image/png" }
 
 -- The finds kit's sets (art/finds/<set>/, art/finds/CRAFT.md): every find's FBX, and the glow

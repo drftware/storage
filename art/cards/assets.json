@@ -1,0 +1,18 @@
+{
+  "CaughtToLobby": {
+    "assetId": 92408594376072,
+    "sha256": "e1626ad96e2d8667e846517f09204d9a6201f4ee81e064bf5ec24984ef67ba92"
+  },
+  "PowerOut": {
+    "assetId": 84723566796548,
+    "sha256": "d7375574b7e35a57d6b5bec7884c5993dcf1a8308f8b243955809c28ca54aac2"
+  },
+  "TwiceMonsters": {
+    "assetId": 130239301574773,
+    "sha256": "a485d853cce008675925ccff92e8543ba755c53b26d7e795f854d6b2f7151a00"
+  },
+  "TwicePadlocks": {
+    "assetId": 133844169836042,
+    "sha256": "dfe4613f0668c68a8265bbc436b8956228fd7ab37b93b114055a8e3abab21371"
+  }
+}

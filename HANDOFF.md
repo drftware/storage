@@ -19,11 +19,10 @@ Brix `7f25310`. Uncommitted FloorBuilder, NextFloor(s), nextfloor.spec: the clim
   it stops `BoxOff` (0.8) off any wall (`Layout.clearOf`; the server refuses nearer, "wall").
 - Test save: XL; the job box saved FLUSH at (8.75, 1.5, 90), from before the fix. Hooks:
   `ArrangeTest` "rows", "relay", "size". Home doc: https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww
-- **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), S4-03a the next-floor
-  vote (`NextFloor`, `NextFloors`, floors dealt after the vote; D-403, untested in Studio).
-  Next: S4-03b the cards on the car's panel (ride floor 1 to 2 in Play first: Output's "picked";
-  read the car's `NextFloorOffer`/`Presses`/`Picked`, press `NextFloorPress`).
-  Uncommitted `ArrangeView`, `Home/*` and `layout.spec` are the home chain's work in progress.
+- **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), S4-03a the vote (D-403,
+  seen working live in Play), S4-03b1 the cards' faces (`art/cards/`, each row's `face`; D-404).
+  Next: S4-03b2 the cards on the panel (ROADMAP's b2 lines; the faces on
+  `art/sheets/cards-phone.png`; the riders change cars at 13.4 s, keep the cards up across it).
 
 ## Next task: S5-03i1c2 The moves hold through a rejoin and a resize, seen in Studio
 The moment: you rejoin and your shelf is on the back wall where you put it; your home grows and

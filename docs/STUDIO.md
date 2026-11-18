@@ -3243,3 +3243,12 @@ verified: a doc page, Studio, or "untested".
 - **Opening a job box from a script**: set its model's `Lid` attribute to 1 on the server; the
   client's lid reads 88 degrees about the hinge (`WorldPivot:ToObjectSpace(lid.CFrame)`).
 
+
+## The next-floor cards' faces (S4-03b1, Nov 17)
+
+- **Blender imports the game's exported FBXs whole** (5.2, `import_scene.fbx`): each MeshPart
+  comes in as its own object with its four texture maps wired, in Blender's Z-up frame, so a
+  render can stage the real models (`art/cards/build.py`). The Mannequin's parts all land at the
+  origin; its `poses.json` matrices go on as `FLIP @ m @ FLIP`, as its own build does.
+- **A Decal's ID never loads in an ImageLabel**: the four card faces' Decal IDs fetched with
+  `AssetFetchStatus.Failure`; the images inside them (`InsertService:LoadAsset`) with Success.

@@ -233,6 +233,17 @@ ok(
 	`the vote ends ({NextFloor.Closes} s) in time for the hand-off ({Climb.HandOff} s)`
 )
 
+-- 13. Every version has its own card face (S4-03b1): an uploaded picture, never another's.
+local faces: { [string]: boolean } = {}
+for _, version in NextFloor.Versions do
+	ok(
+		string.match(version.face, "^rbxassetid://%d+$") ~= nil,
+		`{version.name}'s face is an uploaded picture`
+	)
+	ok(not faces[version.face], `{version.name}'s face is its own`)
+	faces[version.face] = true
+end
+
 print(`nextfloor.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

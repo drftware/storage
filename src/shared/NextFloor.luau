@@ -54,6 +54,10 @@ export type Version = {
 	caughtToLobby: boolean?,
 	-- Brings a monster or keeps one away (`KeeperMix.on`'s lean): its chance on this floor, 0 to 1.
 	lean: KeeperMix.Lean?,
+	-- Its card's face: a picture of the floor, rendered from the game's own models by
+	-- art/cards/build.py. No words on it. The image inside the Decal art/cards/assets.json names
+	-- (`InsertService:LoadAsset`, art/cards/README.md).
+	face: string,
 }
 
 local NextFloor = {}
@@ -86,18 +90,41 @@ NextFloor.Attribute = "FloorVersion"
 -- Every version, in the order a floor's deal draws from them. Defaults the owner checks
 -- (OWNER.md): the GDD's four, their lowest floors and their pay.
 NextFloor.Versions = table.freeze({
-	table.freeze({ name = "PowerOut", lowest = 2, pay = 0.5, dark = true }) :: Version,
-	table.freeze({ name = "TwicePadlocks", lowest = 2, pay = 0.5, padlocks = 2 }) :: Version,
-	-- the Packrat comes too, from its own lowest floor on (KeeperMix never brings one below it)
+	-- a dead caged bulb hanging in the dark
+	table.freeze({
+		name = "PowerOut",
+		lowest = 2,
+		pay = 0.5,
+		dark = true,
+		face = "rbxassetid://91517401639848",
+	}) :: Version,
+	-- two padlocks hanging on a steel door
+	table.freeze({
+		name = "TwicePadlocks",
+		lowest = 2,
+		pay = 0.5,
+		padlocks = 2,
+		face = "rbxassetid://131197171716537",
+	}) :: Version,
+	-- the Packrat comes too, from its own lowest floor on (KeeperMix never brings one below it);
+	-- two Mannequins standing at the end of a dark hall
 	table.freeze({
 		name = "TwiceMonsters",
 		lowest = 2,
 		pay = 1,
 		monsters = 2,
 		lean = table.freeze({ Packrat = 1 }),
+		face = "rbxassetid://94818091969519",
 	}) :: Version,
-	-- the harshest: a team meets being caught and freed on floors 1 and 2 first
-	table.freeze({ name = "CaughtToLobby", lowest = 3, pay = 1, caughtToLobby = true }) :: Version,
+	-- the harshest: a team meets being caught and freed on floors 1 and 2 first; looking down the
+	-- shaft at the car far below, lit red
+	table.freeze({
+		name = "CaughtToLobby",
+		lowest = 3,
+		pay = 1,
+		caughtToLobby = true,
+		face = "rbxassetid://72304998325928",
+	}) :: Version,
 })
 
 local byName: { [string]: Version } = {}

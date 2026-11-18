@@ -9041,3 +9041,29 @@ four pieces (ROADMAP S4-03a to d). Piece a, built:
 Not chosen: closing the vote early once everyone has pressed (it would stop a friend changing
 their mind); a fixed plain version among the three (the GDD: some rides all three are bad).
 
+
+## D-404 The next-floor cards' faces: a picture of each floor, in its own light (S4-03b1, Nov 17)
+
+S4-03b split in two: b1 the faces, b2 the cards on the panel (the session's room went on proving
+S4-03a live and on the art). Built in b1:
+
+- **S4-03a works live.** Studio Play, seed 7 from floor 1: the code punched, the gate shut, and the
+  car's `NextFloorOffer` lit three versions as it lurched off; a press, then a change of mind, each
+  showed on `NextFloorPresses` within a frame; a junk name did nothing; on the cable's second knock
+  (8.9 s) `NextFloorPicked` named the last press, and Output said "floor 2 of climb 7 has
+  Mannequin, picked TwiceMonsters" before the riders changed cars at 13.42 s. No fix needed.
+- **One picture per version, no words** (`art/cards/`), as Hades shows each door's reward: the
+  hall's caged bulb dead in the dark (PowerOut), two padlocks on a steel door (TwicePadlocks), two
+  Mannequins at the end of a hall (TwiceMonsters), the car far down its shaft (CaughtToLobby, the
+  way back down to the lobby). Staged from the game's own exported models, so a face matches what
+  you meet on the floor, and rendered with the unit's render kit.
+- **Each face its own colour of light**: cold blue, warm bulb, sick green, emergency red. The three
+  cards on a panel tell apart before anyone reads a picture, on a phone, in a nine-second vote.
+- **The face is data on the version's row** (`face`, an uploaded image's ID), as a keeper's row
+  carries its look: a new version brings its own picture. A spec checks each has its own.
+- **Card size** 512 by 640 (4:5, portrait): about 340 pixels wide on a Galaxy A16's card, so the
+  picture stays sharp; the phone-size sheet (`art/sheets/cards-phone.png`) is where they're judged.
+
+Not chosen: words or a symbol on the face (the owner: no text that explains a rule); a hand-drawn
+icon (art is code); a wide view of the whole floor per card (at 130 points the detail reads as
+mush; one thing, big, reads).

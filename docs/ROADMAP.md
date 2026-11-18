@@ -2293,9 +2293,20 @@ Done when two climbs in a row feel different and players talk about their best f
   - [ ] **S4-03b The cards on the panel.** The moment: three lit cards on the car's panel, each a
     picture of its floor and its coins; a press clunks, lights the card and puts your mark on it;
     on the knock the losers go dark and the winner flares and stays lit to the floor. Proven:
-    Hades shows each door's reward before you pick. Art the unit's way (one card face per
-    version), big enough to tap at Galaxy A16 size; reads the car's `NextFloor` attributes;
-    presses the `NextFloorPress` remote. Captures into `docs/art/`.
+    Hades shows each door's reward before you pick. Split Nov 17 (D-404):
+    - [x] **S4-03b1 The faces.** One picture per version, rendered from the game's own models
+      (`art/cards/`), each in its own colour of light, uploaded; each row's `face`. Done Nov 17
+      (D-404), and S4-03a's vote seen working live in Play (floor 1 to 2: offer, a press, a
+      change of mind, junk ignored, "picked TwiceMonsters" on the knock).
+    - [ ] **S4-03b2 The cards on the panel.** Three cards slide up from the bottom as the car
+      lurches off (screen-space, as the lobby car's panel does), each its face, its coins
+      (`NextFloor.payOf`, the coin icon) and a short name at most, big enough to tap at Galaxy
+      A16 size; a press clunks, lights the card and drops your avatar's head on it (every
+      rider's, from `NextFloorPresses`, so friends see the vote move); on the knock
+      (`NextFloorPicked`) the losers go dark and the winner flares and stays lit until the gate
+      opens on the floor (the riders change cars at 13.4 s: keep the cards up across it).
+      Reads the riding car's attributes, presses `NextFloorPress`. Captures into `docs/art/`:
+      the three lit, a mark on one, the winner flared.
   - [ ] **S4-03c Each version felt on its floor.** The moment: the gate opens on a pitch-dark
     lobby, or two Mannequins at the end of the hall. The deal reads the version (twice the
     padlocks, twice the monsters awake through `FloorRules`' cap and `KeeperMix`'s lean), the

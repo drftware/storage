@@ -38,6 +38,9 @@
 #   scripts/art.sh coin export          just the coin's FBX and Specs module
 #   scripts/art.sh coin icon            the coin count's icon, art/coin/out/CoinIcon.png (upload it
 #                                       by hand: art/coin/README.md, "The count's icon")
+#   scripts/art.sh cards                the next-floor cards' faces, art/cards/out/<Version>.png, and
+#                                       their phone-size sheet (needs the padlock, Mannequin, corridor
+#                                       and elevator built; under a minute; upload: art/cards/README.md)
 #   scripts/art.sh battery              the battery: its bake, FBX, Specs module, look sheets (the
 #                                       floor sheets need the boxes built; about a minute)
 #   scripts/art.sh battery export       just the battery's FBX and Specs module
@@ -277,6 +280,15 @@ if [ "${1:-}" = "coin" ]; then
 		echo "== coin $st"
 		blender -b --factory-startup -P art/coin/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
+if [ "${1:-}" = "cards" ]; then
+	shift
+	for st in ${*:-faces sheet}; do
+		echo "== cards $st"
+		blender -b --factory-startup -P art/cards/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|SHEET|DONE" || true
 	done
 	exit 0
 fi

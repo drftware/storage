@@ -23,13 +23,17 @@ nowhere else.
   change: the Packrat is on about three floors in five from floor 3 (it was every floor), and it
   isn't promised on floor 3, its first.
 - [ ] **The next-floor cards' defaults** (S4-03a, D-403; nothing to press yet, the cards come in
-  S4-03b). My defaults, yours to change: the four versions are the design doc's (the power's out,
+  S4-03b2). My defaults, yours to change: the four versions are the design doc's (the power's out,
   twice the padlocks, twice the monsters with the Packrat brought in from floor 3, anyone caught
   goes back to the lobby). The lobby one is held back to floor 3, so floor 2's ride always offers
   the other three. The dark and the padlocks pay half the floor's coins again, the other two
   twice them. The vote ends on the cable's second knock, about 9 s into the ride (the floor has to
   be dealt before you're handed to its car), not as the car arrives. Nobody pressing, or a tie,
   goes at random. Want more versions than four? Name them and they're rows in a table.
+  The cards' pictures (S4-03b1, D-404; open `art/sheets/cards-phone.png`, the four at a phone's
+  card size): a dead caged bulb in the dark, two padlocks on a steel door, two Mannequins at the
+  end of a hall, looking down the shaft at the car far below. Each in its own light (cold blue,
+  warm, sick green, red) so the three on a panel tell apart at a glance. Say if one doesn't read.
 - [ ] **Your home, with a friend** (S5-03a3b, D-275; seen with one player only). Studio's Test
   tab, Clients and Servers, 2 players. Look for: each player gets a home by the front door (1 then
   7), their name sprays onto its card with a soft hiss and the door rolls up. Player 1 pulls their
