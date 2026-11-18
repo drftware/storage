@@ -2,69 +2,66 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-18, the owner's direction on the home (D-345), docs only ·
-**Checks:** green · **Git:** `main`, committed, not pushed (`origin` drftware/storage); Brix pinned
-at `7f25310`, NOT on Brix's `origin` yet. The home's chain of sessions is paused by the owner.
+**Updated:** 2026-11-18, S5-03i1a (D-346) · **Checks:** green · **Git:** `main`, committed, not
+pushed (`origin` drftware/storage); Brix pinned at `7f25310`, NOT on Brix's `origin` yet.
 
 ## State
-- Nov 18, the owner (D-345): everything in a home moves, lifts and works. The starter pieces
-  become arrangeable furniture (no shelf mid-room), any find can be taken straight off where it
-  stands, and every find set out keeps its button at home. ROADMAP's S5-03i, ahead of h5 and h6.
-- The home (D-259; Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools only),
-  a ROADMAP piece a session. S5-03h is h1 to h6: h1, h2 and h3 (a, b1, b2) done.
-- h3b2 done (D-344): Large/XL cards carry a Gift pill; friends here deal in as cards; the friend
-  gets a "More room!" banner with the giver's face (`GiftedView`).
-- Studio: in Play on the A16 the banner arrived with the right name, face and headline and hid
-  after, no errors; Studio then stopped drawing frames (0 a second), so the motion, the Gift and
-  the friend cards weren't watched (STUDIO.md). The two-player test is in OWNER.md.
+- Nov 18, the owner (D-345): everything in a home moves, lifts and works. ROADMAP's S5-03i, ahead
+  of h5 and h6. S5-03i1 is split: i1a (the rules) done, i1b (the server lays them), i1c (lift
+  them in Arrange, the views follow, Studio).
+- i1a done (D-346), pure only, nothing wired: the starter pieces are furniture rows
+  (`Furniture.Starter`, "Shelf:Furniture#1", never sold, free of the limit, the job box `kept`);
+  `Home/Layout.luau` lays them by size (`default`; Small: shelf, box, mirror), adopts a home laid
+  before (`adopt`: where they stood, ShelfTop/JobBoxTop finds moved onto the pieces) and lets a
+  growing home's pieces ride their walls (`grow`); the shelf, box and rug have piece tops (the
+  rug's is floor-kind); save v14 adds `starterLaid` (false until the server lays them).
+  `tests/layout.spec.luau` judges every size's layout whole with Brix. The home doc (D-259):
+  https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools only.
 - Studio hooks: `GrowTest` (a size; "cash"/"price", n; "gift", size, friendPlayer; "friend",
-  name, size for a made-up friend), `ArrangeTest` "size", `DevReceipt`. Test save: Small, cash 188.
+  name, size), `ArrangeTest` "size", `DevReceipt`. Test save: Small, cash 188 (v13 till loaded).
 - **Climb run:** item 1 done (F-G1e6q2, D-400): a box's find no longer takes back a hand you
   switched during its reveal; a press during your own switch waits for it; the jar's light was
   never lost; the coin count's 0 is Studio's test hall. Next: S4-02 Monsters by lowest floor.
   Uncommitted `Home/*`, `Save` and their specs are the home chain's work in progress, not ours.
 
-## Next task: S5-03i1 The starter pieces become furniture
-The moment (Animal Crossing's house, Bloxburg's build mode): the shelf isn't stuck mid-room; in
-Arrange you lift it, carry it to the back wall, turn it, and set it down like anything you bought.
-1. Read D-345, ROADMAP S5-03i, the home doc's "What you decided" (docs tools, search the heading).
-2. The shelf, job box, mirror, clothes rail, rug, beanbag and floor lamp become rows in the home's
-   layout (`Home/Arranged`, `Spots`, `Save`): lifted, moved, turned, put away in Arrange like
-   bought furniture; the job box moves but never goes in the box. The ceiling bulb and the
-   light switch stay with the room. Spec the pure part first (Lune).
-3. Each piece keeps working where it stands: the shelf's spots and the finds on them, the job
-   box's lid and panel, the mirror's reflection (`MirrorView` follows its glass), the rail.
-4. A default layout per size (S5-03h4 folded in): nothing mid-room, a new or grown home starts
-   from it. A home laid before gets its pieces as rows where they stood (a save version with a
-   migration and an old-save sample in `save.spec`).
-5. See it in Studio Play at Galaxy A16 size (Rojo is connected now): move the shelf with finds
-   on it, the mirror, the box; rejoin; grow a size. Split if it won't fit (rules first).
-**Acceptance:** check green; specs prove the rows, the defaults and the migration; in Studio the
-shelf, box and mirror move and keep working, and nothing stands mid-room at Small.
-**Read first:** D-345 and D-340; ROADMAP S5-03i; `src/shared/Home/Arranged.luau`;
-`src/shared/Home/Spots.luau` (grep "Starter"); `art/home/home_spec.py` (from line 222).
+## Next task: S5-03i1b The server lays the starter pieces as rows
+The moment: your Small unit's shelf stands on the back wall, not mid-room; an XL home laid
+before keeps its set where it stood, with the finds on its shelf and box.
+1. `Arranging`: as a home is laid, `Layout.adopt` while `starterLaid` is false (then write it
+   true), `Layout.grow` instead of `Spots.carry` on a size change; the starter rows settable at
+   one each (`Furniture.Starter`) and boxed when put away; refuse putting the job box away (a
+   new refusal, the screen's press does nothing); draw them as bought pieces are drawn.
+2. `Arrange.room`: no fixed set's blocks or ShelfTop/JobBoxTop areas for a held home (the
+   mirror's and rail's `Fixed` rows go too; the ceiling lamp stays). `Lobby.front` lays a spare
+   home's set by `Layout.default` at Small; the held home's `Starter` folder is cleared.
+3. Each piece keeps working by its row: `Shelves` (the shelf's spots), `JobBoxes` and
+   `JobBoxView` (the lid, the panel), `Home.mirror`/`MirrorView` (the glass), `Rails`. Find the
+   drawn model by `Layout.id(kind)`; follow its pivot when it moves (i1c moves it).
+4. Studio Play at Galaxy A16 size: Small (shelf on the back wall), "size" to XL and back, a
+   rejoin; the job box opens, the mirror reflects, the rail hangs. Split if it won't fit.
+**Acceptance:** check green; a spec for any new pure rule; in Studio a Small home's set stands
+by the walls and works, and the test save's finds come through.
+**Read first:** D-346; `src/shared/Home/Layout.luau`; `src/server/Arranging.luau` (lay, draw,
+putAway); `src/shared/Home/Arrange.luau` (room); `src/server/Shelves.luau` (grep Starter);
+`src/shared/Lobby/init.luau` (Lobby.front).
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03i2 take anything, i3 every find's button, i4 sit (D-345); then S5-03h5, h6; S5-03g3c
-   a card's style; S5-03d4; S5-03a2d the cars' triangles; F-G1b4a2 the beam; F-G1b4b.
-2. The steel shelf's lower tiers. In
-   Arrange the job box's "Open" shows over the room; the starter shelf hides a piece behind it
-   from Arrange's corner camera and from the doorway. A lifted lit piece's light stays where it
-   was until it's set down. The looks' polish (g2b2, g2b3, g3b). A size change while Arrange is
-   open doesn't rebuild the screen's judge (h6 should). Units: plans small; Robux cards unseen.
-   A gift buyer's `bought` counts only a spare's gift (D-343); the Gift cards unseen (D-344).
-3. The home's warm fill (D-290): faces turned from the bulb go near black. F-G1b5 waits for its
-   art. Brix (in `../engine`): ENG-25b's two-client run; Driving's stick read (D-254); a
-   PlayerSaves hook before a leaving save's last write. S4-02 to S4-05.
-4. The item catalog doc and the design doc's finds section need D-250, D-251, D-259, D-277, D-297,
-   D-299, D-300, D-301, D-302, D-304, D-305, D-308 (the spot column), D-309, D-311 to D-344.
-5. Once the owner's real purchase passes, mark Brix's ENG-23e done. Late arrivals off
-   `ClimbEnd.spot`; the driving torch (D-257); asset 203785492's type error; the front office's
-   steel; cart seats vs `Seat:Sit`; a spare home unpadlocked (D-275); the hat's first-Wear dark
-   screen; the body after a respawn (D-282); a Gold's own textures.
-6. One `CaughtSeized` string; S5-03d4's climb server restamps its lights (`Use.leave`). The HUD
-   coin count reads 0 in Play (Nov 17, ten times now). Lobby sheets: no plates. Cash spent at
-   the counter (furniture, Medium) and sold from the job box isn't sent to analytics.
+1. S5-03i1c lift them in Arrange; S5-03i2 take anything, i3 every find's button, i4 sit
+   (D-345); then S5-03h5, h6; S5-03g3c a card's style; S5-03d4; S5-03a2d the cars' triangles.
+2. The steel shelf's lower tiers. In Arrange the job box's "Open" shows over the room. A lifted
+   lit piece's light stays where it was until it's set down. The looks' polish (g2b2, g2b3,
+   g3b). A size change while Arrange is open doesn't rebuild the screen's judge (h6 should).
+   Units: plans small; Robux cards unseen. A gift buyer's `bought` counts only a spare's gift
+   (D-343); the Gift cards unseen (D-344). The mirror leans on nothing if set mid-room (i1c).
+3. The home's warm fill (D-290): faces turned from the bulb go near black. Brix (in
+   `../engine`): ENG-25b's two-client run; Driving's stick read (D-254); a PlayerSaves hook
+   before a leaving save's last write.
+4. The item catalog doc and the design doc's finds section need D-250, D-251, D-259, D-277,
+   D-297, D-299 to D-302, D-304, D-305, D-308, D-309, D-311 to D-346.
+5. Once the owner's real purchase passes, mark Brix's ENG-23e done. A spare home unpadlocked
+   (D-275); the hat's first-Wear dark screen; the body after a respawn (D-282); late arrivals
+   off `ClimbEnd.spot`; the driving torch (D-257); asset 203785492's type error. Counter and job
+   box cash isn't sent to analytics. One `CaughtSeized` string. Lobby sheets: no plates.
 
 ## Kickoff for the next agent
 ```text

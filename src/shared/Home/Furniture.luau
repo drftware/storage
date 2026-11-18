@@ -37,6 +37,8 @@ export type Piece = {
 	price: number, -- cash, whole
 	stands: Stands,
 	cap: number, -- the most of it one player may own
+	starter: boolean?, -- every home's own, never sold (D-346): one each, laid by `Home.Layout`
+	kept: boolean?, -- never put away: the job box holds everything else (D-345)
 }
 
 -- Why a buy can't happen: not a piece, not in this week's stock, owned as many as you may, or
@@ -76,8 +78,38 @@ Furniture.Pieces = table.freeze({
 	row("NeonSign", "Neon moon", 25, "Wall", 2), -- the glowing moon: saved up for
 }) :: { Piece }
 
+-- Every home's own pieces (D-345, D-346): furniture you arrange like what you bought, one of each,
+-- never sold, laid in a new or grown home by `Home.Layout`. The job box moves but is never put
+-- away, since it holds everything else. The ceiling bulb and the light switch stay with the room.
+Furniture.Starter = table.freeze((function(): { Piece }
+	local function starter(id: string, name: string, kept: boolean?): Piece
+		return table.freeze({
+			id = id,
+			name = name,
+			parts = table.freeze(table.clone(Specs.Pieces[id] or {})),
+			price = 0,
+			stands = "Floor" :: Stands,
+			cap = 1,
+			starter = true,
+			kept = kept,
+		})
+	end
+	return {
+		starter("JobBox", "Job box", true),
+		starter("Shelf", "Shelf"),
+		starter("Mirror", "Mirror"),
+		starter("Rail", "Clothes rail"),
+		starter("Rug", "Rug"),
+		starter("Beanbag", "Beanbag"),
+		starter("FloorLamp", "Floor lamp"),
+	}
+end)()) :: { Piece }
+
 local byId: { [string]: Piece } = {}
 for _, p in Furniture.Pieces do
+	byId[p.id] = p
+end
+for _, p in Furniture.Starter do
 	byId[p.id] = p
 end
 
@@ -143,7 +175,8 @@ function Furniture.settable(furniture: { [string]: number }): { [string]: number
 	local out: { [string]: number } = {}
 	for id, n in furniture do
 		local count = math.floor(n)
-		if byId[id] and count >= 1 then
+		local piece = byId[id]
+		if piece and not piece.starter and count >= 1 then -- a starter piece is Layout's
 			out[Furniture.placed(id)] = count
 		end
 	end
@@ -159,7 +192,8 @@ function Furniture.boxed(
 	local out: { [string]: number } = {}
 	for id, n in furniture do
 		local left = math.floor(n) - (placed[Furniture.placed(id)] or 0)
-		if byId[id] and left >= 1 then
+		local piece = byId[id]
+		if piece and not piece.starter and left >= 1 then -- a starter piece is Layout's
 			out[id] = left
 		end
 	end
@@ -234,8 +268,8 @@ end
 -- Why `data` can't buy piece `id` at `time`, or nil when it can.
 function Furniture.check(data: Wallet, id: string, time: number): Refusal?
 	local piece = byId[id]
-	if not piece then
-		return "unknown"
+	if not piece or piece.starter then
+		return "unknown" -- every home has its own, never sold
 	end
 	if not Furniture.stocked(id, time) then
 		return "notStocked"

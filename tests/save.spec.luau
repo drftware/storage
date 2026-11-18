@@ -79,9 +79,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 13.
+-- A new player: nothing yet, at version 14.
 do
-	ok(format:latest() == 13, "the save is at version 13")
+	ok(format:latest() == 14, "the save is at version 14")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -101,6 +101,7 @@ do
 	ok(fresh.placed.form == 1 and #fresh.placed.rows == 0, "a new player has nothing set out")
 	ok(next(fresh.furniture) == nil, "a new player owns no furniture")
 	ok(fresh.homeSize == "Small" and fresh.placedSize == "Small", "a new home is small, laid small")
+	ok(fresh.starterLaid == false, "a new home's own pieces are laid by the server (D-346)")
 	ok(
 		fresh.looks.paint == "WarmWhite"
 			and fresh.looks.floor == "Boards"
@@ -118,7 +119,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(13, stored)
+	local back, decodeProblem = format:decode(14, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -363,7 +364,7 @@ do
 		card = "Chalk",
 	}
 	local kept = format:encode(dressed)
-	local dressedBack = format:decode(13, kept)
+	local dressedBack = format:decode(14, kept)
 	ok(
 		dressedBack ~= nil
 			and dressedBack.looks.paper == "Leaves"
@@ -386,7 +387,29 @@ do
 			and #twelve.placed.rows == 1,
 		`version 12 loads small, its rows laid at XL ({twelveProblem})`
 	)
-	local newer, newerProblem = format:decode(14, v1)
+	-- Version 13 as the DataStore holds it (Nov 18): its shelf, job box and the rest stood fixed,
+	-- a find on the job box's top. It comes back with its pieces not yet rows (S5-03i1a, D-346):
+	-- the server lays them where they stood and moves the find onto the job box's row.
+	local v13 = table.clone(v12)
+	v13.homeSize = "Medium"
+	v13.placedSize = "Medium"
+	v13.placed = {
+		form = 1,
+		rows = { { id = "Boombox#1", on = "JobBoxTop", x = 0.5, y = 0, turn = 0 } },
+	}
+	local thirteen, thirteenProblem = format:decode(13, v13)
+	ok(
+		thirteen ~= nil
+			and thirteen.starterLaid == false
+			and thirteen.homeSize == "Medium"
+			and thirteen.placed.rows[1].on == "JobBoxTop",
+		`version 13 loads with its pieces still to lay ({thirteenProblem})`
+	)
+	local laid = Save.fresh()
+	laid.starterLaid = true
+	local laidBack = format:decode(14, format:encode(laid))
+	ok(laidBack ~= nil and laidBack.starterLaid == true, "a laid home stays laid")
+	local newer, newerProblem = format:decode(15, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 

@@ -197,6 +197,10 @@ function Spots.pieceBox(kind: string): (Vec?, Vec?)
 	}
 end
 
+-- The starter pieces whose top a find stands on (D-346), by the part whose box is that top: the
+-- same top `Furniture` gave them while they stood fixed, so a find on one stays where it was.
+Spots.StarterTops = table.freeze({ Shelf = "Shelf", JobBox = "JobBoxLid" })
+
 -- The counter's furniture whose highest top a find stands on (D-338): a crate, the pallet, the
 -- folding table, the steel shelf's top tier. The floor cushion and the camp bed are sat on.
 Spots.PieceTops =
@@ -207,8 +211,17 @@ Spots.PieceTops =
 -- back): the art's own height, not the box's (the shelf's posts stand above its top tier). Nil
 -- for a piece offering none.
 function Spots.pieceTop(kind: string): (Area?, Vec?)
-	local tops = if Spots.PieceTops[kind] then HomeSpecs.Tops[kind] else nil
 	local box, mid = Spots.pieceBox(kind)
+	if box and mid and Spots.Underfoot[kind] then -- the rug: what stands on the floor stands on it
+		return { kind = Spots.Kinds.Floor, width = box[1], depth = box[3] }, { 0, box[2], 0 }
+	end
+	local own = HomeSpecs.Parts[Spots.StarterTops[kind] or ""]
+	if own and box and mid then -- the shelf's and the job box's tops, as they stood fixed (D-346)
+		local area, high = Spots.furnitureTop(own.Size, own.Centre)
+		return area,
+			{ own.Centre[1] - mid[1], high - (mid[2] - box[2] / 2), own.Centre[3] - mid[3] }
+	end
+	local tops = if Spots.PieceTops[kind] then HomeSpecs.Tops[kind] else nil
 	if not (tops and tops[1] and box and mid) then
 		return nil, nil
 	end
@@ -255,11 +268,13 @@ function Spots.limit(name: string): number
 end
 
 -- How many of a room's placed things (`rows`, as Placements saves them) are finds set out: the
--- room's own pieces never count against the limit.
+-- room's own pieces, the starter set's rows among them, never count against the limit.
 function Spots.setOut(rows: { Save.PlacedRow }): number
 	local n = 0
 	for _, row in rows do
-		if Spots.name(row.id) then
+		local name = Spots.name(row.id)
+		local piece = if name then Furniture.ofPlaced(name) else nil
+		if name and not (piece and piece.starter) then -- every home's own pieces are free (D-346)
 			n += 1
 		end
 	end

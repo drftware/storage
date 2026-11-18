@@ -49,6 +49,10 @@
 	  or a version 12 save, laid in the XL box every home was), the home carries the rows to its
 	  size as it's set up (`Spots.carry`), puts back in the box what it doesn't hold, and writes
 	  both the same. So growing writes one value, and nothing set out is ever lost.
+	- `starterLaid`: whether `placed` holds the home's own pieces, the shelf, the job box, the mirror
+	  and the rest, as rows you arrange (S5-03i1a, D-346). False in a new save and in one laid
+	  before: the server lays them as it sets the home up (`Home.Layout`: a size's layout, or where
+	  they stood) and writes it true.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -108,6 +112,7 @@ export type Data = {
 	furniture: Counts,
 	homeSize: string,
 	placedSize: string,
+	starterLaid: boolean,
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -156,6 +161,7 @@ function Save.fresh(): Data
 		furniture = {},
 		homeSize = Sizes.Start,
 		placedSize = Sizes.Start,
+		starterLaid = false, -- the server lays the home's own pieces as it sets it up (D-346)
 	}
 end
 
@@ -721,6 +727,11 @@ function Save.format(brix: any): Format
 	thirteenthFields.placedSize = Schema.oneOf(Sizes.Names)
 	local thirteenth = Schema.shape(thirteenthFields)
 
+	-- Version 14 (S5-03i1a, Nov 18): version 13 plus whether `placed` holds the home's own pieces.
+	local fourteenthFields = table.clone(thirteenthFields)
+	fourteenthFields.starterLaid = Schema.boolean()
+	local fourteenth = Schema.shape(fourteenthFields)
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -929,6 +940,15 @@ function Save.format(brix: any): Format
 					local after = table.clone(old)
 					after.homeSize = Sizes.Start -- everyone starts small (D-259)
 					after.placedSize = Sizes.Biggest -- every home was the XL box till now
+					return after
+				end,
+			},
+			{
+				schema = fourteenth,
+				-- any: a version 13 save as Brix hands it over, already checked against `thirteenth`
+				migrate = function(old: any): any
+					local after = table.clone(old)
+					after.starterLaid = false -- its pieces stood fixed: laid where they stood (D-346)
 					return after
 				end,
 			},
