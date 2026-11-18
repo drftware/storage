@@ -10356,3 +10356,42 @@ plaque in the lobby; c, seen in Studio Play. Piece a is built.
   home whenever Roblox sets it afresh (the screen turning), so the move never stacks
   (`Torch.besideJump`). Keyboard and gamepad: unchanged, bottom right.
 
+
+## D-436 The room editor rebuilt, and recipes: what one thing does to another (the owner, 2026-11-18)
+
+The owner, trying Arrange: "There's no way to move the camera, and the controls are not intuitive
+at all. It needs vastly improved. I'm envisioning The Sims level of control of where you put your
+items. Also, when you lift an item from a shelf that was placed in arrange, you can't really put
+it back. If you drop it it will awkwardly land somewhere near where you had placed it." And: "we
+will need to build out the system for item interactions ... cleanly implemented such that we can
+extend it easily and only with data ... if a user finds an egg, and later an incubator ... the
+egg hatches into a new item type ... there could be a huge number of these interactions so the
+system needs to be brilliantly designed to easily and performantly facilitate it." The plan is
+the Claude Doc "The room editor and the recipe system"
+(https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU); its tickets are ROADMAP's S5-03j and S5-03k
+with Brix's ENG-26c, ENG-27, ENG-28 and ENG-29. The owner accepted its seven picks ("No this is
+good"):
+
+1. **Let go to place.** A blocked spot slides to the nearest free one; nothing waits red in the
+   air. The Place button goes (replaces D-311's "Place is a button, not letting go"; the twist
+   of a second finger and the Turn icon answer the one-thumb problem it solved).
+2. **One finger on empty floor slides the camera;** two fingers pinch to zoom, twist to turn and
+   drag up or down to tilt. The near walls fade, as The Sims cuts them away (replaces D-311's and
+   D-312's fixed camera by the door).
+3. **A recipe shows its progress through the thing itself** (glow, wobble, cracks), never a number
+   or a countdown (AGENTS.md's no text that explains a rule).
+4. **Time keeps running while you're offline** (Stardew Valley, Grow a Garden).
+5. **Friends watch and press but never start or feed a recipe** in your home (as D-345).
+6. **No Robux speed-ups on anything with a chance result** (Roblox's paid random items rule);
+   a paid speed-up on a fixed result is a later decision of its own.
+7. **The room editor first**; the recipe system uses its placing by hand.
+
+Built so it scales: every engine that isn't about this game goes in Brix by D-252 (gestures, the
+orbit camera, Placements' nearest free spot and guides, recipes), pure and proven by Lune; the
+game supplies rows, checks, server rules, the save and the looks. Recipes are found by one lookup
+(filed by what they're used on, then what's held), nothing ticks (each record keeps when its stage
+began and when it's due; one due list per server; catch-up on load), chance is rolled at the start
+from a kept seed, and what goes in and comes out changes in one save step. Defaults taken
+(OWNER.md): the egg is dealt on climbs, the incubator sold at the counter, the chick a find set out
+where it lands (walking about is the living-finds ticket); 2 hours warming and 10 minutes
+wobbling; a taken find's spot kept until it's set elsewhere or you leave your home.

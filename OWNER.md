@@ -28,6 +28,15 @@ nowhere else.
   6. Let a torch run dead (Studio's Workspace `DevTorchSeconds` makes it quick), wait for it to
      drop, then tap the switch. Look for: it comes up dark, clicks dully, the switch wobbles, and
      it goes back down. Also unseen in Studio.
+- [ ] **Look over the room editor and recipe plan's defaults** (D-436; the Claude Doc "The room
+  editor and the recipe system", https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU, section "The
+  decisions"). Your seven picks are taken as you accepted them. These four are mine; change any
+  before its ticket starts (S5-03j5 for the last, S5-03k3 for the rest):
+  1. The egg is a find dealt on climbs; the incubator is furniture sold at the home's counter.
+  2. The chick is a find that sits where it's set out. Walking about is the living-finds ticket.
+  3. An egg warms for 2 hours, then wobbles for 10 minutes before it hatches.
+  4. A find you Take keeps its spot (a faint outline) until you set it somewhere else or leave
+     your home.
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

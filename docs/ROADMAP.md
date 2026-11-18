@@ -3271,6 +3271,99 @@ Done when players watch the results to the end and change their perks between cl
       crate, the beanbag, the blanket and the camp bed's two; jump to stand; the landing's sound,
       the cushion's give and your view gliding in. Queued: cross-legged on the blanket (needs our
       own animation; script joint writes lose to a seated body's Animator) and lying on the bed.
+  - [ ] **S5-03j The room editor, rebuilt** (the owner, Nov 18, D-436; the plan is the Claude Doc
+    "The room editor and the recipe system", https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU,
+    read its "Part 1" and "How it's built" sections only). Arrange with The Sims 4's control:
+    a camera you turn, slide and zoom, drag anything and let go to place, snapping that does the
+    thinking, undo, and placing by hand without opening Arrange. Precedents: The Sims 4's build
+    and buy mode, Bloxburg's build mode, Animal Crossing's house decorating, Adopt Me's furniture
+    editing, Grow a Garden's held egg placed where you point. Pure cores go in Brix (D-252),
+    each by Brix's own AGENTS.md, then the pin moves. `ArrangeView` is taken apart as each piece
+    is rebuilt: each ticket moves its piece into its own module; ArrangeView ends as wiring.
+    - [ ] **ENG-27 Gestures, in Brix.** Pointer events in (id, position, began, moved, ended,
+      time); intents out: tap, double tap, hold, drag on a thing or on empty floor, pinch,
+      twist, two-finger slide; the game answers what's under a point. Pure, a contract and a
+      suite, a module page; the game's pin moves. **Acceptance:** each promise fails its suite
+      when broken; check green in both repositories.
+    - [ ] **ENG-28 The orbit camera, in Brix.** A focus point, heading, tilt and distance on
+      springs (Brix's Smoothings), a flick's drift, a box it can't leave, near and far stops,
+      the edge follow while dragging; numbers in, a camera position and look point out. Pure,
+      contract, suite, module page; the pin moves.
+    - [ ] **S5-03j1 The build camera.** Arrange's camera turns, slides, zooms and tilts: one
+      finger on empty floor slides, two fingers pinch, twist and tilt; right-drag, wheel and
+      WASD; gamepad sticks and triggers. The walls between the camera and the room's middle fade
+      (and what hangs on them), as The Sims cuts walls away. Opening swoops up from your eyes,
+      closing swoops back; double tap on empty floor resets. The front tab's door view and the
+      hall dip still work. Its own module (`ArrangeCamera` or as the session names it).
+      **Acceptance:** seen in Studio Play at Galaxy A16 size, captured; check green.
+    - [ ] **ENG-26c Nearest free spot and guides, in Brix.** Placements answers the nearest free
+      pose to a blocked one within a reach, and the guide lines where a footprint's edge or
+      middle meets a neighbour's on the same area. Suite cases first; the pin moves.
+    - [ ] **S5-03j2 Drag it, let go.** Touch and drag anything (finds, furniture, the home's
+      own pieces, cubby finds); it hangs a thumb's offset above the finger with a soft shadow
+      under it; let go places it (the Place button goes, D-436); blocked slides to the nearest
+      free spot, or floats back where it came from (a tray card back into the tray). A tap
+      selects: round icon buttons Turn, Put away, Another round it; a tap on the empty room
+      clears. A second finger's twist turns it freely; Alt or the phone's Free switch places off
+      the grid at any angle. Riders move with their piece and bounce as it lands.
+      **Acceptance:** Studio Play at A16 size, captured; check green.
+    - [ ] **S5-03j3 Snapping.** A pure snapper in `src/shared/Home` with Lune specs: the
+      half-stud grid; furniture against a wall turns its back to it; a find dragged over a top
+      hops onto it with a tock and back down off it; guide lines from ENG-26c drawn faint; wall
+      things slide along their wall, a handle raises and lowers them.
+    - [ ] **S5-03j4 Undo, and every action answers.** Undo and redo while Arrange is open (a
+      pure undo list, Lune specs; the server takes each undo as an ordinary move). Every row of
+      the doc's feedback table: lift, drag, onto a table, blocked (the blocker glows), turn,
+      place (thud by weight, `Catalog` heft), put away (flies into its tray card), undo; phone
+      taps through Roblox's newer vibration API only once checked on create.roblox.com
+      (STUDIO.md).
+    - [ ] **S5-03j5 Placing by hand.** In your own home a held find shows a see-through copy
+      where you look, snapped and judged by the same judge; the Drop button reads Place there and
+      sets it on that spot in one server step (a new ask to Arranging, checked as Take is,
+      D-350). A find you Take keeps its spot (a faint outline) until set elsewhere or you leave
+      your home; looking near it snaps back into it. Holding a finger on any of your things opens
+      Arrange with it lifted. Elsewhere Drop is unchanged; nowhere to go, no Place (no text).
+    - [ ] **S5-03j6 Several at once.** A box dragged round several things selects them; they
+      move, turn and put away together; the server takes them as one move.
+    - [ ] **S5-03j7 The editor seen whole.** Every row of the feedback table checked in Studio
+      Play at A16 size and captured; fixes; ArrangeView's leftovers removed; OWNER.md's phone
+      steps written.
+  - [ ] **S5-03k The recipe system: what one thing does to another** (the owner, Nov 18,
+    D-436; D-188's "hatched pets live there"; the doc's "Part 2" section). One data row per
+    recipe; a fixed vocabulary of starts, stage ends, results and looks; thousands of rows by
+    one lookup; nothing ticks; cheat-proof; checked by check.sh. Precedents: Stardew Valley's
+    incubator and its 1.6 machine data, Grow a Garden's eggs and plants, Adopt Me's eggs.
+    - [ ] **ENG-29 Recipes, in Brix.** Rows in, checked and filed at load (by what they're used
+      on, then what's held: kind, then tags); `start`, `advance(record, now, event)` with
+      catch-up across any gap, `due(record)`; stages ended by time, presses, things nearby,
+      things given and named events; results become, make, use up, give back, chance (from a
+      seed kept in the record), again. Pure; contract, suite, module page; the pin moves. Split
+      a (the book: rows, checks, filing, lookup) and b (records: start, advance, due, chance).
+    - [ ] **S5-03k1 Recipe rows and the save.** The game's rows in one data module (the hatch
+      first: egg tag + Incubator, Place, Warming 2 h, Wobbling 10 min, becomes Chick beside);
+      tags with each find's catalog row (`art/finds/rows.py`, never the generated file); Lune
+      specs that fail a bad row (unknown find, unknown motion, a stage that can't end); a money
+      report and a test against a ceiling in Config. The save's next version keeps each recipe
+      in progress under its spot's id, with a migration and its spec.
+    - [ ] **S5-03k2 The server's recipes.** A recipes system: presses checked (type, range, the
+      home's holder, reach, what's really held, rate limit), applied in one save step (never lost
+      or doubled, as D-350); one due list per server for loaded homes; catch-up on load; each
+      stage on the drawn thing as attributes for every screen; Studio-only `RecipeTest` hook to
+      skip time.
+    - [ ] **S5-03k3 Egg, incubator, chick.** Their art the unit's way (finds kit for the egg and
+      chick, the home's build for the incubator), each with the motions the stages name (the
+      egg's wobble and crack, the incubator's lamp, the chick's tumble); the egg dealt on climbs
+      at a grade the catalog gives; the incubator sold at the counter; the chick set out like
+      any find. Judge each at phone size.
+    - [ ] **S5-03k4 Recipes on screen.** The verb shows on a thing only while you hold what one
+      of its recipes takes, near it (the incubator's lamp brightens as you come close holding an
+      egg); each stage's look from its row (motion, glow, sound, growing toward the end), worked
+      out from the server's two times; the hatch: wobble, crack, pop, the chick tumbling out, a
+      "New" stamp. Only things on screen and near are stepped.
+    - [ ] **S5-03k5 The hatch seen whole.** An egg from a climb to a chick at home in Studio
+      Play at A16 size with time skipped, and a rejoin mid-hatch; fixes; OWNER.md steps.
+    - [ ] **S5-03k6 The presses fold in.** Switch, Play and Wind at home run as empty-handed
+      recipes through the one system; a climb's presses unchanged (their specs still pass).
   Later, each its own ticket (finds doing things at home moved into S5-03i3, D-345): living
   finds (17); the home score, visits to friends on other servers, photos (27 to 29; 29 is
   untested and waits on the owner). Trading comes later still.
