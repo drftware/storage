@@ -72,6 +72,7 @@
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
@@ -1425,6 +1426,37 @@ function Slots.new(): Slots
 		)
 		for _, player in Players:GetPlayers() do
 			addPlayer(player)
+		end
+		if RunService:IsStudio() then
+			-- Studio only: Workspace's "DevTake" set to a player's name takes up for them the find
+			-- lying nearest them, as its Take prompt would (the MCP's client never sees a prompt)
+			table.insert(
+				connections,
+				Workspace:GetAttributeChangedSignal("DevTake"):Connect(function()
+					local name = Workspace:GetAttribute("DevTake")
+					local player = if type(name) == "string"
+						then Players:FindFirstChild(name)
+						else nil
+					local root = if player and player:IsA("Player") then rootOf(player) else nil
+					if not (player and player:IsA("Player") and root) then
+						return
+					end
+					local best: Tool? = nil
+					for _, t in tools do
+						local far = (t.body.Position - root.Position).Magnitude
+						if
+							t.owner == nil
+							and t.model.Parent == lying
+							and (not best or far < (best.body.Position - root.Position).Magnitude)
+						then
+							best = t
+						end
+					end
+					if best then
+						pickUp(best, player)
+					end
+				end)
+			)
 		end
 	end
 

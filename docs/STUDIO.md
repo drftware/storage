@@ -3455,3 +3455,9 @@ verified: a doc page, Studio, or "untested".
   studs in front of the jukebox, `ProximityPromptService.PromptShown` never fired, and
   `InputHoldBegin`/`InputHoldEnd` on the prompt took nothing. A take needs the owner's own
   Play, or a dev hook on the server.
+- **Taking a find from the MCP** (S4-05b2b): Slots' Studio-only hook. From the Server, stand
+  the character within reach of the find, then `workspace:SetAttribute("DevTake", player.Name)`
+  (clear it after): the nearest lying find goes into their hands as its Take prompt would,
+  with every check the prompt runs. Drop it from the Client with `Remotes.ToolDrop:FireServer()`.
+  Floor 2's Unit228 (seed 7) has its middle at x 100 and its back at x 108.6: stand in the
+  hall at x 88, never past the back wall, where you fall out of the world and die.

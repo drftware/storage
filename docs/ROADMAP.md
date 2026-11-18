@@ -2447,9 +2447,12 @@ Done when two climbs in a row feel different and players talk about their best f
         every step slow and heavy (a thud per step, its rattle), at 9 a second, under every
         monster's hunt; a press of a tool answers with a shake and a thunk, never words; every
         small and medium unit has room to stand it (`Haul`, `HaulSteps`, the "Big" size).
-      - [ ] **S4-05b2b Its mark on the corner map.** The ring pulsing on its unit as the door
-        rolls up, held on the window's edge while off it; once taken it follows the find (on
-        the hauler's dot, or where it was dropped).
+      - [x] **S4-05b2b Its mark on the corner map** (D-417). A pink diamond pops in on its
+        unit with three rings as the door rolls up, held on the window's edge while off it;
+        round the hauler's dot while carried, where it lies once dropped, a ring each time;
+        gone once kept, lost or in a monster's arms (`BigFind.mark`, `rings`; BigFinds' where).
+        Seen in Studio on floor 2. Polish: a far-off ping as the mark pops, if the door's
+        rattle doesn't carry (the owner's call, OWNER.md).
     - [ ] **S4-05b3 Counted at the gate.** The moment: the gate shuts with it aboard and it pays
       out with its own pop, bigger than any find's. It is kept by GatePay as any find in a slot;
       give it its own pop on the riders' screens (KeepView, CoinView) and its own pay (the owner's
@@ -2457,6 +2460,8 @@ Done when two climbs in a row feel different and players talk about their best f
   - [ ] **S4-05c The big find seen in Studio.** The moment: from floor 2's keypad, see the unit
     roll up, its mark on the corner map, carry the jukebox to the car, and watch the gate pay
     it. Captures to `docs/art/`; the two-player run (one hauls, one guards) in OWNER.md.
+    Also check: a hauler who dies with no body left (fell out of the world) drops what they
+    hold at the world's origin (Slots' `dropAll`, `Vector3.zero`), far off any floor.
 - [ ] **S4-06 The marker.** Sold in the machine. Face a door and tap Mark: a bright mark the
   team sees down the hall and on the corner map. Five marks. Its art first.
 - [ ] **S4-07 On sale.** A starting tool for cash during the car's countdown, flashlight beam

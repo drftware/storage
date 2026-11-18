@@ -107,6 +107,24 @@ for seed = 1, 120 do
 end
 ok(placed >= 110, `nearly every floor has a unit for it ({placed} of 120)`)
 
+-- Its mark on the corner map (S4-05b2b): hauled beats lying beats its unit; none once gone.
+ok(BigFind.mark(58, nil, false) == "Unit", "rolled up and not yet touched: on its unit")
+ok(BigFind.mark(58, nil, true) == "Lying", "lying loose: where it lies, even in its unit")
+ok(BigFind.mark(58, 1234, true) == "Held", "hauled: on the hauler, whatever else is said")
+ok(BigFind.mark(nil, 1234, false) == "Held", "hauled off a monster's pile: on the hauler")
+ok(BigFind.mark(nil, nil, true) == "Lying", "laid on a pile after its unit was cleared")
+ok(BigFind.mark(nil, nil, false) == nil, "kept, lost or in a monster's arms: no mark")
+
+-- Its rings: three as it shows, one as it moves hands, none as it's dealt where it stood.
+ok(BigFind.rings(nil, "Unit") == BigFind.Rings, "the door rolls up: its full rings")
+ok(BigFind.rings(nil, "Lying") == BigFind.Rings, "back off a monster: its full rings")
+ok(BigFind.rings("Unit", "Lying") == 0, "dealt where its unit already showed it: no ring")
+ok(BigFind.rings("Lying", "Held") == 1, "picked up: one ring")
+ok(BigFind.rings("Held", "Lying") == 1, "dropped: one ring")
+ok(BigFind.rings("Held", "Held") == 1, "handed to a friend: one ring")
+ok(BigFind.rings("Held", nil) == 0 and BigFind.rings(nil, nil) == 0, "gone: no ring")
+ok(BigFind.Rings >= 2, "more than one ring as it shows, so a glance late still catches it")
+
 -- None left: every unit opened.
 do
 	local floor = Floor.generate(4, Brix.Random.new({ seed = 77 }))

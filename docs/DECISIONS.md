@@ -9782,3 +9782,38 @@ S4-05b2 is split in two (ROADMAP): **a** the haul (done), **b** its mark on the 
   catalog reads walk 9 and the Big hold, and every client system starts (the first try caught
   HaulSteps with no `start`, which stopped the whole client). The MCP's client never sees a
   prompt, so the take, the walk and the steps are the owner's (OWNER.md).
+
+
+## D-417 · 2026-11-18 · The big find's mark on the corner map (S4-05b2b)
+
+- **A pink diamond, its own shape and colour.** The map already has your white dot, friends'
+  blue dots, the car's amber mark and a caught friend's banging blue dot, so the big find gets
+  the one shape nothing else uses, a diamond, in hot pink (not the jukebox's own amber glow,
+  which is the car's colour), with a white rim to read on the dark window at phone size. It's
+  held on the window's edge the way it lies while it's off it, as the car's mark is, so a team
+  anywhere on the floor knows which way to go (Among Us's map shows where the task is; Lethal
+  Company's ship radar, the crew).
+- **Three rings the instant the door rolls up.** As its unit rolls up by itself the diamond pops
+  in (grown from nothing, a little past its size, back) and three rings go out from it, one after
+  another, so a glance a second late still catches it. Arriving on a floor whose big find is
+  already out rings it the same. One ring each time it changes hands or is put down, so the
+  team sees it move; none as its unit deals it where the unit's mark already stood.
+- **It follows the find.** Round its hauler's dot while someone carries it (the diamond a size up
+  and under the friend's blue dot, so the hauler shows inside it; your own dot when it's you),
+  where it lies once dropped (a caught hauler's drop too), and gone while it's kept at the gate,
+  lost, or in a monster's arms, back with its rings where the monster lays it down.
+- **The server says where** (BigFinds), on the floor's model: `BigFindSlot` (its unit, from b1),
+  `BigFindAt` (the floor point it lies on) and `BigFindHolder` (the hauler's UserId), worked out
+  each time anyone's slots or the lying finds change (Slots' `changed`, `loose`), never per
+  frame. The find is known by its model (the one lying of its key in its unit once dealt), so a
+  second jukebox taken up from a home never confuses it. The new one is written before the old
+  is cleared, so a screen between the two never shows it back in its unit. The map follows the
+  hauler's own position each frame, as friends' dots do.
+- **No sound of its own yet.** The door's rattle is its sound, heard down the halls; whether
+  the map's pop needs a ping for players too far to hear it is a polish line in ROADMAP.
+- **Seen in Studio** (floor 2, seed 7, code 9199, one player): the floor said slot 58 and the
+  jukebox's lying point as the door rolled up; the diamond sat on the window's right edge and
+  three rings went out over 2.1 s. Taken (Slots' Studio hook `DevTake`): the floor named the
+  hauler, the diamond went round your dot a size up. Dropped: a ring, the diamond 2 studs in
+  front where it lay. A friend's carry and the gate's clearing are the owner's (OWNER.md).
+  Captures timed out twice, so none saved.

@@ -14,10 +14,15 @@
 	  the big find alone) and the building rolls its door up (Doors' `move` "Open": its rattle
 	  heard down the halls, by keepers too). Its first lift deals it, and Deals stands the find
 	  in it with its Take prompt, too big for any box.
-	- Its slot goes on the floor's model (`BigFind.SlotAttribute`) for the corner map (S4-05b2).
+	- Its slot goes on the floor's model (`BigFind.SlotAttribute`) for the corner map, and from then
+	  on where it is (S4-05b2b): as anyone's slots or the finds lying loose change (Slots' `changed`,
+	  `loose`), the floor point it lies on (`BigFind.AtAttribute`) or who hauls it
+	  (`BigFind.HolderAttribute`), so MinimapView's mark follows it; all three go as it's kept at
+	  the gate, lost or lifted by a monster, and the point comes back where a monster lays it down.
 
 	Every value is the server's; nothing here listens to a client.
 ]]
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
@@ -29,6 +34,7 @@ local Climbs = require(script.Parent.Climbs)
 local Deals = require(script.Parent.Deals)
 local Doors = require(script.Parent.Doors)
 local Elevators = require(script.Parent.Elevators)
+local Slots = require(script.Parent.Slots)
 
 -- Mixed into a floor's seed for its big find's rolls, so they never repeat the deal's or the
 -- keepers' draws from the same seed.
@@ -36,11 +42,17 @@ local SALT = 4051
 
 local STUDIO = RunService:IsStudio()
 
+-- Studs from its unit's pivot a lying find of its key may stand and be the one its unit dealt
+-- (the deepest unit is under 20 deep).
+local DEALT_NEAR = 24
+
 type Entry = {
 	on: Climbs.OnFloor,
 	find: string, -- the big find's key
 	pick: number, -- which unit, 0 to 1, among those that fit as the code goes in
 	placed: boolean,
+	unit: Model?, -- the unit it rolled up in
+	model: Model?, -- the find itself once its unit has dealt it, in a hand or on a floor (Slots')
 	gone: RBXScriptConnection,
 }
 
@@ -52,6 +64,7 @@ function BigFinds.new(): Brix.System
 	local built: { BigFind.Find } = {}
 	local doors: Doors.Doors? = nil
 	local deals: Deals.Deals? = nil
+	local slots: Slots.Slots? = nil
 
 	local function onLaid(on: Climbs.OnFloor)
 		if not BigFind.on(on.number) or entries[on.model] then
@@ -77,6 +90,65 @@ function BigFinds.new(): Brix.System
 				end
 			end),
 		}
+	end
+
+	-- Where `e`'s find is now, on its floor's model for the corner map: hauled, lying, or neither
+	-- (kept, lost, in a monster's arms). The new one is set before the old is cleared, so a
+	-- screen reading between the two never sees it back in its unit.
+	local function track(e: Entry)
+		local s, unit = slots, e.unit
+		if not (s and unit) then
+			return
+		end
+		if not e.model then
+			-- dealt yet? its key lying in its unit (Deals stands it there on the door's first lift)
+			local middle = unit:GetPivot().Position
+			s:finds(function(_n: number, at: Vector3, m: Model)
+				if
+					e.model == nil
+					and m:GetAttribute(Tools.KindAttribute) == e.find
+					and (at - middle).Magnitude <= DEALT_NEAR
+				then
+					for _, other in entries do
+						if other.model == m then
+							return
+						end
+					end
+					e.model = m
+				end
+			end)
+		end
+		local model = e.model
+		if not model then
+			return -- not dealt yet: the map marks its unit
+		end
+		local floor = e.on.model
+		local holder = Players:GetPlayerFromCharacter(model.Parent)
+		if holder then
+			floor:SetAttribute(BigFind.HolderAttribute, holder.UserId)
+			floor:SetAttribute(BigFind.AtAttribute, nil)
+			return
+		end
+		local lying: Vector3? = nil
+		s:finds(function(_n: number, at: Vector3, m: Model)
+			if m == model then
+				lying = at
+			end
+		end)
+		if lying then
+			floor:SetAttribute(BigFind.AtAttribute, lying)
+			floor:SetAttribute(BigFind.HolderAttribute, nil)
+			return
+		end
+		floor:SetAttribute(BigFind.SlotAttribute, nil)
+		floor:SetAttribute(BigFind.AtAttribute, nil)
+		floor:SetAttribute(BigFind.HolderAttribute, nil)
+	end
+
+	local function trackAll()
+		for _, e in entries do
+			track(e)
+		end
 	end
 
 	-- The code is in: its unit rolls up with the big find standing inside.
@@ -112,10 +184,12 @@ function BigFinds.new(): Brix.System
 			warn(`BigFinds: {unit.Name}'s door wouldn't roll up for floor {on.number}'s {e.find}`)
 			return
 		end
+		e.unit = unit
 		on.model:SetAttribute(BigFind.SlotAttribute, index)
 		if STUDIO then
 			print(`BigFinds: floor {on.number}'s {e.find} rolls up in {unit.Name}`)
 		end
+		track(e)
 	end
 
 	local function onKeypad(event: Elevators.KeypadEvent)
@@ -139,6 +213,8 @@ function BigFinds.new(): Brix.System
 		deals = (registry:get("deals") :: any) :: Deals.Deals -- any: as above
 		local climbs = (registry:get("climbs") :: any) :: Climbs.Climbs -- any: as above
 		local elevators = (registry:get("elevators") :: any) :: Elevators.Elevators -- any: as above
+		local s = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
+		slots = s
 		-- only the big finds whose art is in the place, and the catalog can carry
 		for _, f in BigFind.Finds do
 			if Tools.Catalog[f.key] and Tools.template(f.key) then
@@ -149,6 +225,8 @@ function BigFinds.new(): Brix.System
 		end
 		table.insert(signals, climbs.laid:connect(onLaid))
 		table.insert(signals, elevators.acted:connect(onKeypad))
+		table.insert(signals, s.changed:connect(trackAll))
+		table.insert(signals, s.loose:connect(trackAll))
 	end
 
 	function system.stop(_: any)

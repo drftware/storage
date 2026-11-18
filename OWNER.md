@@ -87,6 +87,14 @@ nowhere else.
   hear your steps down the hall and see it hugged low in front of you, its top over your head.
   My defaults, yours to change: walk 9 a second (a monster's hunt is 14.4, the ladder 12); its
   height in your view (`BIG` in `src/shared/Tools/Catalog.luau`); monsters don't hear the steps.
+- [ ] **The jukebox's mark on the corner map** (S4-05b2b, D-417). Same floor 2 run, with a
+  friend (Studio's Test tab, 2 players), one of you far down a hall as the other puts the code
+  in. Look for: on both screens a pink diamond pops in on the corner map with three rings going
+  out, on the edge of the map the way the unit lies if it's off the window; you can walk to it
+  by the map alone. Take it: one ring, and the diamond sits round the hauler's blue dot and
+  moves with them (round your own dot when it's you). Drop it: one ring where it lies. Ride the
+  gate with it: the diamond goes. My defaults: hot pink, a diamond, three rings, no sound of
+  its own (the door's rattle is its sound). Is the pink too loud, or does it need a ping?
 - [ ] **Vote with a friend, on phones** (S4-03b2, D-405; seen with one player and stand-in
   presses). Two phones (or Studio's Test tab, 2 players), both in one car leaving floor 1 (any
   later floor's ride works; floor 1's from the lobby has no vote). Look for: as the car lurches

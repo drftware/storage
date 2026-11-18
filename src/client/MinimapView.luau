@@ -15,6 +15,13 @@
 	going out from it, held on the edge the way it lies while it's off the window, as the car's
 	mark is; it fades `Kept.BangMark` seconds after the last bang, as BangMarks' mark over the door.
 
+	The floor's big find (S4-05b2b, D-417) is a pink diamond: on its unit the instant the door
+	rolls up by itself, three rings going out from it so the whole team looks; then where it lies,
+	or round its hauler's dot while someone carries it, a ring each time it changes hands or is
+	put down, held on the edge the way it lies while it's off the window, as the car's mark is
+	(the server's `BigFind` attributes on the floor's model, from BigFinds). Lethal Company's ship
+	radar shows the crew; Among Us's map shows where the task is.
+
 	Each floor's map comes from its model (`Minimap.Tag`, from `Minimaps` on the server) and is
 	drawn the first time you stand on it; what you walked stays drawn if you're caught or leave and
 	come back. Each frame it only reads where you stand, unless a map shows.
@@ -27,6 +34,7 @@ local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
+local BigFind = require(ReplicatedStorage.Shared.BigFind)
 local Brix = require(ReplicatedStorage.Brix)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Minimap = require(ReplicatedStorage.Shared.Minimap)
@@ -48,6 +56,12 @@ local BANG_SIZE = 11 -- points: a kept friend's banging unit, a step bigger than
 local BANG_RING = 3 -- a bang's ring grows to this many dots across
 local BANG_RING_TIME = 0.75 -- seconds, as the mark over the door
 local CAR_SIZE = 10
+local BIG = Color3.fromRGB(255, 92, 168) -- the big find's mark: hot pink, apart from the car's amber, friends' blue, your white
+local BIG_SIZE = 10 -- points: its diamond's side on its unit or where it lies, a step over a friend's dot
+local BIG_HELD = 13 -- points: round its hauler's dot, which shows inside it
+local BIG_RING = 3.2 -- each of its rings grows to this many diamonds across
+local BIG_RING_TIME = 0.7 -- seconds a ring of its takes; one follows another
+local BIG_POP = TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local EDGE = 7 -- points in from the window's edge a held marker sits
 local MOVED = 0.5 -- studs you move before the map checks which hall you're on again
 local MARK_FADE = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -65,6 +79,14 @@ type Area = {
 	bangs: { Kept.Bang }, -- its units' latest bangs, from the server
 	bangWatch: RBXScriptConnection,
 	units: { [number]: Vector2 }, -- each unit's middle on the floor, by slot
+	-- its big find, from the server (BigFind's attributes on the model)
+	big: BigFind.Mark?,
+	bigSlot: number?,
+	bigHolder: number?,
+	bigAt: Vector3?,
+	bigWatch: { RBXScriptConnection },
+	bigRang: number, -- os.clock its rings started, or -1
+	bigRings: number, -- how many go out from then
 }
 
 -- A banging unit's dot on the window, with the ring each bang sends out.
@@ -164,6 +186,42 @@ function MinimapView.new(): Brix.System
 	carRim.Parent = carMark
 	carMark.Parent = window
 	local carHeld = false
+
+	-- the floor's big find: a pink diamond, its rings going out from under it
+	local bigRing = dot(BIG_SIZE, BIG, 3)
+	bigRing.Name = "BigFindRing"
+	bigRing.BackgroundTransparency = 1
+	bigRing.Visible = false
+	local bigRingStroke = Instance.new("UIStroke")
+	bigRingStroke.Color = BIG
+	bigRingStroke.Thickness = 2
+	bigRingStroke.Parent = bigRing
+	bigRing.Parent = window
+	local bigMark = Instance.new("Frame")
+	bigMark.Name = "BigFind"
+	bigMark.AnchorPoint = Vector2.new(0.5, 0.5)
+	bigMark.Size = UDim2.fromOffset(BIG_SIZE, BIG_SIZE)
+	bigMark.Rotation = 45
+	bigMark.BackgroundColor3 = BIG
+	bigMark.BorderSizePixel = 0
+	bigMark.ZIndex = 3 -- under a friend's dot, so its hauler shows inside it
+	bigMark.Visible = false
+	local bigCorner = Instance.new("UICorner")
+	bigCorner.CornerRadius = UDim.new(0, 2)
+	bigCorner.Parent = bigMark
+	local bigRim = Instance.new("UIStroke")
+	bigRim.Color = YOU
+	bigRim.Thickness = 1.5
+	bigRim.Parent = bigMark
+	local bigPop = Instance.new("UIScale")
+	bigPop.Parent = bigMark
+	bigMark.Parent = window
+
+	-- its mark pops in as it shows: grown from nothing, a little past its size and back
+	local function popBig()
+		bigPop.Scale = 0
+		TweenService:Create(bigPop, BIG_POP, { Scale = 1 }):Play()
+	end
 
 	-- kept friends' banging units, by slot, on the floor shown
 	local bangDots: { [number]: BangDot } = {}
@@ -265,9 +323,15 @@ function MinimapView.new(): Brix.System
 		clearBangs()
 		shown = a
 		lastX = math.huge
+		bigMark.Visible, bigRing.Visible = false, false
 		if not a then
 			slide(false)
 			return
+		end
+		if a.big then
+			-- arriving on a floor whose big find is out: its rings, so you look
+			a.bigRang, a.bigRings = os.clock(), BigFind.Rings
+			popBig()
 		end
 		local d = a.drawing or MinimapDrawing.new(a.map, window)
 		a.drawing = d
@@ -283,6 +347,31 @@ function MinimapView.new(): Brix.System
 		local d = a.drawing
 		if d then
 			d:open(a.opened)
+		end
+	end
+
+	-- Where the floor's big find is, from the server; its rings as that changes.
+	local function readBig(a: Area)
+		local m = a.model
+		local slot = m:GetAttribute(BigFind.SlotAttribute)
+		local holder = m:GetAttribute(BigFind.HolderAttribute)
+		local at = m:GetAttribute(BigFind.AtAttribute)
+		local s: number? = if type(slot) == "number" then slot else nil
+		local h: number? = if type(holder) == "number" then holder else nil
+		local p: Vector3? = if typeof(at) == "Vector3" then at else nil
+		local was = a.big
+		local now = BigFind.mark(s, h, p ~= nil)
+		local moved = now ~= was or h ~= a.bigHolder or p ~= a.bigAt
+		a.big, a.bigSlot, a.bigHolder, a.bigAt = now, s, h, p
+		if not moved then
+			return
+		end
+		local rings = BigFind.rings(was, now)
+		if rings > 0 then
+			a.bigRang, a.bigRings = os.clock(), rings
+			if was == nil and shown == a then
+				popBig()
+			end
 		end
 	end
 
@@ -326,10 +415,27 @@ function MinimapView.new(): Brix.System
 			bangs = {},
 			bangWatch = model:GetAttributeChangedSignal(Kept.BangsAttribute):Connect(readBangs),
 			units = units,
+			big = nil,
+			bigWatch = {},
+			bigRang = -1,
+			bigRings = 0,
 		}
+		for _, name in { BigFind.SlotAttribute, BigFind.HolderAttribute, BigFind.AtAttribute } do
+			table.insert(
+				a.bigWatch,
+				model:GetAttributeChangedSignal(name):Connect(function()
+					local now = areas[model]
+					if now then
+						readBig(now)
+					end
+				end)
+			)
+		end
 		areas[model] = a
 		readOpened(a)
 		readBangs()
+		readBig(a)
+		a.bigRang = -1 -- what was out before you joined rings as its floor shows (`show`)
 	end
 
 	local function removed(model: Instance)
@@ -340,6 +446,9 @@ function MinimapView.new(): Brix.System
 		areas[model] = nil
 		a.watch:Disconnect()
 		a.bangWatch:Disconnect()
+		for _, c in a.bigWatch do
+			c:Disconnect()
+		end
 		if shown == a then
 			show(nil)
 		end
@@ -520,6 +629,47 @@ function MinimapView.new(): Brix.System
 				b.ring:Destroy()
 				bangDots[slot] = nil
 			end
+		end
+
+		-- the floor's big find: round its hauler, where it lies, or on its unit
+		local kind = a.big
+		local bx, bz, bigOn = 0, 0, false
+		if kind == "Held" then
+			local hauler = if a.bigHolder then Players:GetPlayerByUserId(a.bigHolder) else nil
+			local r = if hauler then rootOf(hauler) else nil
+			if r then
+				local p = a.origin:PointToObjectSpace(r.Position)
+				bx, bz, bigOn = p.X, p.Z, true
+			end
+		elseif kind == "Lying" and a.bigAt then
+			local p = a.origin:PointToObjectSpace(a.bigAt)
+			bx, bz, bigOn = p.X, p.Z, true
+		elseif kind == "Unit" and a.bigSlot then
+			local u = a.units[a.bigSlot]
+			if u then
+				bx, bz, bigOn = u.X, u.Y, true
+			end
+		end
+		bigMark.Visible = bigOn
+		if bigOn then
+			local ex, ey = Minimap.edge((bx - x) * scale, (bz - z) * scale, half - EDGE)
+			local place = UDim2.fromOffset(half + ex, half + ey)
+			bigMark.Position, bigRing.Position = place, place
+			local across = if kind == "Held" then BIG_HELD else BIG_SIZE
+			bigMark.Size = UDim2.fromOffset(across, across)
+		end
+		local rung = if a.bigRang >= 0 then (clock - a.bigRang) / BIG_RING_TIME else math.huge
+		if bigOn and rung < a.bigRings then
+			local f = rung % 1
+			local grown = BIG_SIZE * (1 + (BIG_RING - 1) * (1 - (1 - f) * (1 - f)))
+			bigRing.Size = UDim2.fromOffset(grown, grown)
+			bigRingStroke.Transparency = f
+			bigRing.Visible = true
+		else
+			if rung >= a.bigRings then
+				a.bigRang = -1
+			end
+			bigRing.Visible = false
 		end
 
 		for player, f in friends do

@@ -19,9 +19,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Not the home's: the checkout's uncommitted `BigFinds`, `MinimapView` and the D-417 lines in
   OWNER, CODEMAP and DECISIONS are the climb run's work in progress; the home leaves them alone.
 - **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403
-  to D-413), S4-05a the jukebox's art (D-414), S4-05b1 its deal and door (D-415: imported, the
-  code rolls up a unit with it inside), S4-05b2a its haul (D-416: held low, walk 9, a thud a
-  step). Next: S4-05b2b its mark on the corner map (MinimapView's bang ring; follows the find).
+  to D-413), S4-05a to b2b the jukebox: art, deal and door, haul, its pink mark on the corner
+  map (D-414 to D-417). Next: S4-05b3 its pay at the gate (its own pay and pop after the
+  floor's, the traps' and the version's: `Pay.parts`, `CoinView`, D-402, D-407).
 
 ## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
 The home's look settling without a seam. One line a session if they won't fit together; split

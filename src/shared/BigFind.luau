@@ -21,9 +21,43 @@ local BigFind = {}
 
 BigFind.From = 2 -- the first floor with one (the design doc): floor 1 teaches the code alone
 BigFind.Set = "Big" -- the finds set the big finds are built in (art/finds/big/)
--- On a floor's model once its big find's unit has rolled up: that unit's slot index, for the
--- corner map (S4-05b2)
+-- Where the corner map marks the big find (S4-05b2b), on the floor's model, the server's:
+-- once its unit has rolled up, that unit's slot index (cleared as it's gone: kept, lost, or in a
+-- monster's arms); while it lies loose, the floor point under it (a world Vector3); while someone
+-- hauls it, their UserId. The map shows the first of hauled, lying, in its unit (`mark`).
 BigFind.SlotAttribute = "BigFindSlot"
+BigFind.AtAttribute = "BigFindAt"
+BigFind.HolderAttribute = "BigFindHolder"
+BigFind.Rings = 3 -- rings its mark sends out as it shows: the door just rolled up, look here
+
+-- "Held", "Lying" or "Unit": a plain string, as singleton words come out of the frozen table
+-- widened on the client
+export type Mark = string
+
+-- What the map marks from the floor's three attributes: hauled by `holder`, lying loose, or
+-- still in unit `slot` (nil: no mark).
+function BigFind.mark(slot: number?, holder: number?, lying: boolean): Mark?
+	if holder then
+		return "Held"
+	elseif lying then
+		return "Lying"
+	elseif slot then
+		return "Unit"
+	end
+	return nil
+end
+
+-- The rings its mark sends out going from `was` to `now`: `Rings` as it shows (the door rolled
+-- up, or it's back off a monster's pile), one as it's picked up, dropped or handed on, none as
+-- it's dealt where it already stood or goes.
+function BigFind.rings(was: Mark?, now: Mark?): number
+	if now == nil or (was == "Unit" and now == "Lying") then
+		return 0
+	elseif was == nil then
+		return BigFind.Rings
+	end
+	return 1
+end
 
 -- The grade roll, out of 100 (the item catalog's big finds: an Epic most floors, now and then a
 -- Legendary, a Secret a rare story to tell).
