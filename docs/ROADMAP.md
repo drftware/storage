@@ -3288,10 +3288,14 @@ Done when players watch the results to the end and change their perks between cl
       Done (D-437): Brix `f291d7f`, `Brix.Gestures`: 12 promises, each proven to fail a broken
       stand-in; mouse right-drag twists and tilts, middle-drag slides, the wheel pinches or turns
       a dragged thing, sticks and triggers move the camera at each `advance`. Pin moved.
-    - [ ] **ENG-28 The orbit camera, in Brix.** A focus point, heading, tilt and distance on
+    - [x] **ENG-28 The orbit camera, in Brix.** A focus point, heading, tilt and distance on
       springs (Brix's Smoothings), a flick's drift, a box it can't leave, near and far stops,
       the edge follow while dragging; numbers in, a camera position and look point out. Pure,
       contract, suite, module page; the pin moves.
+      Done (D-438): Brix `0b2230c`, `Brix.OrbitCamera`: 14 promises, each proven to fail a broken
+      stand-in; critically damped springs, a flick's drift, soft stops (any Zone, near, far, the
+      tilt's ends), a ceiling the eye stays under, an edge follow, `floorAt` and `cutaway` for the
+      walls' fade. A frame allocates nothing. Pin moved; nothing in the game uses it yet.
     - [ ] **S5-03j1 The build camera.** Arrange's camera turns, slides, zooms and tilts: one
       finger on empty floor slides, two fingers pinch, twist and tilt; right-drag, wheel and
       WASD; gamepad sticks and triggers. The walls between the camera and the room's middle fade

@@ -24,7 +24,7 @@ The keepers' brain is the exception: it is built in this game (owner, 2026-11-09
 
 ## What this game uses from Brix today
 
-At the pinned commit, `f291d7f` (2026-11-18, moved from `7f25310` for ENG-27, Gestures; not yet pushed to Brix's `origin`). Checked against `src/` on 2026-11-16.
+At the pinned commit, `0b2230c` (2026-11-18, moved from `f291d7f` for ENG-28, OrbitCamera; not yet pushed to Brix's `origin`). Checked against `src/` on 2026-11-16.
 
 | Brix piece | What the game does with it | Where |
 | --- | --- | --- |
@@ -44,12 +44,13 @@ the other zones (sphere, polygon, any-of, grown), the floor pathing and the sphe
 
 ## What Brix has built since the pin
 
-These are in the pin (moved to `f291d7f` for ENG-27), still not used here.
+These are in the pin (moved to `0b2230c` for ENG-28), still not used here.
 Moving the pin is its own small step, taken when a ticket first needs something newer.
 
 | Brix piece | State in Brix | This game's use |
 | --- | --- | --- |
 | Gestures (ENG-27): `Brix.Gestures.new({ pick })` reads fingers, mouse buttons, the wheel, gamepad sticks and triggers into one intent at a time: tap, double tap, hold, a drag on a thing or on empty floor with its flick speed, and the camera's slide, pinch, twist and tilt. A second finger on a dragged thing turns it; two fingers elsewhere move the camera. `pick(x, y)` is the game's answer to what's under a point; the feel numbers (slop, hold time, double-tap window, twist slop, wheel, mouse and stick rates) are options | Built, pure (the game wires `UserInputService` to it itself) | S5-03j1: the build camera reads it; S5-03j2: the dragging; S5-03j5: a hold on a thing outside Arrange. Its feel numbers go in the game's `Config` |
+| OrbitCamera (ENG-28): `Brix.OrbitCamera.new({ area, focus, heading, tilt, distance })` circles a point on the floor: `slide`, `flick`, `zoom` and `turn` (about a screen point), `tilt`, `follow` toward the screen's edge while dragging, `reset`, `step(dt)`, then `view()` gives eye, look and up. Critically damped springs, soft stops (the focus in any Zone, near and far, the tilt's ends), an optional `ceiling`; `floorAt(x, y)` and `cutaway(point, outward)` (how far a wall stands between eye and focus, 0 to 1). Every feel number is an option | Built, pure | S5-03j1: Arrange's build camera, fed by Gestures' intents; its walls fade by `cutaway`. Its feel numbers go in the game's `Config` |
 | Placements, `PlacementSnap.grid` and `PlacementSnap.free` (ENG-26a): a room's named areas (floor, walls, ceiling) and things' tops; place, move, check and remove, each refusal a word ("overlaps", "outOfBounds", "wrongArea", "full"...); things on a top move with it; a limit; events; a saved form with a version, loaded back leaving out what no longer fits | Built, pure (no Roblox adapter; ENG-26b waits on a game pulling it) | S5-03e2: every find set out in a home unit, judged on the server and kept in the save; S5-03e3: the Arrange screen's red outline and snapping (D-306) |
 | Plots, `PlotPick.inOrder` and `Roblox.PlayerPlots` (ENG-25a): a plot claimed for each player on join, let go on leave, a line when full | Built; not yet run in Studio (its ENG-25b) | S5-03a3b: each player's home in `src/server/FrontOffice.luau` |
 | The frame driver (`Brix.Roblox.HostDriver`): steps a Host each Heartbeat, catches up after a hitch of up to half a second and says when it had to drop time | Built, not yet run in Studio (its ENG-07a) | Take it when the pin moves; today the server steps the Host from Heartbeat itself |

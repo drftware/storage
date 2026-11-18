@@ -10415,3 +10415,14 @@ two-finger camera move, never two at once. What it means for the game:
    it at once and the same finger carries it.
 5. Every feel number (slop 10, hold 0.5 s, double tap 0.3 s within 40 points, twist slop 0.2 rad,
    wheel 1.15 a notch, sticks) has a stock value in Brix; S5-03j1 puts the ones it tunes in `Config`.
+
+## D-438: The build camera's maths is Brix's OrbitCamera (ENG-28)
+- Built in Brix (`0b2230c`, its E-084) and pinned; S5-03j1 wires it into Arrange.
+- ROADMAP said its springs were "Brix's Smoothings". They aren't: Smoothing shows a thing the server
+  moves between late views. The camera uses its own critically damped springs (the stiffest that never
+  swing past), one settle time for all, solved exactly so the frame rate changes nothing.
+- The focus stays in a Brix Zone (a turned `Zone.box` fits a home's room) at a height the game picks;
+  the stops are soft, as a phone's list is at its ends. A `ceiling` keeps the eye under the room's
+  ceiling by flattening the tilt, so zoom always zooms; S5-03j1 decides whether to set one.
+- The walls' fade is the camera's `cutaway(point, outward)`: how far the eye is out past a wall's plane.
+
