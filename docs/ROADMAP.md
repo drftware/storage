@@ -2380,10 +2380,20 @@ Done when two climbs in a row feel different and players talk about their best f
         players: `OWNER.md`. Polish: the team's faces in the dial's seats while they climb, and
         the floor on the car's inside readout too, so you see it without stepping out.
   - [ ] **S4-03d The whole climb in Studio.** Ride floors 1 to 5 in Play with the cards, each
-    version picked once, captures; fixes. Two-player vote and phones go to `OWNER.md`. First,
-    what S4-03b2 didn't see: step `DevRideHold` through one ride (4, 9.3 with a capture burst
-    running for the flare, 14 for the cards still up in the new car, 19.6 for them leaving, then
-    clear it) and judge the bigger coin strip at A16 size (STUDIO.md, "The next-floor cards").
+    version picked once, captures; fixes. Two-player vote and phones go to `OWNER.md`. Split
+    Nov 18 (D-412):
+    - [x] **S4-03d1 The held ride and three cards ridden.** Done Nov 18 (D-412): `DevRideHold`
+      stepped through floor 1's ride (the cards and coin strip at 4 s, the flare caught on floor
+      3's, the cards kept through the car change, the flight into the gate); floors 2 to 4 picked
+      the power out, twice the monsters, twice the padlocks, each floor as promised, the pops at
+      floors 2 and 3's gates. Fixed: the arrival's light flooding the car (`NextFloorView`).
+      Captures `docs/art/S4-03d-*.jpg`.
+    - [ ] **S4-03d2 The back-to-the-lobby card on a ride.** Play from floor 1 (seed 7; floor 3's
+      ride offers it, or floor 5's): pick caught-to-the-lobby, see the arrival with the tamed
+      light (burst running before the 19.6 step; capture it), its floor's red, a catch there
+      (STUDIO.md's c4b recipe), and its pop at the gate if the team gets out. Then the
+      twice-the-padlocks pop at its gate, and one look at the halls coming back on the
+      power-out floor with the camera down a hall (not at the box's wall).
 - [x] **S4-04 Trapping pays** (Nov 17, D-402). Each monster the team has shut in a unit as the
   gate shuts pays everyone aboard 5 more coins (`Pay.Trap`, D-188; Keepers' `trappedOn`); one
   freed first, or one the floor woke behind its own door, doesn't count. On your screen each

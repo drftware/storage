@@ -56,6 +56,14 @@ nowhere else.
   coming back on as you throw it. Seen in Studio: the dark, the glow, the bulb coming back; not
   seen: the hall lights' flash as it comes back (they read powered and dark 3 s after). Is it
   too dark on your phone without the torch? Should the version be harder (no breaker)?
+  From the car (S4-03d1, D-412): a plain floor's lobby looks just as black through the open gate
+  as the power-out one, because its motion lights wait for someone to walk under them; the
+  difference shows only once you step out (they trip on, or on the power-out floor they don't).
+  My default: leave it, the card's blue burst already says which floor this is. Ride 1 to 2
+  picking the power out, then 2 to 3 picking anything else, and stop at each open gate: can you
+  tell the two apart before you step out? If not, should a plain floor's lobby light trip on as
+  its gate opens? The arrival's light in the hall past the gate is now dimmer and shorter (my
+  default, D-412): before, it flooded the whole car near white for over a second.
 - [ ] **Vote with a friend, on phones** (S4-03b2, D-405; seen with one player and stand-in
   presses). Two phones (or Studio's Test tab, 2 players), both in one car leaving floor 1 (any
   later floor's ride works; floor 1's from the lobby has no vote). Look for: as the car lurches

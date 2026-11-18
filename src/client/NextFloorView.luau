@@ -124,9 +124,11 @@ local WASH = 0.72 -- how see-through its light's wash over your view starts
 local WASH_FADE = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 -- The hall beyond the gate lit in its colour for a breath: one light, on this screen only.
 local HALL_UP = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-local HALL_DOWN = TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-local HALL_BRIGHT = 4
-local HALL_RANGE = 30
+-- Its fade falls fast then lingers, a breath, not a held flood (S4-03d: 4 bright, 30 studs and
+-- an easing-in fade washed the whole car near white for 1.4 s and hid a dark floor's first look).
+local HALL_DOWN = TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local HALL_BRIGHT = 1.6 -- the hall glows in the card's colour; the car only catches its spill
+local HALL_RANGE = 18 -- studs it reaches: the hall past the gate, not the car's back wall
 
 -- The sounds, flat in your ears (the cards are on your screen): every one from Roblox's licensed
 -- library the game already plays. The cards latching up, a tick as each lands; your press's heavy

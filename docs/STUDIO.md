@@ -3279,6 +3279,22 @@ verified: a doc page, Studio, or "untested".
   car had re-armed after a ride, it held that finished ride again and the car never re-armed
   that Play. Releasing a hold also jumps the ride's clock to the real time since it left, so a
   release mid-ride skips the car change: step it (4, 9.3, 14, 19.6) and clear it after 19.6.
+- **Raising a hold jumps the clock to it at once** (S4-03d1), so whatever happens between the
+  old hold and the new one happens the instant you set it: start a capture burst first (a
+  background `screencapture -l` loop), then set 9.3, or the flare is over before the first frame.
+  **Step 13 before 14**: from 9.3 straight to 14 the take-over runs at 14, so the move into the
+  new car waits for 14.5 (`Climb.Lead` past it) and the hold at 14 shows you still in the old
+  car. 13, then 14, then 19.6 works (one Server call, a second or so between).
+- **Each floor's code without the Output dump**: a Server `execute_luau` over
+  `LogService:GetLogHistory()` keeping only messages with "code is" or "picked" returns
+  "floor n's code is ..." and the deal's line ("picked TwicePadlocks (10 padlocked, ...)").
+  Keypad spot and car spot for any floor: the car's pivot plus (-7.8, 3, -3.5) and (0, 3, 7).
+- **A prompt only shows while it's on your screen**: in first person a camera you aimed
+  elsewhere (to look out the gate) stays aimed after a `PivotTo`, so the breaker's button never
+  showed and `InputHoldBegin` did nothing. Aim `CurrentCamera.CFrame` at the grip first.
+- **Earlier floors leave the client**: once you're on floor 4, `DevCorridor.Floor2` isn't there
+  on the Client; read a floor's lights while you're on it. A floor's halls are motion lights
+  (HallLights): from the car, every lobby is black until someone walks under one.
 - **A tap on a card from the shell**: `user_mouse_input` at (gui x + 47, gui y) lands on the
   A16, as the Arrange notes say; it fired `Activated` and the press reached the server.
 - **Stand-in friends' heads**: a Server `SetAttribute` of the car's `NextFloorPresses` with other

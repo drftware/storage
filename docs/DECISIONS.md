@@ -9435,3 +9435,28 @@ the door is plainly wider (Animal Crossing's house rooms by size).
   (one place decides it). ToLobbyView hums from 6 studs over where you were stood until your
   mark clears at the end's cover.
 - **My default (`OWNER.md`):** you sit it out; nothing brings you back into the same climb.
+
+## D-412 The whole climb in Studio, first part: three cards ridden, the arrival's light tamed (S4-03d1, Nov 18)
+
+S4-03d split in two (context): d1 this, d2 the back-to-the-lobby card picked on a ride and the
+tamed light seen. Ridden in Studio Play at Galaxy A16 size, seed 7, one player, floors 1 to 4:
+- **The held ride, stepped.** At 4 s the three cards sit centred between the thumbstick and the
+  jump button, each coin strip ("+12", "+6", "+6") readable at A16 size: the bigger strip stays.
+  A real tap put my head on the power-out card. On the knock the winner flashes white, the losers
+  go dark and sink, the winner glides to the middle and breathes in its colour (caught on floor 3's
+  ride, a stand-in's head on a loser). It stays up, lit, through the change into the next floor's
+  car and flies into the gate as it opens. `docs/art/S4-03d-*.jpg`.
+- **Each card's floor was what it promised.** Floor 2, the power out: black, `FloorPower` false,
+  its box thrown; a real hold switched it back on. Floor 3, twice the monsters: Mannequin and
+  Packrat, 9 asleep, 4 loose at most. Floor 4, twice the padlocks: 10 padlocked. At floors 2 and
+  3's gates each card popped over the pour, flashed and burst into its coins (+6, +14).
+- **Fixed: the arrival's light flooded the car.** The light past the gate (brightness 4, 30
+  studs, a fade that eased in) lit the whole car pale blue for about 1.4 s, so a dark floor's
+  first look was bright. Now 1.6 bright, 18 studs, a 1.2 s fade that falls fast then lingers
+  (`NextFloorView` HALL_*): the hall glows in the card's colour, the car only catches its spill.
+  Passes checks, not yet seen in Play (d2).
+- **Not a bug:** floor 4 (twice the padlocks) had 11 asleep against twice-the-monsters floor 3's
+  9: floor 4 has more units, and a padlocked unit holds a sleeper twice as often (S1-07a).
+- **Found, left to the owner (`OWNER.md`):** a plain floor's lobby is as black from the car as the
+  power-out floor's, its motion lights waiting for someone to walk under them; the two differ only
+  once you step out. My default: leave it; the card's burst names the floor.

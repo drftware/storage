@@ -14,9 +14,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Studio hooks: `ShelfTest` "take"; `ArrangeTest` "take", "own", "place", "rows", "fromShelf",
   "shelfAway", "size" (STUDIO.md). Home doc: https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww
 - **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), the cards' vote,
-  faces and screen (D-403 to D-405), c1 to c3 (D-406 to D-408), c4a to c4c caught there: down
-  the shaft, friends see you dragged under, the lobby car waits open and humming, its dial on
-  the team's floor (D-409 to D-411). Next: S4-03d (ride floors 1 to 5 with the cards in Play).
+  faces, screen, felt on each floor and caught there down the shaft (D-403 to D-411), d1 three
+  cards ridden floors 1 to 4 in Play, the arrival's light tamed (D-412). Next: S4-03d2 (pick
+  back-to-the-lobby on floor 3's ride, see the tamed light; ROADMAP).
 
 ## Next task: S5-03h6 The walls grind back (idea 31)
 The moment: you grow your home while you're in it and watch: the partitions slide out along the
