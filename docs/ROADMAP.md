@@ -2835,8 +2835,8 @@ Done when players watch the results to the end and change their perks between cl
       - [x] **S5-03g3c Choosing a card's style** in the paint tab: Starter styles free, Cash and
         Robux ones shown as not yours yet (a small coin or Robux mark on the chip, never a popup);
         a tap on one you don't own does nothing until the counter sells it (the store's rules).
-        Done Nov 18, D-357: a second row on the front tab, the camera dipping out to the hall,
-        the new plate swinging down.
+        Done Nov 18, D-357 (passes checks, untested in Studio; steps in `OWNER.md`): a second
+        row on the front tab, the camera dipping out to the hall, the new plate swinging down.
       - [ ] **S5-03g3d The other card styles sold at the counter**: the painted board and the
         chalk for cash, the neon for Robux, as the furniture is (S5-03g4b's tab, Shop's rules,
         granted only after the save writes); owned styles saved with a migration, `Looks.cardLock`
@@ -2961,7 +2961,7 @@ Done when players watch the results to the end and change their perks between cl
         shelf on the back wall) glide with it; what you set out mid-room stays put. Done Nov 18,
         D-356: `HomeGrowView` slides it over the server's snap, held for the holder until they're
         next inside; Small to Medium seen in Studio Play. Seeing Medium to Large, Large to XL and
-        the hold is step 1 of S5-03g3c's session.
+        the hold is still unseen (Studio was busy in g3c's session; `OWNER.md`).
   - [x] **S5-03i Everything in the room moves, lifts and works** (the owner, Nov 18, D-345;
     Animal Crossing's house, Bloxburg's build mode). Next, ahead of S5-03h5 and h6. The moment:
     you buy an end table, set it by the bed, stand your lamp on it, walk up and press Switch, and

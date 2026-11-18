@@ -3185,6 +3185,10 @@ verified: a doc page, Studio, or "untested".
   inset but draws over it): park a thing at -120 to have it gone.
 - **A window capture of Studio when it isn't the front app can be a stale frame** (here, the limit
   bar where it had been 30 seconds before). Bring it forward with osascript first.
+- **The Arrange button didn't open from the MCP** (S5-03g3c, Nov 18, A16, Unit1): a
+  `user_mouse_input` click and a slow press on `Arrange.CanvasGroup.TextButton` (the button
+  showed at the top right, the cursor on it) left the tray closed (FrontTab at gui y 350,
+  camera still Custom). Untried: clicking by coordinates, or the D-330 session's way in.
 - **A burst of `screencapture -l` jpgs runs about 10 a second**: 40 to 50 in a background loop
   started just before a `user_mouse_input` tap catch a 0.5 to 0.7 second swing or roll; `md5` of
   the crops shows which frames moved. There's no PIL or ImageMagick here; `sips` crops and scales.

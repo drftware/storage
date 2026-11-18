@@ -209,8 +209,8 @@ nowhere else.
   mark). Tap the neon: it shakes and its mark pops, nothing else. Tap the steel: the screen dips
   to black and comes up out in the hall facing your plate; tap a door colour and it dips back
   inside. To see a new plate swing down, on the Server run
-  `workspace.Lobby:FindFirstChild("Unit1", true):SetAttribute("LookCard", "Chalk")` (your
-  home's unit) while you look at it: the chalk plate falls on its top edge, bounces twice and
+  `workspace.FrontOffice.Units.Unit1:SetAttribute("LookCard", "Chalk")` (Unit1 or your
+  home's own) while you look at it: the chalk plate falls on its top edge, bounces twice and
   clacks. Listen on a phone for the clack; say if the dip is too quick or the plate too small in
   the picture. My defaults: the plates dim a shade while locked; the camera stands 11 studs out.
 - [ ] **Your home's walls by size and Small's doorway** (S5-03h5a and h5b, D-354, D-355; seen in
