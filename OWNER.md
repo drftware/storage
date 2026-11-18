@@ -79,6 +79,14 @@ nowhere else.
   put it in. Look for: somewhere down the halls a unit nobody opened rolls up by itself with the
   door's rattle, and the jukebox stands alone in it, dark, with Take. Is the rattle enough to
   make you go look before the map's mark comes (S4-05b2)? My default: the door's own rattle.
+- [ ] **Hauling the jukebox** (S4-05b2a, D-416; passes checks, the carry untested in Studio).
+  Same floor 2 run: take the jukebox and walk it to the car. Look for: on a phone, its arch
+  across the bottom of the screen with the hall plain over it; a heavy thud and a rattle every
+  step (about two a second) and a dip of your view; your walk clearly slow. Press another slot:
+  the box shakes, a dull thunk, no words. With a friend (Studio's Test tab, 2 players): they
+  hear your steps down the hall and see it hugged low in front of you, its top over your head.
+  My defaults, yours to change: walk 9 a second (a monster's hunt is 14.4, the ladder 12); its
+  height in your view (`BIG` in `src/shared/Tools/Catalog.luau`); monsters don't hear the steps.
 - [ ] **Vote with a friend, on phones** (S4-03b2, D-405; seen with one player and stand-in
   presses). Two phones (or Studio's Test tab, 2 players), both in one car leaving floor 1 (any
   later floor's ride works; floor 1's from the lobby has no vote). Look for: as the car lurches

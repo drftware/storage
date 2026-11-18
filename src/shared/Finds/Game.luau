@@ -110,10 +110,14 @@ export type Row = {
 	fragile: string?,
 	grip: { number }, -- where your hand closes, studs from the middle of its bottom
 	heft: number, -- how heavy it feels in your hand, 0 to 1
-	size: "Small" | "Medium" | "Large", -- where it sits in your view (`Tools.Catalog`'s HOLD)
+	-- where it sits in your view (`Tools.Catalog`'s HOLD); Big, a floor's big find (S4-05b2a):
+	-- held low in both arms, its top just under your eyes, with a walk of its own (`walkSpeed`)
+	size: "Small" | "Medium" | "Large" | "Big",
 	-- the catalog says both hands: hugged to your chest, centred low in your view; no switching
 	-- slots or picking anything up till you drop it (`Tools.Catalog`'s `bothHands`)
 	bothHands: boolean?,
+	-- your walk while it's in your hands, studs a second (a Big find's; Roblox's own is 16)
+	walkSpeed: number?,
 	pickUp: Sound, -- your hand closing on it
 	drop: Sound, -- it landing on the concrete
 	-- its press's one word (the RC car's Drive, whose press is `Finds/Drive`); none: no press

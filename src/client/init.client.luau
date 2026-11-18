@@ -38,6 +38,7 @@ local DriverBodies = require(script.DriverBodies)
 local InfraredView = require(script.InfraredView)
 local ChipView = require(script.ChipView)
 local FindUseView = require(script.FindUseView)
+local HaulSteps = require(script.HaulSteps)
 local HornView = require(script.HornView)
 local FreeCursor = require(script.FreeCursor)
 local GateClock = require(script.GateClock)
@@ -183,6 +184,8 @@ local host = Brix.Host.new({
 		-- the machine's menu: its one button opens its front on your screen (S1-10d1)
 		{ slot = "machineMenu", system = MachineMenu.new(pressMachine, needCursor) },
 		{ slot = "minimapView", system = MinimapView.new() },
+		-- a big find's hauler: a thud and its rattle at every heavy step (S4-05b2a)
+		{ slot = "haulSteps", system = HaulSteps.new(kick) },
 		-- the coins: a pile's take on every screen, and your count by the top bar (S1-04a2)
 		{ slot = "coinView", system = CoinView.new() },
 		-- the batteries: a button only while your torch needs one, a take thrown into its torch

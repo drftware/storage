@@ -29,9 +29,10 @@ WAVES = os.path.join(HERE, "WAVES.md")
 SETS = ["lights", "figures", "windups", "squishies", "big"]
 
 GRADES = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Secret"]  # Grades.Names
-SIZES = ["Small", "Medium", "Large"]
+# Big: a floor's big find (S4-05b2a), held low in both arms, a walk of its own
+SIZES = ["Small", "Medium", "Large", "Big"]
 ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "lit", "fragile", "grip", "heft", "size",
-       "bothHands", "pickUp", "drop", "verb", "press"]
+       "bothHands", "walkSpeed", "pickUp", "drop", "verb", "press"]
 NEEDED = ["key", "catalog", "name", "grade", "worth", "grip", "heft", "size", "pickUp", "drop"]
 PRESS = ["verb", "on", "more", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down",
          "walks", "lays"]
@@ -191,6 +192,8 @@ def rows():
                 fail(f"{where}: grade {g['grade']!r}")
             if g["size"] not in SIZES:
                 fail(f"{where}: size {g['size']!r}")
+            if g["size"] == "Big" and not (g.get("bothHands") and g.get("walkSpeed")):
+                fail(f"{where}: a Big find takes both hands and a walkSpeed of its own")
             p = press(where + ".press", g["press"]) if g.get("press") else None
             if p and g.get("verb"):
                 fail(f"{where}: a verb of its own and a press; the press's verb is its word")
@@ -213,6 +216,7 @@ def rows():
                 "heft": g["heft"],
                 "size": g["size"],
                 "bothHands": True if g.get("bothHands") else None,
+                "walkSpeed": g.get("walkSpeed"),
                 "pickUp": sound(where, g["pickUp"]),
                 "drop": sound(where, g["drop"]),
                 "verb": p["verb"] if p else g.get("verb"),

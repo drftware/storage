@@ -19,8 +19,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   cash 38, no card styles owned, Boombox 10, Skates 1.
 - **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403
   to D-413), S4-05a the jukebox's art (D-414), S4-05b1 its deal and door (D-415: imported, the
-  code rolls up a unit with it inside). Next: F-G1b4a the hard hat's beam; S4-05b2 the map's
-  mark and the haul (its hold, a walk under every monster's), then b3 its pay at the gate.
+  code rolls up a unit with it inside), S4-05b2a its haul (D-416: held low, walk 9, a thud a
+  step). Next: S4-05b2b its mark on the corner map (MinimapView's bang ring; follows the find).
 
 ## Next task: S5-03g3d2 The styles' cards at the counter
 The last open piece of S5-03 before its polish.

@@ -9718,3 +9718,34 @@ corner map and the haul, **b3** counted at the gate.
   Unit228", the jukebox standing on the unit's floor at its back (3.25 by 5.95 by 2.68 studs, 4
   parts, 1 light) with its Take prompt on the client. Screen captures timed out, so none saved.
 
+
+## D-416 · 2026-11-18 · Hauling the big find (S4-05b2a)
+
+S4-05b2 is split in two (ROADMAP): **a** the haul (done), **b** its mark on the corner map.
+- **A walk of its own, 9 studs a second.** Just over half a run: under every monster's hunt
+  (0.9 of a run, 14.4) and the ladder's 12, so a monster that hunts the hauler always catches
+  them and the team has to guard, as Lethal Company's heavy scrap makes you prey; yet over a
+  monster's walk going to look (the Packrat's 8.6, the Mannequin's 7.2), so a wandering one can
+  still be slipped. Finds rows now carry `walkSpeed` (art/finds/rows.py, the spec's GAME row),
+  which the catalog hands to Slots' pace as the ladder's. `tests/haul.spec` holds all three.
+- **A "Big" size for how it sits in your arms.** It's taller than you (5.95 studs), so it can't
+  come up to the chest the way the goo ball does. Your view: low and out in front, its top a
+  quarter stud under your eyes, its arch filling the bottom of the screen and the hall over
+  it. Friends: hugged low in front, its foot just off the floor, its top over your head, so the
+  hauler is plain from down the hall. First-person and friends' views don't agree in height;
+  the owner judges both (OWNER.md).
+- **Every step answers.** Each 4.2 studs walked (about two steps a second) lands a thud ("Body
+  Impact 2" pitched down, the Packrat's laden step) and a rattle of its insides in turn, heard
+  45 studs off by everyone, and the hauler's view dips. Players only: monsters don't hear it,
+  since a haul that drew monsters would be a new bet (the door's rattle already does).
+- **A tool's press, no words.** With it in your arms a slot press shakes the slot box with its
+  dull click, thunks your hand on its cabinet and knocks your view; "Drop the jukebox first" is
+  gone for big finds, as the cause fills your screen (the owner's no-obvious-refusal rule). The
+  ladder and the goo ball keep their words for now.
+- **Room in every unit it's dealt into.** `tests/dealspot` stands the jukebox in every small and
+  medium unit (300 labels each); only a unit with the floor's note has no room in a small one,
+  and `BigFind.fits` never picks a note's unit, so nothing is excluded.
+- **Seen in Studio, not carried.** Floor 2, seed 7: Unit228 rolled up with it, the place's
+  catalog reads walk 9 and the Big hold, and every client system starts (the first try caught
+  HaulSteps with no `start`, which stopped the whole client). The MCP's client never sees a
+  prompt, so the take, the walk and the steps are the owner's (OWNER.md).

@@ -52,8 +52,12 @@ GAME = [
         from_=2,  # big finds start on floor 2, one a floor (design doc)
         grip=(0, 2.3, 0),  # hugged round its middle, under the bay window
         heft=1.0,  # the heaviest thing you carry: both hands, slower than any monster
-        size="Large",
+        size="Big",  # held low in both arms, its arch just under your eyes (S4-05b2a)
         bothHands=True,  # hugged in both arms: no other slot, no picking up (Lethal Company's heavy scrap)
+        # studs a second: just over half a run, under every monster's hunt (0.9 of a run, 14.4)
+        # and the ladder's 12, so a hunt always catches the one hauling it; still over a
+        # monster's walk going to look (7.2), so a wandering one can be slipped (D-416)
+        walkSpeed=9,
         pickUp=pitched(STEEL, 0.6),
         drop=pitched(STEEL, 0.5),
     ),

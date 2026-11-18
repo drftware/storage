@@ -2442,7 +2442,14 @@ Done when two climbs in a row feel different and players talk about their best f
       edge while off the window; it follows the find once taken, or goes); its own hold (low,
       in both arms) and a walk speed under every monster's (the catalog's `walkSpeed`, as the
       ladder's); check the drop where you're caught and the pick up again (Slots already does
-      both for two-handed finds).
+      both for two-handed finds). Split (D-416) into a and b:
+      - [x] **S4-05b2a The haul** (D-416). One friend staggers out with the jukebox held low,
+        every step slow and heavy (a thud per step, its rattle), at 9 a second, under every
+        monster's hunt; a press of a tool answers with a shake and a thunk, never words; every
+        small and medium unit has room to stand it (`Haul`, `HaulSteps`, the "Big" size).
+      - [ ] **S4-05b2b Its mark on the corner map.** The ring pulsing on its unit as the door
+        rolls up, held on the window's edge while off it; once taken it follows the find (on
+        the hauler's dot, or where it was dropped).
     - [ ] **S4-05b3 Counted at the gate.** The moment: the gate shuts with it aboard and it pays
       out with its own pop, bigger than any find's. It is kept by GatePay as any find in a slot;
       give it its own pop on the riders' screens (KeepView, CoinView) and its own pay (the owner's

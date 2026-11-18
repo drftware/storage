@@ -66,6 +66,7 @@ local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local HandRoom = require(script.Parent.HandRoom)
 local InFlight = require(script.Parent.InFlight)
 local Hands = require(ReplicatedStorage.Shared.Hands)
+local Haul = require(ReplicatedStorage.Shared.Haul)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local ToolPicture = require(script.Parent.ToolPicture)
@@ -1037,9 +1038,21 @@ function ToolView.new(
 		end
 		-- both hands on a big tool (the ladder): no switching away or pocketing; the server
 		-- refuses too
-		local big = Catalog[heldKey()]
+		local bigKey = heldKey()
+		local big = Catalog[bigKey]
 		if big and big.bothHands then
-			if what == "Switch" then
+			if Haul.big(bigKey) then
+				-- a floor's big find (S4-05b2a): no words, it fills your view; your hand thunks
+				-- on its cabinet and your view knocks, with the box's shake
+				local character = player.Character
+				local root = character and character:FindFirstChild("HumanoidRootPart")
+				if root then
+					Tools.play(Haul.Thunk, root, Haul.Reach / 3) -- near you only
+				end
+				if jolt then
+					jolt(Haul.Bump)
+				end
+			elseif what == "Switch" then
 				say(`Drop the {string.lower(big.name)} first`)
 			end
 			refuse()

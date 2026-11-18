@@ -463,6 +463,13 @@ local HOLD = {
 -- upper torso's middle (right, up, back), its front ahead and its sides under your arms.
 local BOTH = { at = { 0, -0.95, -2.05 }, turn = { 180, 8, 0 } }
 local CHEST = { 0, -0.45, -1.0 }
+-- A floor's big find (S4-05b2a, the jukebox): taller than you, so it can't come up to your chest
+-- the way the goo ball does. Your view: held low and further out, its top just under your eyes,
+-- so its arch fills the bottom of the screen and you look over it down the hall, as Lethal
+-- Company's big scrap rides low in front of you. Friends: hugged low in front, its foot just off
+-- the floor and its top over your head, so whoever hauls it is plain from down the hall.
+local BIG = { at = { 0, -3.9, -2.9 }, turn = { 180, 6, 0 } }
+local HUG = { 0, -1.0, -1.55 }
 
 -- A kit find's catalog row: it hangs from your left hand by its grip, low on the left of your
 -- view with its front turned to you, as the bedroom set does. Its verb is its press's word
@@ -473,7 +480,8 @@ for _, row in Rows do
 		continue
 	end
 	local both = row.bothHands == true
-	local hold = if both then BOTH else HOLD[row.size]
+	local big = row.size == "Big"
+	local hold = if big then BIG elseif both then BOTH else HOLD[row.size]
 	Catalog[row.key] = {
 		verb = row.verb,
 		name = row.name,
@@ -491,8 +499,9 @@ for _, row in Rows do
 		use = hold.at,
 		useTurn = hold.turn,
 		inHand = if both then { 0, 0, 0 } else { 0, 90, 0 },
-		shoulder = if both then CHEST else nil,
+		shoulder = if big then HUG elseif both then CHEST else nil,
 		bothHands = if both then true else nil,
+		walkSpeed = row.walkSpeed,
 		icon = { 0.62, 14, 200, 0 },
 		pickUp = row.pickUp,
 		drop = row.drop,

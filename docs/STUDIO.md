@@ -3437,3 +3437,14 @@ verified: a doc page, Studio, or "untested".
   "Trips: N of M finds … came across the trip" as the car is about to ride, and the slots show
   what the save backed. Clear both attributes after. An Edit-mode `GetAsync` on "Saves.studio"
   is refused ("Access forbidden"); read the save from the Server in Play.
+
+## A new client system and the MCP's prompts (S4-05b2a, Nov 18)
+
+- **Every Brix system needs a `start`**, even an empty one. A client system with only `step`
+  and `stop` makes `Host:start` fail ("attempt to call missing method 'start'") and stops every
+  system started before it, so the whole screen dies quietly: no prompts, no HUD. After adding
+  a system, check Output for "failed to start" in Play.
+- **The MCP's client never sees a ProximityPrompt.** On floor 2 with the client stood 3.5
+  studs in front of the jukebox, `ProximityPromptService.PromptShown` never fired, and
+  `InputHoldBegin`/`InputHoldEnd` on the prompt took nothing. A take needs the owner's own
+  Play, or a dev hook on the server.

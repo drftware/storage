@@ -57,6 +57,11 @@ for _, find in { "Boombox", "Television", "Teddy", "Skates" } do
 		{ name = find, thing = "Find", size = sizeOf("src/shared/Finds/Specs.luau", find) }
 	)
 end
+-- the floor's big find (S4-05b2a): BigFind deals it into small units too, so each must stand it
+table.insert(
+	items,
+	{ name = "Jukebox", thing = "Find", size = sizeOf("src/shared/Finds/Sets/Big.luau", "Jukebox") }
+)
 table.insert(items, { name = "Mannequin", thing = "Keeper", size = DealSpot.Keeper })
 
 -- The rule's numbers match the art: the note as drawn, and the Mannequin standing at rest inside
@@ -173,6 +178,9 @@ for _, size in { "S", "M" } do
 			local label = tostring(n)
 			local noteX = NoteSpot.inUnit(unit.depth, label).x
 			for pass = 1, 2 do
+				if pass == 2 and item.name == "Jukebox" then
+					continue -- the big find never goes in a note's unit (`BigFind.fits`)
+				end
 				local note: number? = if pass == 2 then noteX else nil
 				local where =
 					`{size} {item.name} unit {label}{if note then " with its note" else ""}`
