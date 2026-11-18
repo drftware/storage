@@ -3282,7 +3282,31 @@ Done when players watch the results to the end and change their perks between cl
 Done when players come back the next day without a friend asking them to.
 
 - [ ] **S6-01 Best floor.** On a plaque and on the dial over your car; badges at floors 10, 25,
-  50 and 100, for each kind of monster trapped and each set finished.
+  50 and 100, for each kind of monster trapped and each set finished. Split Nov 18 (D-432):
+  - [x] **S6-01a The best floor saved, the badges awarded. Built Nov 18 (D-432); passes checks,
+    the load seen in Studio Play (no ride yet).** The moment: you ride onto floor 10 for the
+    first time and Roblox's own badge toast pops. Your best floor rises as the car brings you onto
+    a floor and at the climb's end; the monsters shut in on a floor are stamped in the book of
+    everyone who rides its gate out; badges are worked out from the save and sent once a visit.
+    No save change: `bestFloor` and the book's monsters page were there from version 1. Every
+    player's best floor is on them as an attribute for the lobby's screens. Badge ids are the
+    owner's to make (OWNER.md). In Play the test save loaded with best floor 0 and earned the
+    night-lights' and the big finds' set badges (Output; nothing sent without ids).
+  - [ ] **S6-01b The dial and the plaque.** The moment: you walk into the lobby and the dial over
+    your car already reads your best, your friends' best floors on the plaque beside it. My plan
+    (D-432): the line under the dial's bay number reads "Best 12" in gold for the best of those
+    aboard whenever it has nothing more urgent to say ("Going up", "Floor N", "Full", "Friends
+    only" still win), so you alone in a car, or a team landed back, read your own; it pops up to a
+    new best as you land. The plaque: a brass plate on the bay wall beside each gate at eye
+    height, those aboard listed best first, photo and floor, your row lit; a plain part with a
+    SurfaceGui as the dial is (`CarDial`). Both read each player's `BestFloor` attribute
+    (`Badges.BestAttribute`). Read first: `CarDial.luau` (`lineFor`, `build`, `draw`); D-124;
+    `art/lobby/spec.py` (`bay_xs`, `BAY_PITCH`, `NUMBER`, `JAMB`).
+  - [ ] **S6-01c Seen in Studio Play.** From lobby Car1 ride to floor 3 and back: Output says
+    "best floor is now 2", then 3; the dial and the plaque read 3. Then start a climb at floor 9
+    (Workspace `DevFloorNumber`) and ride to 10: Output says "earned the Floor10 badge (no badge
+    id yet)". Captures `docs/art/S6-01c-*.jpg` at A16 size. Polish here or after: a "New best"
+    line with its own sting on the car's board as the haul ends (S5-01's board).
 - [ ] **S6-02 The Missing board.** A wiped team's photos and the floor they were caught on.
 - [ ] **S6-03 The free door once a day** in the lobby, a better find on the seventh day running.
 - [ ] **S6-04 Private servers and clips.** Private servers free or nearly; Roblox saves a short

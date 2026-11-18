@@ -255,6 +255,18 @@ nowhere else.
   the top with a glint and a chink. Play it with two players (two devices, or Studio's 2-player
   test) who both carried finds: each sees both faces, their own worth brighter. Say if any sound
   is too loud, too quiet or wrong, and whether it all fits before the car leaves.
+- [ ] **Make the badges, then say if my best-floor defaults are right** (S6-01a, D-432; passes
+  checks, nothing sent from Studio). On the Creator Dashboard (Creations, this experience,
+  Associated Items, Badges) make ten badges, each with its picture: reaching floors 10, 25, 50
+  and 100; trapping a Mannequin; trapping a Packrat; finishing the night-lights, the squishies,
+  the wind-ups, the figures and the big finds. Paste each badge's id into `Badges.Ids` in
+  `src/shared/Badges.luau` (or send me the ids). Until then nothing is awarded; anyone who earned
+  one gets it the next time they play once its id is in. My defaults, yours to change: a floor
+  counts once the car brings you onto it, or where you were caught at the end; a monster counts
+  for everyone the gate pays when it shuts with that monster shut in; a set is a family of finds
+  as the art has them (until the collection book names its own sets), a sealed find counting.
+  Live test, once the ids are in: climb past floor 10 and look for Roblox's badge toast the
+  moment the car opens on floor 10.
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

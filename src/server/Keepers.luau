@@ -366,6 +366,9 @@ export type Keepers = Brix.System & {
 	-- How many keepers the team has shut in a unit on the floor laid as `model` right now (0 off
 	-- any keepers' floor): the gate pays everyone aboard for each (S4-04, GatePay).
 	trappedOn: (self: any, model: Model) -> number,
+	-- The kinds (keeper row names) of those `trappedOn` counts, each kind once: the book's
+	-- monsters page stamps them for everyone aboard as the gate shuts (S6-01a, BestFloors).
+	trappedKindsOn: (self: any, model: Model) -> { string },
 	-- The keeper standing loose in `unit` (S2-05a, the tap): whether it's asleep, nil when none
 	-- stands there, and whether it has seen `player` (it hunts them).
 	inside: (self: any, unit: Model, player: Player) -> (boolean?, boolean),
@@ -2184,6 +2187,21 @@ function Keepers.new(): Keepers
 			end
 		end
 		return count
+	end
+
+	function system.trappedKindsOn(_: any, model: Model): { string }
+		local kinds: { string } = {}
+		local on = floors[model]
+		if not on then
+			return kinds
+		end
+		for _, entry in on.keepers do
+			local name = entry.keeper.row.name
+			if Keeper.shutIn(entry.keeper) and not entry.wokeIn and not table.find(kinds, name) then
+				table.insert(kinds, name)
+			end
+		end
+		return kinds
 	end
 
 	function system.remove(_: any, body: Model)

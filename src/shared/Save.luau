@@ -237,6 +237,32 @@ function Save.keep(data: Data, names: { string }, now: number, spots: number?): 
 	return fresh
 end
 
+-- You reached floor `floor` on a climb (S6-01a, D-432): your best floor rises to it if it's
+-- higher. Answers whether it rose (a new best). A floor that isn't a whole number from 1 is
+-- ignored.
+function Save.reached(data: Data, floor: number): boolean
+	if floor ~= floor or floor < 1 or floor ~= math.floor(floor) or floor <= data.bestFloor then
+		return false
+	end
+	data.bestFloor = floor
+	return true
+end
+
+-- The team shut monsters of `kinds` in (keeper row names) and you rode the gate out with them
+-- (S6-01a, D-432): the book's monsters page stamped `now` for each kind never stamped before.
+-- Returns the kinds stamped for the first time, in order, each once.
+function Save.trapped(data: Data, kinds: { string }, now: number): { string }
+	local fresh: { string } = {}
+	local stamp = math.max(0, math.floor(now))
+	for _, kind in kinds do
+		if kind ~= "" and data.stamps.keepers[kind] == nil then
+			data.stamps.keepers[kind] = stamp
+			table.insert(fresh, kind)
+		end
+	end
+	return fresh
+end
+
 -- Puts one `name` on the first empty spot of the shelf's first `spots`, `fresh` as Save.Fresh
 -- says, growing the list with empty spots to reach it. Returns the spot, or nil when they're full.
 function Save.shelve(data: Data, name: string, fresh: number, spots: number): number?

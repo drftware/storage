@@ -10246,3 +10246,40 @@ mid-haul went straight to the lines. Nothing ran into the car's 20-second count.
 Not chosen: lowering the board (it would sit behind the front row's heads from the back row);
 moving the count's LEDs (every car's count lives there). Left as a fix: your own held torch in
 first person crosses the board's lower middle (ROADMAP S5-01d).
+
+## D-432 Best floor and badges from what the save already holds (S6-01a, Nov 18)
+
+S6-01 is split in three: a, the best floor saved and the badges awarded; b, the dial and the
+plaque in the lobby; c, seen in Studio Play. Piece a is built.
+
+- **When a floor counts as reached:** as the car carrying you arrives on it (Climbs'
+  `handedOff`), and at the climb's end on the floor you were caught or left on (ClimbEnds'
+  `ended`), so a team caught on floor 1 has reached floor 1. Being carried up wrapped doesn't
+  count until the end says where you were lost. Proven: DOORS and Pressure count the door or the
+  depth you reached, and show the best on your record.
+- **No save change.** `bestFloor` and the book's monsters page (`stamps.keepers`) were in the
+  save from version 1 and nothing wrote them. `Save.reached` raises the best (up only, whole
+  floors from 1), `Save.trapped` stamps a kind once.
+- **Monsters trapped:** as a gate shuts, the kinds the team has shut in on that floor (the ones
+  the gate pays for, S4-04) are stamped in the book of every rider it pays: aboard, standing,
+  not wrapped. Team credit, like the pay.
+- **Sets:** until the collection book (S5-04) names its own sets, a set is a family of finds as
+  the finds' rows have it (night-lights, squishies, wind-ups, figures, the big finds), finished
+  when every find of it the deal hands out is stamped in your book. A sealed one counts.
+- **Badges through BadgeService on the server.** Brix has no badges and none planned; the award
+  is two Roblox calls, so it stays a thin part of `BestFloors`. Badges are worked out from the
+  save (`Badges.earned`), never stored: on load and after each new best, gate or end, each one
+  earned with an id and not handled this visit is checked (`UserHasBadgeAsync`) and awarded
+  (`AwardBadge`), one player at a time, off the step. A badge earned before the owner filled in
+  its id is awarded the next time the player plays. A failure warns and waits for the next
+  visit. In Studio nothing is sent; Output names each badge earned.
+- **Badge ids** live in `Badges.Ids`, all 0 until the owner makes the badges (OWNER.md). A spec
+  checks every monster kind and every set has its line.
+- **`BestFloor`** (`Badges.BestAttribute`) on each player, set from the save as it loads and as
+  it rises, is what the lobby's dial and plaque will read (S6-01b).
+- **The plan for b** (my call, OWNER.md): the dial's line reads "Best N" for the best of those
+  aboard when it has nothing more urgent to say; the plaque is a brass plate beside each gate
+  listing those aboard best first. Not chosen: one plaque for the whole server (it would sit
+  beside one car only, and the people you climb with are the ones aboard); per-seat numbers on
+  the dial (too small to read from the room on a phone).
+

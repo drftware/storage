@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
+local BestFloors = require(script.BestFloors)
 local Breakers = require(script.Breakers)
 local Feeds = require(script.Feeds)
 local Carts = require(script.Carts)
@@ -149,6 +150,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "lobbyCars", system = LobbyCars.new() },
 	-- What every player earns and does, sent to Roblox's analytics (last: it only listens).
 	{ slot = "recording", system = Recording.new() },
+	-- best floors, the book's monsters and Roblox badges (S6-01a): hears climbs, climbEnds, saving
+	{ slot = "bestFloors", system = BestFloors.new() },
 	-- The live config: each product's switch, changed on every server without an update.
 	{ slot = "live", system = Live.new() },
 	-- Robux purchases: Roblox's receipts granted into saves exactly once (after recording: it
