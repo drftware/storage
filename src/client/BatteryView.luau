@@ -3,7 +3,9 @@
 	Batteries on every screen (S1-07b). The moment: your beam is stuttering, you lift a door, and
 	there's a battery on the floor; one tap and it hops up end over end and flies into your torch,
 	a heavy clack and a bright click, and your light snaps back full with the ring sweeping round
-	its button (FlashlightView sweeps it as the server's fill arrives).
+	its button. Each flight is held in `InFlight` until it lands, as the machine's are: your torch
+	comes up out of the bottom of your view to take it if it was let down, and the ring sweeps
+	and the light fills as it clacks in, not before (FlashlightView; D-435).
 
 	Its button: shown only while your torch's ring has lost a tick (`Battery.wants`, read from the
 	charge the server writes on you). With a full ring the battery lies there with no button for
@@ -25,6 +27,7 @@ local Battery = require(ReplicatedStorage.Shared.Battery)
 local Brix = require(ReplicatedStorage.Brix)
 local Charge = require(ReplicatedStorage.Shared.Flashlight.Charge)
 local HandAt = require(script.Parent.HandAt)
+local InFlight = require(script.Parent.InFlight)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local StorageUnit = require(ReplicatedStorage.Shared.StorageUnit)
 
@@ -158,6 +161,7 @@ function BatteryView.new(): Brix.System
 		-- end over end: about the floor's line across its length
 		local length = b.part.CFrame.UpVector
 		local across = length:Cross(Vector3.yAxis)
+		InFlight.hold(taker, "torch") -- landed when its flight ends, whichever way
 		table.insert(flights, {
 			part = b.part,
 			size = b.size,
@@ -317,7 +321,9 @@ function BatteryView.new(): Brix.System
 		end
 		local now = os.clock()
 		for i = #flights, 1, -1 do
-			if stepFlight(flights[i], now) then
+			local f = flights[i]
+			if stepFlight(f, now) then
+				InFlight.land(f.taker, "torch")
 				table.remove(flights, i)
 			end
 		end
@@ -335,6 +341,9 @@ function BatteryView.new(): Brix.System
 		end
 		table.clear(perBattery)
 		table.clear(lying)
+		for _, f in flights do
+			InFlight.land(f.taker, "torch")
+		end
 		table.clear(flights)
 	end
 

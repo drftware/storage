@@ -9,6 +9,25 @@ nowhere else.
   `482368f` (the plots each player's home comes from), which is only on this Mac. In `../engine`,
   `git push origin main`, then this repository. Pushed the other way round, a fresh clone can't find
   the pinned commit.
+- [ ] **The torch let down, and its switch beside the jump button** (L-11a2, D-435; seen in
+  Studio Play on the Galaxy A16, not on a real phone or iPad). On your phone, then your iPad:
+  1. Look at the bottom right. The torch's round switch now sits right of the jump button, at
+     the screen's edge, level with it. The jump button has moved left about a thumb's width to
+     make room. Look for: neither button covers the other, nothing runs off the edge, and the
+     space above the jump button is clear for turning the camera.
+  2. Turn the camera round a few times with your right thumb. Look for: the torch never clicks.
+  3. Tap the switch. Look for: your torch swings up into your hand already lit, its beam
+     sweeping up off the floor into place.
+  4. Tap it again. Look for: the lens goes dark in your hand, then a beat later the torch drops
+     out of the bottom of your view. My numbers, yours to change: it waits 0.12 s, drops in
+     0.32 s and comes up in 0.2 s (`Torch.DownAfter`, `DownSeconds`, `UpSeconds`).
+  5. On a climb, with your torch off and its ring short of full, pick up a battery off a unit's
+     floor. Look for: the torch comes up to meet the battery, it clacks in, the ring sweeps full,
+     and a moment later the torch drops away again. (Studio couldn't fake a battery's flight, so
+     this one is unseen.)
+  6. Let a torch run dead (Studio's Workspace `DevTorchSeconds` makes it quick), wait for it to
+     drop, then tap the switch. Look for: it comes up dark, clicks dully, the switch wobbles, and
+     it goes back down. Also unseen in Studio.
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

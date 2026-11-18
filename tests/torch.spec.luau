@@ -5,7 +5,8 @@
 -- leaves it trailing, never past its limit, and it catches up; the click dips it and it comes
 -- back; a hitch never makes it jump. The switch takes a fast thumb's blinks and no faster; a
 -- client's pitch is checked and clamped; the aim is sent only when it moved and not too often;
--- the arm's raise; and the light budget lights the nearest friends' beams only.
+-- the arm's raise; and the light budget lights the nearest friends' beams only. Off, it's let
+-- down out of view and back up (D-435); the phone's switch sits right of the jump button.
 local Torch = require("../src/shared/Flashlight/Torch")
 
 local failures, checks = 0, 0
@@ -272,6 +273,65 @@ do
 	ok(not into[1] and not into[2] and #into == 2, "none when none is lit within sight")
 	Torch.budget({}, into)
 	ok(#into == 0, "no friends, nothing")
+end
+
+-- Let down (D-435): a torch starts down; up takes its time slowing in, down gathers pace; turned
+-- back partway it goes from where it is, in a share of the time; a hitch never jumps it.
+do
+	local d = Torch.drop()
+	near(Torch.stepDrop(d, DT), 1, "a torch starts let down")
+	Torch.letDown(d, false)
+	local seen, last, rose = {}, 1, true
+	for i = 1, math.round(Torch.UpSeconds / DT) + 2 do
+		local at = Torch.stepDrop(d, DT)
+		seen[i] = at
+		rose = rose and at <= last
+		last = at
+	end
+	ok(rose, "it only ever rises on the way up")
+	near(last, 0, "up within its time")
+	ok(1 - seen[3] > 3 * DT / Torch.UpSeconds, "up leaves quickly")
+	Torch.letDown(d, false)
+	near(Torch.stepDrop(d, DT), 0, "told up again, it stays up")
+	Torch.letDown(d, true)
+	local first = Torch.stepDrop(d, DT)
+	ok(first > 0 and first < DT / Torch.DownSeconds, "down starts slowly, like an arm let fall")
+	local half = 0
+	for _ = 1, math.round(Torch.DownSeconds / 2 / DT) - 1 do
+		half = Torch.stepDrop(d, DT)
+	end
+	ok(half > 0.15 and half < 0.4, `half its time, about a quarter down ({half})`)
+	Torch.letDown(d, false) -- turned back partway
+	local back = Torch.stepDrop(d, DT)
+	ok(back < half and back > half - 0.2, "turned back, it goes up from where it was")
+	local frames = 1
+	while Torch.stepDrop(d, DT) > 0 and frames < 100 do
+		frames += 1
+	end
+	ok(frames * DT < Torch.UpSeconds * 0.6, `from partway, a share of the time ({frames} frames)`)
+	Torch.letDown(d, true)
+	local after = Torch.stepDrop(d, 5)
+	ok(after < 0.2, `a five-second hitch moves it on a tenth of a second at most ({after})`)
+end
+
+-- The phone's switch beside the jump button (D-435), on Roblox's own two layouts: a phone (jump
+-- 70 square, 95 from the right) and a tablet (120 square, 170 from the right).
+do
+	for _, case in { { 900, 70 }, { 1180, 120 }, { 2000, 120 } } do
+		local width, jump = case[1], case[2]
+		local left = width - (if jump == 70 then 95 else 170)
+		local size, shift, across = Torch.besideJump(width, left, jump)
+		local of = math.round(jump * Torch.ButtonOfJump)
+		ok(size == math.clamp(of, Torch.ButtonMin, Torch.ButtonMax), `{width}: sized from the jump`)
+		local jumpRight = left - shift + jump
+		local switchLeft, switchRight = across - size / 2, across + size / 2
+		ok(switchLeft > jumpRight, `{width}: right of the jump button, not on it`)
+		near(switchLeft - jumpRight, math.round(size * Torch.ButtonGap), `{width}: its gap`)
+		near(width - switchRight, math.round(size * Torch.ButtonEdge), `{width}: in from the edge`)
+		ok(shift > 0 and shift < jump, `{width}: the jump button moves left, under its width`)
+	end
+	local _, shift = Torch.besideJump(900, 600, 70)
+	ok(shift == 0, "with room already, the jump button stays where it is")
 end
 
 print(`torch: {checks - failures}/{checks} checks passed`)

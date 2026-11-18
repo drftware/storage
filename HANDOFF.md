@@ -2,26 +2,27 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-18, S5-03g3d2 (D-361) · **Checks:** green · **Git:** `main`, not pushed; Brix `7f25310`.
+**Updated:** 2026-11-18, L-11a2 (D-435) · **Checks:** green · **Git:** `main`, not pushed; Brix `7f25310`.
 
 ## State
+- **L-11a2 done** (D-435, the owner's ask): off, your torch drops out of view and comes back up
+  lit; the phone switch sits right of the (moved) jump button. Seen in Studio Play on the A16;
+  the battery catch, the dead press, a real phone and iPad: OWNER.md.
 - **The home (S5-03) is done** apart from the three "Polish:" lines under S5-03g2b (and the
   hard hat's beam, F-G1b4a2, which the climb chain owns). S5-03g, g3 and g3d are ticked.
-- S5-03g3d2 done (D-361), seen in Studio Play at A16 size: the painted board, chalk and neon as
-  cards on the Furniture tab (`StyleCards`); bought, the plate swings down and Owned lands with
-  it. The neon bought only by Studio's made-up receipt; the real prompt and prices: OWNER.md.
+- S5-03g3d2 done (D-361): the card styles on the Furniture tab (`StyleCards`), seen at A16 size;
+  the neon bought only by Studio's made-up receipt; the real prompt and prices: OWNER.md.
 - Arrange's own button still won't open from the MCP's clicks; build the real LooksTab in a test
   screen instead (STUDIO.md). S5-03g3c's dip and swing and h6's other grows: OWNER.md.
 - Studio hooks: `CardTest`; `ShelfTest` "take"; `ArrangeTest` "take", "own", "place", "rows",
   "fromShelf", "shelfAway", "size"; `GrowTest` "cash"; Trips' `DevTripFinds`. Home doc:
   https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww. Test save: Medium, card Stencil (Unit1),
   cash 38, no card styles owned, Boombox 10, Skates 1.
-- Not the home's: the checkout's uncommitted `BigFinds`, `MinimapView` and the D-417 lines in
-  OWNER, CODEMAP and DECISIONS are the climb run's work in progress; the home leaves them alone.
 - **Climb run (over):** done: the fix pass (D-400), S4-02 to S4-05, the hard hat, S5-02, S5-01,
   S6-01 (best floor, badges, the dial and plaque, seen in Studio Play; D-432 to D-434). Left
   undone: S5-02b2c2, S5-01d's held torch over the car's board, then S4-06, S4-07, S5-04, S5-06.
-  Next: S5-01d's torch fix (hide your own held torch while you face a board; ROADMAP S5-01d).
+  Next: S5-01d's torch fix (hide your own held torch while you face a board; ROADMAP S5-01d;
+  since D-435 an off torch is already out of view, so only a lit one is left).
 
 ## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
 The home's look settling without a seam. One line a session if they won't fit together; split

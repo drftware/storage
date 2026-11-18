@@ -7,9 +7,12 @@
 	small and near your eye so it never pokes through a wall, a door or the steel, pulling back and
 	ducking out of view with your nose to one; the beam still leaves where the full-size lens would
 	be, but never from past a surface (`Hands`, D-060). A right
-	click, a gamepad's R1 or the round button above the phone's jump button switches it: the click,
-	the lens and the beam answer at once on your screen, and the server is told the state you want
-	(it decides for everyone else). While it's on, where you look (its pitch and heading) goes to
+	click, a gamepad's R1 or the round button right of the phone's jump button switches it: the
+	click, the lens and the beam answer at once on your screen, and the server is told the state
+	you want (it decides for everyone else). Off, you let it down out of the bottom of your view a
+	beat after the click, as friends see your arm drop it; on, it comes straight back up, its beam
+	swinging up off the floor (D-435). It comes up by itself to take a battery flying in, and to
+	show you it's dead when you press it then. While it's on, where you look (its pitch and heading) goes to
 	the server a few times a second, so friends see your torch point where you look and keepers
 	that freeze in light are tested along it; a big swing goes sooner, and the moment your screen
 	sees your beam land on a keeper (`Beam.landed`, from KeeperView), at once (L-06b4b3).
@@ -62,10 +65,6 @@ local RENDER = "FlashlightHold"
 -- sight, so nothing sits between you and its face. Its light is left as it was.
 local SEIZED = "CaughtSeized"
 local ACTION = "Flashlight"
--- The phone's button: about three quarters of the jump button, a thumb's width above it.
-local BUTTON_OF_JUMP = 0.74
-local BUTTON_MIN, BUTTON_MAX = 52, 92 -- pixels
-local BUTTON_GAP = 0.18 -- of the button, between it and the jump button
 local INK = Color3.fromRGB(232, 226, 214) -- the hints' warm off-white
 local WARM = Color3.fromRGB(255, 214, 140) -- the glyph lit
 local COLD = Color3.fromRGB(255, 96, 84) -- the ring's last ticks, dying (the tools' warning red)
@@ -102,6 +101,9 @@ local BEAM_OFF = CFrame.new(Specs.LensFront + Vector3.new(0, 0, -0.04))
 local LENS_FRONT = CFrame.new(Specs.LensFront * SCALE)
 local HOLD = Vector3.new(Torch.Hold[1], Torch.Hold[2], Torch.Hold[3])
 local HOLD_TURN = Vector3.new(Torch.HoldTurn[1], Torch.HoldTurn[2], Torch.HoldTurn[3]) * RAD
+-- the bottom of the drop when it's off, added to the hold
+local DOWN = Vector3.new(Torch.Down[1], Torch.Down[2], Torch.Down[3])
+local DOWN_TURN = Vector3.new(Torch.DownTurn[1], Torch.DownTurn[2], Torch.DownTurn[3]) * RAD
 
 type Click = { on: Sound, off: Sound }
 
@@ -327,6 +329,8 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 	local ownClick: Click? = nil
 	local sway = Torch.sway()
 	local pose = Torch.pose()
+	local drop = Torch.drop() -- how far it's let down: off, out of view
+	local upUntil = 0 -- off, it stays up until then (os.clock): a beat after the click, a catch
 	local mine = false -- what your torch is, on your screen
 	local lastSwitch: number? = nil
 	local burst = Torch.Burst
@@ -348,6 +352,8 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 	local aimRemote: UnreliableRemoteEvent? = nil
 	local ui: Ui? = nil
 	local jump: GuiObject? = nil
+	local jumpHome: UDim2? = nil -- where Roblox put the jump button
+	local jumpMoved: UDim2? = nil -- where this screen moved it, to make room for the switch
 	local findJumpIn = 0
 	-- your torch's charge: what the server last wrote, and this screen's reckoning between ticks
 	local written = Charge.Full
@@ -453,6 +459,7 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 	-- your thumb, and the button wobbles. Nothing lights.
 	local function refuse()
 		Torch.click(sway)
+		upUntil = os.clock() + Torch.DeadLift -- down, it comes up to show you
 		local c = refuseClick
 		if c then
 			c.TimePosition = Torch.OffSound.from
@@ -494,6 +501,9 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 		lastSwitch, burst = t, spare
 		mine = not mine
 		Torch.click(sway)
+		if not mine then
+			upUntil = t + Torch.DownAfter -- the lens goes dark in your hand, then down it goes
+		end
 		if mine then
 			Charge.rewind(flicker) -- a dying torch sputters as it catches
 		end
@@ -518,6 +528,7 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 	local function dies()
 		mine = false
 		level = 0
+		upUntil = os.clock() + Torch.DeadLook
 		if own then
 			Flashlight.light(own, false, true)
 		end
@@ -607,15 +618,18 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 			b:Stop()
 		end
 		lastSwitch, burst = nil, Torch.Burst
+		drop, upUntil = Torch.drop(), 0
 		if own then
 			Flashlight.light(own, false, true)
 		end
 		showButton()
 	end
 
-	-- The phone's button sits over the jump button, sized from it, once the touch controls exist.
-	-- It goes with the jump button, and while you're kept in a unit (L-17): there the Bang button
-	-- takes the jump's place, and a torch switch over it would take the odd mashed press.
+	-- The phone's button sits right of the jump button, sized from it, once the touch controls
+	-- exist, the jump button moved left just far enough to make room (`Torch.besideJump`): above
+	-- it, the thumb dragging the camera round pressed it by mistake (D-435). It goes with the jump
+	-- button, and while you're kept in a unit (L-17): there the Bang button takes the jump's place,
+	-- and a torch switch beside it would take the odd mashed press.
 	local function placeButton()
 		local u = ui
 		if not u then
@@ -638,7 +652,8 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 			return
 		end
 		local j = jump
-		if not j then
+		local frame = j and j.Parent
+		if not (j and frame and frame:IsA("GuiObject")) then
 			return
 		end
 		local touch = j:FindFirstAncestorOfClass("ScreenGui")
@@ -646,11 +661,25 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 			g.IgnoreGuiInset = touch.IgnoreGuiInset
 			g.ScreenInsets = touch.ScreenInsets
 		end
-		local size =
-			math.clamp(math.round(j.AbsoluteSize.X * BUTTON_OF_JUMP), BUTTON_MIN, BUTTON_MAX)
+		-- Roblox sets it afresh when the screen turns or resizes: that's its new home
+		if j.Position ~= jumpMoved then
+			jumpHome = j.Position
+		end
+		local home = jumpHome
+		if not home then
+			return
+		end
+		local width, jumpSize = frame.AbsoluteSize.X, j.AbsoluteSize.X
+		local homeLeft = home.X.Scale * width + home.X.Offset - j.AnchorPoint.X * jumpSize
+		local size, shift, across = Torch.besideJump(width, homeLeft, jumpSize)
+		local moved = UDim2.new(home.X.Scale, home.X.Offset - shift, home.Y.Scale, home.Y.Offset)
+		jumpMoved = moved
+		if j.Position ~= moved then
+			j.Position = moved -- its AbsolutePosition's change places this again
+		end
 		b.Size = UDim2.fromOffset(size, size)
-		local at = j.AbsolutePosition
-		b.Position = UDim2.fromOffset(at.X + j.AbsoluteSize.X / 2, at.Y - size * BUTTON_GAP)
+		local middle = j.AbsolutePosition.Y + j.AbsoluteSize.Y / 2
+		b.Position = UDim2.fromOffset(frame.AbsolutePosition.X + across, middle + size / 2)
 		g.Enabled = j.Visible and not kept
 	end
 
@@ -662,8 +691,8 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 		if not (j and j:IsA("GuiObject")) or j == jump then
 			return
 		end
-		jump = j
-		for _, prop in { "AbsolutePosition", "AbsoluteSize", "Visible" } do
+		jump, jumpHome, jumpMoved = j, nil, nil
+		for _, prop in { "Position", "AbsolutePosition", "AbsoluteSize", "Visible" } do
 			table.insert(connections, j:GetPropertyChangedSignal(prop):Connect(placeButton))
 		end
 		placeButton()
@@ -699,13 +728,20 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 			speed = Vector3.new(v.X, 0, v.Z).Magnitude
 		end
 		local p = Torch.step(sway, dt, speed, turnYaw, turnPitch, pose)
+		-- off, let down out of view; up while it's on, or a battery's flying in to it
+		local now = os.clock()
+		if InFlight.held(player, "torch") then
+			upUntil = now + Torch.CatchLift
+		end
+		Torch.letDown(drop, not (mine or now < upUntil))
+		local down = Torch.stepDrop(drop, dt)
 		local turn = CFrame.fromEulerAnglesYXZ(
-			HOLD_TURN.Y + p.pitch,
-			HOLD_TURN.X + p.yaw,
-			HOLD_TURN.Z + p.roll
+			HOLD_TURN.Y + p.pitch + DOWN_TURN.Y * down,
+			HOLD_TURN.X + p.yaw + DOWN_TURN.X * down,
+			HOLD_TURN.Z + p.roll + DOWN_TURN.Z * down
 		)
 		-- where your hand holds it at full size, from your eye
-		local at = HOLD + Vector3.new(p.x, p.y, p.z)
+		local at = HOLD + Vector3.new(p.x, p.y, p.z) + DOWN * down
 		-- drawn small and near, it looks the same; nose to a wall it pulls back and ducks
 		local small = CFrame.new(at * SCALE) * turn
 		local reach = HandRoom.reach(small * BODY_OFF, BODY_HALF)
@@ -733,7 +769,12 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 		end
 		ownAway = gone
 		local shown = alive()
-		local t = if shown and not gone and camera:GetAttribute(SEIZED) ~= true then 0 else 1
+		local t = if shown
+				and not gone
+				and down < 1
+				and camera:GetAttribute(SEIZED) ~= true
+			then 0
+			else 1
 		if r.body.LocalTransparencyModifier ~= t then
 			r.body.LocalTransparencyModifier = t
 			r.lens.LocalTransparencyModifier = t

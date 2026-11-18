@@ -59,6 +59,19 @@ Torch.LagReturn = 11 -- how fast it catches up (per second)
 Torch.ClickDip = 2.6 -- degrees down at the press
 Torch.ClickDrop = 0.018 -- studs down at the press
 Torch.ClickSeconds = 0.18 -- gone by then
+-- Let down (owner, Nov 18; D-435): off, your torch drops out of the bottom of your view, as your
+-- arm drops it on a friend's screen (`ArmBlend`); on, it comes straight back up, its beam swinging
+-- up off the floor with it. The bottom of the drop, added to the hold: studs right, up, back, then
+-- degrees yaw, pitch, roll. Worked out on the torch's box to clear a 70 degree view by 5 degrees;
+-- your screen also hides it once it's all the way down, for a wider view.
+Torch.Down = { 0.12, -0.75, 0.3 }
+Torch.DownTurn = { 6, -38, -14 } -- pointing at the floor, tipped out as it hangs at your side
+Torch.DownAfter = 0.12 -- seconds after your thumb clicks it off: you see the lens go dark first
+Torch.DownSeconds = 0.32 -- to drop out of view, gathering pace like an arm let fall
+Torch.UpSeconds = 0.2 -- to come back up: quick, then settling into the hold
+Torch.DeadLook = 0.7 -- dead in your hand: you look at it a beat before you let it down
+Torch.DeadLift = 0.6 -- pressed while dead and down: it comes up, clicks dully, goes back down
+Torch.CatchLift = 0.5 -- a battery flying in brings it up to take it, held up this long after
 
 -- The switch's sounds (Pro Sound Effects, "Flashlight On Off Clicks"; measured, docs/STUDIO.md):
 -- one plastic click each, cut from its recording. On is the brighter of the two.
@@ -87,6 +100,14 @@ Torch.AimSoon = 0.05
 Torch.AimTake = 0.025
 Torch.AimFollow = 12 -- how fast a friend's arm follows their aim on your screen (per second)
 Torch.ArmBlend = 0.2 -- seconds a friend's arm takes to raise the torch or drop it
+-- The phone's switch (owner, Nov 18; D-435): beside the jump button on its right, at the screen's
+-- edge. Above the jump button it sat where the right thumb drags the camera round, and got
+-- pressed by mistake. Roblox sets the jump button too near the edge for one there, so the jump
+-- button moves left just far enough to make room (on a phone, about two thirds of its width).
+Torch.ButtonOfJump = 0.74 -- its size, of the jump button's
+Torch.ButtonMin, Torch.ButtonMax = 52, 92 -- pixels: a thumb's target, never a slab
+Torch.ButtonGap = 0.14 -- of the button, between it and the jump button
+Torch.ButtonEdge = 0.2 -- of the button, between it and the screen's right edge
 -- The light budget on a low-end phone: your beam and the nearest friends' cast real, shadowed
 -- light; past that a friend's torch shows only its lit lens (GDD tech plan: cap real lights).
 Torch.RealBeams = 4
@@ -161,6 +182,43 @@ function Torch.click(s: Sway)
 	s.click = 0
 end
 
+-- How far your torch is let down: 0 held up, 1 out of view.
+export type Drop = {
+	at: number, -- this frame, eased
+	from: number, -- where it set off from
+	goal: number, -- 0 or 1
+	since: number, -- seconds since it set off
+}
+
+-- Down: a torch starts off.
+function Torch.drop(): Drop
+	return { at = 1, from = 1, goal = 1, since = math.huge }
+end
+
+-- Sends it down (true) or up (false). Turned back partway, it sets off from where it is.
+function Torch.letDown(d: Drop, down: boolean)
+	local goal = if down then 1 else 0
+	if goal ~= d.goal then
+		d.from, d.goal, d.since = d.at, goal, 0
+	end
+end
+
+-- One frame of the drop; returns how far down it is. Down gathers pace and up slows into the
+-- hold, each taking its full time only from one end to the other.
+function Torch.stepDrop(d: Drop, dt: number): number
+	d.since += math.clamp(dt, 0, 0.1)
+	local span = math.abs(d.goal - d.from)
+		* (if d.goal == 1 then Torch.DownSeconds else Torch.UpSeconds)
+	local k = if span > 0 then math.min(d.since / span, 1) else 1
+	if k >= 1 then
+		d.at = d.goal
+		return d.at
+	end
+	local eased = if d.goal == 1 then k * k else 1 - (1 - k) * (1 - k)
+	d.at = d.from + (d.goal - d.from) * eased
+	return d.at
+end
+
 --[[
 	One frame of the sway. `speed` is how fast you walk over the ground (studs/s; 0 in the air),
 	`turnYaw` and `turnPitch` how far the camera turned this frame (radians, left and up positive).
@@ -219,6 +277,25 @@ function Torch.step(
 			* RAD
 	into.roll = -math.sin(s.phase) * Torch.BobRoll * w * RAD
 	return into
+end
+
+--[[
+	The phone's switch beside a jump button whose left edge Roblox put `jumpLeft` pixels across a
+	touch screen `width` wide, `jumpSize` square: the switch's size, how far left the jump button
+	moves to make room for it (0 when there's room already), and the switch's middle across.
+]]
+function Torch.besideJump(
+	width: number,
+	jumpLeft: number,
+	jumpSize: number
+): (number, number, number)
+	local size =
+		math.clamp(math.round(jumpSize * Torch.ButtonOfJump), Torch.ButtonMin, Torch.ButtonMax)
+	local gap = math.round(size * Torch.ButtonGap)
+	local edge = math.round(size * Torch.ButtonEdge)
+	local room = width - (jumpLeft + jumpSize)
+	local shift = math.max(0, size + gap + edge - room)
+	return size, shift, jumpLeft - shift + jumpSize + gap + size / 2
 end
 
 -- The switch: may a switch at `now` go through after the last ones? `burst` is how many are left

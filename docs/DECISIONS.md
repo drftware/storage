@@ -10329,3 +10329,30 @@ plaque in the lobby; c, seen in Studio Play. Piece a is built.
 - **Seen in Studio Play:** Best 3 rolled to 10 once I'd stepped out of Car2 and turned to it;
   Friends only took turns with "Best 10"; the plaque read "10", my row lit. The dial's line is
   small from the lobby floor on a phone (polish line under S6-01c).
+
+## D-435 The torch is let down when off; its phone switch moves right of the jump (L-11a2, Nov 18)
+
+- **The owner's ask:** off, the torch stayed held up in first person while friends saw your arm
+  drop it; and the phone switch, above the jump button, sat where the right thumb drags the
+  camera, so it got pressed by mistake.
+- **Let down:** off, your torch waits 0.12 s (the lens going dark in your hand reads as the
+  answer to the click), then drops 0.32 s gathering pace to a pose pointed at the floor below
+  the view (`Torch.Down`, `DownTurn`; checked on the torch's box to clear Roblox's 70 degree
+  view by 5 degrees), and is hidden there for wider views. On, it rises in 0.2 s slowing into
+  the hold, lit at once, so its beam sweeps up off the floor; keepers test where you look, not
+  the drawn beam, so the sweep changes no freeze. Turned back partway it goes from where it is.
+  Pure `Torch.drop`/`letDown`/`stepDrop`, apart from `Torch.step`, which ToolView and
+  HeadlampView share.
+- **It comes up when it has to:** a battery flying in (the machine's already held `InFlight`;
+  now a floor battery's flight is held too, so its ring sweeps full as it clacks in rather than
+  when the server's fill arrives) and held up 0.5 s after; a dead press lifts it 0.6 s to show
+  it dark; a torch dying in your hand is looked at 0.7 s before it drops. Friends' screens are
+  unchanged: their arm already drops with `On`.
+- **The switch:** right of the jump button, level with its middle, 0.74 of its size as before,
+  a gap of 0.14 of its size from the jump button and 0.2 from the screen's right edge. Roblox
+  sets the jump button 25 points from a phone's edge (50 on a tablet), too little for it, so the
+  jump button moves left just far enough (44 points on the A16, 69 on an iPad); the horn's
+  button, left of the jump, follows it. The jump's own position from Roblox is taken as its
+  home whenever Roblox sets it afresh (the screen turning), so the move never stacks
+  (`Torch.besideJump`). Keyboard and gamepad: unchanged, bottom right.
+

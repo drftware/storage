@@ -347,6 +347,15 @@ fix them later." The overnight run's hard limits hold.
     Verified in Studio: the torch in hand, right click and R1, the server's state and aim, the
     beam at Level 21 and Level 8 and on the Galaxy A16 (`docs/art/L-11a-*.jpg`). The phone tap,
     a friend's beam and arm, and six players' light: `OWNER.md`.
+  - [x] **L-11a2 The torch let down, and its switch moved** (the owner, Nov 18; D-435;
+    `docs/art/torch-letdown-a16.jpg`). Off, your torch now drops out of the bottom of your view
+    a beat after the click, as friends already saw your arm drop it; on, it swings straight back
+    up with its beam. It comes up by itself to take a battery flying in, and to show a dead
+    torch when you press it. On a phone or tablet its switch sits right of the jump button at
+    the screen's edge (the jump button moves left to make room), out of the camera drag above
+    the jump button where it was pressed by mistake. Seen in Studio Play on the Galaxy A16: the
+    switch beside the jump button, the torch hidden off, rising lit on a tap and dropping a beat
+    after the next. The battery's catch, the dead press and real devices: `OWNER.md`.
   - [x] **L-11b Two slots and your hands** (Nov 8, D-048). The bolt cutters built by script
     (`art/boltcutters/`: chipped red handles, black grips, bolted black plates, a forged jaw ground
     bright; baked, sheets) and imported to `ReplicatedStorage.Props.Tools.BoltCutters`. Lethal

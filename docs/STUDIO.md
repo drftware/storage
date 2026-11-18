@@ -254,8 +254,11 @@ verified: a doc page, Studio, or "untested".
 - **The Galaxy A16's screen, measured** (Device Simulator, L-19b): `ViewportSize` says 685x338
   but `WorldToViewportPoint` of a point dead ahead is (342.5, 179.5): the 3D view's middle sits
   10 points under the middle of the reported viewport. The tool slots span y 267 to 328 (x 280
-  to 402), the jump button x 590 to 660, y 248 to 318, the torch's switch x 599 to 651, y 186 to
-  238, the thumbstick the bottom left.
+  to 402), the jump button x 590 to 660, y 248 to 318 where Roblox puts it, the thumbstick the
+  bottom left. Since D-435 FlashlightView moves the jump button left to x 546 to 616 (its
+  `Position` {1, -139}, {1, -90}) and puts the torch's switch right of it, x 623 to 675, y 257 to
+  309 (gui y 199 to 251); the horn's button follows the jump button. To tap the switch with
+  `user_mouse_input`: (696, 225).
 - **The wheel on the A16** (L-20a): the button spans viewport y 270 to 326 (x 314 to 371), the
   box 273 to 323 lifted, Drop beside it; the open wheel's top slot reaches y 190. Peek's middle at
   a shut door sits at 233 to 235 from 1.5 to 4 studs.
