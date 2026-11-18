@@ -11,7 +11,9 @@
 	  stepped in (the first hosted), the difficulty, and the car they left in (its bay and the
 	  host's choices), so that after the climb they're back in the same car (L-08e2). A teleport's
 	  data passes through each player's device, so the group's server checks it (`decode`) and
-	  trusts nothing in it that matters: it only says whom to wait for and where they stand.
+	  trusts nothing in it that matters: it only says whom to wait for and where they stand. It
+  carries each rider's finds taken up out of a job box (`finds`, S5-03d4), which the group's
+  server deals only as far as each owner's own save backs them (Home.Taken's `backed`).
 	- The group's server lays floor 1 the moment it starts. It waits for the whole group, or
 	  `Wait` seconds after the first one arrives (`ready`), then stands them in floor 1's car
 	  `Since` seconds into its ride, the shaft still sliding past, and their screens open on it.
@@ -26,6 +28,7 @@
 	  (`readInvite`), and the group's server sends the floor they're on back to its lobby (`word`,
 	  MessagingService on the lobby's `topic`), where the car they left from shows it.
 ]]
+local Taken = require("../Home/Taken")
 local Boarding = require("./Boarding")
 local Ride = require("../Elevator/Ride")
 
@@ -56,11 +59,16 @@ Trip.ServerAttribute = "TripServer"
 Trip.FollowAttribute = "Following"
 
 -- The data's shape version: a server reading data it doesn't know takes nobody's word for a group.
--- 3 added the group's own server, the lobby they left and who invited a friend sent on (L-08e3b);
+-- 4 added each rider's taken-up finds (S5-03d4);-- 3 added the group's own server, the lobby they left and who invited a friend sent on (L-08e3b);
 -- 2 added the car (L-08e2); 2 and 1 still read (a lobby server still running an old version sends
--- them while an update rolls out): 1 as the first bay with Open and six, both with no server or
+-- them while an update rolls out; 3 with no finds): 1 as the first bay with Open and six, both with no server or
 -- lobby named.
-Trip.Version = 3
+Trip.Version = 4
+-- The most taken-up finds a group's data carries: six riders, each with three slots and a head
+-- (Carry.Slots). More are ignored (they stay in their boxes).
+Trip.UpsMost = 24
+-- The longest find name the data carries (a catalog key, a Gold's with ":Gold").
+Trip.NameMost = 64
 -- The lobby's bays, numbered 1 to this from left to right (Lobby.Specs.Bays has one per car).
 Trip.Bays = 6
 
@@ -138,6 +146,7 @@ export type Data = {
 	server: string, -- the group's own server's reserved id ("": not named)
 	lobby: string, -- the JobId of the lobby they left, for word of their floor ("": none)
 	by: number, -- a friend sent on by an invite: who invited them (0: nobody)
+	finds: { Taken.Up }, -- each rider's finds taken up out of a job box (S5-03d4), unchecked
 }
 
 -- The car a group left in, as the data carries it: its bay and the host's choices.
@@ -170,8 +179,23 @@ end
 
 -- The data a car's riders take: `group` (UserIds, the host first), the host's difficulty, the
 -- car they left in (nil: the first bay, Open and six) and where they go (nil: nothing named).
-function Trip.encode(group: { number }, difficulty: string, car: Car?, route: Route?): Data
+-- `ups`: the riders' finds taken up out of their job boxes (nil: none).
+function Trip.encode(
+	group: { number },
+	difficulty: string,
+	car: Car?,
+	route: Route?,
+	ups: { Taken.Up }?
+): Data
 	local by = if route and route.by and isId(route.by) then route.by else 0
+	local finds: { Taken.Up } = {}
+	local given: { Taken.Up } = ups or {}
+	for i, u in given do
+		if i > Trip.UpsMost then
+			break
+		end
+		finds[i] = table.clone(u)
+	end
 	return {
 		v = Trip.Version,
 		group = table.clone(group),
@@ -182,6 +206,7 @@ function Trip.encode(group: { number }, difficulty: string, car: Car?, route: Ro
 		server = if route and Trip.isServer(route.server) then route.server else "",
 		lobby = if route and Trip.isServer(route.lobby) then route.lobby else "",
 		by = by,
+		finds = finds,
 	}
 end
 
@@ -190,9 +215,49 @@ local function whole(n: unknown, low: number, high: number): boolean
 	return type(n) == "number" and n == n and n % 1 == 0 and n >= low and n <= high
 end
 
--- The data a player arrived with, checked: nil unless it's ours, at our version (or 2 or 1), with
+-- The taken-up finds in data that passed through a device (`raw`), checked: each a find of
+-- someone in `group`, held by someone in `group`, its name 1 to `NameMost` characters, its crack
+-- and its wear true or false. A bad one is dropped on its own; at most `UpsMost`.
+local function ups(raw: unknown, group: { number }): { Taken.Up }
+	local out: { Taken.Up } = {}
+	if type(raw) ~= "table" then
+		return out
+	end
+	for _, e in raw :: { unknown } do
+		if #out >= Trip.UpsMost then
+			break
+		end
+		if type(e) ~= "table" then
+			continue
+		end
+		local u = e :: { [unknown]: unknown }
+		local name = u.name
+		if
+			isId(u.owner)
+			and table.find(group, u.owner :: number)
+			and isId(u.holder)
+			and table.find(group, u.holder :: number)
+			and type(name) == "string"
+			and #name >= 1
+			and #name <= Trip.NameMost
+			and type(u.cracked) == "boolean"
+			and type(u.worn) == "boolean"
+		then
+			table.insert(out, {
+				owner = u.owner :: number,
+				name = name,
+				holder = u.holder :: number,
+				cracked = u.cracked :: boolean,
+				worn = u.worn :: boolean,
+			})
+		end
+	end
+	return out
+end
+
+-- The data a player arrived with, checked: nil unless it's ours, at our version (or 3, 2 or 1), with
 -- a group of 1 to `Boarding.Capacity` distinct UserIds. An unknown difficulty reads as the first
--- one; a car that doesn't read (or version 1's, which has none) as the first bay, Open and six; a
+-- one; taken-up finds as `ups` reads them (none before version 4); a car that doesn't read (or version 1's, which has none) as the first bay, Open and six; a
 -- server or lobby that isn't a GUID (or before version 3) as none, and an inviter that isn't a
 -- UserId (or is the first of the group) as nobody.
 -- `data`: Player:GetJoinData().TeleportData, which passed through the player's device.
@@ -201,7 +266,7 @@ function Trip.decode(data: unknown): Data?
 		return nil
 	end
 	local t = data :: { [unknown]: unknown }
-	if (t.v ~= Trip.Version and t.v ~= 2 and t.v ~= 1) or type(t.group) ~= "table" then
+	if (t.v ~= Trip.Version and t.v ~= 3 and t.v ~= 2 and t.v ~= 1) or type(t.group) ~= "table" then
 		return nil
 	end
 	local raw = t.group :: { [unknown]: unknown }
@@ -238,7 +303,7 @@ function Trip.decode(data: unknown): Data?
 			{ bay = t.bay :: number, friends = t.friends :: boolean, players = t.players :: number }
 	end
 	local route: Route? = nil
-	if t.v == Trip.Version then
+	if t.v == Trip.Version or t.v == 3 then
 		local by = if isId(t.by) and t.by ~= group[1] then t.by :: number else nil
 		route = {
 			server = if Trip.isServer(t.server) then t.server :: string else "",
@@ -246,7 +311,13 @@ function Trip.decode(data: unknown): Data?
 			by = by,
 		}
 	end
-	return Trip.encode(group, difficulty, car, route)
+	return Trip.encode(
+		group,
+		difficulty,
+		car,
+		route,
+		if t.v == Trip.Version then ups(t.finds, group) else nil
+	)
 end
 
 -- An invite's or share link's launch data (JSON-encoded, at most 200 characters): who sent it,

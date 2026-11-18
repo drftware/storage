@@ -3412,3 +3412,10 @@ verified: a doc page, Studio, or "untested".
 - **A burst of `screencapture -l` with `sleep 0.1` runs about 0.33 s a frame**; crop the A16 phone
   with `crop=664:308:360:364` on the 1386-wide window capture.
 
+- **A trip's taken-up finds in Studio** (S5-03d4, D-358): one Studio server can't hold both ends
+  of a trip, so the group's side has a stand-in. In Edit set Workspace's `DevTrip` to "Arrive" and
+  `DevTripFinds` to the finds the first player "brought" from their own box, comma-separated
+  ("Boombox,Lamp*,^HardHat": a star for cracked, a caret to wear it), then Play: Output prints
+  "Trips: N of M finds … came across the trip" as the car is about to ride, and the slots show
+  what the save backed. Clear both attributes after. An Edit-mode `GetAsync` on "Saves.studio"
+  is refused ("Access forbidden"); read the save from the Server in Play.

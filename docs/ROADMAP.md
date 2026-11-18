@@ -2611,7 +2611,7 @@ Done when players watch the results to the end and change their perks between cl
     - Polish for the panel (later): a hairline crack drawn over a card's picture while its next
       one is cracked (D-301); a chip tap you can hear differently per rarity; cards drawn
       only as they scroll into view if a player ever owns 60 kinds or more (ViewportFrames cost).
-  - [ ] **S5-03d Taking finds up** (idea 10, D-251, D-302): take any find from the chest into a
+  - [x] **S5-03d Taking finds up** (idea 10, D-251, D-302): take any find from the chest into a
     slot and carry it to the elevator. On the climb it's at risk like any find: stolen, dropped
     where you're caught or where you leave, lost if it isn't aboard when the elevator leaves.
     Whoever carries a find aboard takes it home. The save marks a find out until its climb ends
@@ -2632,12 +2632,12 @@ Done when players watch the results to the end and change their perks between cl
       the rest kept across a rejoin, one left at home never struck; `docs/art/S5-03d3-*.jpg`).
       Found and fixed: Studio's Stop mid-climb struck a taken-up find; GatePay now settles on
       the next Heartbeat. The two-player steps are in OWNER.md.
-    - [ ] **S5-03d4 Across the trip** (D-304): a live climb runs on a server of its own and the
-      teleport carries nothing, so what you take up stays home. The trip's data carries each
-      rider's taken-up finds (keys, cracked); the climb's server checks each against the rider's
-      save (`Save.boxed`) and deals them into their slots, already up; the lobby doesn't recall
-      what left on the trip. Untestable in Studio: the steps go to OWNER.md, with a live
-      shutdown mid-climb (D-305: nothing taken up may be struck).
+    - [x] **S5-03d4 Across the trip** (Nov 18, D-358): the trip's data (version 4) carries each
+      rider's taken-up finds (whose box, key, holder, cracked, worn); they leave the lobby quietly
+      with their holder, or stay in hand if the trip fails; the group's server takes each
+      owner's own word only, deals what their save backs (`Taken.backed`) into the holder's
+      slots, already up, once the save loads. Seen with Studio's stand-in (`DevTripFinds`); the
+      live trip and a live shutdown are OWNER.md steps.
   - [ ] **S5-03e Arrange** (ideas 11 to 15), after a placements system built in Brix (D-252):
     lift, drag, a half-stud grid, quarter turns, Free for everyone, floor, tabletop, wall and
     ceiling spots (a column in the catalog), red where it can't go, Place, Put away, Done, the

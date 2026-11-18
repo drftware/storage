@@ -484,6 +484,21 @@ nowhere else.
      "GatePay: … out of …'s job box: Lost". Player 2 picks it up and carries it aboard: theirs.
      Player 1 rejoins: one fewer.
   Look for: nothing doubled, nothing else gone.
+- [ ] **Test: a find you take up crosses the trip** (S5-03d4, D-358). Only a published game
+  sends a car's group to a server of its own, so this needs the live game and two accounts
+  (two devices, or a phone and a computer):
+  1. Player 1 takes two finds out of their job box (say the Boombox and a lamp), wears a hat
+     from the rail, and hands the lamp to Player 2. Both ride a lobby car up.
+  2. As the screens open on floor 1's shaft: Player 1 holds the Boombox and wears the hat,
+     Player 2 holds the lamp. Nothing appeared in Player 1's box in the lobby as you left.
+  3. Player 2 carries the lamp aboard at the gate: it rises out of their slot. Later, back in
+     the lobby, Player 1's box has one lamp fewer and Player 2's one more.
+  4. Shut the game down mid-climb (Creator Hub, the experience, Servers, "Shut down all
+     servers") while Player 1 still holds the Boombox. Rejoin: the Boombox is still in Player
+     1's box, not struck (D-305).
+  5. A failed trip: if a trip ever says "Teleport failed", whatever you took up is still in
+     your hand in the lobby car.
+  Look for: nothing doubled, nothing gone that wasn't lost on a climb.
 - [ ] **Arrange's limit bar, the lid and a friend's finds** (S5-03e3b, D-313; the bar filling
   and the lid seen in Studio Play on the Galaxy A16, `docs/art/S5-03e3b-*`; a friend and a full
   room not seen). Studio's Test tab, 2 players. Player 1 walks into their home and taps Arrange:

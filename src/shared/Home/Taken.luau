@@ -19,6 +19,12 @@
 	  left behind, the climb over), or you left mid-climb with it out: struck off yours (`Save.lose`).
 	- **Back** in your box with the server up (you left at home, or put it back): nothing struck.
 	A crack it took on the climb (D-296) comes home with it: into the save of whoever has it.
+
+	Across the trip (S5-03d4, D-358): a live climb runs on a server of its own, so each rider's
+	taken-up finds go in the trip's data (`Up`) and the climb's server deals them into their slots,
+	already up. That data passed through each rider's device, so the server takes only an owner's
+	own word about their own finds, and only what their save still has in the box (`backed`); the
+	rest stays in the box. Nothing is written on the way: the save still holds every one of them.
 ]]
 local Save = require("../Save")
 
@@ -45,6 +51,28 @@ export type Ending = {
 	now: number, -- os.time: a new kind's page in the carrier's book
 	spots: number, -- the carrier's shelf spots: a find they keep walks onto their shelf
 }
+
+-- A find taken up out of a job box, going with the trip (S5-03d4): whose box it's from (a UserId),
+-- its key in the save (a Gold's "Teddy:Gold"), who holds it (a UserId), whether its glass cracked
+-- while it was out (D-296), and whether it rides on its holder's head (D-277).
+export type Up = { owner: number, name: string, holder: number, cracked: boolean, worn: boolean }
+
+-- Of the finds `ups` carried across the trip, those of `owner`'s that their save backs, in the
+-- order given: each takes one of its name from what's in their box (Save.boxed, less `out`, theirs
+-- already in the world here). Another rider's word, a name the save hasn't got, or more of one
+-- than the box holds is dropped: it stays in the box. Writes nothing.
+function Taken.backed(ups: { Up }, owner: number, data: Save.Data, out: Save.Counts): { Up }
+	local left = Save.boxed(data, out)
+	local dealt: { Up } = {}
+	for _, u in ups do
+		local n = if u.owner == owner then left[u.name] or 0 else 0
+		if n >= 1 then
+			left[u.name] = n - 1
+			table.insert(dealt, table.clone(u))
+		end
+	end
+	return dealt
+end
 
 -- Settles one find taken up from `owner`'s box (their save; nil once they've left, struck as they
 -- went), `carrier` the save of someone else who carried it aboard (nil when it's its owner, or

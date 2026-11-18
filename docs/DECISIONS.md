@@ -9558,3 +9558,40 @@ Galaxy A16 size; nothing needed fixing.
 - **Left to two players**: the back-to-the-lobby floor's pop is seen by whoever rides out, never
   by the one sent down, so it's in the owner's two-player test with the rest of that floor.
   Captures `docs/art/S4-03d2-*.jpg`.
+
+## D-358 Taken-up finds cross the trip: the owner's word, checked against their save (S5-03d4, 2026-11-18)
+
+The moment: you take your lucky boombox up from your home, ride the freight car, and it's in your
+hand when your screen opens on floor 1's shaft, on the group's own server. Precedent: Lethal
+Company's ship loot, carried between moons. D-302's rules hold across the trip: the save still
+holds every find out of a box, so a crash, a failed teleport or a server hop costs nothing.
+- **The lobby names them and lets them go quietly.** As a car's group is sent (Trips' `send`),
+  each find out of a rider's job box that a rider holds or wears goes in the trip's data
+  (`Trip.Version` 4, `finds`: whose box, its save key, who holds it, cracked, worn) and is marked
+  going (Slots' `going`). As its holder leaves it goes from the lobby with them, not back into
+  the box, so no Back is settled and its crack isn't written: the crack rides with it and comes
+  home where its climb ends (the ticket's "the lobby doesn't recall what left on the trip").
+  A trip that fails for good leaves it in hand (`stay`); one whose owner already left goes back
+  into their box.
+- **Only an owner's own word, only what their save backs.** The data passes through each
+  rider's device. The group's server reads each rider's own copy for their own finds only (a
+  friend can't name your finds into their hands), and deals only what `Home.Taken.backed` says
+  their save still has in the box (Save.boxed, less those already out on this server): a forged,
+  missing or extra one is refused and stays in the box. An owner who names their own find into a
+  friend's hands only does what handing it over does.
+- **When:** held until the owner's save has loaded there (the lobby lets the session go first),
+  then dealt into its holder's slots (its owner's when the holder isn't there), already up:
+  quietly just before the group is stood in floor 1's car, or with the pick-up sound the moment
+  a late save loads. The climb's end clears what was never dealt; it stays in the box.
+- **Never doubled:** the world never holds more of your box's finds than your save backs, on
+  any server: the lobby's copies go as you leave, and the group's server counts against the save
+  it holds the session lock for. A forged "whole" for one cracked in the lobby only undoes a crack
+  the save never had.
+- **Seen in Studio** (one player, DevTrip "Arrive" with `DevTripFinds` "Boombox,Boombox*,Skates,
+  Skates,NotAFind"): "3 of 5 finds came across the trip", Boombox, Boombox, Skates in the slots
+  before the car rode; the second Skates (the save has one) and the made-up name refused; the
+  Boombox's claimed crack not drawn (it has no glass). The lobby's side and a live shutdown need
+  live servers: OWNER.md.
+- **Known edge, safe side:** a rider who drops a going find during the black ride leaves it on the
+  lobby floor, where its owner's leave recalls it (its crack written there) and the group's
+  server deals it too, so the crack could count twice; never the find.

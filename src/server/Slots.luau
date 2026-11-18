@@ -57,6 +57,13 @@
 	or its owner leaving mid-climb, it's lost (`taken`), and then a friend may still carry it
 	aboard as any find.
 
+	Across the trip (S5-03d4, D-358): a live climb runs on a server of its own. As a lobby car's
+	group is sent, each rider's finds out of a rider's job box are named for the trip's data and
+	marked going (`going`); as the rider leaves they go from the lobby quietly, not back into the
+	box (their crack goes with them), and if the trip fails for good they stay in hand (`stay`).
+	On the group's server each one the owner's save backs is dealt straight into its holder's
+	slots or onto their head, already up (`carryUp`).
+
 	A fragile find (F-G1e5e, D-296: its row names its glass) let go hard (`Chip.hard`: you were
 	running or falling, or it fell far from your hand) cracks as it lands, once: its crack heard
 	over its clank and drawn on its glass for everyone (`Chip.mark`; the model's `Chipped`
@@ -153,6 +160,10 @@ export type Out = {
 	gather: (there: boolean) -> (),
 }
 
+-- A find taken up out of a job box going with the trip (Home.Taken's `Up`, spelled out here as a
+-- cross-folder require's types don't reach every caller's checker).
+export type Up = { owner: number, name: string, holder: number, cracked: boolean, worn: boolean }
+
 export type Slots = Brix.System & {
 	-- Fires as anyone's slots change, for whoever cares.
 	changed: Brix.Signal<Change>,
@@ -169,6 +180,17 @@ export type Slots = Brix.System & {
 	-- Every find out of a job box in `player`'s slots or on their head goes up into the climb
 	-- (they rode a lobby car into it, S5-03d2): from now on it can be lost (`taken`).
 	up: (self: any, player: Player) -> (),
+	-- A lobby car's group is being sent on a trip (S5-03d4): each find out of a rider's job box in
+	-- a rider's slots or on their head is named for the trip's data and marked going, so it leaves
+	-- the lobby quietly with its holder instead of going back into the box.
+	going: (self: any, players: { Player }) -> { Up },
+	-- `player`'s trip failed for good: what they hold stays in hand, not going any more; one whose
+	-- owner already left goes back into that box.
+	stay: (self: any, player: Player) -> (),
+	-- On a group's own server: find `u` carried across the trip, dealt into `holder`'s slots (onto
+	-- their head when it rode there and the head is free), out of `u.owner`'s box, already up,
+	-- cracked as it left. `quiet`: no pick-up sound (their screen is still black). Whether it was.
+	carryUp: (self: any, holder: Player, u: Up, quiet: boolean) -> boolean,
 	-- Find `model` has a piece out on a floor (`out`), or not any more (nil). Monsters see the find
 	-- where the piece is (`finds`). Call it again with the same `out` when the piece has moved, so
 	-- they're told.
@@ -295,6 +317,8 @@ type Tool = {
 	home: number?,
 	-- taken up into the climb (`up`, S5-03d2): from then a find out of a job box can be lost
 	up: boolean?,
+	-- going on a trip with its holder (S5-03d4): it leaves the lobby with them, never recalled
+	away: boolean?,
 	-- its glass cracked (a fragile find dropped hard, F-G1e5e): worth half, never cracks again
 	chipped: boolean?,
 	-- a Gold of its find (S5-03c3b3, D-298): `key` stays the find's, so its row, model and sounds
@@ -861,7 +885,7 @@ function Slots.new(): Slots
 	local function recall(home: number)
 		local gone = false
 		for id, t in tools do
-			if t.home ~= home or t.placed or outs[t.model] then
+			if t.home ~= home or t.placed or outs[t.model] or t.away then
 				continue
 			end
 			local holder: Player? = nil
@@ -909,6 +933,31 @@ function Slots.new(): Slots
 		end
 		if gone then
 			loose:fire(nil)
+		end
+	end
+
+	-- `player` leaving: each find of theirs going on their trip (`going`, S5-03d4) goes from the
+	-- lobby with them, quietly, out of their slots or off their head; nothing told, as it isn't back
+	-- in its box (the group's server deals it, its crack with it).
+	local function leaveOnTrip(player: Player)
+		local h = hands[player]
+		local worn = heads[player]
+		for id, t in tools do
+			if not t.away or (t.owner ~= player and id ~= worn) then
+				continue
+			end
+			if id == worn then
+				offHead(player)
+			end
+			if h then
+				Carry.remove(h.carry, id)
+			end
+			tools[id] = nil
+			grounds[id] = nil
+			unoffer(t)
+			t.owner = nil
+			stow(t)
+			t.model:Destroy()
 		end
 	end
 
@@ -1366,6 +1415,7 @@ function Slots.new(): Slots
 		table.insert(
 			connections,
 			Players.PlayerRemoving:Connect(function(player: Player)
+				leaveOnTrip(player)
 				dropAll(player, rootOf(player))
 				hands[player] = nil
 				heads[player] = nil
@@ -1750,6 +1800,54 @@ function Slots.new(): Slots
 		end
 	end
 
+	function system.going(_: any, players: { Player }): { Up }
+		local riders: { [number]: true } = {}
+		for _, player in players do
+			riders[player.UserId] = true
+		end
+		local ups: { Up } = {}
+		for _, player in players do
+			local worn = heads[player]
+			for id, t in tools do
+				local home = t.home
+				if
+					home
+					and riders[home]
+					and (t.owner == player or id == worn)
+					and not t.placed
+					and not outs[t.model]
+				then
+					t.away = true
+					table.insert(ups, {
+						owner = home,
+						name = named(t),
+						holder = player.UserId,
+						cracked = t.chipped == true,
+						worn = id == worn,
+					})
+				end
+			end
+		end
+		return ups
+	end
+
+	function system.stay(_: any, player: Player)
+		local worn = heads[player]
+		local gone: { [number]: true } = {}
+		for id, t in tools do
+			if t.away and (t.owner == player or id == worn) then
+				t.away = nil
+				local home = t.home
+				if home and not Players:GetPlayerByUserId(home) then
+					gone[home] = true
+				end
+			end
+		end
+		for home in gone do
+			recall(home) -- its owner went on the trip without it: back in their box
+		end
+	end
+
 	function system.lose(_: any, model: Model, sound: Tools.SoundSpec)
 		outs[model] = nil
 		local t: Tool? = nil
@@ -1933,7 +2031,7 @@ function Slots.new(): Slots
 	-- A new `key` into a free slot of `player`'s and their hand: the slot, or nil. `quiet`: no
 	-- pick-up sound here, as the screens play it when the thing reaches the hand (a buy at the
 	-- car's machine, MachineVend; a find out of the job box, BoxPanelView). `home`: the UserId
-	-- whose job box it came out of; `gold`: a Gold of find `key`, its model gilded.
+	-- whose job box it came out of; `gold`: a Gold of find `key`, its model gilded. Its tool too.
 	local function make(
 		player: Player,
 		key: string,
@@ -1941,7 +2039,7 @@ function Slots.new(): Slots
 		home: number?,
 		gold: boolean?,
 		since: number?
-	): number?
+	): (number?, Tool?)
 		local root = rootOf(player)
 		local h = handOfPlayer(player)
 		if not root or Catalog[key] == nil or bothHands(h) or Carry.room(h.carry) == nil then
@@ -1980,7 +2078,7 @@ function Slots.new(): Slots
 			Tools.play(Catalog[key].pickUp, hand or root, HAND_SOUND_REACH)
 		end
 		changed:fire({ player = player, kind = "PickUp" })
-		return slot
+		return slot, t
 	end
 
 	function system.give(
@@ -1999,7 +2097,7 @@ function Slots.new(): Slots
 		if not (row and row.find) then
 			return nil
 		end
-		return make(player, base or key, true, player.UserId, base ~= nil)
+		return (make(player, base or key, true, player.UserId, base ~= nil))
 	end
 
 	function system.room(_: any, player: Player): boolean
@@ -2056,6 +2154,37 @@ function Slots.new(): Slots
 		publish(player)
 		changed:fire({ player = player, kind = "Wear" })
 		return model
+	end
+
+	function system.carryUp(_: any, holder: Player, u: Up, quiet: boolean): boolean
+		local base = Gold.base(u.name)
+		local key = base or u.name
+		local row = Catalog[key]
+		if not (row and row.find) then
+			return false
+		end
+		local t: Tool? = nil
+		if u.worn and system.boxToHead(system, holder, u.name) then
+			local id = heads[holder]
+			t = if id then tools[id] else nil
+		end
+		if not t then
+			local _, made = make(holder, key, quiet, u.owner, base ~= nil)
+			t = made
+		end
+		if not t then
+			return false
+		end
+		t.home = u.owner
+		t.up = true
+		-- cracked as it left the lobby: drawn on its glass for every screen, quietly (D-296)
+		local glass = row.fragile
+		if u.cracked and glass and not t.gold then
+			t.chipped = true
+			Chip.mark(t.model, glass)
+			t.model:SetAttribute(Chip.Attribute, true)
+		end
+		return true
 	end
 
 	function system.onHead(_: any, player: Player): (string?, boolean)

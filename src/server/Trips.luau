@@ -33,6 +33,15 @@
 	  they're on goes back to the lobby they left (MessagingService on its `Trip.topic`), as it
 	  changes and every `Trip.WordEvery`; 0 once it's over, or as this server shuts.
 
+	Taken-up finds across the trip (S5-03d4, D-358, D-304): as a car's group is sent, each find out
+	of a rider's job box that a rider holds or wears goes in the data (Slots' `going`) and leaves
+	the lobby with them; a trip that fails for good leaves it in hand (`stay`). On the group's
+	server each rider's own word about their own finds is held until their save has loaded (the
+	lobby lets it go first), then each one it backs (Home.Taken's `backed`) is dealt into its
+	holder's slots, already up: before the screens open as the group is stood in floor 1's car,
+	or the moment the save loads after that. The rest stays in the box. The climb's end clears
+	what was never dealt.
+
 	A friend's invite from a group's own server, on a lobby (`follow`, called by LobbyCars as
 	their launch data arrives): their screen goes black ("Joining Sam") and they're sent on, alone,
 	to that server (the same reserved id), with whom they came for; there they're stood beside the
@@ -58,8 +67,11 @@ local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
 local ToLobby = require(ReplicatedStorage.Shared.ToLobby)
 local Trip = require(ReplicatedStorage.Shared.Lobby.Trip)
+local Taken = require(ReplicatedStorage.Shared.Home.Taken)
 local Climbs = require(script.Parent.Climbs)
 local FrontOffice = require(script.Parent.FrontOffice)
+local Saving = require(script.Parent.Saving)
+local Slots = require(script.Parent.Slots)
 
 -- The trip's data (Trip.Data), spelled out here as a cross-folder require's types don't reach
 -- every caller's checker.
@@ -73,6 +85,7 @@ export type Data = {
 	server: string,
 	lobby: string,
 	by: number,
+	finds: { Slots.Up },
 }
 
 export type Trips = Brix.System & {
@@ -114,6 +127,12 @@ local STUDIO = RunService:IsStudio()
 local AT_SPAWN = 40
 -- Seconds the group's server waits at most for floor 1's car to stream to the riders' screens.
 local STREAM_MOST = 4
+-- Seconds between looks at taken-up finds still waiting on a save to load (S5-03d4).
+local DEAL_EVERY = 0.5
+-- Studio only, with DevTrip "Arrive": the finds the first player says they took up from their own
+-- box ("Boombox,Lamp*": a star for cracked, "^" before a name to wear it), as a live trip's data
+-- would carry them.
+local DEV_FINDS = "DevTripFinds"
 
 local function now(): number
 	return Workspace:GetServerTimeNow()
@@ -151,6 +170,8 @@ local Trips = {}
 function Trips.new(): Trips
 	local climbs: Climbs.Climbs? = nil
 	local office: FrontOffice.FrontOffice? = nil
+	local slots: Slots.Slots? = nil
+	local saving: Saving.SavingSystem? = nil
 	local connections: { RBXScriptConnection } = {}
 	local threads: { thread } = {}
 	local isOwn = false
@@ -175,6 +196,9 @@ function Trips.new(): Trips
 	local homed = false -- the first climb is over: the group is in the lobby
 	local toldFloor: number? = nil -- the floor last sent to the lobby they left
 	local toldAt = 0 -- os.clock() it was sent
+	-- each owner's own word about the finds they took up, by UserId, not yet dealt (S5-03d4)
+	local ups: { [number]: { Slots.Up } } = {}
+	local dealAt = 0 -- os.clock() of the next look at them
 
 	local function spawn(f: () -> ())
 		local thread = task.spawn(f)
@@ -209,6 +233,10 @@ function Trips.new(): Trips
 			end
 		end
 		if not gone and player.Parent then
+			local s = slots
+			if s then
+				s:stay(player) -- what they took up stays in hand
+			end
 			task.spawn(sent.failed, player)
 		end
 	end
@@ -370,6 +398,60 @@ function Trips.new(): Trips
 		end)
 	end
 
+	-- Studio's stand-in for a trip's taken-up finds (DEV_FINDS), all `owner`'s, in their hands.
+	local function devFinds(owner: number): { Slots.Up }
+		local out: { Slots.Up } = {}
+		local said = Workspace:GetAttribute(DEV_FINDS)
+		if type(said) ~= "string" then
+			return out
+		end
+		for word in string.gmatch(said, "[^,%s]+") do
+			local worn = string.sub(word, 1, 1) == "^"
+			local cracked = string.sub(word, -1) == "*"
+			local name = string.gsub(word, "[%^%*]", "")
+			table.insert(
+				out,
+				{ owner = owner, name = name, holder = owner, cracked = cracked, worn = worn }
+			)
+		end
+		return out
+	end
+
+	-- Deals each owner's taken-up finds whose save has loaded (S5-03d4): only what it backs, each
+	-- into its holder's slots (its owner's when the holder isn't here), already up. `quiet`: their
+	-- screens are still black. The rest stays in the box.
+	local function dealUps(quiet: boolean)
+		local s, sv = slots, saving
+		if not (s and sv) then
+			return
+		end
+		for owner, list in ups do
+			local player = Players:GetPlayerByUserId(owner)
+			local save = if player then sv:data(player) else nil
+			if not (player and save and rootOf(player)) then
+				continue -- their save still on its way from the lobby, or no body yet
+			end
+			ups[owner] = nil
+			local dealt = 0
+			for _, u in Taken.backed(list, owner, save, s:fromBox(player)) do
+				local holder = Players:GetPlayerByUserId(u.holder)
+				local into = if holder
+						and table.find(here, holder)
+						and rootOf(holder)
+					then holder
+					else player
+				if
+					s:carryUp(into, u, quiet) or (into ~= player and s:carryUp(player, u, quiet))
+				then
+					dealt += 1
+				end
+			end
+			if STUDIO then
+				print(`Trips: {dealt} of {#list} finds {player.Name} took up came across the trip`)
+			end
+		end
+	end
+
 	-- `player` arrived on a group's own server.
 	local function arrived(player: Player)
 		if table.find(here, player) then
@@ -392,6 +474,20 @@ function Trips.new(): Trips
 			if first.server ~= "" then
 				Workspace:SetAttribute(Trip.ServerAttribute, first.server)
 			end
+		end
+		-- their own word about their own finds taken up (anyone's else is theirs to say)
+		local finds: { Slots.Up } = if d then d.finds else {}
+		if STUDIO and dev == "Arrive" and not d then
+			finds = devFinds(player.UserId)
+		end
+		local mine: { Slots.Up } = {}
+		for _, u in finds do
+			if u.owner == player.UserId then
+				table.insert(mine, u)
+			end
+		end
+		if #mine > 0 and not homed then
+			ups[player.UserId] = mine
 		end
 		-- a friend sent on by an invite: pointed to whoever invited them, once the group's home
 		if d and d.by ~= 0 then
@@ -437,6 +533,7 @@ function Trips.new(): Trips
 				table.insert(still, player)
 			end
 		end
+		dealUps(true) -- in their hands before their screens open on the shaft
 		if #still == 0 or not c:arrive(still, Trip.Since) then
 			boarding = false -- tried again next step
 			return
@@ -579,11 +676,14 @@ function Trips.new(): Trips
 			-- (init.server), and these start before this one
 			climbs = (registry:get("climbs") :: any) :: Climbs.Climbs
 			office = (registry:get("frontOffice") :: any) :: FrontOffice.FrontOffice -- any: as above
+			slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
+			saving = (registry:get("saving") :: any) :: Saving.SavingSystem -- any: as above
 			table.insert(
 				connections,
 				Players.PlayerRemoving:Connect(function(player: Player)
 					resolve(player, true) -- a rider leaving the lobby went on their trip
 					placed[player], placing[player], loaded[player] = nil, nil, nil
+					ups[player.UserId] = nil
 					local i = table.find(here, player)
 					if i then
 						table.remove(here, i)
@@ -653,6 +753,10 @@ function Trips.new(): Trips
 						resolve(player, false)
 					end
 				end
+			end
+			if isOwn and rodeAt and not homed and next(ups) ~= nil and os.clock() >= dealAt then
+				dealAt = os.clock() + DEAL_EVERY
+				dealUps(false)
 			end
 			if isOwn and rodeAt and not homed then
 				local c = climbs
@@ -726,7 +830,11 @@ function Trips.new(): Trips
 			return game.PlaceId ~= 0 and failedInRow < Trip.FallbackAfter
 		end,
 		send = function(_: any, players: { Player }, d: Data, failed: (player: Player) -> ())
-			sendNow(players, d, true, failed)
+			-- what they took up out of their boxes goes with them (S5-03d4)
+			local s = slots
+			local withFinds = table.clone(d)
+			withFinds.finds = if s then s:going(players) else {}
+			sendNow(players, withFinds, true, failed)
 		end,
 		follow = function(_: any, player: Player, to: string, by: number)
 			if isOwn or sending[player] or not Trip.isServer(to) then
@@ -776,6 +884,7 @@ function Trips.new(): Trips
 			end
 			homed = true
 			table.clear(placed)
+			table.clear(ups) -- never dealt: it stays in the box
 		end,
 	}
 	return system

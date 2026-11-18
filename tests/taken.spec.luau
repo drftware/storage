@@ -176,6 +176,56 @@ do
 	ok(mine.finds.Lamp == 1, "untouched")
 end
 
+-- Across the trip (S5-03d4, D-358): the climb's own server deals only what the owner's save backs.
+-- The trip's word passed through each rider's device, so a forged or missing find is refused (it
+-- stays in the box), and what's dealt keeps its crack.
+do
+	local function up(owner: number, name: string, cracked: boolean?, holder: number?): Taken.Up
+		return {
+			owner = owner,
+			name = name,
+			holder = holder or owner,
+			cracked = cracked == true,
+			worn = false,
+		}
+	end
+	local data = Save.fresh()
+	data.finds = { Lamp = 2, Boombox = 1, ["Teddy:Gold"] = 1 }
+	data.chipped = { Boombox = 1 }
+	data.shelf[1] = { find = "Lamp", fresh = Save.Fresh.Seen } -- one Lamp stands on the shelf
+	local ups = {
+		up(101, "Lamp"),
+		up(101, "Lamp"), -- a second: the other is on the shelf
+		up(101, "Boombox", true, 7), -- cracked, in a friend's hands
+		up(101, "Skates"), -- never owned
+		up(7, "Teddy:Gold"), -- another rider's word about this one's find
+		up(101, "Teddy:Gold"),
+	}
+	local dealt = Taken.backed(ups, 101, data, {})
+	ok(#dealt == 3, "three backed by the save")
+	ok(dealt[1].name == "Lamp", "the box's one Lamp")
+	ok(
+		dealt[2].name == "Boombox" and dealt[2].cracked and dealt[2].holder == 7,
+		"a cracked one stays cracked, in the friend's hands"
+	)
+	ok(dealt[3].name == "Teddy:Gold", "a Gold by its key")
+	ok(data.finds.Lamp == 2 and data.finds.Boombox == 1, "checking writes nothing")
+	ok(
+		#Taken.backed(ups, 101, data, { Lamp = 1, Boombox = 1, ["Teddy:Gold"] = 1 }) == 0,
+		"those already out here are refused"
+	)
+	ok(#Taken.backed({}, 101, data, {}) == 0, "nothing carried, nothing dealt")
+	ok(#Taken.backed(ups, 55, data, {}) == 0, "nobody's finds but the owner's")
+	ok(#Taken.backed(ups, 101, Save.fresh(), {}) == 0, "a save with none: all refused")
+	-- dealt, then lost on a climb that ended properly: struck once, never twice
+	ok(
+		Taken.settle({ name = "Lamp", how = "Lost", now = 0, spots = SPOTS }, data) == "Lost",
+		"lost"
+	)
+	ok(data.finds.Lamp == 1, "one struck off")
+	ok(#Taken.backed({ up(101, "Lamp") }, 101, data, {}) == 0, "the one left is the shelf's")
+end
+
 print(`taken.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

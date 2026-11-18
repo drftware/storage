@@ -11,6 +11,7 @@
 -- reads back only if it names a server and a whole floor.
 local Boarding = require("../src/shared/Lobby/Boarding")
 local Ride = require("../src/shared/Elevator/Ride")
+local Taken = require("../src/shared/Home/Taken")
 local Trip = require("../src/shared/Lobby/Trip")
 
 local failures, checks = 0, 0
@@ -358,6 +359,79 @@ do
 	)
 	ok(not Trip.standsLate(true, false, true), "a friend held in a unit is never stood at the car")
 	ok(not Trip.standsLate(false, true, true), "nor once they're in their unit")
+end
+
+-- taken-up finds across the trip (S5-03d4, D-358): each rider's finds out of a job box go in the
+-- data, checked as they arrive; a bad entry is dropped on its own, never the whole group
+do
+	local group = { 101, 7 }
+	local ups: { Taken.Up } = {
+		{ owner = 101, name = "Boombox", holder = 101, cracked = false, worn = false },
+		{ owner = 101, name = "Teddy:Gold", holder = 7, cracked = true, worn = false },
+		{ owner = 7, name = "HardHat", holder = 7, cracked = false, worn = true },
+	}
+	local data = Trip.encode(group, "Normal", nil, nil, ups)
+	ups[1].name = "Lamp"
+	ok(data.finds[1].name == "Boombox", "the data keeps its own copy of the finds")
+	local back = Trip.decode(data)
+	ok(back ~= nil and #back.finds == 3, "every taken-up find reads back")
+	if back then
+		local a, b, c = back.finds[1], back.finds[2], back.finds[3]
+		ok(a.owner == 101 and a.name == "Boombox" and a.holder == 101, "whose, what, who holds it")
+		ok(b.name == "Teddy:Gold" and b.holder == 7 and b.cracked, "a friend holds a cracked Gold")
+		ok(c.worn and not c.cracked, "one worn on the head")
+	end
+	ok(#Trip.encode(group, "Normal").finds == 0, "no finds: none carried")
+
+	local raw = {
+		v = Trip.Version,
+		group = { 101, 7 },
+		difficulty = "Normal",
+		finds = {
+			{ owner = 101, name = "Lamp", holder = 101, cracked = false, worn = false },
+			{ owner = 55, name = "Lamp", holder = 101, cracked = false, worn = false },
+			{ owner = 101, name = "Lamp", holder = 55, cracked = false, worn = false },
+			{ owner = 101, name = "", holder = 101, cracked = false, worn = false },
+			{ owner = 101, name = 4, holder = 101, cracked = false, worn = false },
+			{
+				owner = 101,
+				name = string.rep("x", Trip.NameMost + 1),
+				holder = 101,
+				cracked = false,
+				worn = false,
+			},
+			{ owner = 101, name = "Lamp", holder = 101, cracked = "yes", worn = false },
+			{ owner = 101, name = "Lamp", holder = 101, cracked = false },
+			"Lamp",
+			{ owner = 7, name = "Skates", holder = 101, cracked = true, worn = false },
+		},
+	}
+	local read = Trip.decode(raw)
+	ok(read ~= nil, "a group with bad finds still reads")
+	if read then
+		ok(#read.finds == 2, "only the two good finds are kept")
+		ok(read.finds[1].name == "Lamp" and read.finds[2].name == "Skates", "in order")
+	end
+	raw.finds = "Lamp" :: any
+	local notList = Trip.decode(raw)
+	ok(notList ~= nil and #notList.finds == 0, "finds that aren't a list: none")
+	local many = {}
+	for i = 1, Trip.UpsMost + 5 do
+		many[i] = { owner = 101, name = `Find{i}`, holder = 101, cracked = false, worn = false }
+	end
+	raw.finds = many
+	local capped = Trip.decode(raw)
+	ok(capped ~= nil and #capped.finds == Trip.UpsMost, "never more than the most a group carries")
+	local old = Trip.decode({
+		v = 3,
+		group = { 101 },
+		difficulty = "Normal",
+		server = "",
+		lobby = "",
+		by = 0,
+		finds = { { owner = 101, name = "Lamp", holder = 101, cracked = false, worn = false } },
+	})
+	ok(old ~= nil and #old.finds == 0, "version 3 carried no finds")
 end
 
 print(`trip: {checks - failures}/{checks} passed`)
