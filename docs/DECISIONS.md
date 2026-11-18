@@ -10107,3 +10107,45 @@ Arrange, a trip's torn one, the Packrat's flyer).
 
 Not chosen: `data.sealed` as a count under `finds` (which one is sealed is lost the moment two
 teddies are kept); a new save version moving a count to names (nothing was ever written to it).
+
+## D-428 · 2026-11-18 · The haul valued one find at a time: its order, its timing and its list (S5-01a)
+
+The owner's idea 25 (PROPOSAL, agreed): each find that became yours on the climb comes up on the
+results one at a time, its picture, name, grade and worth, the total counting up, then a line for
+each player. S5-01 is split in four (ROADMAP): a the order, timing and the server's list (this),
+b the cards on the board, c each player's line, d seen in Studio.
+
+- **Where:** on the board on the lobby car's back wall (CarResults), where the group stands after
+  Again, facing it, while the car's 20-second count runs; not on the black "Caught" screen. The
+  brief's moment is the team standing in the car watching the haul flip up, and the board is
+  already where the cash counts up (D-151). Proven: Lethal Company's end-of-day tally on the
+  ship's screen, Hades' end-of-run summary. A default in `OWNER.md`.
+- **What counts:** every find a gate kept for a rider (GatePay's `kept`, its new `found`: the
+  rider's own slots and the jukebox set down, not a friend's find taken up from home, which was
+  never the climb's), each marked cracked as `chipped` says, from Climbs' `began` to the end;
+  only those of friends standing in the car (a friend who left took theirs home already).
+- **Worth:** what it sells for at your chest, `BoxPanel.price` (sealed three times, cracked half,
+  the jukebox its 800). The cash comes when you sell (D-251), so the total is the haul's worth,
+  not cash paid.
+- **Order:** cheapest first and the most valuable last (a tie by grade, find, cracked, who), the
+  same on every screen whatever order things were kept in: the storage-auction shows' build to
+  the big reveal; a sealed Legendary may outvalue a Secret and comes after it.
+- **Stings:** a Secret, the floor's big find, a find still sealed and a Legendary land with their
+  own sting and a hold of quiet after (`Tally.Holds`: 1.4, 1.0, 0.7, 0.7 seconds).
+- **Timing (`Tally.times`):** a short haul gives each card its `Beat` (0.62 s); a long one's
+  cheap cards quicken to fit `Within` (8 s), never quicker than `Quick` (0.14 s, seven a second),
+  while the last three cards and every sting card keep their beat; if even that overruns, the
+  holds shrink to no less than 40%. A haul of 30 cheap finds and two stings fits in 8 s; past
+  that it runs a little longer, still inside the count. The total (`Tally.total`) ticks each
+  card's worth on over 0.4 s from its landing (0.18 s in), Cubic-out as D-151's cash does, and is
+  whole as the last beat ends. A tap (`Tally.skip`) jumps to the next sting card, else the end.
+- **The list:** "<userId>=<key>[!]" cells, comma separated (`Tally.encode`, "!" cracked, Studio's
+  negative ids read), at most 60 (the cheapest left off past it), as a fifth field of the car's
+  results value (`ClimbEnd.encodeResults(..., haul)`; `decodeResults` gives `haul`, "" for an old
+  value). One value, so the board builds once with everything. Junk cells and keys that aren't
+  finds are skipped on reading.
+
+Not chosen: the haul on the "Caught" screen (no one stands anywhere there, and it would hold the
+Again button back); the order kept in (cheap and dear jumbled, no build); a separate attribute for
+the haul (two values arriving apart would build the board twice); the cover renders as pictures
+(they were never uploaded as images; ToolPicture's 3D picture is what every other card uses).

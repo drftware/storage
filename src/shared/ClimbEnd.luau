@@ -389,15 +389,22 @@ end
 -- One friend on a car's results board: who, how it went, the floor it was lost on (or reached), and
 -- the cash their coins turned into as it ended (S1-12; nil for none).
 export type Result = { userId: number, fate: Fate, floor: number, cash: number? }
--- How a climb went, on the back wall of the car its group came back to (L-08e2).
-export type Results = { how: How, floor: number, seconds: number, rows: { Result } }
+-- How a climb went, on the back wall of the car its group came back to (L-08e2); `haul` is the
+-- finds the group kept on it, as `Tally.encode` wrote them ("" for none; S5-01a, D-428).
+export type Results = { how: How, floor: number, seconds: number, rows: { Result }, haul: string }
 
 -- The most friends a board shows: a car's capacity (Boarding.Capacity).
 ClimbEnd.BoardMost = 6
 
--- A car's results board value: "<how>|<floor>|<seconds>|<id>:<fate>:<floor>:<cash>,..." (the rows
--- in the group's order, at most `BoardMost`).
-function ClimbEnd.encodeResults(how: How, floor: number, seconds: number, rows: { Result }): string
+-- A car's results board value: "<how>|<floor>|<seconds>|<id>:<fate>:<floor>:<cash>,...|<haul>" (the
+-- rows in the group's order, at most `BoardMost`; the haul as `Tally.encode` wrote it, no bars).
+function ClimbEnd.encodeResults(
+	how: How,
+	floor: number,
+	seconds: number,
+	rows: { Result },
+	haul: string?
+): string
 	local cells: { string } = {}
 	for i, row in rows do
 		if i > ClimbEnd.BoardMost then
@@ -407,11 +414,12 @@ function ClimbEnd.encodeResults(how: How, floor: number, seconds: number, rows: 
 		cells[i] = string.format("%d:%s:%d:%d", row.userId, row.fate, row.floor, cash)
 	end
 	return string.format(
-		"%s|%d|%d|%s",
+		"%s|%d|%d|%s|%s",
 		how,
 		floor,
 		math.max(math.floor(seconds), 0),
-		table.concat(cells, ",")
+		table.concat(cells, ","),
+		(string.gsub(haul or "", "|", ""))
 	)
 end
 
@@ -420,7 +428,8 @@ function ClimbEnd.decodeResults(value: unknown): Results?
 	if type(value) ~= "string" then
 		return nil
 	end
-	local how, floor, seconds, cells = string.match(value, "^(%a+)|(%d+)|(%d+)|(.*)$")
+	local how, floor, seconds, cells, haul =
+		string.match(value, "^(%a+)|(%d+)|(%d+)|([^|]*)|?(.*)$")
 	if how ~= "Kept" and how ~= "Top" then
 		return nil
 	end
@@ -444,6 +453,7 @@ function ClimbEnd.decodeResults(value: unknown): Results?
 		floor = tonumber(floor) or 0,
 		seconds = tonumber(seconds) or 0,
 		rows = rows,
+		haul = haul or "",
 	}
 end
 

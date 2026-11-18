@@ -225,6 +225,14 @@ nowhere else.
   out of your box, tear it on a floor (sprint and drop it), and ride with it: it's theirs plain.
   Decide (my defaults): the card's word "Sealed"; a sealed find can't be worn (the hard hat in
   its carton) or set out in your home yet (S5-02b2c2 will stand it in its pack).
+- [ ] **Decide: how the haul comes up on the car's board** (S5-01a, D-428; nothing on screen yet,
+  S5-01b draws it). My defaults: 1. the finds come up on the board on the lobby car's back wall,
+  where you stand after Again, not on the black "Caught" screen before it; 2. cheapest first,
+  the most valuable last; 3. four kinds land with their own sting and a pause: a Secret (the
+  longest), the jukebox, a find still sealed, a Legendary; 4. a short haul gives each card about
+  two thirds of a second, a long one speeds its cheap cards up to seven a second so it's done in
+  about eight seconds, inside the car's 20-second count; 5. a tap skips to the next sting card;
+  6. only the finds of friends standing in the car count (a friend who left took theirs).
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

@@ -53,6 +53,7 @@ local Pay = require(ReplicatedStorage.Shared.Pay)
 local Save = require(ReplicatedStorage.Shared.Save)
 local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
 local Taken = require(ReplicatedStorage.Shared.Home.Taken)
+local Tally = require(ReplicatedStorage.Shared.Tally)
 local BigFinds = require(script.Parent.BigFinds)
 local Climbs = require(script.Parent.Climbs)
 local Coins = require(script.Parent.Coins)
@@ -66,8 +67,10 @@ local SPOTS = #Home.Specs.Shelf.Spots
 
 local GatePay = {}
 
--- Finds a rider kept at a floor's gate, by name, and the floor (Recording, S1-02).
-export type Kept = { player: Player, finds: { string }, floor: number }
+-- Finds a rider kept at a floor's gate, by name, and the floor (Recording, S1-02). `found`: those
+-- of them the climb dealt (not a friend's find taken up from home), each marked if it cracked on
+-- the way: the haul the results value one at a time (S5-01a, D-428).
+export type Kept = { player: Player, finds: { string }, floor: number, found: { Tally.Find } }
 
 export type GatePaySystem = Brix.System & {
 	-- Fires for each rider who kept finds as a gate shut, after they're out of the slots.
@@ -285,7 +288,27 @@ function GatePay.new(): GatePaySystem
 				settleMoved(player, moved)
 			end
 			if #shown > 0 then
-				keptSignal:fire({ player = player, finds = shown, floor = event.from.number })
+				-- the climb's own finds, each cracked one marked (as many as `chipped` names)
+				local cracks: { [string]: number } = {}
+				for _, name in chipped do
+					cracks[name] = (cracks[name] or 0) + 1
+				end
+				local found: { Tally.Find } = {}
+				for _, name in kept do
+					local left = cracks[name] or 0
+					cracks[name] = left - 1
+					table.insert(found, {
+						userId = player.UserId,
+						key = name,
+						cracked = if left > 0 then true else nil,
+					})
+				end
+				keptSignal:fire({
+					player = player,
+					finds = shown,
+					floor = event.from.number,
+					found = found,
+				})
 			end
 			if RunService:IsStudio() then
 				local list = if #shown > 0 then table.concat(shown, ", ") else "no finds"

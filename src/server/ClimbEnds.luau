@@ -23,7 +23,9 @@
 	  `release`), and every character goes, so nothing can reach anyone behind the results
 	  (`covered` fires: CashOut takes the coin counts off screen).
 	- The results board carries each friend's cash from the climb (`Cash.EarnedAttribute`, set by
-	  CashOut as it ended, S1-12), cleared with the end.
+	  CashOut as it ended, S1-12), cleared with the end, and the haul (S5-01a, D-428): every find
+	  the climb dealt that a friend in the car kept at a gate (GatePay's `kept`, its `found`),
+	  gathered from the climb's start (Climbs' `began`), valued one at a time on the board (Tally).
 	- "Again" (`Remotes.Again`, checked: the results are up, the player hasn't pressed, the rate):
 	  marks them in (`ClimbEnd.InAttribute`). Once everyone's in, or `ClimbEnd.AgainWait` after the
 	  first press (`ClimbEnd.StartAttribute`, so every screen counts down), `go`: back in the lobby
@@ -46,9 +48,11 @@ local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Left = require(ReplicatedStorage.Shared.Left)
+local Tally = require(ReplicatedStorage.Shared.Tally)
 local ToLobby = require(ReplicatedStorage.Shared.ToLobby)
 local Climbs = require(script.Parent.Climbs)
 local CutFrees = require(script.Parent.CutFrees)
+local GatePay = require(script.Parent.GatePay)
 local LobbyCars = require(script.Parent.LobbyCars)
 local Slots = require(script.Parent.Slots)
 local Watching = require(script.Parent.Watching)
@@ -111,6 +115,8 @@ function ClimbEnds.new(): ClimbEndsSystem
 	local remote: RemoteEvent? = nil
 	local connections: { RBXScriptConnection } = {}
 	local topping: Brix.SignalConnection? = nil
+	local listening: { Brix.SignalConnection } = {} -- the haul's: Climbs' `began`, GatePay's `kept`
+	local haul: { Tally.Find } = {} -- the climb's finds kept at its gates, in the order kept
 	local phase: Phase = "Idle"
 	local lost: { [Player]: ClimbEnd.Lost? } = {}
 	local overSince: number? = nil -- server time nobody was seen climbing
@@ -277,8 +283,10 @@ function ClimbEnds.new(): ClimbEndsSystem
 		local _, how, floor, seconds = ClimbEnd.decode(Workspace:GetAttribute(ClimbEnd.Attribute))
 		local rows: { ClimbEnd.Result } = {}
 		local at: { [Player]: CFrame } = {}
+		local inCar: { [number]: true } = {}
 		for _, back in group do
 			at[back.player] = back.at
+			inCar[back.player.UserId] = true
 			local fate, on = ClimbEnd.decodeFate(back.player:GetAttribute(ClimbEnd.FateAttribute))
 			if fate then
 				local cash = back.player:GetAttribute(Cash.EarnedAttribute)
@@ -291,15 +299,30 @@ function ClimbEnds.new(): ClimbEndsSystem
 				table.insert(rows, row)
 			end
 		end
+		-- the haul of those standing in the car (a friend who left took theirs with them)
+		local theirs: { Tally.Find } = {}
+		for _, find in haul do
+			if inCar[find.userId] then
+				table.insert(theirs, find)
+			end
+		end
+		local hauled = Tally.encode(theirs)
 		Workspace:SetAttribute(ClimbEnd.LobbyAttribute, true)
 		load(at, nil)
 		local l = lobbyCars
 		if l then
-			l:welcome(ClimbEnd.encodeResults(how :: ClimbEnd.How, floor, seconds, rows))
+			l:welcome(ClimbEnd.encodeResults(how :: ClimbEnd.How, floor, seconds, rows, hauled))
 		end
 		cleared("Idle")
 		if STUDIO then
-			print(`ClimbEnds: back in the lobby, {#group} in their car`)
+			local cards = Tally.cards(Tally.decode(hauled))
+			local worth = 0
+			for _, card in cards do
+				worth += card.worth
+			end
+			print(
+				`ClimbEnds: back in the lobby, {#group} in their car, a haul of {#cards} worth {worth}: {hauled}`
+			)
 		end
 	end
 
@@ -386,6 +409,20 @@ function ClimbEnds.new(): ClimbEndsSystem
 		topping = c.topped:connect(function(t: Climbs.Topped)
 			endClimb("Top", t.from.number, t.at)
 		end)
+		-- the haul: started afresh with each climb, every find a gate keeps added as it's kept
+		table.insert(
+			listening,
+			c.began:connect(function()
+				table.clear(haul)
+			end)
+		)
+		local gate = (registry:get("gatePay") :: any) :: GatePay.GatePaySystem -- any: as above
+		table.insert(
+			listening,
+			gate.kept:connect(function(each: GatePay.Kept)
+				table.move(each.found, 1, #each.found, #haul + 1, haul)
+			end)
+		)
 		local folder = ReplicatedStorage:FindFirstChild(Keypad.RemoteFolder)
 		if not folder then
 			folder = Instance.new("Folder")
@@ -484,6 +521,11 @@ function ClimbEnds.new(): ClimbEndsSystem
 			topping:disconnect()
 			topping = nil
 		end
+		for _, conn in listening do
+			conn:disconnect()
+		end
+		table.clear(listening)
+		table.clear(haul)
 		if remote then
 			remote:Destroy()
 			remote = nil

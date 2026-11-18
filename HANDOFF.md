@@ -19,9 +19,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Not the home's: the checkout's uncommitted `BigFinds`, `MinimapView` and the D-417 lines in
   OWNER, CODEMAP and DECISIONS are the climb run's work in progress; the home leaves them alone.
 - **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403
-  to D-413), S4-05 the big find (D-414 to D-419), the hard hat (D-420, D-421), S5-02a (D-422),
-  sealed finds dealt, torn, kept, shelved, sold at 3x (D-423 to D-427), seen in Studio (S5-02c).
-  Next: S5-02b2c2 (Arrange stands a sealed one in its pack; a trip's torn one), then S5-01.
+  to D-413), S4-05 the big find (D-414 to D-419), the hard hat (D-420, D-421), S5-02 rarer and
+  sealed finds (D-422 to D-427), S5-01a the haul's order, timing and list (D-428, `Tally`). Next:
+  S5-01b (the cards on the car's board: `CarResults`, `Results.haul`), c, d; S5-02b2c2 open.
 
 ## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
 The home's look settling without a seam. One line a session if they won't fit together; split

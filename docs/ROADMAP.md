@@ -2491,7 +2491,34 @@ Done when players watch the results to the end and change their perks between cl
 
 - [ ] **S5-01 Finds valued one at a time** on the results: picture, name, how rare, what it's
   worth, the haul's worth counting up (the cash comes when you sell at your chest, D-251); then
-  a line for each player.
+  a line for each player. The moment: back in the lobby car after a climb, the team stands facing
+  the board on its back wall and watches the haul flip up card by card, cheapest first, the
+  total ticking with each, a Secret landing last with its own sting, then everyone sees who
+  carried what. Proven: Lethal Company's end-of-day scrap tally, Hades' end-of-run summary.
+  Never drags: a tap skips ahead, a long haul speeds up, all inside the car's 20-second count.
+  - [x] **S5-01a The haul's order and timing, and the server's list** (pure, Lune specs first).
+    Done Nov 18 (D-428; `Tally`, tests/tally.spec): passes checks, not seen in Studio (the
+    Output line waits for S5-01d's ride back to the car).
+    `Tally`: each find kept on the climb as a card (name, grade, what it sells for at the chest:
+    sealed 3x, cracked half, the jukebox's own worth), cheapest first; each card's moment (a
+    long haul's cheap cards quicken, the last three and every sting card keep their beat); the
+    total at any moment; where a tap skips to (the next sting card, else the end); the list sent
+    with the car's results. GatePay's kept event tells ClimbEnds each rider's own finds (not a
+    friend's taken from home); ClimbEnds gathers the climb's haul and puts it on the board's
+    value. Studio's Output prints the haul as the group is stood back in the car.
+  - [ ] **S5-01b The cards on the board.** The moment: each card flips up big in the board's
+    middle (its 3D picture, name, the grade's colour, its worth), then drops into the row below
+    as the next comes; the total ticks with a rising chink; a sting card (Secret, Legendary,
+    sealed, the jukebox) lands with a hit, a flash in its grade's colour and a beat of quiet. A
+    tap anywhere skips ahead (the cards between land at once). One picture drawn at a time
+    (phone budget). Its sounds named and measured.
+  - [ ] **S5-01c Each player's line.** After the total: each friend's photo with what they
+    carried (how many, their worth, their best find's small picture), and the proposal's lines
+    (idea 25: who freed the most friends, opened the most doors, shut a friend in a unit), each
+    landing with a tick; Again's count still running.
+  - [ ] **S5-01d Seen in Studio.** Play a climb with a few finds banked (one sealed, one high
+    grade), ride back to the car, watch the board to the end; captures to `docs/art/`; the
+    two-player run and a phone's look in `OWNER.md`.
 - [ ] **S5-02 Rarity, and finds still sealed.** Rarer finds on higher floors, in the catalog's
   six grades (Secret on top, from floor 10; D-188); about one in
   twenty still in its packaging, worth three times as much. A padlocked unit's find draws a
