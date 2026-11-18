@@ -19,6 +19,9 @@ at `7f25310`, NOT on Brix's `origin` yet. The home's chain of sessions is paused
   the friend cards weren't watched (STUDIO.md). The two-player test is in OWNER.md.
 - Studio hooks: `GrowTest` (a size; "cash"/"price", n; "gift", size, friendPlayer; "friend",
   name, size for a made-up friend), `ArrangeTest` "size", `DevReceipt`. Test save: Small, cash 188.
+- **Climb run:** item 1 done (F-G1e6q2, D-400): a box's find no longer takes back a hand you
+  switched during its reveal; a press during your own switch waits for it; the jar's light was
+  never lost; the coin count's 0 is Studio's test hall. Next: S4-02 Monsters by lowest floor.
 
 ## Next task: S5-03i1 The starter pieces become furniture
 The moment (Animal Crossing's house, Bloxburg's build mode): the shelf isn't stuck mid-room; in

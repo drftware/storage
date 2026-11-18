@@ -562,6 +562,9 @@ export type Hand = {
 	-- moves your view's copy by `delta` from where your grip holds it, in its root's own space:
 	-- a find's root carried by its own motion (the kazoo lifted to your lips, `Finds.shift`)
 	shift: (delta: CFrame) -> (),
+	-- your own switch or put-away is still on its way to the server: what's in your hand is about
+	-- to change, so a press now waits for it (HornView, F-G1e6q2)
+	landing: () -> boolean,
 }
 
 -- `needCursor` frees a computer's mouse while the wheel is open, to click a slot; `jolt` kicks
@@ -1872,6 +1875,9 @@ function ToolView.new(
 		shift = function(delta: CFrame)
 			-- the root at grip * bodyOff, moved by `delta` in its own space
 			viewShift = bodyOff * delta * bodyOff:Inverse()
+		end,
+		landing = function(): boolean
+			return predicted ~= nil and os.clock() - predictedAt < PREDICT
 		end,
 	}
 

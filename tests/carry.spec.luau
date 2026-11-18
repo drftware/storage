@@ -56,6 +56,28 @@ do
 	ok(Carry.take(c, "a") == nil, "a tool you carry can't be taken twice")
 end
 
+-- a find that reaches you after you chose what to hold (a box's, as its reveal ends, F-G1e6q2)
+-- goes into a free slot and leaves your hand where you put it; with nothing in hand it's in it
+do
+	local c = Carry.new()
+	Carry.take(c, "lantern")
+	Carry.take(c, "sign")
+	Carry.select(c, 1)
+	ok(Carry.take(c, "jar", true) == 3, "kept: the find into the free slot")
+	ok(Carry.held(c) == "lantern" and c.active == 1, "kept: your hand stays on the lantern")
+	local e = Carry.new()
+	Carry.take(e, "lantern")
+	Carry.pocket(e, true)
+	ok(Carry.take(e, "jar", true) == 2, "kept, hand empty: into a free slot")
+	ok(e.active == 1 and e.pocketed, "kept, hand empty: the lantern stays put away")
+	local f = Carry.new()
+	Carry.select(f, 2)
+	ok(
+		Carry.take(f, "jar", true) == 2 and Carry.held(f) == "jar",
+		"kept, on an empty slot: in hand"
+	)
+end
+
 -- your hand on an empty slot takes the new tool there, even with the other slot free
 do
 	local c = Carry.new()

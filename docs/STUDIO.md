@@ -404,6 +404,17 @@ verified: a doc page, Studio, or "untested".
   Each light sits in a `Light{i}` attachment under its part, and a part's glow is its
   SurfaceAppearance's `EmissiveStrength`, not its Material. Shorten a press from the Server by
   setting the held model's `UseAt` to `workspace:GetServerTimeNow()` and `UseLeft` to 2.
+- **The coin count reads 0 in the lobby in Studio Play, and that's right** (F-G1e6q2, Nov 17):
+  the test hall lays its floor as Play starts, which begins a climb ("climb floor 1 started" in
+  Output), and coins last a climb, so every count is set to 0 while you stand in the lobby. Live
+  there's no count until a lobby car rides up. Your save's cash is a different number (Saving's
+  "claimed ... cash 38" line). Set `DevCoins` on Workspace to test a count.
+- **A firefly jar looks dark half the time** (F-G1e6q2): its three real lights ride fireflies
+  that blink by its art (each about three times in its 16 s drift), so sample over seconds before
+  calling it off. And Studio's spawn counts as home, where lights don't run down (D-259).
+- **Opening a marked box from the MCP** worked (Nov 17): `DealFind` from the Server, then on the
+  Client stand 3.5 studs out along the box's LookVector, a Scriptable camera on it, wait 1.3 s,
+  its `ProximityPrompt` `InputHoldBegin`/`End`. The find lands about 2.4 s later for an Epic.
 - **Waking one sleeper on purpose** (B-05b2b): Workspace `GiveFind` set to "AirHorn" puts the
   horn in your hand; a Client `ReplicatedStorage.Remotes.ToolUse:FireServer()` blows it, and
   every keeper in reach wakes and comes to look. Stand at the unit's doorway; sample the keeper

@@ -217,7 +217,9 @@ export type Slots = Brix.System & {
 	-- A new tool of catalog key `key` straight into a free slot of `player`'s and their hand (bought
 	-- at the car's machine, S1-10c2), with its pick-up sound. False, and nothing made, if they have
 	-- no room, a big tool in their hands, no living character, or the place lacks its art.
-	give: (self: any, player: Player, key: string, quiet: boolean?) -> boolean,
+	-- `since`: when the player reached for it (a box opened, its find landing as the reveal
+	-- ends): a switch or a put-away since then keeps their hand where they put it (F-G1e6q2)
+	give: (self: any, player: Player, key: string, quiet: boolean?, since: number?) -> boolean,
 	-- A find `key` out of `player`'s job box (S5-03c2b2, D-293; a Gold's gilded) into a free slot,
 	-- as `give` with `quiet` (their screen plays the pick-up as the picture lands), marked as
 	-- from their box. The slot it went into, or nil when it can't (as `give`).
@@ -309,6 +311,7 @@ type Hand = {
 	burst: number,
 	usedLast: number?, -- ToolUse's own rate, as `last` and `burst` are the hand's
 	usedBurst: number,
+	moved: number, -- when the player last switched or put away (`now()`), -inf before
 }
 
 -- The tool's pivot for lying flat on a floor with its middle at `at`, turned `yaw` degrees: its
@@ -450,7 +453,13 @@ function Slots.new(): Slots
 	local function handOfPlayer(player: Player): Hand
 		local h = hands[player]
 		if not h then
-			h = { carry = Carry.new(), last = nil, burst = Carry.Burst, usedBurst = Carry.Burst }
+			h = {
+				carry = Carry.new(),
+				last = nil,
+				burst = Carry.Burst,
+				usedBurst = Carry.Burst,
+				moved = -math.huge,
+			}
 			hands[player] = h
 		end
 		return h
@@ -1126,6 +1135,7 @@ function Slots.new(): Slots
 			return
 		end
 		if Carry.select(h.carry, s) then
+			h.moved = now()
 			dress(player)
 			changed:fire({ player = player, kind = "Switch" })
 		end
@@ -1155,6 +1165,7 @@ function Slots.new(): Slots
 			return
 		end
 		if Carry.pocket(h.carry, down) then
+			h.moved = now()
 			dress(player)
 			changed:fire({ player = player, kind = "Pocket" })
 		end
@@ -1925,7 +1936,8 @@ function Slots.new(): Slots
 		key: string,
 		quiet: boolean?,
 		home: number?,
-		gold: boolean?
+		gold: boolean?,
+		since: number?
 	): number?
 		local root = rootOf(player)
 		local h = handOfPlayer(player)
@@ -1956,7 +1968,7 @@ function Slots.new(): Slots
 			gold = gold,
 		}
 		tools[t.id] = t
-		local slot = Carry.take(h.carry, t.id)
+		local slot = Carry.take(h.carry, t.id, since ~= nil and h.moved > since)
 		dress(player)
 		publish(player)
 		if not quiet then
@@ -1968,8 +1980,14 @@ function Slots.new(): Slots
 		return slot
 	end
 
-	function system.give(_: any, player: Player, key: string, quiet: boolean?): boolean
-		return make(player, key, quiet, nil) ~= nil
+	function system.give(
+		_: any,
+		player: Player,
+		key: string,
+		quiet: boolean?,
+		since: number?
+	): boolean
+		return make(player, key, quiet, nil, nil, since) ~= nil
 	end
 
 	function system.unbox(_: any, player: Player, key: string): number?

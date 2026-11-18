@@ -90,8 +90,10 @@ function Carry.find(c: Carry, id: string): number?
 end
 
 -- Takes `id` (picked up or handed over) into your hand. Returns its slot, or nil when your hands
--- are full or you already carry it.
-function Carry.take(c: Carry, id: string): number?
+-- are full or you already carry it. `keep`: you chose what to hold since you reached for it (a
+-- box's find lands as its reveal ends, F-G1e6q2), so it goes into a free slot and your hand stays
+-- where you put it, unless that's an empty slot it lands in.
+function Carry.take(c: Carry, id: string, keep: boolean?): number?
 	if Carry.find(c, id) then
 		return nil
 	end
@@ -100,6 +102,9 @@ function Carry.take(c: Carry, id: string): number?
 		return nil
 	end
 	c.slots[slot] = id
+	if keep and slot ~= c.active then
+		return slot
+	end
 	c.active = slot
 	c.pocketed = false
 	return slot

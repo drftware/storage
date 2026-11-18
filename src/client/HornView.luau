@@ -127,6 +127,9 @@ function HornView.new(
 	local ready = true
 	local canIn = 0
 	local could = true -- the tool in hand would take a press (`can`), as last asked
+	-- a press made while your own switch was on its way (F-G1e6q2): played as it lands, on what
+	-- it put in your hand, never on what you held before
+	local waiting = false
 
 	local function alive(): boolean
 		local character = player.Character
@@ -237,6 +240,15 @@ function HornView.new(
 
 	-- A press of the button with whatever tool with a verb is in your hand.
 	local function pressed()
+		if hand.landing() then
+			waiting = true
+			local s = press
+			if s then
+				s.Scale = 0.86
+				TweenService:Create(s, PRESS, { Scale = 1 }):Play()
+			end
+			return
+		end
 		if holding == Horn.Key then
 			blow()
 			return
@@ -280,7 +292,11 @@ function HornView.new(
 		state: Enum.UserInputState,
 		input: InputObject
 	): Enum.ContextActionResult
-		if state == Enum.UserInputState.Begin and holding ~= "" and not onButton(input) then
+		if
+			state == Enum.UserInputState.Begin
+			and (holding ~= "" or hand.landing())
+			and not onButton(input)
+		then
 			pressed()
 		end
 		return Enum.ContextActionResult.Pass
@@ -469,6 +485,12 @@ function HornView.new(
 		end
 		if not ready and Horn.allow(lastBlow, os.clock()) then
 			showReady(true)
+		end
+		-- the switch your press waited for has landed (or the server's word stands)
+		if waiting and not hand.landing() then
+			waiting = false
+			refresh()
+			pressed()
 		end
 		canIn -= dt
 		if can and holding ~= "" and canIn <= 0 then

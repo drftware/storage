@@ -8863,3 +8863,17 @@ only through the job box's panel; and a find set out was looks only, since the h
   and you walk up to use them) and Bloxburg's build mode (every object movable; lamps switch).
 - **Order**: this comes next, as S5-03i, before the rest of the sizes: there's no point laying
   fixed pieces by size when they're about to move. S5-03h4 folds into S5-03i1.
+
+## D-400 A find that lands after you chose what to hold keeps your hand where you put it (F-G1e6q2, Nov 17)
+- **The rule**: a marked box's find reaches your hand as its reveal ends (about 2.4 s for an
+  Epic). If you switched slots or put your tool away since the box opened, the find goes into a
+  free slot (its pick-up sound plays, its slot fills) and your hand stays on what you chose; else
+  it's in your hand as before. Picked up off a floor or handed over, it still goes in your hand.
+- **A press while your own switch is on its way** waits for it and plays on what the switch put
+  in your hand (the button squashes at once), as action games buffer an input; it was going to
+  the find you held before on your screen while the server pressed the new one.
+- **Precedents**: Lethal Company puts a picked-up item in your hand, but never moves your hand
+  after you've moved it; input buffering is every action game's (fighting games, Fortnite's
+  weapon swap).
+- **The jar** was never dark: its fireflies blink by its art, so its real lights are off between
+  blinks. Whether it lights a unit enough is a feel question for the owner's look at the Lights.

@@ -140,12 +140,20 @@ function MarkedBoxes.new(): MarkedBoxes
 	end
 
 	-- The reveal has brought find `key` to `player`'s hand: into it, or onto the floor at `at`.
-	local function grant(player: Player, key: string, laid: boolean, at: Vector3, yaw: number)
+	-- `since`: when the box opened (os.clock); a slot chosen during the reveal keeps the hand
+	local function grant(
+		player: Player,
+		key: string,
+		laid: boolean,
+		at: Vector3,
+		yaw: number,
+		since: number
+	)
 		local s = slots
 		if stopped or not s then
 			return
 		end
-		if not laid and player.Parent and s:give(player, key) then
+		if not laid and player.Parent and s:give(player, key, nil, since) then
 			return
 		end
 		s:lay(key, at, yaw)
@@ -241,7 +249,8 @@ function MarkedBoxes.new(): MarkedBoxes
 				key,
 				laid,
 				spot,
-				yaw
+				yaw,
+				os.clock()
 			)
 		end
 		opened:fire({

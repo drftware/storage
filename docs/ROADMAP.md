@@ -3229,7 +3229,15 @@ actions themselves and dealing the new finds on floors are later game tickets.
         three floors, the night light, fairy lights, oil lamp and glass lamp lit in hand, and
         most of F-G1e5e2: the oil lamp cracked, taken back up and banked cracked. Left: the Old
         lamp, the two cars, the TV, teddy and skates, the crack in hand, WAVES.md's Next line.)
-      - [ ] **F-G1e6q2 The firefly jar's light, and a press right after a slot switch (Q2).**
+      - [x] **F-G1e6q2 The firefly jar's light, and a press right after a slot switch (Q2;
+        Nov 17, D-400).** Found in Play: the jar keeps its light on a switch back (its fireflies
+        glowed in 64 of 64 samples and drifted; its three real lights blink with them by its art,
+        one on in 26), so Q1a read it between blinks. The press limit never refused (four a
+        burst). Two real races: a box's find landing as its reveal ends took your hand back from
+        a slot you'd switched to (fixed: `Carry.take`'s `keep`, seen in Play), and a press within
+        one round trip of your own switch went to the find you held before on your screen, or
+        nowhere if that one took no press (fixed: HornView waits for the switch, `hand.landing`;
+        passes checks, the lag not reproducible in Studio). The original lines:
         Seen in Play (Q1a): `DealFind` the neon sign, disco ball and firefly jar (Units 107,
         106, 105 on seed 7's floor 1), open the three boxes, then for slots 1 to 3 fire
         `ToolSwitch(slot)`, wait 1.5 s, `ToolUse`. The jar stamps On (`UseState`), but switched

@@ -9,6 +9,13 @@ nowhere else.
   `482368f` (the plots each player's home comes from), which is only on this Mac. In `../engine`,
   `git push origin main`, then this repository. Pushed the other way round, a fresh clone can't find
   the pinned commit.
+- [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
+  it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
+  hold the tea light, then tap the lantern's slot and tap the press button straight after, as
+  fast as your thumb goes. Look for: the lantern switches on, never the tea light; the press
+  button squashes the moment you tap it. Then open a marked box and, while its find is still
+  rising, switch to another slot: the find drops into a free slot with its sound, and your hand
+  stays where you put it.
 - [ ] **Your home, with a friend** (S5-03a3b, D-275; seen with one player only). Studio's Test
   tab, Clients and Servers, 2 players. Look for: each player gets a home by the front door (1 then
   7), their name sprays onto its card with a soft hiss and the door rolls up. Player 1 pulls their
