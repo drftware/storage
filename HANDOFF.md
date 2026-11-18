@@ -2,8 +2,8 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-18, S5-03i1b (D-347) · **Checks:** green for the home (climb's uncommitted
-CoinView, Pay fail selene) · **Git:** `main`, not pushed; Brix pinned `7f25310`, not on its origin.
+**Updated:** 2026-11-18, S5-03i1b (D-347) · **Checks:** green for the home · **Git:** `main`, not
+pushed; Brix `7f25310`. Uncommitted CoinView, GatePay, Keepers, Keeper, Pay: the climb run's.
 
 ## State
 - Nov 18, the owner (D-345): everything in a home moves, lifts and works (ROADMAP S5-03i, ahead
