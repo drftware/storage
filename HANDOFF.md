@@ -19,10 +19,10 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Studio hooks: `ShelfTest` "take"; `ArrangeTest` "take", "own", "place", "rows", "fromShelf",
   "shelfAway", "size" (grows the counter's way; STUDIO.md "Watching a home grow"). Home doc:
   https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww. Test save: Medium, card Stencil (Unit1; its `LookFrame` +Z runs into the room).
-- **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), the cards' vote,
-  faces, screen, felt on each floor and caught there down the shaft (D-403 to D-411), d1 three
-  cards ridden floors 1 to 4 in Play, the arrival's light tamed (D-412). Next: S4-03d2 (pick
-  back-to-the-lobby on floor 3's ride, see the tamed light; ROADMAP).
+- **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), and S4-03 the
+  next-floor cards, all four versions picked on rides and seen in Play (D-403 to D-413). Next:
+  S4-05 The big find (not yet planned: split it in ROADMAP first, its art the finds' way, then
+  the climb; Lethal Company's heavy scrap).
 
 ## Next task: S5-03d4 A taken-up find across the trip
 **The conductor clears this with the climb chain before it starts: it touches `GatePay`,
