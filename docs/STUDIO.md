@@ -3564,3 +3564,23 @@ verified: a doc page, Studio, or "untested".
   window capture: `crop=690:322:381:394`.
 - **A Server `GetAttributeChangedSignal` connection made in `execute_luau` stays live** after the
   call returns (it swapped a car's `Results` as it arrived), unlike a spawned client loop.
+
+## Best floors and the dial in Play (S6-01c, Nov 18)
+
+- **The display slept and the window capture failed** ("could not create image from window")
+  with Studio in Play. `caffeinate -u -t 1` wakes it; run `caffeinate -d -i -t 5400` as a
+  background command to keep it awake for the session.
+- **A floor's keypad spot:** pivot to `Elevator.keypadPoint(elevator)` less 1.8 in z (from the
+  Server: `require(ReplicatedStorage.Shared.Elevator)`). The lobby climb's floor 2 refused the
+  fixed (-7.8, 3, -3.5) offset that floor 1 took (Keypad's reach); the attribute reads
+  `n;Right;code;...` once it's taken. Lobby climb floors are at x -1600, z -600 - 1000 (n - 1).
+- **The test hall's climb belongs to Car1:** with `DevFloorNumber` set, Car1 carries its
+  `ClimbFloor`, so Car1's dial says "Floor N", which beats the best line: watch a best on Car2.
+  "Again" after a test-hall wipe puts you back on the test hall's floor, not in a car, and the
+  front office streams out (the dials go; they're rebuilt with no crew when it streams back).
+- **Stepping out of a lobby car as its gate shuts** (a Server pivot) sends an empty climb up
+  ("0 rode up from the lobby"), and that car's dial says "Floor 1" until the next car leaves.
+  In Studio every car shares one server; live, a group's climb is on its own server.
+- **Watching a roll:** raise the player's `BestFloor` attribute from the Server (the screen
+  only, not the save) while the camera faces away, start a `screencapture` loop with no sleep,
+  then turn the camera to the dial from the Client: the digits flip within about 1.3 s.

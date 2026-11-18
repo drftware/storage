@@ -3281,7 +3281,7 @@ Done when players watch the results to the end and change their perks between cl
 
 Done when players come back the next day without a friend asking them to.
 
-- [ ] **S6-01 Best floor.** On a plaque and on the dial over your car; badges at floors 10, 25,
+- [x] **S6-01 Best floor.** Done Nov 18 (D-432 to D-434). On a plaque and on the dial over your car; badges at floors 10, 25,
   50 and 100, for each kind of monster trapped and each set finished. Split Nov 18 (D-432):
   - [x] **S6-01a The best floor saved, the badges awarded. Built Nov 18 (D-432); passes checks,
     the load seen in Studio Play (no ride yet).** The moment: you ride onto floor 10 for the
@@ -3303,14 +3303,18 @@ Done when players come back the next day without a friend asking them to.
     SurfaceGui as the dial is (`CarDial`). Both read each player's `BestFloor` attribute
     (`Badges.BestAttribute`). Read first: `CarDial.luau` (`lineFor`, `build`, `draw`); D-124;
     `art/lobby/spec.py` (`bay_xs`, `BAY_PITCH`, `NUMBER`, `JAMB`).
-  - [ ] **S6-01c Seen in Studio Play.** First (S6-01b left it): with the dial on screen and
-    Studio drawing frames (the client steps on RenderStepped), see a best that rose roll up, a
-    clack a digit, a thunk, the chime; and a Full or Friends only car take turns with its best.
-    From lobby Car1 ride to floor 3 and back: Output says
-    "best floor is now 2", then 3; the dial and the plaque read 3. Then start a climb at floor 9
-    (Workspace `DevFloorNumber`) and ride to 10: Output says "earned the Floor10 badge (no badge
-    id yet)". Captures `docs/art/S6-01c-*.jpg` at A16 size. Polish here or after: a "New best"
-    line with its own sting on the car's board as the haul ends (S5-01's board).
+  - [x] **S6-01c Seen in Studio Play. Done Nov 18 (D-434; `docs/art/S6-01c-*.jpg`).** From
+    lobby Car1 to floor 3 and back: Output said "best floor is now 2", then 3 (floor 1 counts
+    only at a climb's end). From the test hall's floor 9 to 10: "best floor is now 10" and
+    "earned the Floor10 badge (no badge id yet)". Seen at A16 size: the roll (Best 3 to 10, and
+    10 to 25 on a raised attribute), Friends only taking turns with "Best 10" (3 s, 2 s), the
+    plaque's row "10" lit. Fixed: the dial and plaque read only those aboard, and from inside the
+    car you can't see the dial, so your own new best never rolled on your screen; an empty car
+    now keeps to its crew, those last aboard, until they board another car (`Bests.shown`,
+    `Bests.without`). The clack, thunk and chime by ear: `OWNER.md`.
+    Polish: the dial's gold line is about 7 pixels tall on the A16 from 13 studs out (the whole
+    dial is 3 studs tall); a taller dial or line wants room on the bay wall (`art/lobby/`). A
+    "New best" line with its own sting on the car's board as the haul ends (S5-01's board).
 - [ ] **S6-02 The Missing board.** A wiped team's photos and the floor they were caught on.
 - [ ] **S6-03 The free door once a day** in the lobby, a better find on the seventh day running.
 - [ ] **S6-04 Private servers and clips.** Private servers free or nearly; Roblox saves a short

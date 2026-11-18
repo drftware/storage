@@ -10312,3 +10312,20 @@ plaque in the lobby; c, seen in Studio Play. Piece a is built.
   planned; the line waited blank as designed (a first best, not yet on screen). The roll wasn't
   seen: the client steps on RenderStepped, which doesn't run while Studio isn't drawing frames,
   and the car left with me before the camera turned. S6-01c sees it.
+
+## D-434 An empty car keeps its crew's best on the dial and plaque (S6-01c, Nov 18)
+
+- **Why:** seen in Studio Play, the dial and the plaque read only those aboard, and the dial is
+  on the room's side of the gate: from inside the car you can't see it. So a team landing back
+  waited aboard with their new best hidden ("pending"), stepped out, the car emptied and the
+  line went blank: you never saw your own best roll up. Only a friend standing in the lobby did.
+- **The rule now:** a car remembers its crew, those last aboard. While nobody's aboard, the dial
+  and the plaque read the crew's bests, so the team walks out, turns round, and the digits roll
+  as they look (DOORS' and Pressure's lobbies show your record where you queue). Boarding another
+  car takes you off this one's crew (`Bests.without`). "Floor N" for a car whose group is
+  climbing still wins over the crew's best. The crew lives on each screen only: a car that
+  streams out (you climbing far away) starts with none, and the landing (you in its group)
+  sets it again.
+- **Seen in Studio Play:** Best 3 rolled to 10 once I'd stepped out of Car2 and turned to it;
+  Friends only took turns with "Best 10"; the plaque read "10", my row lit. The dial's line is
+  small from the lobby floor on a phone (polish line under S6-01c).

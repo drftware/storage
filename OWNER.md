@@ -267,14 +267,17 @@ nowhere else.
   as the art has them (until the collection book names its own sets), a sealed find counting.
   Live test, once the ids are in: climb past floor 10 and look for Roblox's badge toast the
   moment the car opens on floor 10.
-- [ ] **Watch your best floor on the dial and the plaque** (S6-01b, D-433; passes checks, the
-  plaque seen drawing in Studio, the roll not seen). Play, step into Car 1 and ride to floor 3
+- [ ] **Watch your best floor on the dial and the plaque** (S6-01b, D-433, D-434; the roll,
+  the turns and the plaque seen in Studio Play at A16 size, `docs/art/S6-01c-*.jpg`; not heard,
+  and never on a real phone). Play, step into Car 1 and ride to floor 3
   and back. Then walk out and turn round to face the car: the line under the dial's number should
   roll up "Best 1, 2, 3" with a clack each, slow at the end, a thunk and a chime, and the brass
   plaque left of the gate should show your photo and 3 on a lit row. With a friend aboard (two
   devices, or Studio's 2-player test), the plaque lists you both best first. Turn on Friends only:
   the line takes turns, "Friends only" three seconds, your best two. Say if the roll is too quick
-  or too slow, if the plaque is too small to read on a phone, and if the brass looks right.
+  or too slow, if the plaque is too small to read on a phone, and if the brass looks right. On a
+  phone from a few steps back the gold line is small (about 7 pixels in Studio's A16): say if it
+  wants a bigger dial.
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

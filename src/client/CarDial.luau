@@ -18,7 +18,9 @@
 	  looking (the climb) waits, showing the old one, until the dial is on your screen, then its
 	  digits roll up to the new one with a clack each, slowing, a thunk and a chime, as a
 	  pinball table's score counts up. Beside the gate, opposite the keypad, a brass plaque lists
-	  those aboard best first (`CarPlaque`).
+	  those aboard best first (`CarPlaque`). While nobody's aboard, both keep to the car's crew,
+	  those last aboard (S6-01c, D-434): you can't see the dial from inside the car, so a team
+	  landing back sees its new best roll up as it walks out and turns round.
 	- The pointer: a player in no car's group, standing in the front office, is pointed to the
 	  fullest car that would take them (`Boarding.fullest`: room, not shutting before they'd get
 	  there, Friends only only if they're the host's friend; the friend whose invite they came by
@@ -127,6 +129,7 @@ type Dial = {
 	lineScale: UIScale,
 	seats: { Seat },
 	plaque: CarPlaque.Plaque,
+	crew: { number }, -- those last aboard: while nobody is, their bests show (Bests.shown)
 	text: string, -- the line as drawn
 	pending: boolean, -- a risen best waiting for the dial to be on screen
 	turns: boolean, -- the line takes turns between Full or Friends only and the best
@@ -245,7 +248,11 @@ function CarDial.new(): Brix.System
 
 	-- The line under the number, its colour, the best floor when the line is the best's, and
 	-- whether it's taking turns (Full or Friends only, then the best).
-	local function lineFor(model: Model, state: Boarding.Car): (string, Color3, number?, boolean)
+	local function lineFor(
+		model: Model,
+		state: Boarding.Car,
+		who: { number }
+	): (string, Color3, number?, boolean)
 		local aboard = #state.group
 		if model:GetAttribute(Trip.Attribute) == true then
 			return "Going up", DIM, nil, false
@@ -254,7 +261,7 @@ function CarDial.new(): Brix.System
 		if aboard == 0 and type(floor) == "number" then
 			return `Floor {floor}`, GREEN, nil, false
 		end
-		local best = Bests.top(state.group, known)
+		local best = Bests.top(who, known)
 		local other, colour = "", INK
 		if aboard > 0 and aboard >= state.players then
 			other, colour = "Full", DIM
@@ -362,15 +369,16 @@ function CarDial.new(): Brix.System
 			return -- the roll draws the line again when it lands
 		end
 		local state = stateOf(dial.model)
-		local text, colour, best, turns = lineFor(dial.model, state)
+		local who = Bests.shown(state.group, dial.crew)
+		local text, colour, best, turns = lineFor(dial.model, state, who)
 		dial.turns = turns
 		dial.pending = false
 		local shown = best
 		if best then
-			local from = Bests.risen(state.group, known, before)
+			local from = Bests.risen(who, known, before)
 			if from then
 				if sees(dial) then
-					Bests.seen(state.group, before)
+					Bests.seen(who, before)
 					roll(dial, from, best)
 					return
 				end
@@ -437,6 +445,19 @@ function CarDial.new(): Brix.System
 
 	local function draw(dial: Dial, animate: boolean)
 		local state = stateOf(dial.model)
+		if #state.group > 0 then
+			-- they're this car's crew now, no longer an empty car's they rode before
+			dial.crew = state.group
+			for _, other in dials do
+				if other ~= dial and #other.crew > 0 and #stateOf(other.model).group == 0 then
+					local kept = Bests.without(other.crew, state.group)
+					if #kept < #other.crew then
+						other.crew = kept
+						draw(other, true)
+					end
+				end
+			end
+		end
 		for i, seat in dial.seats do
 			drawSeat(seat, state.group[i], i <= state.players, state.friends, animate)
 		end
@@ -444,7 +465,8 @@ function CarDial.new(): Brix.System
 			point(dial) -- the seat you'd take moves as the car fills
 		end
 		drawLine(dial, animate)
-		CarPlaque.draw(dial.plaque, Bests.rows(state.group, known), me.UserId, animate)
+		local who = Bests.shown(state.group, dial.crew)
+		CarPlaque.draw(dial.plaque, Bests.rows(who, known), me.UserId, animate)
 	end
 
 	local function build(model: Model, bay: number): Dial
@@ -589,6 +611,7 @@ function CarDial.new(): Brix.System
 			lineScale = lineScale,
 			seats = seats,
 			plaque = CarPlaque.build(bay, folder :: Folder),
+			crew = {},
 			text = "",
 			pending = false,
 			turns = false,
@@ -800,7 +823,7 @@ function CarDial.new(): Brix.System
 		end
 		known[id] = value
 		for _, dial in dials do
-			if table.find(stateOf(dial.model).group, id) then
+			if table.find(Bests.shown(stateOf(dial.model).group, dial.crew), id) then
 				draw(dial, true)
 			end
 		end

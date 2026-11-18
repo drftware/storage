@@ -19,9 +19,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Not the home's: the checkout's uncommitted `BigFinds`, `MinimapView` and the D-417 lines in
   OWNER, CODEMAP and DECISIONS are the climb run's work in progress; the home leaves them alone.
 - **Climb run (over):** done: the fix pass (D-400), S4-02 to S4-05, the hard hat, S5-02, S5-01,
-  S6-01a and b (best floor, badges, the dial's "Best N" and the gate plaque; D-432, D-433).
-  Left: S6-01c (see the best roll up in Studio, ride Car1 to floor 3 and back, floor 10's badge
-  line), S5-02b2c2, S5-01d's held-torch fix. Next: S6-01c (ROADMAP's line).
+  S6-01 (best floor, badges, the dial and plaque, seen in Studio Play; D-432 to D-434). Left
+  undone: S5-02b2c2, S5-01d's held torch over the car's board, then S4-06, S4-07, S5-04, S5-06.
+  Next: S5-01d's torch fix (hide your own held torch while you face a board; ROADMAP S5-01d).
 
 ## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
 The home's look settling without a seam. One line a session if they won't fit together; split

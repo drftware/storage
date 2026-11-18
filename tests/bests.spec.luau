@@ -100,6 +100,23 @@ do
 	ok(not Bests.turn(other + best), "and round again")
 end
 
+-- shown and without (S6-01c): an empty car shows the crew that last rode it, until they board
+-- another car
+do
+	ok(list(Bests.shown({ 1, 2 }, { 9 })) == "1,2", "those aboard, whoever rode last")
+	ok(list(Bests.shown({}, { 3, 4 })) == "3,4", "nobody aboard: the crew that rode last")
+	ok(#Bests.shown({}, {}) == 0, "nobody aboard, nobody rode: nobody")
+	ok(list(Bests.without({ 1, 2, 3 }, { 2, 7 })) == "1,3", "one boarded another car")
+	ok(list(Bests.without({ 1, 2 }, {})) == "1,2", "nobody boarded elsewhere")
+	ok(#Bests.without({ 5 }, { 5 }) == 0, "the whole crew boarded elsewhere")
+	-- the landing: a rise seen while the crew walks out of the car
+	local best, before = { [1] = 3 }, { [1] = 0 }
+	local crew = Bests.shown({}, { 1 })
+	ok(Bests.risen(crew, best, before) == 0, "the crew's rise still waits to be seen")
+	Bests.seen(crew, before)
+	ok(Bests.risen(crew, best, before) == nil, "seen once, it doesn't roll again")
+end
+
 print(`bests: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

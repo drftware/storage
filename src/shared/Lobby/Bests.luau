@@ -6,7 +6,8 @@
 	Pressure's lobbies show your record where you queue.
 
 	- The dial's line reads "Best N", the best of those aboard, once someone aboard has climbed.
-	  It takes turns with "Full" or "Friends only" when the car has one of those to say.
+	  It takes turns with "Full" or "Friends only" when the car has one of those to say. While
+	  nobody's aboard, the dial and the plaque keep to the crew that last was (`shown`).
 	- The plaque lists those aboard, best first; ties and anyone not loaded yet keep the order
 	  they stepped in.
 	- A best that rose while nobody on this screen saw it (the climb) flips up from what the car's
@@ -88,6 +89,24 @@ function Bests.rows(group: { number }, best: Bests): { Row }
 		return at[a.id] < at[b.id]
 	end)
 	return rows
+end
+
+-- Whose bests a car shows: those aboard; while nobody is, its crew, those who last were (S6-01c,
+-- D-434). A team landing back walks out of the car and turns round to the dial over its gate:
+-- from inside you can't see it, so its new best rolls up there, as they look, not while aboard.
+function Bests.shown(group: { number }, crew: { number }): { number }
+	return if #group > 0 then group else crew
+end
+
+-- `crew` less anyone in `group`: someone who boards another car is no longer this one's crew.
+function Bests.without(crew: { number }, group: { number }): { number }
+	local out: { number } = {}
+	for _, id in crew do
+		if not table.find(group, id) then
+			table.insert(out, id)
+		end
+	end
+	return out
 end
 
 -- What the car's best was before a rise not yet shown (`before`: each risen player's best before
