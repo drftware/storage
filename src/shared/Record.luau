@@ -42,6 +42,7 @@
 	share one label, as teams past `TeamMost` do, so a dashboard never folds them into "Other".
 ]]
 
+local BigFind = require("./BigFind")
 local Deal = require("./Deal")
 local Products = require("./Products")
 
@@ -218,12 +219,19 @@ end
 -- the plan is Brix's `AnalyticsPlan`, checked by `Analytics.new`.
 function Record.plan(brix: any): any
 	local oneOf = brix.AnalyticsField.oneOf
+	-- every find a gate can keep: the units' deal, and the floors' big finds (S4-05c)
+	local finds = table.clone(Deal.Finds)
+	for _, f in BigFind.Finds do
+		if not table.find(finds, f.key) then
+			table.insert(finds, f.key)
+		end
+	end
 	return {
 		fields = {
 			floor = Record.counted(0, Record.FloorMost),
 			team = Record.counted(1, Record.TeamMost),
 			gave = oneOf({ "nothing", "coins", "find", "tool", "keeper" }),
-			find = oneOf(Deal.Finds),
+			find = oneOf(finds),
 			fate = oneOf({ "out", "caught", "left" }),
 			offer = oneOf(Products.Names),
 		},

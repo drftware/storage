@@ -19,8 +19,10 @@
 	  `loose`), the floor point it lies on (`BigFind.AtAttribute`) or who hauls it
 	  (`BigFind.HolderAttribute`), so MinimapView's mark follows it; all three go as it's kept at
 	  the gate, lost or lifted by a monster, and the point comes back where a monster lays it down.
-	- As the gate shuts, GatePay asks who holds it (`aboard`, S4-05b3): it counts, and pays
-	  everyone aboard, only in a rider's arms; anywhere else it's left behind with the floor.
+	- As the gate shuts, GatePay asks who keeps it (`aboard`, S4-05b3): it counts, and pays
+	  everyone aboard, in a rider's arms, or set down on the car's floor (S4-05b4: its last hauler
+	  keeps it if they ride, else the rider nearest it, `BigFind.keeper`); anywhere else it's left
+	  behind with the floor.
 
 	Every value is the server's; nothing here listens to a client.
 ]]
@@ -55,19 +57,22 @@ type Entry = {
 	placed: boolean,
 	unit: Model?, -- the unit it rolled up in
 	model: Model?, -- the find itself once its unit has dealt it, in a hand or on a floor (Slots')
+	last: number?, -- the UserId of the last to haul it, who keeps it if it's set down in the car
 	gone: RBXScriptConnection,
 }
 
 local BigFinds = {}
 
--- A floor's big find as its gate shuts (S4-05b3): its key, and who holds it (nil: nobody, so
--- it's left behind on the floor, in a monster's arms or gone).
-export type Shut = { key: string, holder: Player? }
+-- A floor's big find as its gate shuts (S4-05b3, b4): its key; the paid rider who keeps it (nil:
+-- it's left behind on the floor, in a monster's arms or gone); and, when it was set down in the
+-- car rather than held, the find itself lying there, for the gate to take up (Slots' `takeUp`).
+export type Shut = { key: string, keeper: Player?, lying: Model? }
 
 export type BigFinds = Brix.System & {
-	-- The big find out on floor `floor` (its model) as its gate shuts; nil while it has none out
-	-- (floor 1, no unit was left for it, or the code never went in).
-	aboard: (self: any, floor: Model) -> Shut?,
+	-- The big find out on floor `floor` (its model) as its gate shuts with `paid` aboard (alive,
+	-- not wrapped); nil while it has none out (floor 1, no unit was left for it, or the code never
+	-- went in).
+	aboard: (self: any, floor: Model, paid: { Player }) -> Shut?,
 }
 
 function BigFinds.new(): BigFinds
@@ -137,6 +142,7 @@ function BigFinds.new(): BigFinds
 		local floor = e.on.model
 		local holder = Players:GetPlayerFromCharacter(model.Parent)
 		if holder then
+			e.last = holder.UserId
 			floor:SetAttribute(BigFind.HolderAttribute, holder.UserId)
 			floor:SetAttribute(BigFind.AtAttribute, nil)
 			return
@@ -218,7 +224,7 @@ function BigFinds.new(): BigFinds
 
 	local system = { name = "BigFinds" }
 
-	function system.aboard(_: any, floor: Model): Shut?
+	function system.aboard(_: any, floor: Model, paid: { Player }): Shut?
 		local e = entries[floor]
 		if not (e and e.unit) then
 			return nil
@@ -230,7 +236,43 @@ function BigFinds.new(): BigFinds
 		local holder = if model and model.Parent
 			then Players:GetPlayerFromCharacter(model.Parent)
 			else nil
-		return { key = e.find, holder = holder }
+		-- set down on the car's own floor (S4-05b4)? Where it lies, if anywhere
+		local at: Vector3? = nil
+		local s, elevator = slots, e.on.elevator
+		if model and not holder and s then
+			s:finds(function(_n: number, there: Vector3, m: Model)
+				if m == model then
+					at = there
+				end
+			end)
+		end
+		local lyingAt = at
+		local inCar = lyingAt ~= nil
+			and elevator ~= nil
+			and Climbs.inCar(elevator:GetPivot(), lyingAt)
+		local riders: { BigFind.Rider } = {}
+		for _, player in paid do
+			local character = player.Character
+			local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
+			local far = if lyingAt
+					and root
+					and root:IsA("BasePart")
+				then (root.Position - lyingAt).Magnitude
+				else math.huge
+			table.insert(riders, { id = player.UserId, far = far })
+		end
+		local id = BigFind.keeper(if holder then holder.UserId else nil, inCar, e.last, riders)
+		local keeper: Player? = nil
+		for _, player in paid do
+			if player.UserId == id then
+				keeper = player
+			end
+		end
+		return {
+			key = e.find,
+			keeper = keeper,
+			lying = if keeper and not holder then model else nil,
+		}
 	end
 
 	function system.start(_: any, context: Brix.Context)

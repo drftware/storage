@@ -132,6 +132,27 @@ do
 	ok(BigFind.unitFrom(deck, {}, 0.5) == nil, "no unit left, no big find")
 end
 
+-- Who keeps it as the gate shuts (S4-05b3, S4-05b4): a paid rider holding it; else, set down on
+-- the car's floor, its last hauler if they ride, else the rider standing nearest it.
+do
+	local a, b, c = { id = 1, far = 6 }, { id = 2, far = 2 }, { id = 3, far = 2 }
+	ok(BigFind.keeper(1, false, nil, { a, b }) == 1, "held by a rider: theirs")
+	ok(BigFind.keeper(9, false, 9, { a, b }) == nil, "held by someone left outside: left behind")
+	ok(BigFind.keeper(9, true, 9, { a, b }) == nil, "held outside counts as held, never as lying")
+	ok(BigFind.keeper(nil, false, 1, { a, b }) == nil, "lying out in the halls: left behind")
+	ok(
+		BigFind.keeper(nil, true, 1, { a, b }) == 1,
+		"set down in the car: its hauler's, though further"
+	)
+	ok(
+		BigFind.keeper(nil, true, 9, { a, b, c }) == 2,
+		"its hauler left outside: the nearest rider's"
+	)
+	ok(BigFind.keeper(nil, true, nil, { a, c, b }) == 3, "two as near: the first of them")
+	ok(BigFind.keeper(nil, true, 1, {}) == nil, "nobody paid aboard: left behind")
+	ok(BigFind.keeper(nil, false, nil, {}) == nil, "nothing at all: left behind")
+end
+
 print(
 	`bigfind.spec: {checks - failures}/{checks} passed ({placed} floors placed, {far} down the halls)`
 )

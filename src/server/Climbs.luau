@@ -217,6 +217,9 @@ local function inCar(pivot: CFrame, at: Vector3): boolean
 		and math.abs(p.Z) <= size[3] / 2 + 1
 end
 
+-- The same, for the floor's big find set down in its car as the gate shuts (BigFinds, S4-05b4).
+Climbs.inCar = inCar
+
 -- Where someone let back into the climb stands, in a floor's lobby (its origin's frame): in front
 -- of the car, facing the hall, as if they'd just stepped out of it.
 Climbs.Arrival = CFrame.lookAt(Vector3.new(0, 3, 6), Vector3.new(0, 3, -12))

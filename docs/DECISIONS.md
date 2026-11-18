@@ -9846,3 +9846,28 @@ the jukebox itself lighting up and playing on everyone's screen before it bursts
 - Not chosen: coins only to the hauler (the guards would earn nothing for the riskiest job);
   a grade-based pay (one jukebox built, so every big find would pay the same today anyway).
 - Passes checks, unseen in Studio: S4-05c sees the pop and the loss (context ran out here).
+
+## D-419 · 2026-11-18 · Set down in the car, the big find still counts; seen in Studio (S4-05b4, c)
+
+The moment: the hauler staggers into the car, sets the jukebox down to pull a friend in or grab
+a tool, and as the gate slams it still counts, because the design doc counts it "inside the
+elevator", as Lethal Company's scrap counts once it's in the ship, held or on the floor.
+- **Who keeps it** (`BigFind.keeper`, pure, Lune spec): held by a paid rider, theirs; held by
+  someone left outside, left behind (never counted as lying); set down inside the car's box
+  (`Climbs.inCar`, the same box the ride carries riders by), its last hauler's if they ride,
+  else the paid rider standing nearest it; nobody paid aboard, left behind. My default
+  (OWNER.md): the last hauler did the work, and the nearest rider is who'd pick it up.
+- **How**: as the gate hits its post, GatePay takes it up off the car's floor (Slots' `takeUp`:
+  a glint where it lay, gone, as `keep` takes a held one) and adds it to its keeper's kept
+  finds, so it pays everyone aboard, pops and rises out of the keeper's slot exactly as one held.
+  Anyone can still pick it back up before then (its Take prompt, as any lying find).
+- **Seen in Studio (S4-05c)**, seed 7, one player, floors 2 to 4: the code rolls up its unit
+  (Unit228, then Unit340, slot 65), the diamond held on the map's edge, the take (walk 9), set
+  down in the car ("set down aboard", paid 24), held aboard (paid 35: it punches up lit in its
+  amber halo, then bursts into coins), left behind (its tune muffled, speed 1 to 0.25, fading).
+- **Fixed from what was flat**: the tune's first 1.4 s read 0 to 56 loud, then 115 to 142, so the
+  glow came on to near silence and the left-behind tune was loud only once faded out: both now
+  start at 1.4 s. The kept jukebox's analytics record was dropped (Record knew only the units'
+  finds): it now knows every big find (spec first).
+- Not chosen: carrying a lying find up with the car into the next floor (it would have to ride
+  out of the floor's lying folder; the gate keeps it at once instead, as any held find).

@@ -309,6 +309,15 @@ do
 	ok(#problems == 2, `both refused ({#problems})`)
 end
 
+-- The floor's big find kept at the gate is a find the plan knows (S4-05c: the jukebox's record
+-- was dropped as unknown, Deal.Finds being the units' finds alone).
+do
+	local book, recorder, problems = fresh()
+	book:kept("ana", { "Jukebox" }, 2)
+	ok(#problems == 0, `the jukebox kept is no problem ({#problems})`)
+	ok(#recorder:records() >= 1, "the jukebox kept is recorded")
+end
+
 print(`record.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

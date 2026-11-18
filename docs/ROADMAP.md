@@ -2417,7 +2417,11 @@ Done when two climbs in a row feel different and players talk about their best f
   monsters (`awakeOn`), so trapping never frees a door for a fresh one to trap again.
   `tests/pay.spec.luau`, `tests/shuttap.spec.luau`. Seen in Studio Play: three pops land in
   turn, "+10" to "+25" (fired by hand; a real trap and ride waits on `OWNER.md`).
-- [ ] **S4-05 The big find.** From floor 2, one a floor, shown only once the code is in: a unit
+- [x] **S4-05 The big find** (D-414 to D-419). Now: from floor 2, the code going in rolls up a
+  unit down the halls by itself and the jukebox stands in it; a pink diamond on the corner map
+  says where; one friend hauls it slowly in both arms; held or set down in the car as the gate
+  shuts, everyone aboard is paid the floor's pay again with its own lit pop and tune; left, its
+  tune winds down far below. Seen in Studio with one player. The ticket as written: a unit
   rolls up by itself and its place shows on the corner map. Carried in both hands, slower than
   any monster, no tools; it counts only if it's in the car as the gate shuts (Lethal Company's
   heavy scrap and the apparatus). Its art first. Split (D-414):
@@ -2459,16 +2463,23 @@ Done when two climbs in a row feel different and players talk about their best f
       stutters on with its swing tune, and it bursts into its coins, lit in its amber. Left
       anywhere else, every rider hears its tune from far below, muffled, winding down. Passes
       checks, unseen in Studio (S4-05c sees it).
-    - [ ] **S4-05b4 Set down in the car, it still counts.** The design doc counts it "inside the
+    - [x] **S4-05b4 Set down in the car, it still counts** (D-419). The design doc counts it "inside the
       elevator" as the gate shuts, but today a find lying on the car's floor goes with the floor,
       so a hauler who sets it down in the car to grab a tool loses it. As the gate shuts, take it
       off the car's floor (Climbs' `inCar`, a Slots take of a lying find with its glint) and keep
       it for its last hauler if they ride, else the rider nearest it; it pays as one held.
-  - [ ] **S4-05c The big find seen in Studio.** The moment: from floor 2's keypad, see the unit
+  - [x] **S4-05c The big find seen in Studio** (D-419; `docs/art/S4-05c-*.jpg`). The moment: from floor 2's keypad, see the unit
     roll up, its mark on the corner map, carry the jukebox to the car, and watch the gate pay
     it. Captures to `docs/art/`; the two-player run (one hauls, one guards) in OWNER.md.
-    Also check: a hauler who dies with no body left (fell out of the world) drops what they
-    hold at the world's origin (Slots' `dropAll`, `Vector3.zero`), far off any floor.
+    Seen on floors 2 to 4 of seed 7: the roll-up, the mark held on the map's edge, the take
+    (walk 9), set down in the car and kept (24), held aboard (35, the pop and coins), left
+    behind (its tune muffled and winding down). Fixed: both tunes start at the band's swell
+    (1.4 s), and analytics now knows the big finds (the jukebox's kept record was dropped).
+  - [ ] **S4-05d Leftovers.** A hauler who dies with no body left (fell out of the world) drops
+    what they hold at the world's origin (Slots' `dropAll`, `Vector3.zero`), far off any floor.
+    A kept jukebox stands on a home shelf spot like a small find (GatePay's `Save.keep`, D-284):
+    the home's to give big finds a floor spot. The walk back from the unit itself was never
+    walked (pivots only): the thuds and the view's dip are OWNER.md's.
 - [ ] **S4-06 The marker.** Sold in the machine. Face a door and tap Mark: a bright mark the
   team sees down the hall and on the corner map. Five marks. Its art first.
 - [ ] **S4-07 On sale.** A starting tool for cash during the car's countdown, flashlight beam

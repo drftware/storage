@@ -10,8 +10,9 @@
 	the lobby's own when one is left there (`unitFrom`). What it is comes from two rolls drawn
 	when the floor is laid: a grade, as the item catalog rolls a big find (Epic 75, Legendary 22,
 	Secret 3 in 100: `gradeFrom`), then a find of that grade among the big finds built
-	(`findFrom`), the first one built standing in for a grade none has yet. Nothing here touches
-	an Instance, so Lune tests it (tests/bigfind.spec.luau).
+	(`findFrom`), the first one built standing in for a grade none has yet. Who keeps it as the
+	gate shuts (`keeper`): held by a rider, or set down in the car. Nothing here touches an
+	Instance, so Lune tests it (tests/bigfind.spec.luau).
 ]]
 local Deal = require("./Deal")
 local Grades = require("./Grades")
@@ -146,6 +147,40 @@ function BigFind.unitFrom(deck: Deal.Deck, open: { number }, pick: number): numb
 		return nil
 	end
 	return list[math.clamp(math.floor(pick * #list) + 1, 1, #list)]
+end
+
+-- A rider paid for the floor as its gate shuts (aboard, alive, not wrapped): their UserId, and
+-- how far they stand from where the big find lies (any number while it isn't lying).
+export type Rider = { id: number, far: number }
+
+-- Who keeps the floor's big find as its gate shuts (S4-05b3, S4-05b4), by UserId; nil: it's left
+-- behind with the floor. The design doc counts it "inside the elevator", as Lethal Company's
+-- scrap counts once it's in the ship, held or set down: in the arms of `held` (whoever hauls it,
+-- nil while nobody does) only if they're one of the paid `riders`; set down on the car's floor
+-- (`inCar`), its `last` hauler's if they ride, else the nearest rider's (the first of the
+-- nearest), so a hauler who put it down to grab a tool or pull a friend in still has it.
+function BigFind.keeper(held: number?, inCar: boolean, last: number?, riders: { Rider }): number?
+	if held then
+		for _, r in riders do
+			if r.id == held then
+				return held
+			end
+		end
+		return nil
+	end
+	if not inCar then
+		return nil
+	end
+	local nearest: Rider? = nil
+	for _, r in riders do
+		if r.id == last then
+			return last
+		end
+		if not nearest or r.far < nearest.far then
+			nearest = r
+		end
+	end
+	return if nearest then nearest.id else nil
 end
 
 return table.freeze(BigFind)

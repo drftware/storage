@@ -95,17 +95,20 @@ nowhere else.
   moves with them (round your own dot when it's you). Drop it: one ring where it lies. Ride the
   gate with it: the diamond goes. My defaults: hot pink, a diamond, three rings, no sound of
   its own (the door's rattle is its sound). Is the pink too loud, or does it need a ping?
-- [ ] **The jukebox paid at the gate** (S4-05b3, D-418; passes checks, untested in Studio).
-  Same floor 2 run with a friend (Test tab, 2 players). 1. One of you carries the jukebox into
-  the car and both ride. Look for, on both screens, after the coins pour (and any trapped
-  monster's pop): the jukebox punches up over the coins, dark, then its glow flickers on as a
-  swing tune plays, held about a second, then it flashes and bursts into amber coins that fly to
-  the count; the "+" ends at the floor's pay twice over (24 on floor 2, more with traps or a
-  card). The hauler also sees it rise out of their slot. 2. Next floor, leave it in the halls
-  and ride: both hear, about a second after the slam, its tune from far below, muffled, slowing
-  and fading. My defaults, yours to change: everyone aboard gets the floor's pay again for it
-  (the hauler keeps the jukebox too); the tune is APM's "Duke of Harlem" from its first second,
-  never measured, so say if it starts too quiet or wrong for a jukebox.
+- [ ] **The jukebox paid at the gate** (S4-05b3, b4, c; D-418, D-419; seen in Studio with one
+  player). Same floor 2 run with a friend (Test tab, 2 players). 1. One of you carries the
+  jukebox into the car and both ride. Look for, on both screens, after the coins pour: the
+  jukebox punches up over the gate lit in an amber halo as a swing tune plays, held about a
+  second, then it bursts into amber coins that fly to the count; the "+" ends at the floor's pay
+  twice over (24 on floor 2). 2. Next floor, the hauler sets it down inside the car (Drop) and
+  steps out to grab something, back before the gate shuts: it vanishes in a glint as the gate
+  hits its post and pays the same, kept by whoever carried it last. 3. Next floor, leave it in
+  the halls and ride: both hear, about a second after the slam, its tune from far below,
+  muffled, slowing and fading. My defaults, yours to change: everyone aboard gets the floor's
+  pay again for it (the hauler keeps it too); set down in the car it's its last hauler's, else
+  the rider nearest it; the tune (APM's "Duke of Harlem") starts 1.4 s in, where the band
+  swells. A question: on a power-out floor the hauler sees nothing at all (no hand free for a
+  light), so a friend must light the way. Keep that, or give the jukebox a faint glow?
 - [ ] **Vote with a friend, on phones** (S4-03b2, D-405; seen with one player and stand-in
   presses). Two phones (or Studio's Test tab, 2 players), both in one car leaving floor 1 (any
   later floor's ride works; floor 1's from the lobby has no vote). Look for: as the car lurches

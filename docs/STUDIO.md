@@ -3461,3 +3461,17 @@ verified: a doc page, Studio, or "untested".
   with every check the prompt runs. Drop it from the Client with `Remotes.ToolDrop:FireServer()`.
   Floor 2's Unit228 (seed 7) has its middle at x 100 and its back at x 108.6: stand in the
   hall at x 88, never past the back wall, where you fall out of the world and die.
+
+## The big find in Play (S4-05c, Nov 18)
+
+- **Where a track gets loud**: from the Client, find the playing Sound by its id and sample
+  `PlaybackLoudness` and `TimePosition` every 0.2 s into a StringValue (a spawned loop, read in a
+  later call); "Duke of Harlem" read 0 to 56 for its first 1.4 s, then 115 to 142. A destroyed
+  Sound you still hold reads `Playing` true with no children: not a leak.
+- **The gate missed**: the gate shuts about 31 s after the code; with captures and checks between,
+  it shut before I boarded and the empty car came back with the keypad re-armed. Punch the code
+  again (with the find in your arms is fine). A floor's lying finds are in `Workspace.Tools`, not
+  under the floor.
+- **Floor n's car on seed 7** is at `(0, 0, -588 - 1000 (n - 2))`; its keypad spot the pivot plus
+  `(-7.8, 3, -5.2)`, aboard the pivot plus `(0, 3, 7)` facing -Z. Floor 3 rolled the power-out
+  card: a hauler sees black (no hand free for a light).

@@ -285,6 +285,11 @@ export type Slots = Brix.System & {
 	-- find taken up out of their own job box stays in their slots, at risk on the next floor; one
 	-- out of a friend's goes like the rest but comes back apart (`Moved`, S5-03d2): theirs now.
 	keep: (self: any, player: Player) -> ({ string }, { string }, { Moved }),
+	-- Takes the find `model` up off the floor where it lies loose, kept for a rider as a gate
+	-- shuts (the big find set down in the car, S4-05b4): a glint where it lay, and it's gone. Its
+	-- kept name and whether its glass is cracked, as `keep`'s; nil if it isn't lying loose, or
+	-- came out of a job box (those go by `keep` alone).
+	takeUp: (self: any, model: Model) -> (string?, boolean),
 	-- What the Packrat would take from `player` if it reached them now (S2-06c, `Carry.prize`):
 	-- that thing's number, or 0 for nothing it takes. Allocates nothing.
 	prize: (self: any, player: Player) -> number,
@@ -1821,6 +1826,24 @@ function Slots.new(): Slots
 			changed:fire({ player = player, kind = "Keep" })
 		end
 		return keys, chipped, moved
+	end
+
+	function system.takeUp(_: any, model: Model): (string?, boolean)
+		for id, t in tools do
+			if t.model == model then
+				if t.owner ~= nil or t.model.Parent ~= lying or outs[model] or t.home ~= nil then
+					return nil, false
+				end
+				tools[id] = nil
+				grounds[id] = nil
+				unoffer(t)
+				glint(t.body.Position)
+				t.model:Destroy()
+				loose:fire(nil)
+				return named(t), t.chipped == true
+			end
+		end
+		return nil, false
 	end
 
 	function system.up(_: any, player: Player)

@@ -19,9 +19,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Not the home's: the checkout's uncommitted `BigFinds`, `MinimapView` and the D-417 lines in
   OWNER, CODEMAP and DECISIONS are the climb run's work in progress; the home leaves them alone.
 - **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403
-  to D-413), S4-05a to b3 the jukebox: art, deal and door, haul, map mark, paid at the gate
-  (D-414 to D-418, b3 unseen). Next: S4-05b4 set down in the car it still counts (Climbs'
-  `inCar`, a Slots take), then S4-05c sees it all in Studio, the gate's pop included.
+  to D-413), S4-05 the big find: the jukebox rolls up, its map mark, the haul, paid held or set
+  down in the car, seen in Studio (D-414 to D-419). Next: F-G1b4a2 the hard hat's own beam
+  (ROADMAP), then F-G1b4b, S5-02, S5-01; S4-05d's leftovers wait.
 
 ## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
 The home's look settling without a seam. One line a session if they won't fit together; split

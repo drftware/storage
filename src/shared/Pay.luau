@@ -201,19 +201,21 @@ Pay.BigHold = 1.0 -- held up lit with its tune playing, so everyone sees what th
 Pay.BigFlyers = 12 -- the most of its coins drawn: each worth a share
 Pay.BigSpread = 0.16 -- how far its burst throws the coins, as a share of the screen's height
 Pay.BigClimb = 0.3 -- its landing ticks start this much higher than the pop before it
--- Its tune: APM's "Duke of Harlem", 1940s big band swing, as the jukebox would play. Where it
--- starts loud isn't measured yet (OWNER.md); on your screen only.
+-- Its tune: APM's "Duke of Harlem", 1940s big band swing, as the jukebox would play; on your
+-- screen only. From 1.4 s, where the band swells (S4-05c: its first 1.4 s read 0 to 56 loud in
+-- Play, then 115 to 142), so the record drops loud as the glow comes on.
 Pay.BigTune = {
 	id = "rbxassetid://133184962618083",
-	from = 0,
+	from = 1.4,
 	length = 2.2,
 	volume = 0.6,
 } :: Sound
 -- Left on the floor as the gate shuts: the same tune from far below, muffled, winding down as a
 -- record does when the power goes, so the team hears what they left behind. Every rider hears it.
+-- From the same swell (S4-05c: from 0, the loud part came only as it had faded to nothing).
 Pay.BigLost = {
 	id = "rbxassetid://133184962618083",
-	from = 0,
+	from = 1.4,
 	length = 2.4,
 	volume = 0.45,
 } :: Sound

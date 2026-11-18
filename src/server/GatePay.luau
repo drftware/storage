@@ -16,9 +16,11 @@
 	gate shuts (Keepers' `trappedOn`; one freed before then, or one the floor woke behind its own
 	door, doesn't count) adds `Pay.Trap` to every paid rider's coins.
 
-	The floor's big find (S4-05b3, D-418) counts only in the arms of a rider who is paid: then
-	every paid rider gets `Pay.bigOf` more (the hauler keeps it too, as any find in their slots).
-	Anywhere else, it's left behind with the floor, and every paid rider's screen is told so.
+	The floor's big find (S4-05b3, D-418) counts in the arms of a rider who is paid, or set down on
+	the car's floor with a paid rider aboard (S4-05b4: taken up off it in a glint, kept by its last
+	hauler if they ride, else the rider nearest it, BigFinds' `aboard`): then every paid rider
+	gets `Pay.bigOf` more, and its keeper keeps it as any find in their slots. Anywhere else, it's
+	left behind with the floor, and every paid rider's screen is told so.
 
 	Each paid rider's screen is told what they got (`Pay.Remote`: coins, the kept finds' keys, how
 	many monsters shut in the coins count, the picked version's name and its coins, then the big
@@ -195,25 +197,43 @@ function GatePay.new(): GatePaySystem
 		local version = event.from.version
 		local picked = if version then NextFloor.payOf(version, event.from.number) else nil
 		local versionName = if version then version.name else ""
-		-- the floor's big find counts in a paid rider's arms only (S4-05b3); else it's left behind
+		-- who is paid for the floor: aboard, alive, not wrapped
+		local paidRiders: { Player } = {}
+		for _, player in event.riders do
+			if player.Parent and alive(player) and not Prompts.wrapped(player) then
+				table.insert(paidRiders, player)
+			end
+		end
+		-- the floor's big find counts in a paid rider's arms (S4-05b3), or set down on the car's
+		-- floor with one aboard (S4-05b4), taken up off it now for its keeper; else it's left behind
 		local b = bigFinds
-		local big = if b then b:aboard(event.from.model) else nil
-		local hauler = if big then big.holder else nil
-		local counted = hauler ~= nil
-			and table.find(event.riders, hauler) ~= nil
-			and hauler.Parent ~= nil
-			and alive(hauler)
-			and not Prompts.wrapped(hauler)
+		local big = if b then b:aboard(event.from.model, paidRiders) else nil
+		local keeper = if big then big.keeper else nil
+		local setDown: string?, setDownChipped = nil, false
+		if keeper and big and big.lying then
+			setDown, setDownChipped = sl:takeUp(big.lying)
+			if not setDown then
+				keeper = nil -- picked up or lost in the same frame: as it was, left behind
+			end
+		end
+		local counted = keeper ~= nil
 		local bigCoins = if counted then Pay.bigOf(event.from.number) else nil
 		local bigKey = if big then big.key else ""
 		for _, player in event.riders do
-			if not (player.Parent and alive(player)) or Prompts.wrapped(player) then
+			if not table.find(paidRiders, player) then
 				continue -- wrapped (or gone): nothing for this floor
 			end
 			local mine = paid[player] or {}
 			paid[player] = mine
 			local owed = Pay.owed(mine, event.from.number, false, trapped, picked, bigCoins)
 			local kept, chipped, moved = sl:keep(player)
+			if player == keeper and setDown then
+				-- the big find they set down in the car, kept as one held
+				table.insert(kept, setDown)
+				if setDownChipped then
+					table.insert(chipped, big and big.key or setDown)
+				end
+			end
 			-- everything that rose out of their slots, a friend's taken-up finds too
 			local shown = kept
 			if #moved > 0 then
@@ -252,6 +272,7 @@ function GatePay.new(): GatePaySystem
 				local list = if #shown > 0 then table.concat(shown, ", ") else "no finds"
 				local found = if bigKey == ""
 					then "no big find"
+					elseif counted and setDown then `the {bigKey} set down aboard`
 					elseif counted then `the {bigKey} aboard`
 					else `the {bigKey} left behind`
 				print(
