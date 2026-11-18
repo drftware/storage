@@ -2277,9 +2277,33 @@ Done when two climbs in a row feel different and players talk about their best f
 - [ ] **S4-03 The choice on the elevator's buttons.** Three buttons light up on the car's
   panel, each a version of the next floor and what it pays; most presses wins, a tie at random;
   it lasts that one floor (GDD "The team's choice"). A version that brings or keeps away a
-  monster passes a lean as `KeeperMix.on`'s third argument (D-401). Today the next floor is laid
-  as the code opens the gate (`Climbs` `prepare`), before anyone rides: it has to be laid after
-  the vote instead, or once for each version.
+  monster passes a lean as `KeeperMix.on`'s third argument (D-401). The owner calls them the
+  next-floor cards: the mechanic that makes no two climbs the same. Split Nov 17 (D-403):
+  - [x] **S4-03a The versions and the vote.** The moment: the car lurches off, friends jab at
+    three versions of the next floor and change their minds; on the cable's second knock the
+    winner is the floor the car stops at. Proven: a lobby's map vote (most presses wins, a tie at
+    random); Deep Rock Galactic's warnings (harder, pays more). A pure table of versions, three
+    dealt from the climb's seed and floor, the vote's count; the server's vote on the riding car
+    (one press per rider, changeable until the knock, checked and rate-limited); the floor's
+    halls built at the code as before, its deal (padlocks, mark, breaker, monsters) put on as the
+    vote ends, with the winner. Done Nov 17 (D-403): `NextFloor` (four versions, `deal`,
+    `winner`, `payOf`), `NextFloors` (the vote, the `NextFloorPress` remote), Climbs' `build`,
+    `pick` and `deal`, `FloorBuilder.dress`. Passes checks, untested in Studio: b starts with a
+    ride in Play. `tests/nextfloor.spec.luau`.
+  - [ ] **S4-03b The cards on the panel.** The moment: three lit cards on the car's panel, each a
+    picture of its floor and its coins; a press clunks, lights the card and puts your mark on it;
+    on the knock the losers go dark and the winner flares and stays lit to the floor. Proven:
+    Hades shows each door's reward before you pick. Art the unit's way (one card face per
+    version), big enough to tap at Galaxy A16 size; reads the car's `NextFloor` attributes;
+    presses the `NextFloorPress` remote. Captures into `docs/art/`.
+  - [ ] **S4-03c Each version felt on its floor.** The moment: the gate opens on a pitch-dark
+    lobby, or two Mannequins at the end of the hall. The deal reads the version (twice the
+    padlocks, twice the monsters awake through `FloorRules`' cap and `KeeperMix`'s lean), the
+    lights stay off (`HallLights`, `UnitLights`), a catch sends you to the lobby (`KeptPlayers`),
+    the gate pays the version's coins (`NextFloor.payOf` through `Pay`/`GatePay`, its own pop).
+    Floor model's `FloorVersion` attribute says which.
+  - [ ] **S4-03d The whole climb in Studio.** Ride floors 1 to 5 in Play with the cards, each
+    version picked once, captures; fixes. Two-player vote and phones go to `OWNER.md`.
 - [x] **S4-04 Trapping pays** (Nov 17, D-402). Each monster the team has shut in a unit as the
   gate shuts pays everyone aboard 5 more coins (`Pay.Trap`, D-188; Keepers' `trappedOn`); one
   freed first, or one the floor woke behind its own door, doesn't count. On your screen each

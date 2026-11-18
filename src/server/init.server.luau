@@ -39,6 +39,7 @@ local Kneels = require(script.Kneels)
 local Machines = require(script.Machines)
 local MarkedBoxes = require(script.MarkedBoxes)
 local Minimaps = require(script.Minimaps)
+local NextFloors = require(script.NextFloors)
 local Pockets = require(script.Pockets)
 local Prompts = require(script.Prompts)
 local Live = require(script.Live)
@@ -108,6 +109,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "minimaps", system = Minimaps.new() },
 	-- The climb: each floor dealt and laid while the team rides up to it, the one below cleared.
 	{ slot = "watching", system = Watching.new() },
+	-- The team's pick of the next floor on the ride: three versions lit, one press each, most wins.
+	{ slot = "nextFloors", system = NextFloors.new() },
 	{ slot = "climbs", system = Climbs.new() },
 	-- Pay and keeping as a floor's gate shuts: coins to everyone aboard, their finds theirs for good.
 	{ slot = "gatePay", system = GatePay.new() },

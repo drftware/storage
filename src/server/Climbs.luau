@@ -58,6 +58,7 @@ local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local KeeperMix = require(ReplicatedStorage.Shared.KeeperMix)
+local NextFloor = require(ReplicatedStorage.Shared.NextFloor)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
 local Trip = require(ReplicatedStorage.Shared.Lobby.Trip)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
@@ -68,6 +69,7 @@ local FloorBuilder = require(script.Parent.FloorBuilder)
 local Keepers = require(script.Parent.Keepers)
 local KeptPlayers = require(script.Parent.KeptPlayers)
 local Minimaps = require(script.Parent.Minimaps)
+local NextFloors = require(script.Parent.NextFloors)
 local Slots = require(script.Parent.Slots)
 local Watching = require(script.Parent.Watching)
 local Wraps = require(script.Parent.Wraps)
@@ -83,6 +85,20 @@ export type OnFloor = {
 	origin: CFrame, -- its lobby's middle, on the floor
 	laid: FloorBuilder.Laid,
 	elevator: Model?,
+	-- the version the team picked for it on the ride up (S4-03), nil for a floor nobody picked
+	version: NextFloor.Version?,
+}
+
+-- A floor's halls built ahead of its deal (S4-03a): the deal goes on once the team has picked
+-- its version on the ride (`deal`).
+type Built = {
+	number: number,
+	seed: number,
+	floor: Floor.Floor,
+	random: Brix.Random, -- the layout's Random, carried on by the deal
+	model: Model,
+	origin: CFrame,
+	laid: FloorBuilder.Laid,
 }
 
 export type Options = {
@@ -242,14 +258,19 @@ function Climbs.new(): Climbs
 	local slots: Slots.Slots? = nil
 	local findUses: FindUses.FindUsesSystem? = nil
 	local watching: Watching.Watching? = nil
+	local nextFloors: NextFloors.NextFloors? = nil
 	local options: Options? = nil
 	local lastOptions: Options? = nil
 	local started: number? = nil
 	local playing: OnFloor? = nil
 	local between = false -- a ride with riders is under way and hasn't handed them off yet
 	local floors: { OnFloor } = {} -- every floor laid now: the one played, and the next once it's laid
-	local ahead: OnFloor? = nil -- the floor above the one played, laid and waiting
-	local layingAhead = false -- it's being laid now
+	local ahead: OnFloor? = nil -- the floor above the one played, laid, dealt and waiting
+	local built: Built? = nil -- the floor above's halls, built and waiting for its deal
+	local layingAhead = false -- its halls are being built now
+	-- the floor above's version, once the team's vote on a ride up to it has ended: a car that
+	-- comes back keeps the pick for its next ride (S4-03a); `version` nil when none was offered
+	local picked: { version: NextFloor.Version? }? = nil
 	local climb = 0 -- which climb it is; a thread from an earlier one stops when it sees another
 	local threads: { thread } = {}
 	local departing: Brix.SignalConnection? = nil
@@ -270,18 +291,37 @@ function Climbs.new(): Climbs
 		end
 	end
 
-	-- Deals and lays floor `number` and puts it in every floor system. Yields.
-	local function lay(o: Options, number: number): OnFloor
+	-- Builds floor `number`'s halls, out of every floor system until it's dealt. Yields.
+	local function build(o: Options, number: number): Built
 		local seed = Climb.seedOf(o.seed, number)
 		local random = Brix.Random.new({ seed = seed })
 		local floor = Floor.generate(number, random)
-		-- the floor's deal carries on from its layout's Random: its code, notes and padlocks laid
-		-- with it, each unit's contents dealt as its door first lifts (Deals)
-		-- the floor's monsters, mixed from the climb's seed (S4-02); a floor version the team picks
-		-- on the ride (S4-03) leans it with `KeeperMix.on`'s third argument
-		local cast =
-			KeeperMix.on(number, Brix.Random.new({ seed = KeeperMix.seedOf(o.seed, number) }))
-		local deck = Deal.new(floor, random, cast)
+		local origin = o.origin * CFrame.new(0, 0, -Climb.offset(o.number, number))
+		local model, laid = FloorBuilder.lay(floor, origin, o.parent)
+		return {
+			number = number,
+			seed = seed,
+			floor = floor,
+			random = random,
+			model = model,
+			origin = origin,
+			laid = laid,
+		}
+	end
+
+	-- Deals floor `b` as `version` (the team's pick, nil for none) and puts it in every floor
+	-- system. Doesn't yield.
+	local function deal(o: Options, b: Built, version: NextFloor.Version?): OnFloor
+		local number, floor, seed, origin = b.number, b.floor, b.seed, b.origin
+		-- the floor's deal carries on from its layout's Random: its code, notes and padlocks put
+		-- on its halls, each unit's contents dealt as its door first lifts (Deals)
+		-- the floor's monsters, mixed from the climb's seed (S4-02), leaned by the version (S4-03)
+		local cast = KeeperMix.on(
+			number,
+			Brix.Random.new({ seed = KeeperMix.seedOf(o.seed, number) }),
+			if version then version.lean else nil
+		)
+		local deck = Deal.new(floor, b.random, cast)
 		if STUDIO then
 			local names = {}
 			for _, name in KeeperMix.Order do
@@ -289,10 +329,14 @@ function Climbs.new(): Climbs
 					table.insert(names, name)
 				end
 			end
-			print(`Climbs: floor {number} of climb {o.seed} has {table.concat(names, " and ")}`)
+			local as = if version then `, picked {version.name}` else ""
+			print(`Climbs: floor {number} of climb {o.seed} has {table.concat(names, " and ")}{as}`)
 		end
-		local origin = o.origin * CFrame.new(0, 0, -Climb.offset(o.number, number))
-		local model, laid = FloorBuilder.lay(floor, origin, o.parent, deck)
+		local model, laid = b.model, b.laid
+		FloorBuilder.dress(model, laid, floor, origin, deck)
+		if version then
+			model:SetAttribute(NextFloor.Attribute, version.name)
+		end
 		local on: OnFloor = {
 			number = number,
 			seed = seed,
@@ -302,6 +346,7 @@ function Climbs.new(): Climbs
 			origin = origin,
 			laid = laid,
 			elevator = laid.elevator,
+			version = version,
 		}
 		if deals then
 			deals:add(deck, laid.slots, model)
@@ -332,6 +377,11 @@ function Climbs.new(): Climbs
 		table.insert(floors, on)
 		laidSignal:fire(on)
 		return on
+	end
+
+	-- Builds and deals floor `number` as nobody picked it (a climb's first floor). Yields.
+	local function lay(o: Options, number: number): OnFloor
+		return deal(o, build(o, number), nil)
 	end
 
 	local function arm(on: OnFloor)
@@ -484,22 +534,60 @@ function Climbs.new(): Climbs
 		end
 	end
 
-	-- Starts laying the floor above `on` if it isn't laid or being laid: as the right code opens
-	-- the gate, so it's ready long before the car leaves (laying took 2 to 5 s in Studio).
+	-- Starts building the halls of the floor above `on` if they aren't built or being built: as
+	-- the right code opens the gate, so they're up long before the car leaves (laying took 2 to
+	-- 5 s in Studio). Its deal waits for the team's pick on the ride (`ride`).
 	local function prepare(o: Options, on: OnFloor)
-		if ahead or layingAhead then
+		if ahead or built or layingAhead then
 			return
 		end
 		layingAhead = true
 		local mine = climb
 		spawn(function()
-			local above = lay(o, on.number + 1)
+			local b = build(o, on.number + 1)
 			if climb ~= mine then
-				return -- a new climb cleared it
+				b.model:Destroy() -- a new climb began meanwhile
+				return
 			end
 			layingAhead = false
-			ahead = above
+			built = b
 		end)
+	end
+
+	-- The team's pick on the ride up from `on` (S4-03a): the versions dealt for the floor above
+	-- light up in its car as it leaves; on the cable's second knock the vote ends and the floor is
+	-- dealt as picked. A car that came back keeps its first pick, with no second vote. Yields.
+	local function pick(o: Options, on: OnFloor, leaving: Elevators.Leaving, mine: number)
+		local car = on.elevator
+		if not picked then
+			local number = on.number + 1
+			local random = Brix.Random.new({ seed = NextFloor.seedOf(o.seed, number) })
+			local offered = NextFloor.deal(number, random)
+			local v = nextFloors
+			if v and car and #offered > 0 then
+				v:open(car, leaving.aboard, offered, random)
+				while climb == mine and rideSince(leaving.at) < NextFloor.Closes do
+					task.wait()
+				end
+				if climb ~= mine then
+					return
+				end
+				local name = v:close(car)
+				picked = { version = if name then NextFloor.find(name) else nil }
+			else
+				picked = { version = nil }
+			end
+		end
+		-- dealt as soon as its halls are up, by the latest the hand-off can wait for
+		while climb == mine and not built and rideSince(leaving.at) < Climb.Latest - Climb.Lead do
+			task.wait()
+		end
+		local b, p = built, picked
+		if climb ~= mine or ahead or not (b and p) then
+			return
+		end
+		built, picked = nil, nil
+		ahead = deal(o, b, p.version)
 	end
 
 	-- Carries `leaving`'s riders from car `from` up into floor `above`'s car mid-cruise (L-08b):
@@ -620,8 +708,8 @@ function Climbs.new(): Climbs
 			return
 		end
 		prepare(o, on)
-		while climb == mine and not ahead and rideSince(leaving.at) < Climb.Latest - Climb.Lead do
-			task.wait()
+		if not ahead then
+			pick(o, on, leaving, mine)
 		end
 		local above = ahead
 		if climb ~= mine then
@@ -755,7 +843,13 @@ function Climbs.new(): Climbs
 				end)
 			end)
 		end
-		playing, ahead, layingAhead, between = nil, nil, false, false
+		if built then
+			built.model:Destroy()
+		end
+		if nextFloors then
+			nextFloors:clear()
+		end
+		playing, ahead, built, picked, layingAhead, between = nil, nil, nil, nil, false, false
 		options, started = nil, nil
 		table.clear(carried)
 		stopped = false
@@ -822,6 +916,7 @@ function Climbs.new(): Climbs
 		minimaps = (registry:get("minimaps") :: any) :: Minimaps.Minimaps -- any: as above
 		slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
 		findUses = (registry:get("findUses") :: any) :: FindUses.FindUsesSystem -- any: as above
+		nextFloors = (registry:get("nextFloors") :: any) :: NextFloors.NextFloors -- any: as above
 		local w = (registry:get("watching") :: any) :: Watching.Watching -- any: as above
 		watching = w
 		w:setArrival(arrivalSpot)

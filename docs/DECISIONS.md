@@ -9009,3 +9009,35 @@ beaten monsters drop an orb worth money (D-188).
 
 Not chosen: a bonus only for the monster you lured in (no precedent, D-071); a pop that names the
 monster (no art for its face yet, and the bang already ties it to the trap).
+
+## D-403 The next-floor cards: the versions and the vote (S4-03a, Nov 17)
+
+The owner: the next-floor cards are the mechanic that makes no two climbs the same. Split into
+four pieces (ROADMAP S4-03a to d). Piece a, built:
+
+- **Versions are data rows** (`NextFloor.Versions`): name, lowest floor, pay, and each bend as a
+  plain field the floor's systems read (`dark`, `monsters`, `padlocks`, `caughtToLobby`, `lean`).
+  The GDD's four, nothing invented. Pay is a share of the floor's own gate pay (`payOf`), as Deep
+  Rock Galactic's warnings add a percentage, so a version is still worth it on floor 20.
+- **Three dealt from the climb's seed and the floor** (`NextFloor.seedOf`, its own salt), so a
+  climb replays exactly; never for floor 1 (the ride up from the lobby has no choice); a version
+  only from its lowest floor. A tie and a ride nobody pressed on both go at random among the tied:
+  a vote with no presses is a three-way tie at none, as a lobby's map vote picks.
+- **The vote ends on the cable's second knock** (`NextFloor.Closes` = `Ride.Clanks[2]`, 8.9 s),
+  not as the ride ends: riders are handed to the next floor's car at the third knock (13.4 s), and
+  the floor must be dealt and streamed to them first. About nine seconds to pick.
+- **The halls are built at the code, the deal goes on after the vote.** `FloorBuilder.lay` no
+  longer takes the deck; `FloorBuilder.dress` puts the deal's padlocks, mark and breaker on a laid
+  floor (a padlock set late is seen by Doors and every screen, as a player's padlock is). Climbs'
+  `build` (yields, at the code, as before) and `deal` (doesn't yield, with the version) replace
+  one `lay`; a climb's first floor is both at once. The deal still carries on from the layout's
+  Random, so a floor nobody picked deals exactly as before. Laying one floor per version was
+  turned down: three floors' halls on a phone-sized server for one that's used.
+- **The server owns the vote** (`NextFloors`): the offer, presses and winner go on the riding
+  car as attributes for screens; a press is checked for type, range (lit on your car), ownership
+  (you rode as its gate shut, not wrapped) and rate (`NextFloor.Limit`), one each, changeable
+  until the knock. A car that comes back keeps its pick: no second vote for the same floor.
+
+Not chosen: closing the vote early once everyone has pressed (it would stop a friend changing
+their mind); a fixed plain version among the three (the GDD: some rides all three are bad).
+

@@ -8,10 +8,11 @@
 	behind it, the unit's own steel top and floor, so a friend running the tops never drops in; a
 	junction's square a run reaches gets the S unit's steel top, so the run turns the corner; and
 	the kit's wall panel closes every other edge of the tops up to the deck (`Floor`'s lids and
-	panels, D-055). Given
-	the floor's deal, each door the deal padlocked is padlocked (the code's notes come in their
-	units' marked boxes since B-04a: Deals), as the unit is laid: the floor
-	arrives that way, without a sound. What's behind each door is dealt when it first lifts (Deals,
+	panels, D-055). The
+	floor's deal goes on once it's laid (`dress`, S4-03a: the team picks the floor's version on
+	the ride, after its halls are built): each door the deal padlocked is padlocked (the code's
+	notes come in their units' marked boxes since B-04a: Deals), the floor's mark stamped and its
+	breaker hung, far from anyone: the floor arrives that way, without a sound. What's behind each door is dealt when it first lifts (Deals,
 	L-04e). The lobby is a plain room, the freight elevator standing in its back wall and lit only by the car's
 	lamp, until L-05 dresses the lobby.
 
@@ -357,8 +358,6 @@ type Laying = {
 	panels: { [number]: { Floor.Panel } }, -- the panels closing the tops, by the piece they close
 	deadEnds: { [number]: { Floor.DeadEnd } },
 	fixtures: { [number]: Floor.Fixture },
-	padlocked: { [Floor.Slot]: boolean }, -- the doors the deal padlocked
-	marked: Floor.Slot?, -- the unit whose jamb carries the floor's faint mark (S1-11)
 	indexOf: { [Floor.Slot]: number }, -- each slot's index in the floor's `slots`
 	laid: { [Model]: number }, -- each unit laid so far, and its slot's index
 	breathe: () -> (), -- waits for the next frame once this one's share is spent
@@ -448,12 +447,6 @@ local function piece(laying: Laying, index: number, parent: Instance): (Folder, 
 				laying.door
 			)
 			dropWalls(unit, s.drops, origin)
-			if laying.padlocked[s] then
-				RollUpDoor.setLocked(unit, true)
-			end
-			if laying.marked == s then
-				stampMark(face, s.size, folder)
-			end
 			laying.laid[unit] = laying.indexOf[s]
 			unit.Parent = folder
 			laying.breathe()
@@ -565,16 +558,11 @@ end
 --[[
 	Lays `floor` with its lobby's middle at `origin` (on the floor, the halls spreading along its
 	-Z) into a new model under `parent`, and returns the model and what it took. With the floor's
-	`deck` (Deal.new), the doors it padlocked are padlocked and the floor's mark is stamped. Yields: the lobby
+	floor's deal, `dress` puts it on. Yields: the lobby
 	comes first, then the hall pieces nearest it, each parented as it's finished. Errors if the place
 	lacks a template (FloorBuilder.units says which).
 ]]
-function FloorBuilder.lay(
-	floor: Floor.Floor,
-	origin: CFrame,
-	parent: Instance,
-	deck: Deal.Deck?
-): (Model, Laid)
+function FloorBuilder.lay(floor: Floor.Floor, origin: CFrame, parent: Instance): (Model, Laid)
 	local units, missing = FloorBuilder.units()
 	assert(
 		units,
@@ -620,8 +608,6 @@ function FloorBuilder.lay(
 		panels = {},
 		deadEnds = {},
 		fixtures = {},
-		padlocked = {},
-		marked = nil,
 		indexOf = {},
 		laid = laid.slots,
 		breathe = breathe,
@@ -670,12 +656,6 @@ function FloorBuilder.lay(
 	for _, f in floor.fixtures do
 		laying.fixtures[f.cell] = f
 	end
-	if deck then
-		for i in deck.padlocked do
-			laying.padlocked[floor.slots[i]] = true
-		end
-		laying.marked = if deck.marked then floor.slots[deck.marked] else nil
-	end
 
 	-- out from the lobby, nearest first, so the floor fills in around the players arriving
 	local order: { number } = {}
@@ -715,13 +695,43 @@ function FloorBuilder.lay(
 		laid.units += count
 		laying.breathe()
 	end
-	local spot = deck and deck.breaker
-	if spot then
-		hangBreaker(floor, origin * faceOf(spot.x, spot.z, spot.facing), model)
-	end
 	endSlice()
 	laid.seconds = os.clock() - started
 	return model, laid
+end
+
+--[[
+	Puts floor `floor`'s deal `deck` (Deal.new) on its model `model`, laid at `origin` with `laid`
+	(`lay`): the doors it padlocked are padlocked, the floor's mark is stamped on its unit's jamb
+	and its breaker hung. Doesn't yield. Done once, before anyone's on the floor.
+]]
+function FloorBuilder.dress(
+	model: Model,
+	laid: Laid,
+	floor: Floor.Floor,
+	origin: CFrame,
+	deck: Deal.Deck
+)
+	local units: { [number]: Model } = {}
+	for unit, index in laid.slots do
+		units[index] = unit
+	end
+	for index in deck.padlocked do
+		local unit = units[index]
+		if unit then
+			RollUpDoor.setLocked(unit, true)
+		end
+	end
+	local marked = deck.marked
+	local unit = if marked then units[marked] else nil
+	if marked and unit and unit.Parent then
+		local s = floor.slots[marked]
+		stampMark(origin * faceOf(s.x, s.z, s.facing), s.size, unit.Parent)
+	end
+	local spot = deck.breaker
+	if spot then
+		hangBreaker(floor, origin * faceOf(spot.x, spot.z, spot.facing), model)
+	end
 end
 
 return FloorBuilder
