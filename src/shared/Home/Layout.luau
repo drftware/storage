@@ -376,10 +376,40 @@ function Layout.adopt(
 	return out
 end
 
--- Saved rows laid in room `from` as the home changes size to room `to` (`Spots.room` at each):
--- a starter piece on the floor whose back (or side) is against a wall of `from` rides that wall
--- to where it stands in `to`, as far along it; in a corner it rides both. Everything else is
--- carried as `Spots.carry` carries it. New rows.
+-- `rows` with the job box among them: it holds everything, so a save that lost it (the shrink
+-- before D-349 boxed it) gets it back first, where room `room`'s size lays it. New rows when it
+-- was missing; else `rows` itself.
+function Layout.withBox(
+	rows: { Save.PlacedRow },
+	room: { [string]: Spots.RoomArea }
+): { Save.PlacedRow }
+	local id = Layout.id("JobBox")
+	for _, row in rows do
+		if row.id == id then
+			return rows
+		end
+	end
+	local floor = room.Floor
+	local at = if floor then wallPlaces(floor.width, floor.depth).JobBox else nil
+	if not at then
+		return rows
+	end
+	local out = { { id = id, on = "Floor", x = at[1], y = at[2], turn = at[3] } }
+	for _, row in rows do
+		table.insert(out, row)
+	end
+	return out
+end
+
+-- Saved rows laid in room `from` as the home changes size to room `to` (`Spots.room` at each).
+-- Grown, your arrangement keeps: a starter piece on the floor whose back (or side) is against a
+-- wall of `from` rides that wall to where it stands in `to`, as far along it (in a corner it
+-- rides both), kept inside the floor. Shrunk (D-349), the size's own layout comes first: Small
+-- sits at the door's end of the unit, so carried, every piece fell outside it. Either way a piece
+-- takes the first of its own place and the size's layout spot that's on the floor and clear of
+-- the pieces laid before it (`Order`, the job box first, so it always stands); with neither, it's
+-- left where it rode, for Brix to box. Everything else is carried as `Spots.carry` carries it,
+-- and what stands on a piece rides it. New rows.
 function Layout.grow(
 	rows: { Save.PlacedRow },
 	from: { [string]: Spots.RoomArea },
@@ -390,20 +420,66 @@ function Layout.grow(
 	if not (a and b) then
 		return out
 	end
-	for i, row in rows do
-		local kind = Layout.kind(row.id)
-		if not (kind and row.on == "Floor") then
-			continue
+	local shrank = b.width < a.width - EPSILON or b.depth < a.depth - EPSILON
+	local at = wallPlaces(b.width, b.depth)
+	local laid: { Rect } = {}
+	local function clear(r: Rect): boolean
+		if not inside(r, b) then
+			return false
 		end
+		for _, other in laid do
+			if overlaps(r, other) then
+				return false
+			end
+		end
+		return true
+	end
+	-- `v` kept so a half size `h` stays within `half` of the middle (the middle when it can't)
+	local function within(v: number, h: number, half: number): number
+		return if h > half then 0 else math.clamp(v, -(half - h), half - h)
+	end
+	for _, kind in Layout.Order do
+		local i: number? = nil
+		for j, row in rows do
+			if row.id == Layout.id(kind) and row.on == "Floor" then
+				i = j
+				break
+			end
+		end
+		if not i then
+			continue -- in the box, or on a top: it rides what it stands on
+		end
+		local row, new = rows[i], out[i] -- carried: its place in the unit kept
 		local r = rect(kind, row.x, row.y, row.turn)
-		local new = out[i] -- carried: its place in the unit kept
-		if r.x + r.hx >= a.width / 2 - Layout.Touch then -- the left wall
+		local left = r.x + r.hx >= a.width / 2 - Layout.Touch
+		local right = r.x - r.hx <= -a.width / 2 + Layout.Touch
+		if left and not right then -- the left wall
 			new.x = b.width / 2 - (a.width / 2 - row.x)
-		elseif r.x - r.hx <= -a.width / 2 + Layout.Touch then -- the right wall
+		elseif right and not left then -- the right wall
 			new.x = -b.width / 2 + (row.x + a.width / 2)
-		end
+		end -- across both (Small's shelf): it keeps its middle
 		if r.y - r.hy <= -a.depth / 2 + Layout.Touch then -- the back wall
 			new.y = -b.depth / 2 + (row.y + a.depth / 2)
+		end
+		new.x, new.y = within(new.x, r.hx, b.width / 2), within(new.y, r.hy, b.depth / 2)
+		local mine = { new.x, new.y, new.turn }
+		local size: { number }? = at[kind]
+		if kind == "Rug" then
+			local rug = rugIn(b, laid)
+			size = if rug then { rug.x, rug.y, rug.turn } else nil
+		end
+		local first: { number }?, second: { number }? = mine, size
+		if shrank then
+			first, second = size, mine
+		end
+		for n = 1, 2 do
+			local p = if n == 1 then first else second
+			local pr = if p then rect(kind, p[1], p[2], p[3]) else nil
+			if p and pr and clear(pr) then
+				new.x, new.y, new.turn = p[1], p[2], p[3]
+				table.insert(laid, pr)
+				break
+			end
 		end
 	end
 	return out

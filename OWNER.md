@@ -483,6 +483,9 @@ nowhere else.
   21. The job box keeps 0.8 studs behind it so its lid opens upright: push it at a wall and it
       stops there. While you hold it there's no Put away button, since it holds everything
       (D-348).
+  22. If a home ever gets smaller, its own pieces take the smaller size's tidy layout and what
+      doesn't fit goes in the job box (Small keeps the box, the shelf and the mirror); a home
+      that grows keeps your arrangement. Nothing shrinks a home in play today (D-349).
 - [ ] **Walk into your home** (S5-03a2b3 and b4, D-268; seen in Studio Play by me, the switch
   pressed with T and with a tap on the A16 simulator, but I couldn't take a single picture, so
   how it looks is yours). Press Play, or publish and play on a phone (Galaxy A16):

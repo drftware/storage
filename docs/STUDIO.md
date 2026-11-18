@@ -3252,3 +3252,19 @@ verified: a doc page, Studio, or "untested".
   origin; its `poses.json` matrices go on as `FLIP @ m @ FLIP`, as its own build does.
 - **A Decal's ID never loads in an ImageLabel**: the four card faces' Decal IDs fetched with
   `AssetFetchStatus.Failure`; the images inside them (`InsertService:LoadAsset`) with Success.
+
+## A rejoin and a resize on the A16 (S5-03i1c2, Nov 18)
+
+- **Arrange's tabs cover the room's lower left** from its corner camera: a press on the job box
+  by the door (gui y about 149) landed on the front tab, and Arrange swung to the door. Pin a
+  camera first (`BindToRenderStep("ShotCam", ...)`, then unbind; it stays Scriptable there) so
+  the piece is clear of the tray and tabs, and keep the camera under the ceiling (y about 8.6 in
+  an XL room; at 13 it looked down on the ceiling's top).
+- **A capture that never changes is the right window showing what's really there**: the front
+  tab's view of the door was what Arrange showed. The client's `CurrentCamera.CFrame` read
+  mid-swing can disagree with the picture; read it again after a second.
+- **The test hook moves furniture without a finger**: `ArrangeTest:Invoke(player, "place",
+  "Rail:Furniture#1", "Floor", x, y, turn)` moves one set out; a piece from the box is asked by
+  its name, `"Rug:Furniture"`, and a rider by its base's id (`"Rug:Furniture#1"`).
+- **Console output is long** (the Config misses repeat on every save): read Output with a
+  filtered `execute_luau` (`LogService:GetLogHistory()`) rather than `get_console_output`.

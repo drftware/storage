@@ -337,6 +337,101 @@ do
 	ok(Layout.clearOf("Shelf", flush, floor) == flush, "only the box keeps clear")
 end
 
+-- Shrinking (S5-03i1c2, D-349): the test save's XL arrangement (the shelf off-centre on the back
+-- wall, the box and the lamp down the left wall, the mirror and the rail on the right, the rug
+-- and its beanbag mid-room) made Small. Small sits at the door's end of the unit, so carried,
+-- every piece fell outside it and Brix boxed them all, the job box too. Shrunk, its own pieces
+-- take the size's layout: Small holds the box, the shelf and the mirror; the rest are boxed.
+do
+	local xl, small = roomOf("XL"), roomOf("Small")
+	local rows: { Save.PlacedRow } = {
+		{ id = "Shelf:Furniture#1", on = "Floor", x = 1.25, y = -14.075, turn = 0 },
+		{ id = "JobBox:Furniture#1", on = "Floor", x = 7.9655, y = 1.5, turn = 90 },
+		{ id = "Mirror:Furniture#1", on = "Floor", x = 9.076, y = -9.325, turn = 90 },
+		{ id = "Rail:Furniture#1", on = "Floor", x = -8.945, y = -5.5, turn = 270 },
+		{ id = "FloorLamp:Furniture#1", on = "Floor", x = 8.35, y = 5.975, turn = 0 },
+		{ id = "Rug:Furniture#1", on = "Floor", x = -1.7925, y = 4.025, turn = 0 },
+		{ id = "Beanbag:Furniture#1", on = "Rug:Furniture#1", x = 1.65, y = -0.71, turn = 338 },
+		{ id = "Teddy#1", on = "Shelf:Furniture#1", x = 1, y = 0, turn = 0 },
+	}
+	ok(#judge(xl, Layout.boxFirst(rows)) == 0, "shrink: the XL arrangement stands in XL")
+	local shrunk = Layout.boxFirst(Layout.grow(rows, xl, small))
+	local refused = judge(small, shrunk)
+	local function boxed(kind: string): boolean
+		for _, r in refused do
+			if string.find(r, Layout.id(kind), 1, true) == 1 then
+				return true
+			end
+		end
+		return false
+	end
+	ok(shrunk[1].id == Layout.id("JobBox") and not boxed("JobBox"), "shrink: the job box stands")
+	ok(not boxed("Shelf") and not boxed("Mirror"), "shrink: the shelf and the mirror stand")
+	local def = Layout.default(small)
+	for _, kind in { "JobBox", "Shelf", "Mirror" } do
+		local got, want = find(shrunk, kind) :: Save.PlacedRow, find(def, kind) :: Save.PlacedRow
+		ok(
+			near(got.x, want.x) and near(got.y, want.y),
+			`shrink: the {kind} as Small's layout has it`
+		)
+	end
+	local mirror = find(shrunk, "Mirror") :: Save.PlacedRow
+	ok(Layout.stands("Mirror", mirror :: any, small.Floor), "shrink: the mirror still leans")
+	ok(not boxed("Teddy"), "shrink: the teddy rides its shelf")
+	ok(#refused == 4, `shrink: the rail, lamp, rug and beanbag boxed ({#refused})`)
+	-- grown back, the pieces Small kept ride its walls out again, kept inside the floor
+	local kept: { Save.PlacedRow } = {}
+	for _, row in shrunk do
+		local kind = Layout.kind(row.id)
+		if not (kind and boxed(kind)) then
+			table.insert(kept, row)
+		end
+	end
+	local back = Layout.boxFirst(Layout.grow(kept, small, xl))
+	ok(#judge(xl, back) == 0, "shrink: grown back to XL, it all stands")
+	-- Small's shelf touches both side walls: it rides neither, keeping its middle on the back wall
+	local shelf = find(back, "Shelf") :: Save.PlacedRow
+	ok(
+		near(shelf.x, 0) and near(shelf.y, -xl.Floor.depth / 2 + Layout.Gap + 0.8),
+		"shrink: the shelf comes back centred"
+	)
+end
+
+-- A save whose job box was boxed (the shrink before D-349 boxed it) gets it back where the size's
+-- layout has it, first; one that has it is left as it is.
+do
+	local small = roomOf("Small")
+	local rows: { Save.PlacedRow } = { { id = "Teddy#1", on = "Floor", x = 0, y = 0, turn = 0 } }
+	local fixed = Layout.withBox(rows, small)
+	local want = find(Layout.default(small), "JobBox") :: Save.PlacedRow
+	ok(#fixed == 2 and fixed[1].id == want.id and near(fixed[1].x, want.x), "the lost box laid")
+	ok(fixed[2].id == "Teddy#1" and #rows == 1, "the rest after it, the rows untouched")
+	local again = Layout.withBox(fixed, small)
+	ok(#again == 2 and again[1].x == fixed[1].x, "a box that stands is left")
+end
+
+-- Growing keeps a piece inside the new floor: a shelf off-centre on Medium's back wall rides it
+-- into a wider room as far along as it was, never past a side wall.
+do
+	local medium, large = roomOf("Medium"), roomOf("Large")
+	local w = medium.Floor.width
+	local _, deep = 7.5, 1.6
+	local rows: { Save.PlacedRow } = {
+		{ id = "JobBox:Furniture#1", on = "Floor", x = w / 2 - 2, y = 2, turn = 90 },
+		{
+			id = "Shelf:Furniture#1",
+			on = "Floor",
+			x = -1,
+			y = -medium.Floor.depth / 2 + deep / 2,
+			turn = 0,
+		},
+	}
+	local grown = Layout.grow(rows, medium, large)
+	local shelf = find(grown, "Shelf") :: Save.PlacedRow
+	ok(near(shelf.x, -1), "grow: the shelf keeps its place along the back wall")
+	ok(#judge(large, Layout.boxFirst(grown)) == 0, "grow: both stand")
+end
+
 print(`layout: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

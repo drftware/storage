@@ -8952,6 +8952,31 @@ its lid still opens. Seen in Studio Play at Galaxy A16 size on the XL test save.
   hangers and Wear, the box's Open and the mirror's Try on are the piece's children, so they ride.
 - **Not seen yet** (S5-03i1c2): the box's stop at its line, a true rejoin, a resize, the rail moved.
 
+## D-349 A home that shrinks takes its size's layout; the job box always stands (S5-03i1c2, 2026-11-18)
+
+The moment: you rejoin and your shelf is on the back wall where you put it; your home changes
+size and it's still a room, tidy, nothing lost: the box by the door opens clear of the wall.
+Seen in Studio Play at Galaxy A16 size on the XL test save (captures `docs/art/S5-03i1c2-*`):
+the job box pushed at the left wall stopped at its line and opened clear; the clothes rail moved
+along the right wall with its hangers, the hard hat and Wear (Wear put the hat on); the rug put
+away took its beanbag into the box first and both set out again; a true Stop and Play laid all
+of it where it was left, six finds in the shelf.
+- **Found in the pass**: made Small, the XL arrangement went into the box whole, the job box
+  too, and nothing ever laid the job box again. Small sits at the door's end of the unit, so
+  every piece carried by its place in the unit fell outside it, and the shelf, 1.25 off-centre,
+  was wider than Small allowed there.
+- **Grown, your arrangement keeps** (`Layout.grow`): a piece against a wall rides it as before,
+  now kept inside the new floor as far along its wall as it fits; a piece touching both side
+  walls (Small's shelf) keeps its middle rather than riding one. **Shrunk, the size's own layout
+  comes first**: each of the home's own pieces takes the size's layout spot if it's clear, else
+  its own place kept inside the floor, else it goes in the box. Small keeps the job box, the
+  shelf and the mirror, as a new Small home has them. My default, `OWNER.md`: no home shrinks
+  in play today (sizes are only bought up), so this guards the test hook and any later downsize.
+- **The job box always stands** (`Layout.withBox`): a save without its row gets it back where
+  the size's layout has it, first, as the home is laid. The test save had lost it to the shrink.
+- **Not chosen**: a shrunk home keeping your walls for every piece. Tried by the clamp alone,
+  the job box rode into the back corner and pushed the shelf into the box.
+
 ## D-400 A find that lands after you chose what to hold keeps your hand where you put it (F-G1e6q2, Nov 17)
 - **The rule**: a marked box's find reaches your hand as its reveal ends (about 2.4 s for an
   Epic). If you switched slots or put your tool away since the box opened, the find goes into a

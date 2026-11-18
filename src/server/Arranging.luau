@@ -358,8 +358,12 @@ function Arranging.new(): ArrangingSystem
 			local _, from = Arrange.areas(slot, laid.pivot, data.placedSize)
 			saved = if adopting then Spots.carry(saved, from, to) else Layout.grow(saved, from, to)
 		end
+		local mended = false
 		if adopting then
 			saved = Layout.adopt(saved, to)
+		else -- the job box always stands: a save that lost it gets it back (D-349)
+			local whole = Layout.withBox(saved, to)
+			mended, saved = whole ~= saved, whole
 		end
 		local rows = Spots.owned(Layout.boxFirst(saved), settable(player, data))
 		local dropped = placements:load({ form = data.placed.form, rows = rows }, shapeOf)
@@ -378,7 +382,9 @@ function Arranging.new(): ArrangingSystem
 			home.spare.Parent = nil -- the spare's set goes: the holder's own rows stand instead
 		end
 		unit:SetAttribute(Spots.SizeAttribute, size)
-		if dropped and (resized or adopting or #dropped > 0 or #rows < #data.placed.rows) then
+		if
+			dropped and (resized or adopting or mended or #dropped > 0 or #rows < #data.placed.rows)
+		then
 			keep(home, data) -- what no longer fits is back in the box
 		end
 		apply(home, player, false)

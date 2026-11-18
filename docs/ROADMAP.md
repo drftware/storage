@@ -2877,10 +2877,13 @@ Done when players watch the results to the end and change their perks between cl
         room off a wall (`Layout.clearOf`, the server refuses nearer). The lid swings about the
         box's new hinge (`JobBoxView.frame`), the lamp's nearness reads its shade where it is
         now, a lifted mirror's picture leaves the hidden one. Captures `docs/art/S5-03i1c-*`.
-      - [ ] **S5-03i1c2 Seen through a rejoin and a resize**: the job box pushed to a wall stops
-        at its lid's line and opens clear (fixed after the pass, unseen); a true Stop and Play
-        rejoin; "size" Small and back to XL (the moved pieces ride their walls); the rail moved
-        (its hangers and Wear ride it); a piece put away and set out again; captures.
+      - [x] **S5-03i1c2 Seen through a rejoin and a resize** (done Nov 18, D-349; seen in Studio
+        Play at Galaxy A16 size): the job box stops at its lid's line and opens clear; the rail
+        moved with its hangers and Wear; the rug put away with its beanbag and set out again; a
+        true Stop and Play laid everything where it was left. Found and fixed: made Small, the
+        whole set went in the box, the job box too; a shrunk home now takes its size's layout
+        first (`Layout.grow`) and a save without its job box gets it back (`withBox`). Captures
+        `docs/art/S5-03i1c2-*`.
     - [ ] **S5-03i2 Take anything directly**: outside Arrange, walk up to any find set out (shelf,
       a top, the floor, a wall) and Take puts it in your hands; in Arrange, lift a find straight
       off the shelf or any top. Server-checked, never lost or doubled.
