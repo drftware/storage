@@ -14,6 +14,8 @@ climb run's uncommitted Climbs, Keepers, GatePay, Deal, Pay, Waking are red mid-
   hidden in Arrange (HomeTakeView). A press: rate limit, your own, reach, not wrapped, a hand
   free (`Slots:room`), then stamp `TakenBy`, `Save.unshelf` or `Spots.lift`, `Slots:unbox`, one
   step. Every screen flies a copy into the hand; your hand is held by InFlight until it lands.
+- Uncommitted on purpose: Climbs, GatePay, Keepers, Deal, Pay, Waking and
+  `tests/floorversion.spec` are the climb run's work in progress; the home chain never stages them.
 - Studio hooks: `ShelfTest:Invoke(player, "take", i)`, `ArrangeTest:Invoke(player, "take", id)`
   (STUDIO.md's i1c1 section). Test save: XL, everything set out, six finds in the shelf, the
   hard hat worn. Home doc: https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww
