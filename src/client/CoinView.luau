@@ -27,6 +27,11 @@
 	your count, each landing worth its share of the pay (`Pay.split`), ticking higher and higher.
 	A gold "+10" by the count says what came in, and fades once the last coin lands.
 
+	Each monster the team shut in on that floor (S4-04, `Pay.parts`) pops after the pour, one at a
+	time, beside it: the slam's bang, muffled as from inside a unit, a chink, and a fistful of
+	coins (`Pay.Trap`) bursting out, hanging and flying to the count, the ticks a little higher
+	each pop; as a pop's last coin lands the "+10" swells to "+15", then "+20".
+
 	Coins out of a marked box (B-03b): as its flaps burst (with the find, if it holds one) its
 	coins jump out of it on every screen, fanning out round whatever rises between them, spinning
 	up on their edges and gone, with the take's chink (and jingle for two or three) at the box. On
@@ -124,6 +129,8 @@ type Flyer = {
 	-- and flies into the slot at `into` (world), where `clink` sounds
 	into: Vector3?,
 	clink: Sound?,
+	-- the last coin of a monster's pop (S4-04): as it lands, the "+10" by the count swells to this
+	bump: number?,
 }
 
 local CoinView = {}
@@ -275,6 +282,12 @@ function CoinView.new(): Brix.System
 	local plusText = ""
 	local pour = sound(Pay.Pour, gui)
 	local pourAt: number? = nil -- when the pour sounds
+	-- a monster's pop (S4-04): its bang and chink, two of each taken in turn so pops never cut
+	-- each other short, and when each pop still to come sounds
+	local bangs = { sound(Pay.PopBang, gui), sound(Pay.PopBang, gui) }
+	local chinks = { sound(Pay.PopChink, gui), sound(Pay.PopChink, gui) }
+	local popTurn = 0
+	local popsAt: { number } = {}
 
 	local ticks: { Sound } = {}
 	for i = 1, TICKS do
@@ -654,15 +667,52 @@ function CoinView.new(): Brix.System
 				plusUntil = now + Pay.Plus
 			end
 		end
+		local bump = f.bump
+		if bump and not plusAt then
+			-- a monster's pop all in: the "+10" swells to take it in
+			plusText = `+{Coins.text(bump)}`
+			plus.Text = plusText
+			plusPop.Scale = 1.45
+			TweenService:Create(plusPop, SETTLE, { Scale = 1 }):Play()
+		end
 		return true
 	end
 
-	-- Paid at the gate (S1-06): `coins` burst out a beat after the slam and pour into the count.
-	local function paid(coins: unknown)
+	-- One pop of a monster shut in (S4-04): `Pay.Trap` coins burst at `at` from `origin` and hang
+	-- till `hang`, each worth one, the ticks climbing from `rise`; the last swells the "+" to `bump`.
+	local function popCoins(origin: Vector2, reach: number, at: number, rise: number, bump: number)
+		local n = Pay.Trap
+		local twist = rng:NextNumber(0, TAU)
+		for i = 1, n do
+			local angle = twist + (i - 1) / n * TAU + rng:NextNumber(-0.35, 0.35)
+			local r = reach * rng:NextNumber(0.6, 1)
+			table.insert(flyers, {
+				launch = at + Pay.Scatter + Pay.PopHang + (i - 1) * Pay.Gap,
+				from = nil,
+				at = Vector3.zero,
+				rise = rise + Pay.PopClimb * (i - 1) / math.max(1, n - 1),
+				worth = 1,
+				view = nil,
+				coin = nil,
+				start = nil,
+				born = at + rng:NextNumber(0, 0.04),
+				origin = origin,
+				spot = origin + Vector2.new(math.cos(angle) * r, math.sin(angle) * r * 0.75),
+				bump = if i == n then bump else nil,
+			})
+		end
+		pouring += n
+		table.insert(popsAt, at)
+	end
+
+	-- Paid at the gate (S1-06): `coins` burst out a beat after the slam and pour into the count,
+	-- then one pop for each of the `trapped` monsters shut in that they count (S4-04).
+	local function paid(coins: unknown, _kept: unknown, trapped: unknown)
 		if typeof(coins) ~= "number" or coins ~= coins or coins < 1 then
 			return
 		end
-		local shares = Pay.split(coins, Pay.Flyers)
+		local floorCoins, pops = Pay.parts(coins, if type(trapped) == "number" then trapped else 0)
+		local shares = Pay.split(floorCoins, Pay.Flyers)
 		local n = #shares
 		local now = os.clock()
 		local camera = Workspace.CurrentCamera
@@ -690,10 +740,21 @@ function CoinView.new(): Brix.System
 			})
 		end
 		pouring += n
-		plusText = `+{Coins.text(coins)}`
+		plusText = `+{Coins.text(floorCoins)}`
 		plusAt = born + Pay.Scatter + Pay.Hang
 		plusUntil = math.huge
 		pourAt = born
+		-- each monster shut in: its own pop beside the pour, left, right, then further out
+		local first = born + Pay.Scatter + Pay.Hang + n * Pay.Gap + Pay.PopAfter
+		local popReach = view.Y * Pay.PopSpread
+		for j = 1, pops do
+			local side = if j % 2 == 1 then 1 else -1
+			local further = 1 + (math.ceil(j / 2) - 1) * 0.55
+			local at = origin
+				+ Vector2.new(side * further * view.X * Pay.PopSide, -view.Y * Pay.PopUp * further)
+			local rise = 1 + PAY_CLIMB + Pay.PopClimb * j
+			popCoins(at, popReach, first + (j - 1) * Pay.PopGap, rise, floorCoins + j * Pay.Trap)
+		end
 	end
 
 	-- Paid at the car's machine (S1-10c2b): `price` coins leave the count for `machine`'s slot.
@@ -939,7 +1000,10 @@ function CoinView.new(): Brix.System
 			connections,
 			CollectionService:GetInstanceRemovedSignal(Opening.Tag):Connect(boxRemoved)
 		)
-		task.spawn(SoundPrimer.prime, { Coins.Chink.id, Coins.Jingle.id, Pay.Pour.id })
+		task.spawn(
+			SoundPrimer.prime,
+			{ Coins.Chink.id, Coins.Jingle.id, Pay.Pour.id, Pay.PopBang.id }
+		)
 		-- the pay at the gate: coins, then the finds kept (KeepView's)
 		task.spawn(function()
 			local folder = ReplicatedStorage:WaitForChild(Pay.RemoteFolder)
@@ -988,6 +1052,17 @@ function CoinView.new(): Brix.System
 			pourAt = nil
 			pour.TimePosition = Pay.Pour.from
 			pour:Play()
+		end
+		for i = #popsAt, 1, -1 do
+			if now >= popsAt[i] then
+				table.remove(popsAt, i)
+				popTurn = popTurn % #bangs + 1
+				local bang, glint = bangs[popTurn], chinks[popTurn]
+				bang.TimePosition = Pay.PopBang.from
+				bang:Play()
+				glint.TimePosition = Pay.PopChink.from
+				glint:Play()
+			end
 		end
 		if plusAt and now >= plusAt then
 			plusAt = nil
@@ -1052,6 +1127,7 @@ function CoinView.new(): Brix.System
 			end
 		end
 		table.clear(pours)
+		table.clear(popsAt)
 		table.clear(moving)
 		table.clear(flyers)
 		gui:Destroy()

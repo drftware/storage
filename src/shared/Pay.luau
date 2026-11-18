@@ -13,9 +13,12 @@
 	to the same floor never pays twice.
 
 	The server's GatePay does it and tells each paid player's screen (`Remote`): their coins pour
-	into the count (CoinView) and each kept find leaves its slot (KeepView). Untested bets left
-	out: trapped monsters raising the pay, and a harder floor picked on the ride paying more (both
-	in `OWNER.md`).
+	into the count (CoinView) and each kept find leaves its slot (KeepView).
+
+	Trapping pays (S4-04, D-188, D-402): each monster the team has shut in a unit as the gate shuts
+	pays everyone aboard `Trap` more coins, as R.E.P.O.'s beaten monsters drop an orb worth money.
+	On your screen each one pops its own burst of coins after the floor's pour (`parts`). Left
+	out: a harder floor picked on the ride paying more (S4-03).
 ]]
 local Pay = {}
 
@@ -27,21 +30,46 @@ Pay.Base = 10
 -- worth, so pushing one more floor always tempts. A default (`OWNER.md`).
 Pay.Rise = 2
 
+-- More coins for each monster the team has shut in a unit as the gate shuts, to everyone aboard:
+-- slamming a door on one stops being only an escape and becomes something worth going for.
+-- The owner's starting guess (D-188): half of floor 1's pay.
+Pay.Trap = 5
+
 -- The coins floor `floor` pays each player aboard as its gate shuts.
 function Pay.forFloor(floor: number): number
 	local n = math.max(1, math.floor(floor))
 	return Pay.Base + Pay.Rise * (n - 1)
 end
 
--- What a player standing aboard is paid as floor `floor`'s gate shuts: nothing while wrapped, or
--- for a floor `paid` says they were paid for already this climb (a ride that came back). Marks
--- the floor paid in `paid` when it pays.
-function Pay.owed(paid: { [number]: boolean }, floor: number, wrapped: boolean): number
+-- A count of monsters, whole and never below none (nothing for a count that isn't a number).
+local function count(n: number): number
+	return if n == n and n > 0 then math.floor(math.min(n, 1e6)) else 0
+end
+
+-- What a player standing aboard is paid as floor `floor`'s gate shuts with `trapped` monsters
+-- shut in on it (none if not given): nothing while wrapped, or for a floor `paid` says they were
+-- paid for already this climb (a ride that came back, traps and all). Marks the floor paid in
+-- `paid` when it pays.
+function Pay.owed(
+	paid: { [number]: boolean },
+	floor: number,
+	wrapped: boolean,
+	trapped: number?
+): number
 	if wrapped or paid[floor] then
 		return 0
 	end
 	paid[floor] = true
-	return Pay.forFloor(floor)
+	return Pay.forFloor(floor) + Pay.Trap * count(trapped or 0)
+end
+
+-- What a pay of `coins` that counted `trapped` monsters shut in looks like on your screen: the
+-- floor's own coins, poured as ever, and how many pops of `Trap` coins follow, one per monster
+-- (only as many as `coins` holds).
+function Pay.parts(coins: number, trapped: number): (number, number)
+	local total = count(coins)
+	local pops = math.min(count(trapped), total // Pay.Trap)
+	return total - pops * Pay.Trap, pops
 end
 
 -- The coins drawn flying for a pay of `total`: at most `most` of them, each worth a share, the
@@ -81,6 +109,34 @@ Pay.Plus = 1.1 -- the "+10" by your count holds this long after the last coin la
 -- burst in its first 0.6 s with a tail to 0.9 s (measured, docs/STUDIO.md). On your screen only.
 export type Sound = { id: string, from: number, length: number, volume: number, pitch: number? }
 Pay.Pour = { id = "rbxassetid://9113849651", from = 0, length = 1.0, volume = 0.7 } :: Sound
+
+-- The feel of a monster shut in paying out on your screen (S4-04, CoinView): after the floor's
+-- pour, one pop each, beside it, left then right then further out: the slam's bang, muffled as
+-- from inside a unit, and `Trap` coins burst out of it, hang, and fly to your count, which
+-- swells "+10", "+15", "+20" as each lands.
+Pay.PopAfter = 0.3 -- after the floor's last coin sets off: the pour has its moment first
+Pay.PopGap = 0.55 -- between one monster's pop and the next, so each gets its own beat
+Pay.PopSide = 0.17 -- how far beside the pour each pop bursts, as a share of the screen's width
+Pay.PopUp = 0.05 -- and how far above it, as a share of the screen's height
+Pay.PopSpread = 0.075 -- how far a pop throws its coins: tighter than the pour, a fistful
+Pay.PopHang = 0.22 -- a pop hangs a beat, glinting, before its coins fly to the count
+Pay.PopClimb = 0.12 -- each pop's landing ticks pitch this much higher than the last pop's
+-- The pop: the slam's bang (DoorSound's, a gas tank dropped on loose metal), pitched down and
+-- quiet, as a monster's blows sound from inside its unit; the chink of coins on top of it.
+Pay.PopBang = {
+	id = "rbxassetid://9120381070",
+	from = 0.36,
+	length = 0.75,
+	volume = 0.5,
+	pitch = 0.86,
+} :: Sound
+Pay.PopChink = {
+	id = "rbxassetid://9113849162",
+	from = 1.08,
+	length = 0.4,
+	volume = 0.6,
+	pitch = 1.15,
+} :: Sound
 
 -- The feel of a kept find on your screen (KeepView).
 Pay.KeepAfter = 0.55 -- after the gate hits its post: as the first coins burst, not before the slam

@@ -12,8 +12,12 @@
 	written at once, since a find kept is worth keeping. A wrapped rider gets nothing for the floor
 	(GDD "Earning nothing"), and keeps the finds in their slots for a later gate, if they have any.
 
-	Each paid rider's screen is told what they got (`Pay.Remote`: coins, then the kept finds' keys)
-	before their count changes, so the coins are already on their way when it rises (CoinView) and
+	Trapping pays (S4-04, D-402): each monster the team has shut in a unit on that floor as the
+	gate shuts (Keepers' `trappedOn`; one freed before then, or one the floor woke behind its own
+	door, doesn't count) adds `Pay.Trap` to every paid rider's coins.
+
+	Each paid rider's screen is told what they got (`Pay.Remote`: coins, the kept finds' keys, then
+	how many monsters shut in the coins count) before their count changes, so the coins are already on their way when it rises (CoinView) and
 	each kept find rises out of its slot (KeepView). A rider whose save hasn't loaded yet (only just
 	joined) has their kept finds held here and added the moment it loads, so nothing kept is lost.
 
@@ -37,6 +41,7 @@ local Save = require(ReplicatedStorage.Shared.Save)
 local Taken = require(ReplicatedStorage.Shared.Home.Taken)
 local Climbs = require(script.Parent.Climbs)
 local Coins = require(script.Parent.Coins)
+local Keepers = require(script.Parent.Keepers)
 local Prompts = require(script.Parent.Prompts)
 local Saving = require(script.Parent.Saving)
 local Slots = require(script.Parent.Slots)
@@ -69,6 +74,7 @@ function GatePay.new(): GatePaySystem
 	local connections: { RBXScriptConnection } = {}
 	local remote: RemoteEvent? = nil
 	local coins: Coins.CoinsSystem? = nil
+	local keepers: Keepers.Keepers? = nil
 	local slots: Slots.Slots? = nil
 	local saving: Saving.SavingSystem? = nil
 	local closing = false
@@ -172,13 +178,16 @@ function GatePay.new(): GatePaySystem
 		if not (c and sl) then
 			return
 		end
+		-- the monsters shut in as the gate hits its post, the same for every rider
+		local k = keepers
+		local trapped = if k then k:trappedOn(event.from.model) else 0
 		for _, player in event.riders do
 			if not (player.Parent and alive(player)) or Prompts.wrapped(player) then
 				continue -- wrapped (or gone): nothing for this floor
 			end
 			local mine = paid[player] or {}
 			paid[player] = mine
-			local owed = Pay.owed(mine, event.from.number, false)
+			local owed = Pay.owed(mine, event.from.number, false, trapped)
 			local kept, chipped, moved = sl:keep(player)
 			-- everything that rose out of their slots, a friend's taken-up finds too
 			local shown = kept
@@ -192,7 +201,7 @@ function GatePay.new(): GatePaySystem
 				continue
 			end
 			if remote then
-				remote:FireClient(player, owed, shown)
+				remote:FireClient(player, owed, shown, if owed > 0 then trapped else 0)
 			end
 			c:pay(player, owed)
 			if #kept > 0 then
@@ -207,7 +216,7 @@ function GatePay.new(): GatePaySystem
 			if RunService:IsStudio() then
 				local list = if #shown > 0 then table.concat(shown, ", ") else "no finds"
 				print(
-					`GatePay: {player.Name} paid {owed} for floor {event.from.number}, kept {list}`
+					`GatePay: {player.Name} paid {owed} for floor {event.from.number} ({trapped} shut in), kept {list}`
 				)
 			end
 		end
@@ -219,6 +228,7 @@ function GatePay.new(): GatePaySystem
 		local registry = context.registry
 		-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)
 		coins = (registry:get("coins") :: any) :: Coins.CoinsSystem
+		keepers = (registry:get("keepers") :: any) :: Keepers.Keepers -- any: as above
 		slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
 		saving = (registry:get("saving") :: any) :: Saving.SavingSystem -- any: as above
 		local climbs = (registry:get("climbs") :: any) :: Climbs.Climbs -- any: as above

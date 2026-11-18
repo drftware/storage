@@ -214,15 +214,20 @@ do
 	ok(k.state == "Asleep", "it sleeps on")
 	ok(Keeper.wakeShut(k, slot, inside), "its own door's bang wakes it")
 	ok(k.state == "Trapped" and k.trappedIn == inside, "shut in")
-	ok(Keeper.awake(k) and not Keeper.loose(k), "awake, but takes no place in the cap")
+	ok(Keeper.awake(k) and not Keeper.loose(k), "awake, but not loose in the halls")
+	ok(Keeper.shutIn(k), "shut in: it pays at the gate (S4-04)")
 	ok(k.nextBang == ROW.bangFirst, "its first blow on the trapped clock")
 	ok(not Keeper.wakeShut(k, slot, inside), "already shut in: nothing more")
 	local out = sleeper(front)
 	ok(not Keeper.wakeShut(out, slot, inside), "asleep out in the hall: not shut in by it")
 	ok(out.state == "Asleep", "and still asleep")
+	ok(not Keeper.shutIn(out), "asleep in the hall: not shut in")
 	local awake =
 		Keeper.new(ROW, map, Brix.Random.new({ seed = 2 }), middle, vector.create(0, 0, 1), true)
 	ok(Keeper.wakeShut(awake, slot, inside), "awake in there and not yet trapped: trapped now")
+	ok(Keeper.shutIn(awake), "shut in as the gate shuts: it pays")
+	ok(Keeper.lookOut(awake, slot, inside), "its door all the way up: it's out")
+	ok(not Keeper.shutIn(awake), "freed before the gate shuts: it pays nothing")
 end
 
 if failures > 0 then

@@ -1037,11 +1037,17 @@ function Keeper.awake(k: Keeper): boolean
 	return k.state ~= "Asleep"
 end
 
---- Whether it's loose on its floor: awake and not shut in where it was trapped. The deal's cap of
---- awake keepers counts these (the GDD: a trapped keeper takes no place), so the next door can
---- hold a fresh one; out again, it counts again.
+--- Whether it's loose on its floor: awake and not shut in where it was trapped. A wave's limit
+--- counts these (`Waking.free`); the deal's cap of awake keepers counts these and the ones the
+--- team shut in (S4-04, D-402: a trapped one keeps its place, so trapping never farms fresh ones).
 function Keeper.loose(k: Keeper): boolean
 	return k.state ~= "Asleep" and k.trappedIn == 0
+end
+
+--- Whether it's shut in a unit now, by a door that came down on it awake (`trap`, `wakeShut`):
+--- the gate pays for each one the team shut in (S4-04). Out again, it's not.
+function Keeper.shutIn(k: Keeper): boolean
+	return k.trappedIn ~= 0
 end
 
 --- Unit `index`'s door (its slot `slot`) just came down from all the way up, by a slam or a close.

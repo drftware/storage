@@ -1563,8 +1563,9 @@ Nothing in it is built yet. What still waits on you, in the order it holds work 
   way, Nov 14: judge it under "Now: the flashlight runs down"; the batteries in units under
   "Now: take a battery".)
 - [ ] **A trapped monster still counts toward the floor's limit** on how many can be awake.
-  The old design doc said the opposite, which made trapping pointless. You gave the reason
-  (trapping makes it easier to search) but didn't answer this directly: say if you disagree.
+  Built with the trap pay (S4-04, D-402): without it, trapping the awake one let the next door
+  hold a fresh one to trap for more coins. You gave the reason (trapping makes it easier to
+  search) but didn't answer this directly: say if you disagree.
 - [ ] **The small things I picked** so each idea was complete. They're marked "starting guess"
   or "my default" where they appear in the design doc: seven units in ten have coins; a tool in
   one unit in twelve; not tapping counts as a miss; a pounding monster breaks out after 90
@@ -1633,7 +1634,12 @@ filled. Each default stands unless you say otherwise.
   it. The other way: it lifts the whole floor for everyone in the car. Either way the shop shows
   the odds with and without it before you buy (Roblox's rule). It waits on the shop.
 - [ ] **Trapping pays 5 coins** to everyone aboard for each monster shut in a unit as the gate
-  shuts (floor 1's gate pays 10 and rises 2 a floor). You'll judge it in play once S4-04 is built.
+  shuts (floor 1's gate pays 10 and rises 2 a floor). Built (S4-04, D-402). In Play with a friend:
+  on floor 1, open doors until a monster is awake, get it inside its unit and slam the door on
+  it, then punch the code and both ride. Look for: the floor's coin pour, then a muffled bang and
+  a fistful of coins popping beside it, flying to your count, the "+10" swelling to "+15", on
+  both screens. Then trap two on one floor, and let one burst out before you ride: only the one
+  still shut in pops. Judge whether 5 is worth the risk, and the bang (too alarming in the car?).
 - [ ] **Are the other lights used up too, as the hard hat is? (Nov 16, D-251)** You made the
   hard hat used up: when its minute runs out it falls and breaks, and no battery refills it. The
   other found lights that run down (the camp lantern, the oil lamp, the tea light, the desk lamp

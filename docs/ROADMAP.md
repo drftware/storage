@@ -2280,9 +2280,14 @@ Done when two climbs in a row feel different and players talk about their best f
   monster passes a lean as `KeeperMix.on`'s third argument (D-401). Today the next floor is laid
   as the code opens the gate (`Climbs` `prepare`), before anyone rides: it has to be laid after
   the vote instead, or once for each version.
-- [ ] **S4-04 Trapping pays.** Each monster shut in a unit as the gate shuts pays everyone
-  aboard 5 more coins (owner agreed Nov 14, D-188). A trapped monster now counts toward the floor's limit on awake monsters
-  (today `Keepers.awakeOn` leaves it out).
+- [x] **S4-04 Trapping pays** (Nov 17, D-402). Each monster the team has shut in a unit as the
+  gate shuts pays everyone aboard 5 more coins (`Pay.Trap`, D-188; Keepers' `trappedOn`); one
+  freed first, or one the floor woke behind its own door, doesn't count. On your screen each
+  pops after the floor's pour, beside it: a muffled bang, a chink, five coins to your count, the
+  "+10" swelling to "+15", "+20". A trapped one now keeps its place in the deal's cap of awake
+  monsters (`awakeOn`), so trapping never frees a door for a fresh one to trap again.
+  `tests/pay.spec.luau`, `tests/shuttap.spec.luau`. Seen in Studio Play: three pops land in
+  turn, "+10" to "+25" (fired by hand; a real trap and ride waits on `OWNER.md`).
 - [ ] **S4-05 The big find.** From floor 2, one a floor, shown only once the code is in: a unit
   rolls up by itself and its place shows on the corner map. Carried in both hands, slower than
   any monster, no tools; it counts only if it's in the car as the gate shuts. Its art first.

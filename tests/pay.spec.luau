@@ -55,6 +55,36 @@ do
 	ok(Pay.owed(cara, 3, false) == Pay.forFloor(3), "cut free and aboard when it comes back: paid")
 end
 
+-- Each monster shut in a unit as the gate shuts pays everyone aboard a little more (S4-04): one,
+-- three, none; never while wrapped, never twice for a floor. The screen splits what came in back
+-- into the floor's pour and one pop per monster.
+do
+	ok(Pay.owed({}, 1, false, 0) == Pay.forFloor(1), "nothing shut in: the floor's pay alone")
+	ok(Pay.owed({}, 1, false) == Pay.forFloor(1), "no count given: nothing shut in")
+	ok(Pay.owed({}, 1, false, 1) == Pay.forFloor(1) + Pay.Trap, "one shut in: its coins on top")
+	ok(
+		Pay.owed({}, 4, false, 3) == Pay.forFloor(4) + 3 * Pay.Trap,
+		"three shut in: three times over"
+	)
+	ok(Pay.owed({}, 4, true, 3) == 0, "wrapped as the gate shuts: nothing, traps or not")
+	local back: { [number]: boolean } = {}
+	Pay.owed(back, 2, false, 1)
+	ok(Pay.owed(back, 2, false, 2) == 0, "a ride back to the floor pays its traps no more")
+	ok(Pay.owed({}, 1, false, -2) == Pay.forFloor(1), "a count never goes below none")
+	ok(Pay.owed({}, 1, false, 1.7) == Pay.forFloor(1) + Pay.Trap, "a count is a whole number")
+	ok(Pay.Trap >= 1, "a monster shut in always pays something")
+	local floorPart, pops = Pay.parts(Pay.owed({}, 3, false, 2), 2)
+	ok(floorPart == Pay.forFloor(3) and pops == 2, "the floor's pour, then two pops")
+	local f0, p0 = Pay.parts(10, 0)
+	ok(f0 == 10 and p0 == 0, "nothing shut in: the pour alone")
+	local f1, p1 = Pay.parts(7, 3)
+	ok(p1 == 1 and f1 + p1 * Pay.Trap == 7, "more pops than the coins hold: only what fits")
+	local f2, p2 = Pay.parts(10, -1)
+	ok(f2 == 10 and p2 == 0, "a count below none pops nothing")
+	local f3, p3 = Pay.parts(10, 0 / 0)
+	ok(f3 == 10 and p3 == 0, "a count that isn't a number pops nothing")
+end
+
 -- The coins drawn flying add up to the pay.
 do
 	local all = true

@@ -19,10 +19,10 @@ pushed; Brix `7f25310`. Uncommitted CoinView, GatePay, Keepers, Keeper, Pay: the
 - Studio hooks: `GrowTest`, `ArrangeTest` "size"/"rows"/"relay", `DevReceipt`. Test save: Small,
   cash 188 (adopts its set on its next load). Home doc (D-259), docs tools only:
   https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww
-- **Climb run:** items 1 (F-G1e6q2, D-400) and 2 done: S4-02 (D-401) mixes each floor's
-  monsters from the climb's seed (`KeeperMix`; the Packrat from floor 3 on about three in five),
-  leanable by a floor version. Next: S4-04 Trapping pays (5 coins each to everyone aboard per
-  monster shut in a unit as the gate shuts; a trapped one counts toward the awake limit).
+- **Climb run:** items 1 to 3 done: the fix pass (D-400), S4-02 monsters from the climb's seed
+  (`KeeperMix`, D-401), S4-04 each monster shut in as the gate shuts pays 5 with its own pop
+  (D-402). Next: S4-03 the next-floor cards (split it first; lay the floor after the vote, and a
+  version's monster lean goes to `KeeperMix.on`).
   Uncommitted `ArrangeView`, `Home/*` and `layout.spec` are the home chain's work in progress.
 
 ## Next task: S5-03i1c Lift the starter pieces in Arrange, seen in Studio

@@ -44,8 +44,10 @@
 	  shake for anyone near (`Doors.move`, "Bang"), heard by other keepers as a door is. At about
 	  90 s it bursts the door up ("Burst"), loud, and goes after the last thing it heard. A
 	  padlock on its door holds it: it gives one last blow and goes quiet until the padlock is cut.
-	- `awakeOn` tells the deal how many keepers are loose on a floor now, for its cap: a trapped
-	  one takes no place (`Keeper.loose`).
+	- `awakeOn` tells the deal how many keepers are awake on a floor now, for its cap: loose, or
+	  shut in by the team (S4-04, D-402: a trapped one keeps its place, so trapping never frees a
+	  door for a fresh one to trap again). One the floor woke shut in waits for a place instead.
+	- `trappedOn` counts those the team has shut in on a floor, for the gate's pay (GatePay).
 	- `hear` is any loud thing off a door (the air horn, bubble wrap's pops): each keeper on that
 	  floor whose way there along the halls is inside its reach comes to look (`Keeper.heardAt`:
 	  up on a unit's top it carries out over the front; behind a shut door, muffled through it).
@@ -290,6 +292,9 @@ type Entry = {
 	quarry: number,
 	feed: number,
 	woke: boolean,
+	-- woken shut in its own unit by the floor (a wave or a wrong code), not by the team: it pays
+	-- nothing at the gate and takes no place in the deal's cap until it's out (S4-04)
+	wokeIn: boolean,
 	piled: number, -- how many finds it has laid on its pile (S2-06b2)
 }
 
@@ -346,9 +351,13 @@ export type Keepers = Brix.System & {
 	-- Calls `each` with every keeper's body and where its feet are (the world's), on every floor.
 	-- Bubble wrap's pops read it (`Wraps`). Allocates nothing.
 	feet: (self: any, each: (body: Model, at: Vector3) -> ()) -> (),
-	-- How many keepers are loose now on the floor `unit` is on (0 off any keepers' floor): awake
-	-- and not trapped behind a door. The deal's cap counts these (the floor rules' `awake`).
+	-- How many keepers are awake now on the floor `unit` is on (0 off any keepers' floor): loose,
+	-- or shut in by the team (S4-04: a trapped one keeps its place). The deal's cap counts these
+	-- (the floor rules' `awake`); one the floor woke shut in waits for a place instead.
 	awakeOn: (self: any, unit: Model) -> number,
+	-- How many keepers the team has shut in a unit on the floor laid as `model` right now (0 off
+	-- any keepers' floor): the gate pays everyone aboard for each (S4-04, GatePay).
+	trappedOn: (self: any, model: Model) -> number,
 	-- The keeper standing loose in `unit` (S2-05a, the tap): whether it's asleep, nil when none
 	-- stands there, and whether it has seen `player` (it hunts them).
 	inside: (self: any, unit: Model, player: Player) -> (boolean?, boolean),
@@ -1400,6 +1409,7 @@ function Keepers.new(): Keepers
 			quarry = 0,
 			feed = 0,
 			woke = false,
+			wokeIn = false,
 			piled = 0,
 		}
 		table.insert(on.keepers, entry)
@@ -1462,6 +1472,7 @@ function Keepers.new(): Keepers
 						Keeper.padlock(entry.keeper, true)
 					end
 					entry.woke = woken == "Wave" -- a wave's: held in while the floor is full
+					entry.wokeIn = true
 				end
 			end
 			return
@@ -1505,8 +1516,8 @@ function Keepers.new(): Keepers
 		local loose, bursting, any = 0, 0, false
 		for _, entry in on.keepers do
 			local k = entry.keeper
-			if entry.woke and k.trappedIn == 0 then
-				entry.woke = false
+			if k.trappedIn == 0 then
+				entry.woke, entry.wokeIn = false, false
 			end
 			if Keeper.loose(k) then
 				loose += 1
@@ -2141,7 +2152,22 @@ function Keepers.new(): Keepers
 		end
 		local count = 0
 		for _, entry in on.keepers do
-			if Keeper.loose(entry.keeper) then
+			local k = entry.keeper
+			if Keeper.loose(k) or (Keeper.shutIn(k) and not entry.wokeIn) then
+				count += 1
+			end
+		end
+		return count
+	end
+
+	function system.trappedOn(_: any, model: Model): number
+		local on = floors[model]
+		if not on then
+			return 0
+		end
+		local count = 0
+		for _, entry in on.keepers do
+			if Keeper.shutIn(entry.keeper) and not entry.wokeIn then
 				count += 1
 			end
 		end

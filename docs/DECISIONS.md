@@ -8958,3 +8958,29 @@ keeps its set where it stood, with the finds on its shelf and box.
   monster that hunts (the closest roll comes in), so the guarded note always has its guard.
 - **Fixed draw order** (`KeeperMix.Order`): a new monster goes on the end, so old seeds keep their
   floors' monsters; the spec checks every row is in it.
+
+## D-402 Trapping pays at the gate, and a trapped monster keeps its place (S4-04, Nov 17)
+The player moment: slamming a door on a monster stops being only an escape and becomes
+something the team goes for, and the gate pays it out where everyone sees it. As R.E.P.O.'s
+beaten monsters drop an orb worth money (D-188).
+- **What counts.** A monster the team has shut in a unit on the floor at the instant the gate
+  hits its post: one a door came down on awake (a slam or a close), a sleeper the tap's missed
+  bang woke shut in, the Packrat baited in and shut. One out again before then (burst, or its
+  door opened) doesn't count (`Keeper.shutIn`). One the floor woke behind its own unopened door
+  (a wave or a wrong code) doesn't count while it's still in: the team never trapped it
+  (Keepers' entry `wokeIn`).
+- **The pay.** `Pay.Trap` (5, the owner's starting guess) a monster, on top of the floor's pay,
+  to every rider paid; nothing while wrapped, and a ride back to a paid floor pays its traps no
+  more, as the floor's pay doesn't (`Pay.owed`).
+- **On your screen.** No words: after the floor's pour, one pop a monster beside it (left,
+  right, then further out), each with the slam's bang pitched down as from inside a unit, a
+  chink, and five coins that hang and fly to the count, the "+10" swelling to "+15", "+20" as
+  each lands (`Pay.parts`, CoinView). The ticks climb a little higher each pop.
+- **The cap.** The deal's cap of awake monsters (`awakeOn`) now counts the ones the team shut in,
+  reversing D-071's third point: with pay on traps, a trapped one freeing its place let the next
+  door hold a fresh one to trap again, a farm. The owner's reason for counting it (trapping makes
+  the floor easier to search) stands. A wave's hold (`Waking.free`) still counts only the loose
+  ones, and one the floor woke shut in still waits for a place, as before.
+
+Not chosen: a bonus only for the monster you lured in (no precedent, D-071); a pop that names the
+monster (no art for its face yet, and the bang already ties it to the trap).
