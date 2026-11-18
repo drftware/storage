@@ -42,6 +42,12 @@
 	taken (every screen flies it into their hand), its row and whatever rides on it go back to the
 	box (`Spots.lift`), and the find goes into their hands out of the box (`Slots:unbox`) in the
 	same step, so it's never lost or doubled.
+
+	In Arrange a find lifts straight out of your shelf's cubby (S5-03i2b, D-352): Place and PutAway
+	carry the cubby's spot after their own words (Place(what, on, x, y, turn, spot), PutAway(what,
+	spot)), `what` then the find's name as it stands there. Set down, it comes off the spot and onto
+	a row in one step (`Spots.offShelf`), refused it's back in its cubby; put away, it goes into the
+	box (`Save.unshelf`). Either way `drawn` fires and the shelf is laid again.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -59,6 +65,8 @@ local Holding = require(ReplicatedStorage.Shared.Home.Holding)
 local Layout = require(ReplicatedStorage.Shared.Home.Layout)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
 local Save = require(ReplicatedStorage.Shared.Save)
+local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
+local HomeSpecs = require(ReplicatedStorage.Shared.Home.Specs)
 local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
@@ -102,6 +110,7 @@ export type ArrangingSystem = Brix.System & {
 }
 
 local FOLDER = Arrange.Folder
+local SPOTS = HomeSpecs.Shelf.Spots -- the shelf's cubbies, in order
 
 local shapeOf = Arrange.shapeOf
 
@@ -492,6 +501,38 @@ function Arranging.new(): ArrangingSystem
 		return ""
 	end
 
+	-- Place from a cubby (S5-03i2b, D-352): find `what`, lifted out of their shelf's spot `i`, set
+	-- at `pose`, off the spot and onto a row in one step; refused, it's back in its cubby.
+	local function placeShelved(
+		player: Player,
+		what: string,
+		i: number,
+		pose: Brix.PlacementPose
+	): (string, string)
+		local home = homes[player]
+		local data = if saving then saving:data(player) else nil
+		if not (home and data) or home.stale then
+			return "", Spots.Refusals.NotYours
+		end
+		return Spots.offShelf(data, i, what, function(): (string, string)
+			return place(player, what, pose) -- fires `drawn` when it stands: the shelf's laid again
+		end)
+	end
+
+	-- Put away from a cubby: find `what` on their shelf's spot `i` goes into the job box. "" or
+	-- the refusal.
+	local function awayShelved(player: Player, what: string, i: number): string
+		local home = homes[player]
+		local data = if saving then saving:data(player) else nil
+		if not (home and data) or home.stale then
+			return Spots.Refusals.NotYours
+		elseif not Save.unshelf(data, i, what) then
+			return Spots.Refusals.NotShelved
+		end
+		drawnSignal:fire(player) -- the shelf's laid again: the cubby empties
+		return ""
+	end
+
 	-- Sends `player` what's in their job box now (counts by name), for the screen's tray, and how
 	-- many finds they have set out of the most their home holds, for its limit bar.
 	local function sendBox(player: Player)
@@ -579,25 +620,41 @@ function Arranging.new(): ArrangingSystem
 		on: unknown,
 		x: unknown,
 		y: unknown,
-		turn: unknown
+		turn: unknown,
+		spot: unknown
 	)
 		if not limit:take(player, os.clock()) then
 			return -- asked too often: refused before the payload is read
 		end
 		local w, pose = Spots.ask(what, on, x, y, turn)
-		if w and pose then
+		if not (w and pose) then
+			return
+		elseif spot == nil then
 			local id, refusal = place(player, w, pose)
+			answer(player, w, id, refusal)
+			return
+		end
+		local i = Shelf.spot(spot, #SPOTS) -- out of a cubby: a whole spot on the shelf, or nothing
+		if i then
+			local id, refusal = placeShelved(player, w, i, pose)
 			answer(player, w, id, refusal)
 		end
 	end
 
-	local function onPutAway(player: Player, id: unknown)
+	local function onPutAway(player: Player, id: unknown, spot: unknown)
 		if not limit:take(player, os.clock()) then
 			return
 		end
-		local w = Spots.askId(id)
-		if w then
-			answer(player, w, "", putAway(player, w))
+		if spot == nil then
+			local w = Spots.askId(id)
+			if w then
+				answer(player, w, "", putAway(player, w))
+			end
+			return
+		end
+		local w, i = Spots.askName(id), Shelf.spot(spot, #SPOTS) -- out of a cubby: a find's name
+		if w and i then
+			answer(player, w, "", awayShelved(player, w, i))
 		end
 	end
 
@@ -657,7 +714,9 @@ function Arranging.new(): ArrangingSystem
 			-- puts one more of furniture `piece` in their job box, saved as a buy is (S5-03g4d, for
 			-- a piece not in this week's stock); `:Invoke(player, "size", name)` makes their home
 			-- that size (a `Home.Sizes` name) and sets it up again, as a resize will (S5-03h1);
-			-- `:Invoke(player, "take", id)` presses find `id`'s Take as them (S5-03i2a).
+			-- `:Invoke(player, "take", id)` presses find `id`'s Take as them (S5-03i2a);
+			-- `:Invoke(player, "fromShelf", spot, on, x, y, turn)` sets the find on their shelf's
+			-- `spot` there, and `:Invoke(player, "shelfAway", spot)` puts it in the box (S5-03i2b).
 			-- No client reaches it.
 			if RunService:IsStudio() then
 				local test = Instance.new("BindableFunction")
@@ -681,6 +740,20 @@ function Arranging.new(): ArrangingSystem
 							return "", "badAsk"
 						end
 						return place(player, w, pose)
+					elseif verb == "fromShelf" or verb == "shelfAway" then
+						local data = if saving then saving:data(player) else nil
+						local i = Shelf.spot(a, #SPOTS)
+						local name = if data and i and data.shelf[i] then data.shelf[i].find else ""
+						if not (i and name ~= "") then
+							return "", "badAsk"
+						elseif verb == "shelfAway" then
+							return awayShelved(player, name, i)
+						end
+						local _, pose = Spots.ask(name, b, c, d, e)
+						if not pose then
+							return "", "badAsk"
+						end
+						return placeShelved(player, name, i, pose)
 					elseif verb == "take" then
 						-- presses find `a`'s Take as `player`: true when it went into their hands
 						local home = homes[player]

@@ -86,6 +86,10 @@ Arrange.Feel = table.freeze({
 	Hover = 0.6,
 	Land = 0.18,
 	Follow = 0.05,
+	-- A tap on a find in the shelf's cubby lifts the find, not the shelf, when its box is met no
+	-- more than this far (studs) past the board the tap lands on: a finger's slack on a phone, so a
+	-- tap on the teddy's edge where the cubby's side board shows still picks the teddy (S5-03i2b).
+	CubbySlack = 0.35,
 	-- The grid: squares this big (studs; the snap's step is finer, so a find ticks between lines).
 	Grid = 1,
 	-- The lines' transparency and width (pixels at 24 a stud): faint, but seen on the oak at phone

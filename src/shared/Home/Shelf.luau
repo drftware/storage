@@ -15,6 +15,7 @@ Shelf.Tag = "ShelfFind" -- on each find standing on a shelf, for every screen
 Shelf.FreshAttribute = "Fresh" -- how new it is, as Save.Fresh: 0 seen, 1 new, 2 a kind never owned
 Shelf.SpotAttribute = "Spot" -- its spot on the shelf, from 1 (Home.Specs.Shelf.Spots' order)
 Shelf.OwnerAttribute = "Owner" -- the UserId whose shelf it stands on
+Shelf.FindAttribute = "Find" -- the find's name as saved ("Teddy:Gold" for a Gold), for Arrange's lift
 Shelf.RemoteFolder = "Remotes"
 -- client → server: Seen(spot), you walked up to the new find on your shelf's spot `spot`
 Shelf.Remote = "ShelfSeen"
@@ -102,6 +103,36 @@ function Shelf.spot(value: unknown, spots: number): number?
 		return nil
 	end
 	return value
+end
+
+-- How far along a ray a find's box is first met (S5-03i2b, D-352: in Arrange a tap on a cubby's
+-- find lifts the find, not its shelf; the finds stand unpickable, so the screen tests their boxes).
+-- The ray runs from `o` along `d`, both in the box's own frame, the box `half` its size each way
+-- about its middle. Nil when it misses or the box is behind; 0 when the ray starts inside it.
+function Shelf.hit(o: { number }, d: { number }, half: { number }): number?
+	local near, far = -math.huge, math.huge
+	for k = 1, 3 do
+		if math.abs(d[k]) < 1e-9 then
+			if math.abs(o[k]) > half[k] then
+				return nil -- running alongside, outside it
+			end
+		else
+			local a = (-half[k] - o[k]) / d[k]
+			local b = (half[k] - o[k]) / d[k]
+			if a > b then
+				a, b = b, a
+			end
+			near = math.max(near, a)
+			far = math.min(far, b)
+			if near > far then
+				return nil
+			end
+		end
+	end
+	if far < 0 then
+		return nil
+	end
+	return math.max(near, 0)
 end
 
 return Shelf

@@ -173,7 +173,7 @@ function Shelves.new(): ShelvesSystem
 			local saved = data.shelf[i]
 			local key = if saved then saved.find else ""
 			local have: Model? = mine.finds[i]
-			if have and have:GetAttribute(Tools.KindAttribute) ~= key then
+			if have and have:GetAttribute(Shelf.FindAttribute) ~= key then
 				have:Destroy()
 				mine.finds[i] = nil
 				have = nil
@@ -187,6 +187,7 @@ function Shelves.new(): ShelvesSystem
 						model.Name = `ShelfFind{i}`
 						model:SetAttribute(Shelf.SpotAttribute, i)
 						model:SetAttribute(Shelf.OwnerAttribute, player.UserId)
+						model:SetAttribute(Shelf.FindAttribute, key) -- a Gold by its own name
 						model:SetAttribute(Shelf.FreshAttribute, saved.fresh)
 						model:AddTag(Shelf.Tag)
 						Takes.offer(model, function(by: Player)

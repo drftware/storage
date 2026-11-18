@@ -9167,6 +9167,33 @@ The moment: you stand your moon lamp on the folding table, walk up, press Switch
   Take by its attachment). After the fix a real Take press lifted the boombox off the job box
   into hand slot 1 (S5-03i2a2); the floor teddy went to slot 1 through the server hook.
 
+## D-352 A find lifts straight out of your shelf in Arrange (S5-03i2b, 2026-11-18)
+
+The moment: in Arrange you tap the teddy in its cubby and it rises out at its full size, not the
+shelf; you set it on the folding table beside the lamp and the cubby stands empty (D-345: "in
+Arrange, a find lifts straight off the shelf or any top"; Animal Crossing and Bloxburg lift the
+thing you tap, not what it stands in).
+- **The tap picks the find over its shelf** (`Shelf.hit`, `tests/homeshelflift.spec`): cubby
+  finds stand unpickable (no collisions or queries), so the screen tests the ray against each of
+  your cubby finds' boxes and lifts the nearest one met no further than `Arrange.Feel.CubbySlack`
+  (0.35 studs) past whatever the tap lands on. A tap on the boards beside them lifts the shelf
+  with its finds riding, as before. **While the home holds all it can**, a tap on a cubby find
+  lifts the shelf (my default, `OWNER.md`: as the tray's cards won't lift then either).
+- **It grows out of its cubby**: the ghost starts where the cubby's copy stood, at its shrunk
+  size, and eases to its own size as it rises toward your finger (onto the nearest free spot when
+  the finger isn't over one); × slides it back in, shrinking to the cubby's size.
+- **One step on the server** (`Spots.offShelf`): Place and Put away carry the cubby's spot after
+  their words (Place(name, on, x, y, turn, spot), PutAway(name, spot); the spot a whole number on
+  the shelf, the put-away's name a find's, `Spots.askName`). Set down, the find comes off its spot
+  and is placed as a find from the box is; refused, it's back on its spot as it stood, still new;
+  a spot that no longer holds it is refused (`notShelved`) before anything moves. Put away just
+  empties the cubby into the box. Either way the shelf is laid again. Each cubby copy now carries
+  its saved name (`Shelf.FindAttribute`), so a Gold is lifted, and re-laid, as itself.
+- **Seen in Studio Play at Galaxy A16 size** (`docs/art/S5-03i2b-*`): the teddy lifted out of its
+  cubby and set on the folding table (the server: Teddy#1 on the table, spot 2 empty, nothing
+  doubled); the boombox lifted out and Put away (back in the box); a tap on the board beside the
+  wind-up mouse lifted the whole shelf; × let it go. No errors in Output.
+
 ## D-406 Each next-floor card felt on its floor: the deal and the pay (S4-03c1, Nov 18)
 
 The team's pick has to be the floor it gets, from the moment the gate opens, or the choice means

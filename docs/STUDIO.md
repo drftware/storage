@@ -3297,3 +3297,14 @@ verified: a doc page, Studio, or "untested".
   left wall, outside the home: its finds' own buttons hid there, as they should.
 - **A lit moon lamp in a home lit by its bulb** shows its moon face but throws little on the
   table: turn the room's switch off to judge a lamp's glow.
+
+## A find out of a cubby, seen on the A16 (S5-03i2b, Nov 18)
+
+- **Cubby finds can't be raycast**: Shelves stands them with `CanQuery` off, so a tap's raycast
+  passes through to the shelf's boards. Arrange tests their boxes itself (`Shelf.hit` on each
+  `ShelfFind` model's `GetBoundingBox()`, the ray turned into the box's frame).
+- **This session the Studio window sat on the right half of a 1920x1080 screen**: the phone's
+  screen cropped at x 1054, y 389, 670 by 320 (`sips --cropOffset 389 1054 -c 320 670`). The tap
+  mapping didn't move: a world point's viewport (X, Y) at (X + 47, Y - 58), a gui button at its
+  middle (X + 47, Y). A ShotCam at (78.5, 5.2, 478) looking at (89, 2.6, 478) framed Unit1's
+  shelf against the right wall with its six cubbies tappable.

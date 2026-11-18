@@ -139,6 +139,12 @@ nowhere else.
   rubber mats; walls are plain (a home's), stripes, leaves and daisies; eight paints from warm
   white to ink; eight door colours from clay; carpet, checker and mats each come in five colours;
   every paper takes the wall's paint as its ground.
+- [ ] **Lift a find out of your shelf in Arrange, on a real phone** (S5-03i2b, D-352; seen in
+  Studio Play). Open Arrange, tap a find in a cubby: it rises out at its own size and the cubby
+  is empty. Set it on a table: it stays, and the shelf still has its other finds. Lift another
+  and press Put away: it's in the job box. Tap the shelf's boards: the whole shelf lifts. Rejoin:
+  nothing doubled or lost. My default to judge: in a home that's full, a tap on a cubby find
+  lifts the shelf instead.
 - [ ] **Press your lamp and take your finds, on a real phone** (S5-03i3, D-351; seen in Studio
   Play: the moon lamp on the folding table switched on, Switch and Take side by side; a Take
   press lifted the boombox off the job box). Buy a folding table, stand a lamp on it, walk up,

@@ -132,6 +132,7 @@ Spots.Refusals = table.freeze({
 	NotYours = "notYours",
 	Kept = "kept",
 	Wall = "wall", -- a leaning piece (the mirror) set with its back to no wall (`Layout.stands`)
+	NotShelved = "notShelved", -- a lift out of a cubby that no longer holds that find (S5-03i2b)
 })
 
 -- The longest name or id a screen may send, and how far from an area's middle a pose may be.
@@ -549,6 +550,13 @@ function Spots.askId(id: unknown): string?
 	return if w and Spots.name(w) then w else nil
 end
 
+-- A put-away-from-a-cubby ask's name checked (S5-03i2b): a short word naming a find, never an id
+-- set out or a piece of furniture, or nil. Whether the cubby holds it is the server's to check.
+function Spots.askName(name: unknown): string?
+	local w = word(name)
+	return if w and not Spots.name(w) and not Furniture.ofPlaced(w) then w else nil
+end
+
 -- The find a Take on set-out `id` hands you (S5-03i2a, D-350), or nil when `id` names furniture
 -- or one of the home's own pieces: those are moved in Arrange, never carried.
 function Spots.takeable(id: string): string?
@@ -573,6 +581,32 @@ function Spots.lift(placements: Judge, id: string): { string }?
 	end
 	away(id)
 	return gone
+end
+
+-- Sets out the find standing on your shelf's spot `i` in one step (S5-03i2b, D-352: lifted out of
+-- its cubby in Arrange). It comes off the spot (`Save.unshelf`), so it counts in the box, and
+-- `setOut` places it as a find from the box is placed (Arranging's place: the id it stands as and
+-- "", or "" and the refusal). Refused, it's back on its spot as it stood, new or seen; a spot
+-- that doesn't hold `name` is refused before anything moves. So it's never lost or doubled.
+function Spots.offShelf(
+	data: Save.Data,
+	i: number,
+	name: string,
+	setOut: () -> (string, string)
+): (string, string)
+	local spot = data.shelf[i]
+	local fresh = if spot then spot.fresh else Save.Fresh.Seen
+	if not Save.unshelf(data, i, name) then
+		return "", Spots.Refusals.NotShelved
+	end
+	local id, refusal = setOut()
+	if id == "" then
+		local back = data.shelf[i]
+		back.find = name
+		back.fresh = fresh
+		return "", if refusal ~= "" then refusal else Spots.Refusals.Unknown
+	end
+	return id, ""
 end
 
 -- Saved rows trimmed to what you may set out (`available` by name: what you own less your shelf

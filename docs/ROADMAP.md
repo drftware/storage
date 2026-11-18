@@ -2920,10 +2920,10 @@ Done when players watch the results to the end and change their perks between cl
         whole set went in the box, the job box too; a shrunk home now takes its size's layout
         first (`Layout.grow`) and a save without its job box gets it back (`withBox`). Captures
         `docs/art/S5-03i1c2-*`.
-    - [ ] **S5-03i2 Take anything directly**: outside Arrange, walk up to any find set out (shelf,
+    - [x] **S5-03i2 Take anything directly**: outside Arrange, walk up to any find set out (shelf,
       a top, the floor, a wall) and Take puts it in your hands; in Arrange, lift a find straight
       off the shelf or any top. Server-checked, never lost or doubled. Split Nov 18:
-      - [ ] **S5-03i2a Take from where it stands**: a Take button on every find in your shelf's
+      - [x] **S5-03i2a Take from where it stands**: a Take button on every find in your shelf's
         cubbies and every find set out, yours only; the server frees its spot or row and puts it
         in a free slot in one step (`Slots:unbox`, its pick-up heard), so it's never lost or
         doubled; hands full, the press does nothing. Its copy hops into your hand. Split Nov 18:
@@ -2934,9 +2934,12 @@ Done when players watch the results to the end and change their perks between cl
           Take press lifted the boombox off the job box into your hand; the floor teddy through
           the hook. Fixed: Take never showed on a find that also has its own button. Not seen:
           a cubby take by a real press, the flight frame by frame, a rejoin's counts (`OWNER.md`).
-      - [ ] **S5-03i2b Lift a find out of the shelf in Arrange**: a tap on a cubby's find lifts
-        that find, not the shelf (the shelf's own boards still lift the shelf); set it anywhere
-        or Put away; the server moves it from the shelf spot to a row in one step.
+      - [x] **S5-03i2b Lift a find out of the shelf in Arrange** (done Nov 18, D-352; seen in
+        Studio Play at Galaxy A16 size): a tap on a cubby's find lifts that find, growing out of
+        its cubby (`Shelf.hit` against its box); the shelf's own boards still lift the shelf;
+        Place sets it on a top (the teddy onto the folding table) and Put away sends it to the box,
+        the server moving it off the spot in one step (`Spots.offShelf`, `tests/homeshelflift`).
+        Captures `docs/art/S5-03i2b-*`. Not seen: a refused place sliding it back into its cubby.
     - [x] **S5-03i3 Every find set out keeps its button** (done Nov 18, D-351; seen in Studio
       Play at Galaxy A16 size: the lamp on the folding table switched on): its `Finds/Use` press
       beside Take for every find at once (`Home.Press`, HomeUses, HomeUseView, FindUses'

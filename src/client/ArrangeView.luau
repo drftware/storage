@@ -48,6 +48,8 @@ local FreeCursor = require(script.Parent.FreeCursor)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local FurnitureTab = require(script.Parent.FurnitureTab)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
+local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
+local HomeSpecs = require(ReplicatedStorage.Shared.Home.Specs)
 local Grades = require(ReplicatedStorage.Shared.Grades)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Layout = require(ReplicatedStorage.Shared.Home.Layout)
@@ -156,6 +158,8 @@ type Lifted = {
 	fits: boolean,
 	target: CFrame,
 	asking: string?, -- "place" or "away" while the server's answer is awaited
+	shelf: number?, -- the shelf's spot it was lifted out of (S5-03i2b), sent with Place and Put away
+	shrink: number?, -- out of a cubby: the size it stood there, as a share of its own
 }
 
 -- A press on a tray card that isn't a drag yet.
@@ -667,6 +671,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			fits = false,
 			target = from,
 			asking = nil,
+			shelf = nil,
+			shrink = nil,
 		}
 		lifted = l
 		if original then
@@ -735,9 +741,28 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		return first
 	end
 
+	-- Eases `ghost` from `from` times its size to `to` (a cubby find growing as it lifts out, or
+	-- shrinking back in), about its pivot.
+	local function grow(ghost: Model, from: number, to: number)
+		local scale = Instance.new("NumberValue")
+		scale.Value = from
+		scale.Changed:Connect(function(v: number)
+			if ghost.Parent and v > 0.01 then
+				ghost:ScaleTo(v)
+			end
+		end)
+		local t = TweenService:Create(scale, QUICK, { Value = to })
+		t.Completed:Once(function()
+			scale:Destroy()
+		end)
+		t:Play()
+	end
+
 	-- Lifts a find, or a piece of furniture by its placed name, out of the box: under screen point
-	-- `at`, or from `from` (the job box, for the panel's Set out) down onto the floor's middle.
-	local function liftBoxed(key: string, at: Vector2?, from: CFrame?)
+	-- `at`, or from `from` (the job box, for the panel's Set out) down onto the floor's middle; or
+	-- out of the shelf's cubby `shelved` stands in (S5-03i2b, D-352), growing from its cubby's size
+	-- as it rises toward your finger.
+	local function liftBoxed(key: string, at: Vector2?, from: CFrame?, shelved: Model?)
 		if full then
 			return -- the room holds all it can: the card dims and won't lift
 		end
@@ -766,21 +791,31 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			return r.placements:poseOf(each) ~= nil
 		end)
 		local camera = Workspace.CurrentCamera
-		if from then -- it rises out of the job box
+		if shelved then -- it rises out of its cubby, where it stood
+			ghost:PivotTo(shelved:GetPivot())
+		elseif from then -- it rises out of the job box
 			ghost:PivotTo(from + Vector3.yAxis * 1.5)
 		elseif camera and at then -- it rises out of the tray toward the room
 			local ray = camera:ScreenPointToRay(at.X, at.Y)
 			ghost:PivotTo(CFrame.new(ray.Origin + ray.Direction * 6))
 		end
-		lift(key, id, key, ghost, nil)
+		local whole = ghost:GetScale()
+		lift(key, id, key, ghost, shelved) -- measured whole, before it's shrunk to its cubby
+		local l = lifted
+		if l and shelved and l.ghost == ghost then
+			l.shelf = Shelf.spot(shelved:GetAttribute(Shelf.SpotAttribute), #HomeSpecs.Shelf.Spots)
+			local share = math.clamp(shelved:GetScale() / whole, 0.05, 1)
+			l.shrink = share
+			ghost:ScaleTo(whole * share)
+			grow(ghost, whole * share, whole)
+		end
 		if at then
 			aimAt(at)
 		end
-		local l = lifted
 		if l and not l.pose then -- over nothing it fits: start it on the floor's middle
-			-- out of the job box with no thumb on it: the free spot nearest the middle, so it
-			-- arrives green (S5-03g4c2)
-			local pose = if from
+			-- out of the job box (or a cubby) with no thumb on it: the free spot nearest the
+			-- middle, so it arrives green (S5-03g4c2)
+			local pose = if from or shelved
 				then freeSpot(r, l)
 				else settle(r, l, Spots.starts(l.spot)[1], 0, 0)
 			if pose then
@@ -802,6 +837,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			cf.Changed:Connect(function(v: CFrame)
 				l.ghost:PivotTo(v)
 			end)
+			local shrink = l.shrink
+			if shrink then -- back into its cubby, at the size it stood there
+				local whole = l.ghost:GetScale()
+				grow(l.ghost, whole, whole * shrink)
+			end
 			local t = TweenService:Create(cf, BACK, { Value = l.from })
 			t.Completed:Once(function()
 				cf:Destroy()
@@ -876,7 +916,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		l.asking = "place"
 		stopFollow()
 		showVerbs(nil)
-		ask:FireServer(l.what, pose.on, pose.x, pose.y, pose.turn)
+		ask:FireServer(l.what, pose.on, pose.x, pose.y, pose.turn, l.shelf) -- nil but out of a cubby
 		task.delay(3, function()
 			if lifted == l and l.asking == "place" then
 				slideBack(l) -- no answer: as if refused
@@ -927,7 +967,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		l.asking = "away"
 		stopFollow()
 		showVerbs(nil)
-		ask:FireServer(l.id)
+		if l.shelf then
+			ask:FireServer(l.what, l.shelf) -- out of a cubby: its name and spot, into the box
+		else
+			ask:FireServer(l.id)
+		end
 		task.delay(3, function()
 			if lifted == l and l.asking == "away" then
 				letGo(l, true) -- no answer: it stays where it was
@@ -957,7 +1001,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			local deadline = os.clock() + 1.5
 			while os.clock() < deadline do
 				local folder = placed()
-				local drawn = if l.original
+				local drawn = if l.original and not l.shelf
 					then l.original
 					else if folder then folder:FindFirstChild(id) else nil
 				if drawn and drawn:IsA("Model") then
@@ -1006,7 +1050,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 					r.heights[each] = nil
 					tops[each] = nil
 				end
-				away(mine.id)
+				if r.placements:poseOf(mine.id) then -- out of a cubby, it was never set out here
+					away(mine.id)
+				end
 				r.placements:takeEvents()
 				letGo(mine, false)
 			else
@@ -1953,26 +1999,57 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	----------------------------------------------------------------------------------------------
 	-- Fingers
 
-	-- The find of yours under screen point `at`, if any.
-	local function pickAt(at: Vector2): Model?
+	-- The find in one of your shelf's cubbies that the ray from `origin` along `dir` meets first
+	-- (S5-03i2b, D-352), and how far along: they stand unpickable, so their boxes are tested.
+	local function cubbyOn(origin: Vector3, dir: Vector3): (Model?, number)
+		local best, nearest = nil, math.huge
+		for _, inst in CollectionService:GetTagged(Shelf.Tag) do
+			if
+				inst:IsA("Model")
+				and inst:GetAttribute(Shelf.OwnerAttribute) == me.UserId
+				and inst:IsDescendantOf(Workspace)
+			then
+				local cf, size = inst:GetBoundingBox()
+				local o, d, h = cf:PointToObjectSpace(origin), cf:VectorToObjectSpace(dir), size / 2
+				local t = Shelf.hit({ o.X, o.Y, o.Z }, { d.X, d.Y, d.Z }, { h.X, h.Y, h.Z })
+				if t and t < nearest then
+					best, nearest = inst, t
+				end
+			end
+		end
+		return best, nearest
+	end
+
+	-- The find of yours under screen point `at`, if any: one set out, or one standing in your
+	-- shelf's cubby, nearer than whatever's behind it (its spot second). Not from a cubby while the
+	-- room holds all it can: then the tap lifts the shelf.
+	local function pickAt(at: Vector2): (Model?, number?)
 		local camera = Workspace.CurrentCamera
 		local folder = placed()
 		if not (camera and folder) then
-			return nil
+			return nil, nil
 		end
 		local ray = camera:ScreenPointToRay(at.X, at.Y)
 		local params = RaycastParams.new()
 		params.FilterType = Enum.RaycastFilterType.Include
 		params.FilterDescendantsInstances = { folder }
 		local hit = Workspace:Raycast(ray.Origin, ray.Direction * 200, params)
+		if not full then
+			local cubby, t = cubbyOn(ray.Origin, ray.Direction)
+			local behind = if hit then (hit.Position - ray.Origin).Magnitude else math.huge
+			local spot = if cubby then cubby:GetAttribute(Shelf.SpotAttribute) else nil
+			if cubby and type(spot) == "number" and t <= behind + Feel.CubbySlack then
+				return cubby, spot
+			end
+		end
 		local inst: Instance? = if hit then hit.Instance else nil
 		while inst and inst.Parent ~= folder do
 			inst = inst.Parent
 		end
 		if inst and inst:IsA("Model") and inst:GetAttribute(Spots.OwnerAttribute) == me.UserId then
-			return inst
+			return inst, nil
 		end
-		return nil
+		return nil, nil
 	end
 
 	local function pointer(t: Enum.UserInputType): boolean
@@ -1988,12 +2065,17 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		if (l and l.asking) or (not l and onTab == FRONT) then
 			return -- facing the door, the room's finds aren't to hand: they lift from the others
 		end
-		local model = pickAt(at)
+		local model, spot = pickAt(at)
 		if model and (not l or model ~= l.original) then
 			if l then
 				slideBack(l)
 			end
-			liftDrawn(model)
+			local name = if spot then model:GetAttribute(Shelf.FindAttribute) else nil
+			if type(name) == "string" then
+				liftBoxed(name, at, nil, model) -- out of its cubby
+			else
+				liftDrawn(model)
+			end
 		elseif not l then
 			return -- a tap on the empty room
 		end
