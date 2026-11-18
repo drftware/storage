@@ -2765,8 +2765,12 @@ Done when players watch the results to the end and change their perks between cl
         Brix's Purchases as S3-02's are: granted only after the save, never lost on a failed save
         or a server hop (the purchase ledger), every offer switchable off in Config, prices read
         from Roblox, never sold smaller than you have; spec first. Split Nov 17:
-          - [ ] **S5-03h3a Your own home**: Large and XL cards in Units (`Grow`'s Robux rows,
+          - [x] **S5-03h3a Your own home**: Large and XL cards in Units (`Grow`'s Robux rows,
             `UnitsTab`), Roblox's prompt from the server, the grant written before it's marked.
+            Done Nov 17, D-342: products "Large Unit" and "XL Unit" (switches `sellHomeLarge`,
+            `sellHomeXL`); checked in Studio Play from the server and the client's remote with
+            made-up receipts (a failed save held, granted once written, a late one changing
+            nothing); the cards on a screen and Roblox's real prompt not yet seen.
           - [ ] **S5-03h3b The gift versions**: a friend grows your home, the recipient picked
             on the server, the same ledger; never sold to a home already that big.
       - [ ] **S5-03h4 The starter set laid by size**: where the shelf, the job box, the rug, the

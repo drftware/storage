@@ -216,6 +216,26 @@ nowhere else.
   with the "size" line above ("Small") and the "cash" line (188). Say: is 2,500 right (my
   default: ten neon moons, a run of good climbs), is the tab's name "Units" right, and is the
   little plan on each card big enough to read on your phone?
+- [ ] **Sell Large and XL for Robux** (S5-03h3a, D-342; in Studio Play from scripts only: a
+  made-up Large purchase held while every save failed and granted once a write landed, the home
+  then laid at Large; Large again refused; XL granted; a late Large receipt counted and changing
+  nothing. Not seen: the cards on a screen, Roblox's real purchase box, closing it unbought.)
+  1. **Decide (defaults in):** your prices; my guess is Large 199 Robux and XL 399 (Medium is
+     2,500 cash). A late receipt for a size you already have (two purchase boxes bought at once)
+     is kept as a purchase and changes nothing; say if it should become something, cash back say.
+  2. Creator Hub > this experience > Monetization > Developer Products: make two, named exactly
+     `Large Unit` and `XL Unit`, at your prices. Each has its own off switch in the experience's
+     configs, `sellHomeLarge` and `sellHomeXL`: false takes it off sale within a minute.
+  3. In Studio, Play, walk to the counter, Shop, Units. To see a price before the products exist,
+     on the Server: `game.ServerStorage.GrowTest:Invoke(game.Players:GetPlayers()[1], "price",
+     199)`, then flip tabs. Look for: Small (Yours), Medium, Large and XL, the last two with the
+     Robux mark and the price, every plan opening out from your little room. Tap Large: Studio
+     buys it with a made-up receipt, the steel rolls, "More room!", Yours, and the cards deal
+     again from Large. Put it back with the "size" line above ("Small").
+  4. Published, on your phone: Units, tap Large. Roblox's box shows "Large Unit" at your price.
+     Close it without buying: the card lets go at once. Tap again and buy: the card holds, then
+     the steel rolls and "More room!"; walk home and tap Arrange: 16 by 20. Say whether the
+     cards read on the phone.
 - [ ] **Furniture set out at home: my defaults** (S5-03g4c1, D-335, D-336, D-337, D-338). Say
   which to change:
   1. A piece set out counts against your home's limit, the same as a find (Bloxburg's budget).

@@ -127,8 +127,6 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "decorating", system = Decorating.new() },
 	-- the counter's furniture bought for cash: this week's stock, the cap, the save written first
 	{ slot = "furnishing", system = Furnishing.new() },
-	-- a bigger home bought for cash at the counter: written first, then the home laid again (after arranging)
-	{ slot = "growing", system = Growing.new() },
 	-- what each player wears standing on their home's clothes rail, and Wear and Hang up there
 	{ slot = "rails", system = Rails.new() },
 	-- a wrap colour tried on at any mirror: the film for a few seconds, free, nothing saved
@@ -152,6 +150,9 @@ local systems: { Brix.HostEntry } = {
 	-- What each player wears, from their save onto them: their wrap colour, for the film a keeper
 	-- wraps them in (after saving and purchasing: it hears both).
 	{ slot = "wearing", system = Wearing.new() },
+	-- a bigger home at the counter, Medium for cash and Large and XL for Robux: written first,
+	-- then the home laid again (after arranging and purchasing: it calls the one, hears the other)
+	{ slot = "growing", system = Growing.new() },
 }
 -- The test hall and its "Walk a floor" post: Studio only now the lobby is the way in (D-109).
 if RunService:IsStudio() then

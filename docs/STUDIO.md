@@ -292,6 +292,15 @@ verified: a doc page, Studio, or "untested".
   top bar's Shop button did, at (its AbsolutePosition.X + width/2 + 47, AbsolutePosition.Y +
   height/2): its Y is negative (about -30) and the click still lands. A tab's word is clicked the
   same way. `sips --cropOffset` takes Y first, then X.
+- **A client with no listener gets a remote's held events all at once** (S5-03h3a, Nov 17): the
+  server fired `HomeGrown` to a player whose Units tab had never been shown; the first
+  `OnClientEvent` connection, later, got the held answer at once. So a screen that connects late
+  (on first show) must only be sent answers it's waiting for, or it acts on stale ones.
+- **The Studio window's viewport read 1 by 1 and nothing could capture it** (S5-03h3a, Nov 17):
+  `CurrentCamera.ViewportSize` was (1, 1) in Play, `screen_capture` timed out and macOS's
+  `screencapture -l` said "could not create image from window" even outside the sandbox, after
+  bringing Studio to the front. Most likely the display was asleep; check the screen before a
+  visual pass, and verify from scripts (remotes, attributes) when it can't be seen.
 - **When `screen_capture` times out, capture the window from macOS** (S5-03b seen, Nov 17):
   bring Studio to the front (`osascript -e 'tell application "RobloxStudio" to activate'`; it then
   drew at 60 frames a second), get its window number from a few lines of Swift run with `swift`

@@ -36,6 +36,30 @@ do
 	ok(next(Products.offers({})) == nil, "an offer with no product id isn't sold")
 end
 
+-- The home's Robux sizes (S5-03h3a): a row each, owned at that size or bigger so it's never
+-- prompted then; the grant grows the home and counts the purchase; a late one (the home already
+-- that big) is still granted and counted, never refused, since the Robux are spent.
+do
+	local large, xl = Products.Rows.homeLarge, Products.Rows.homeXL
+	ok(large ~= nil and large.title == "Large Unit", "Large's product is named Large Unit")
+	ok(xl ~= nil and xl.title == "XL Unit", "XL's product is named XL Unit")
+	ok(large ~= nil and large.switch == "sellHomeLarge", "Large's switch")
+	ok(xl ~= nil and xl.switch == "sellHomeXL", "XL's switch")
+	if large and xl then
+		local small = Save.fresh()
+		local owned = large.owned
+		ok(owned ~= nil and not owned(small), "Small doesn't own Large")
+		local offers = Products.offers({ homeLarge = 11, homeXL = 12 })
+		ok(offers.homeLarge.grant({}, small) == nil, "Large granted")
+		ok(small.homeSize == "Large" and small.bought.homeLarge == 1, "grown and counted")
+		ok(owned ~= nil and owned(small), "Large owns Large: never prompted again")
+		ok(offers.homeXL.grant({}, small) == nil and small.homeSize == "XL", "XL granted")
+		ok(owned ~= nil and owned(small), "XL owns Large")
+		ok(offers.homeLarge.grant({}, small) == nil, "a late Large receipt is granted")
+		ok(small.homeSize == "XL" and small.bought.homeLarge == 2, "never shrinks, still counted")
+	end
+end
+
 -- A store that fails every write while `failing.on`, as a DataStore outage would.
 local failing = { on = false }
 local inner = Brix.SaveStore.loopback()

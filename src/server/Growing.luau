@@ -19,12 +19,28 @@
 	ever writes `homeSize` (D-340): if the server stops before the relay, the next lay, on any
 	server, carries the rows.
 
+	Large and XL are Robux (S5-03h3a, D-342), as Adopt Me sells its bigger houses: the same remote
+	naming one is answered "had" when the home is that size or bigger, else Roblox's prompt goes up
+	from here (Purchasing's `prompt`, which refuses it too once owned), or "off" when it isn't on
+	sale. Nothing is answered while the prompt is up: closed unbought, the buyer is told "closed";
+	bought, the purchase is granted through Purchasing (`Products`' row: the size written in the
+	save Brix writes before the purchase counts, never lost on a failed write or a hop), and once
+	Purchasing says it's granted the home is set up again at its new size and the buyer told "".
+	A late receipt for a size the home has already (two prompts bought at once) is still granted
+	and counted, changes nothing and is logged. In Studio, with no product of its title on Roblox,
+	the press hands Purchasing's `DevReceipt` a made-up receipt instead, so the whole grant runs.
+
 	`HomeSizeShelf` (`Grow.ShelfRemote`, a RemoteFunction, rate-limited) answers the counter's
-	screen (UnitsTab) the asker's cash and home's size. In Studio,
-	`ServerStorage.GrowTest:Invoke(player, name)` sells as the remote does, unthrottled, and answers
-	"" or the refusal; `:Invoke(player)` answers the save's cash and home's size; `:Invoke(player,
-	"cash", n)` sets the save's cash to `n` (for trying a sale) and answers it.
+	screen (UnitsTab) the asker's cash, home's size, and each Robux size on sale to them now at
+	the price Roblox last reported (0 until it's in; each ask fetches fresh ones in the background,
+	at most every `PRICE_FRESH` seconds). In Studio, `ServerStorage.GrowTest:Invoke(player, name)`
+	sells as the remote does, unthrottled, and answers "" or the refusal (a Robux size: "" once its
+	made-up receipt is granted); `:Invoke(player)` answers the save's cash and home's size;
+	`:Invoke(player, "cash", n)` sets the save's cash to `n` (for trying a sale) and answers it;
+	`:Invoke(player, "price", n)` makes up a Robux price of `n` for the cards (0 clears it), so the
+	look can be judged before the products exist.
 ]]
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -33,10 +49,15 @@ local ServerStorage = game:GetService("ServerStorage")
 local Brix = require(ReplicatedStorage.Brix)
 local Grow = require(ReplicatedStorage.Shared.Home.Grow)
 local Arranging = require(script.Parent.Arranging)
+local Purchasing = require(script.Parent.Purchasing)
 local Saving = require(script.Parent.Saving)
 
 local REMOTE_FOLDER = "Remotes"
 local STUDIO_TEST = "GrowTest"
+local STUDIO = RunService:IsStudio()
+-- Seconds a player's Robux prices are kept before a shelf ask fetches them again: Roblox's prices
+-- rarely move, and each fetch counts as a look at the shop in the analytics.
+local PRICE_FRESH = 60
 
 local Growing = {}
 
@@ -49,8 +70,15 @@ function Growing.new(): GrowingSystem
 	local shelfLimit = Brix.RateLimit.bucket(Grow.ShelfLimit)
 	local saving: Saving.SavingSystem? = nil
 	local arranging: Arranging.ArrangingSystem? = nil
+	local purchasing: Purchasing.PurchasingSystem? = nil
 	local grown: RemoteEvent? = nil
 	local selling: { [Player]: true } = {} -- a sale's write is out
+	local prompted: { [Player]: string } = {} -- the Robux size whose prompt is up
+	local prices: { [Player]: { [string]: number } } = {} -- Robux by offer, as Roblox said
+	local pricedAt: { [Player]: number } = {} -- os.clock the prices were fetched
+	local fetching: { [Player]: true } = {}
+	local madeUp = 0 -- Studio's made-up Robux price for the cards (GrowTest "price")
+	local signals: { Brix.SignalConnection } = {}
 
 	-- Sells size `name` to `player`: "" once sold, written and the home set up at it, else why not.
 	local function sell(player: Player, name: string): string
@@ -83,15 +111,8 @@ function Growing.new(): GrowingSystem
 		return ""
 	end
 
-	local function onGrow(player: Player, value: unknown)
-		if not limit:take(player, os.clock()) then
-			return -- asked too often: refused before the payload is read
-		end
-		local name = Grow.ask(value)
-		if not name then
-			return
-		end
-		local answer = sell(player, name)
+	-- Tells `player` how their ask for size `name` went: their cash and home's size, "" or why not.
+	local function answer(player: Player, name: string, why: string)
 		local data = if saving then saving:data(player) else nil
 		local remote = grown
 		if remote and player.Parent then
@@ -101,9 +122,136 @@ function Growing.new(): GrowingSystem
 				name,
 				if shelf then shelf.cash else 0,
 				if shelf then shelf.size else "",
-				answer
+				why
 			)
 		end
+	end
+
+	-- Puts Roblox's prompt for Robux size `name` (offer `offer`) in front of `player`: nil once it's
+	-- up (or Studio's made-up receipt is out), and the grant answers; else why not. Yields.
+	local function prompt(player: Player, name: string, offer: string): string?
+		local data = if saving then saving:data(player) else nil
+		if not data then
+			return "notLoaded"
+		end
+		if Grow.owns(data, name) then
+			return "had"
+		end
+		local p = purchasing
+		if p == nil then
+			return "off"
+		end
+		if p:sells(offer) then
+			prompted[player] = name
+			local listing, refused = p:prompt(player, offer)
+			if listing then
+				return nil
+			end
+			prompted[player] = nil
+			print(`[Growing] no {offer} prompt for {player.Name}: {refused and refused.reason}`)
+			return if refused and refused.reason == "notBuyable" then "had" else "off"
+		end
+		local dev = if STUDIO then ServerStorage:FindFirstChild("DevReceipt") else nil
+		if dev and dev:IsA("BindableFunction") then
+			-- no product of its title on Roblox: a made-up receipt runs the real grant
+			prompted[player] = name
+			task.spawn(function()
+				local said = dev:Invoke({ PlayerId = player.UserId, offer = offer })
+				print(`[Growing] {player.Name} bought {offer} (Studio receipt: {said})`)
+				if said ~= "PurchaseGranted" and prompted[player] == name then
+					prompted[player] = nil
+					answer(player, name, "save")
+				end
+			end)
+			return nil
+		end
+		return "off"
+	end
+
+	local function onGrow(player: Player, value: unknown)
+		if not limit:take(player, os.clock()) then
+			return -- asked too often: refused before the payload is read
+		end
+		local name = Grow.ask(value)
+		if not name then
+			return
+		end
+		local offer = Grow.offer(name)
+		if offer then
+			local why = prompt(player, name, offer) -- yields while Roblox puts it up
+			if why then
+				answer(player, name, why)
+			end
+			return
+		end
+		answer(player, name, sell(player, name))
+	end
+
+	-- A purchase granted and written (Purchasing): a home size's grows the home, set up again at
+	-- its new size; a late one for a size the home has already is logged. The buyer's screen is
+	-- told only when it's waiting on this size's prompt from this server: a grant landing as they
+	-- join (a hop) isn't news to a counter they haven't opened, and Roblox would hold the answer
+	-- for the Units tab's first look, playing "More room!" for nothing.
+	local function onGranted(sale: Purchasing.Sale)
+		local name = Grow.size(sale.offer)
+		if name == nil then
+			return
+		end
+		local player = sale.buyer
+		local waiting = prompted[player] == name
+		if waiting then
+			prompted[player] = nil
+		end
+		local data = if saving then saving:data(player) else nil
+		if not data then
+			return
+		end
+		if data.homeSize ~= name then
+			print(
+				`[Growing] {player.Name}'s late {name} granted, the home already {data.homeSize}: nothing changed`
+			)
+			if waiting then
+				answer(player, name, "had")
+			end
+			return
+		end
+		print(`[Growing] {player.Name}'s home is {name} now (Robux)`)
+		if arranging and player.Parent and data.placedSize ~= data.homeSize then
+			arranging:relay(player) -- the rows carried to the new size, the save written so
+		end
+		if waiting then
+			answer(player, name, "")
+		end
+	end
+
+	-- The Robux sizes on sale to `player` now at Roblox's price, by size (0 while it isn't in);
+	-- fetches fresh prices in the background when they're old. In Studio every size is on sale.
+	local function onSale(player: Player): { [string]: number }
+		local out: { [string]: number } = {}
+		local p = purchasing
+		if p == nil then
+			return out
+		end
+		if not fetching[player] and os.clock() - (pricedAt[player] or -math.huge) > PRICE_FRESH then
+			fetching[player] = true
+			task.spawn(function() -- Roblox's prices yield
+				local got = p:shelf(player)
+				fetching[player] = nil
+				if player.Parent then
+					prices[player] = got
+					pricedAt[player] = os.clock()
+				end
+			end)
+		end
+		local known = prices[player] or {}
+		for size, offer in Grow.Robux do
+			if p:sells(offer) then
+				out[size] = known[offer] or 0
+			elseif STUDIO then
+				out[size] = madeUp
+			end
+		end
+		return out
 	end
 
 	return {
@@ -112,6 +260,7 @@ function Growing.new(): GrowingSystem
 			-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)
 			saving = (context.registry:get("saving") :: any) :: Saving.SavingSystem
 			arranging = (context.registry:get("arranging") :: any) :: Arranging.ArrangingSystem
+			purchasing = (context.registry:get("purchasing") :: any) :: Purchasing.PurchasingSystem? -- any: as above
 
 			local folder = ReplicatedStorage:FindFirstChild(REMOTE_FOLDER)
 			if not folder then
@@ -122,10 +271,10 @@ function Growing.new(): GrowingSystem
 			local ask = Instance.new("RemoteEvent")
 			ask.Name = Grow.Remote
 			ask.Parent = folder
-			local answer = Instance.new("RemoteEvent")
-			answer.Name = Grow.GrownRemote
-			answer.Parent = folder
-			grown = answer
+			local reply = Instance.new("RemoteEvent")
+			reply.Name = Grow.GrownRemote
+			reply.Parent = folder
+			grown = reply
 			local shelf = Instance.new("RemoteFunction")
 			shelf.Name = Grow.ShelfRemote
 			shelf.OnServerInvoke = function(player: Player): Grow.Shelf?
@@ -133,13 +282,32 @@ function Growing.new(): GrowingSystem
 					return nil
 				end
 				local data = if saving then saving:data(player) else nil
-				return if data then Grow.shelf(data) else nil
+				return if data then Grow.shelf(data, onSale(player)) else nil
 			end
 			shelf.Parent = folder
 			table.insert(made, ask)
-			table.insert(made, answer)
+			table.insert(made, reply)
 			table.insert(made, shelf)
 			table.insert(connections, ask.OnServerEvent:Connect(onGrow))
+			local p = purchasing
+			if p then
+				table.insert(signals, p.granted:connect(onGranted))
+			end
+			-- a Robux size's prompt closed unbought: its card settles at once; bought, it holds till
+			-- the grant lands (or the screen's own wait runs out)
+			table.insert(
+				connections,
+				MarketplaceService.PromptProductPurchaseFinished:Connect(
+					function(userId: number, _product: number, bought: boolean)
+						local who = Players:GetPlayerByUserId(userId)
+						local name = if who then prompted[who] else nil
+						if who and name and not bought then
+							prompted[who] = nil
+							answer(who, name, "closed")
+						end
+					end
+				)
+			)
 
 			-- Studio only (see the header). No client reaches it.
 			if RunService:IsStudio() then
@@ -149,6 +317,12 @@ function Growing.new(): GrowingSystem
 				test.OnInvoke = function(player: any, name: any, amount: any): ...any
 					if not (typeof(player) == "Instance" and player:IsA("Player")) then
 						return nil
+					end
+					if name == "price" then
+						if type(amount) == "number" and amount == amount and amount >= 0 then
+							madeUp = math.floor(amount)
+						end
+						return madeUp
 					end
 					if name == "cash" then
 						local data = if saving then saving:data(player) else nil
@@ -167,7 +341,28 @@ function Growing.new(): GrowingSystem
 						return if data then data.cash else nil, if data then data.homeSize else nil
 					end
 					local size = Grow.ask(name)
-					return if size then sell(player, size) else "unknown"
+					if size == nil then
+						return "unknown"
+					end
+					local offer = Grow.offer(size)
+					if offer == nil then
+						return sell(player, size)
+					end
+					local why = prompt(player, size, offer)
+					if why then
+						return why
+					end
+					-- the made-up receipt's grant clears the prompt once written: wait for it, 10 s at
+					-- most ("pending" while the save fails: Brix holds the grant till a write lands)
+					local waited = 0
+					while prompted[player] == size and waited < 10 do
+						waited += task.wait(0.1)
+					end
+					if prompted[player] == size then
+						return "pending"
+					end
+					local data = if saving then saving:data(player) else nil
+					return if data and data.homeSize == size then "" else "had"
 				end
 				test.Parent = ServerStorage
 				table.insert(made, test)
@@ -179,10 +374,18 @@ function Growing.new(): GrowingSystem
 					limit:forget(player)
 					shelfLimit:forget(player)
 					selling[player] = nil
+					prompted[player] = nil
+					prices[player] = nil
+					pricedAt[player] = nil
+					fetching[player] = nil
 				end)
 			)
 		end,
 		stop = function(_: any)
+			for _, c in signals do
+				c:disconnect()
+			end
+			table.clear(signals)
 			for _, c in connections do
 				c:Disconnect()
 			end

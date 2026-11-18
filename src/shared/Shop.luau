@@ -157,6 +157,9 @@ Shop.ShortPitch = 0.6
 -- knock (DoorSound.Thump pitched up), and the headline stays `GrowFor` seconds. The walls'
 -- grind in your home itself is S5-03h6's.
 Shop.GrowPreview = 0.7
+-- Seconds a Large or XL card's Buy stays pressed while Roblox's prompt is up and no answer has
+-- come (S5-03h3a): closing the prompt answers at once; this only settles a lost answer.
+Shop.GrowPrompt = 30
 Shop.GrowTime = 1.1
 Shop.GrowFor = 2.2
 Shop.GrowRoll = table.freeze({

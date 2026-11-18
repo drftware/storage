@@ -8723,3 +8723,46 @@ Medium. Bloxburg's and Adopt Me's house upgrades, Animal Crossing's house loan.
   Small, cash 188. The plans are small inside the cards (the XL box frames them); judged
   readable, the owner to say.
 
+
+## D-342 Large and XL are developer products, granted into the save before the counter answers (S5-03h3a, 2026-11-17)
+
+The moment: you want the big unit now; at the counter's Units tab Large and XL show Roblox's own
+price with the Robux mark, you tap it, Roblox's purchase box comes up, you buy, and the same steel
+roll and "More room!" as Medium's land once it's kept. Adopt Me sells its bigger houses for Robux
+at the same place its cheaper ones are bought.
+- **Two rows in `Products`, the S3-02 way (D-206, D-207)**: `homeLarge` ("Large Unit") and
+  `homeXL` ("XL Unit"), found on Roblox by their Dashboard title, each with its own live switch
+  (`sellHomeLarge`, `sellHomeXL`), prices never in code. The ticket's "a product id per size, an off
+  switch in Config" is met by D-206's titles and live switches rather than ids in Config: that's
+  how every product here is found and switched off without an update. `Grow.Robux` names the
+  offer per size; `Grow.owns` is the row's `owned` (that size or bigger), so Purchasing never
+  prompts a size you have or a smaller one; `Grow.grant` is the row's grant: it only ever grows the
+  home. Brix's Purchases writes the save before the purchase counts as granted, so a failed write
+  or a hop never loses it, and the ledger never grants a receipt twice.
+- **A late receipt for a size you have** (two prompts bought at once, Large landing after XL) is
+  granted and counted, never refused (the Robux are spent, and a refusal would have Roblox send it
+  forever); it changes nothing and is logged. Whether it should become something (cash back) is
+  the owner's (`OWNER.md`).
+- **The server answers only a screen that's waiting** (`Growing`): the counter's `GrowHome`
+  naming a Robux size puts Roblox's prompt up (Purchasing's `prompt`), answering "had" or "off"
+  when it can't. Closed unbought (`PromptProductPurchaseFinished` on the server, as Cut Free hears
+  it), "closed" lets the card go at once; bought, Purchasing's `granted` (after the write) re-lays
+  the home at its new size and answers "". A grant with no prompt up from this server (a hop, a
+  late one) isn't answered: Roblox holds a remote's events until a listener connects, and the
+  Units tab listens only once shown, so it would have played "More room!" on its first look.
+  The card's own wait is `Shop.GrowPrompt` (30 s), a backstop for a lost answer.
+- **The cards** (`UnitsTab`): `HomeSizeShelf` now carries each Robux size on sale to you at the
+  price Roblox last reported (0 until it's in; fetched in the background at most once a minute,
+  since each fetch counts as a look at the shop); a size switched off isn't dealt. A card shows
+  the Robux mark and the price (Buy until the price is in, asked once more after
+  `Shop.PriceWait`), in the warm Buy colours; the cash purse doesn't move. Studio shows both sizes
+  on sale with no product and buys through a made-up receipt (`DevReceipt`), as the wraps do;
+  `GrowTest "price"` makes up a price for judging the look.
+- **Seen in Studio Play** (server and the client's remote, no screen: the Studio window's
+  viewport read 1 by 1 and couldn't be captured): with every save write failing a made-up Large
+  purchase was held in memory and not counted, the home left Small; once writes came back it was
+  granted (bought 1) and the home laid at Large in 7 s. Large again and Medium for cash: "had".
+  XL granted; a late Large receipt granted (bought 2), the home staying XL. From the client: the
+  shelf dealt Small, Medium, Large, XL (Medium short, Large and XL "robux"); a Large press when
+  Large answered "had" at once; XL answered "" 1.8 s after the press. Test save put back: Small,
+  cash 188 (its `bought` now counts the made-up home purchases).

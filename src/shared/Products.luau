@@ -25,6 +25,7 @@
 	change as Brix's ledger, so a purchase counted once is a purchase granted once. Nothing random
 	is ever a product (GDD: nothing random is sold, for Robux or for cash).
 ]]
+local Grow = require("./Home/Grow")
 local Save = require("./Save")
 local WrapColours = require("./WrapColours")
 
@@ -113,6 +114,26 @@ for _, colour in WrapColours.Shelf do
 		end,
 		owned = function(data: Save.Data): boolean
 			return WrapColours.owns(data, name)
+		end,
+	})
+end
+
+-- Your home's Robux sizes (S5-03h3a, D-342; the home doc's idea 30): "Large Unit" and "XL Unit",
+-- as Adopt Me sells its bigger houses. The grant grows your home to the size in the save Brix
+-- writes before the purchase counts (`Grow.grant`), so the counter's answer and the bigger room
+-- come only once it's kept. Owned at that size or bigger, so it's never prompted then; a late one
+-- (two prompts bought at once) is still granted and counted, never refused, since the Robux are
+-- spent, and the home stays the bigger size.
+for size, offer in Grow.Robux do
+	rows[offer] = table.freeze({
+		title = `{size} Unit`,
+		switch = `sell{string.upper(string.sub(offer, 1, 1))}{string.sub(offer, 2)}`,
+		grant = function(_sale: Sale, data: Save.Data): string?
+			Grow.grant(data, size)
+			return nil
+		end,
+		owned = function(data: Save.Data): boolean
+			return Grow.owns(data, size)
 		end,
 	})
 end

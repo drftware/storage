@@ -8,13 +8,16 @@
 	Adopt Me's house upgrades, Animal Crossing's house loan.
 
 	The cards run from your size up (`Grow.ladder`): yours first, saying Yours, then each bigger
-	size on sale with its price (Large and XL join with Robux, S5-03h3). Each card's plan is drawn
+	size on sale with its price: Medium's in cash, Large's and XL's in Robux at Roblox's own price
+	with the Robux mark, as the wraps show theirs (S5-03h3a, D-342; Adopt Me sells its bigger
+	houses so). A Robux size switched off in the live config isn't dealt at all. Each card's plan is drawn
 	from above, the door at its foot: the slot's whole box faint (room still to grow into), the
 	card's size filled, and the size you have outlined inside it, so how much more room a size
 	gives reads before any word. Your cash and size come from the server (`Grow.ShelfRemote`)
-	each time the tab shows. Buy fires `Grow.Remote` and the card stays pressed until
-	`Grow.GrownRemote` answers, which it does only once the save is written and your home is set
-	up at its new size. A price you can't pay is dimmed; pressing it nudges your cash with a dull
+	each time the tab shows (a Robux price missing is asked for once more a moment later). Buy fires
+	`Grow.Remote` and the card stays pressed until `Grow.GrownRemote` answers, which it does only
+	once the save is written and your home is set up at its new size; for a Robux size the server
+	puts Roblox's prompt up first, and closing it unbought settles the card at once ("closed"). A price you can't pay is dimmed; pressing it nudges your cash with a dull
 	click, no words. ShopView hosts it, and FurnitureTab's purse is its cash (`Host.wallet`).
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -31,6 +34,7 @@ local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local INK = Lobby.Ink
 local FILL_WARM = Color3.fromRGB(CutFree.Fill.r, CutFree.Fill.g, CutFree.Fill.b)
 local INK_WARM = Color3.fromRGB(CutFree.Ink.r, CutFree.Ink.g, CutFree.Ink.b)
+local ROBUX = utf8.char(0xE002) -- Roblox's own Robux mark in its fonts
 local GOLD = Color3.fromRGB(240, 196, 92) -- money, as the furniture's purse shows it
 local CARD = Color3.fromRGB(40, 35, 31) -- the furniture's card: the home's calm
 local WELL = Color3.fromRGB(12, 12, 14)
@@ -106,7 +110,9 @@ function UnitsTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 	local cardLinks: { RBXScriptConnection } = {}
 	local cash = 0
 	local size: string? = nil -- your home's size as the server last said
-	local dealtFor = "" -- the size the cards were dealt from
+	local robux: { [string]: number } = {} -- each Robux size on sale, Roblox's price (0: not in)
+	local reasked = false -- asked again for a missing Robux price since the tab showed
+	local dealtFor = "" -- the cards dealt, by name (the ladder they came from)
 	local known = false -- the server has answered since the tab showed
 	local asking = false
 	local shown = false
@@ -145,6 +151,11 @@ function UnitsTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 			ring.Color, ring.Transparency = GOLD, 0.15
 		elseif state == "buy" then
 			b.Text = Cash.text(price)
+			b.BackgroundColor3, b.TextColor3, b.BackgroundTransparency = FILL_WARM, INK_WARM, 0.05
+			ring.Color, ring.Transparency = INK_WARM, 0.2
+		elseif state == "robux" then
+			local robuxPrice = robux[card.name] or 0
+			b.Text = if robuxPrice > 0 then `{ROBUX} {robuxPrice}` else Shop.Words.buy
 			b.BackgroundColor3, b.TextColor3, b.BackgroundTransparency = FILL_WARM, INK_WARM, 0.05
 			ring.Color, ring.Transparency = INK_WARM, 0.2
 		elseif state == "short" then
@@ -343,13 +354,16 @@ function UnitsTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 	end
 
 	-- The cards from your size up, dealt out left to right; each bigger size's plan opens out
-	-- from yours to its own as it lands. Dealt again only when your size changed.
+	-- from yours to its own as it lands. Dealt again only when the cards change (your size, or a
+	-- Robux size coming on or going off sale).
 	local function deal()
 		local have = size or Sizes.Start
-		if have ~= dealtFor then
+		local ladder = Grow.ladder(have, robux)
+		local key = table.concat(ladder, " ")
+		if key ~= dealtFor then
 			clear()
-			dealtFor = have
-			for i, name in Grow.ladder(have) do
+			dealtFor = key
+			for i, name in ladder do
 				local card = makeCard(name, 200 + i, have)
 				table.insert(cards, card)
 				byName[name] = card
@@ -397,12 +411,25 @@ function UnitsTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 			known = true
 			cash = shelf.cash
 			host.wallet.set(cash)
-			local moved = size ~= shelf.size
 			size = shelf.size
-			if moved or #cards == 0 then
+			robux = shelf.robux
+			if table.concat(Grow.ladder(shelf.size, robux), " ") ~= dealtFor or #cards == 0 then
 				deal()
 			else
 				restate()
+			end
+			-- Roblox's prices reach the server a moment after the tab asks: once more for any missing
+			local missing = false
+			for _, price in robux do
+				missing = missing or price == 0
+			end
+			if missing and not reasked then
+				reasked = true
+				task.delay(Shop.PriceWait, function()
+					if shown then
+						ask()
+					end
+				end)
 			end
 		end)
 	end
@@ -479,6 +506,8 @@ function UnitsTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 		host.wallet.set(newCash) -- a settle: the coins never tick for a sale that didn't happen
 		if refusal == "cash" then
 			host.wallet.nudge()
+		elseif refusal == "off" then
+			ask() -- gone off sale: the cards dealt again without it
 		end
 		if newSize ~= "" and Sizes.of(newSize).name ~= size then
 			size = Sizes.of(newSize).name
@@ -496,7 +525,8 @@ function UnitsTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 			host.wallet.nudge()
 			return
 		end
-		if card.state ~= "buy" then
+		local state = card.state
+		if state ~= "buy" and state ~= "robux" then
 			return -- Yours, or not answered yet: nothing to fix, so nothing said
 		end
 		for _, other in cards do
@@ -515,7 +545,8 @@ function UnitsTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 		paint(card)
 		r:FireServer(card.name)
 		local sent = card.waiting
-		task.delay(GIVE_UP, function()
+		-- a Robux size waits on Roblox's prompt, which stays up while you decide
+		task.delay(if state == "robux" then Shop.GrowPrompt else GIVE_UP, function()
 			if card.waiting == sent then
 				card.waiting = -1
 				TweenService:Create(card.buttonPop, SPRING, { Scale = 1 }):Play()
@@ -530,6 +561,7 @@ function UnitsTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 	function tab.show()
 		shown = true
 		known = false
+		reasked = false
 		host.wallet.show(true)
 		if not grownLink then
 			local r = remote(Grow.GrownRemote)
