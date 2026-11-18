@@ -183,18 +183,25 @@ local function play(spec: Arrange.Sound, parent: Instance)
 	Debris:AddItem(s, spec.length / pitch + 0.1)
 end
 
--- Makes `model` scenery the screen alone sees: never collides, touched or picked.
+-- Makes `model` scenery the screen alone sees: never collides, touched, picked or sat on, and
+-- shows no buttons.
 local function inert(model: Model)
 	for _, d in model:GetDescendants() do
-		if d:IsA("BasePart") then
+		if
+			d:IsA("Seat")
+			or d:IsA("ProximityPrompt")
+			or d:IsA("Sound")
+			or d:IsA("Script")
+			or d:IsA("LocalScript")
+		then
+			d:Destroy()
+		elseif d:IsA("BasePart") then
 			d.Anchored = true
 			d.CanCollide = false
 			d.CanTouch = false
 			d.CanQuery = false
 		elseif d:IsA("Light") then
 			d.Enabled = false
-		elseif d:IsA("Sound") or d:IsA("Script") or d:IsA("LocalScript") then
-			d:Destroy()
 		end
 	end
 end

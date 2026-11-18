@@ -57,6 +57,7 @@ local TryOnView = require(script.TryOnView)
 local ShelfView = require(script.ShelfView)
 local HomeTakeView = require(script.HomeTakeView)
 local HomeUseView = require(script.HomeUseView)
+local HomeSitView = require(script.HomeSitView)
 local StrandView = require(script.StrandView)
 local JobBoxView = require(script.JobBoxView)
 local BoxPanelView = require(script.BoxPanelView)
@@ -142,6 +143,8 @@ local host = Brix.Host.new({
 		-- take a find straight from your shelf or where it's set out (S5-03i2a)
 		{ slot = "homeTakeView", system = HomeTakeView.new() },
 		{ slot = "homeUseView", system = HomeUseView.new() },
+		-- sit on the crate, the beanbag, the blanket, the camp bed (S5-03i4)
+		{ slot = "homeSitView", system = HomeSitView.new() },
 		{ slot = "jobBoxView", system = JobBoxView.new() },
 		{ slot = "boxPanelView", system = BoxPanelView.new(needCursor, holdPiece) },
 		-- lift, drag and set down your finds in your home (S5-03e3a)

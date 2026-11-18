@@ -74,6 +74,7 @@ local FindUses = require(script.Parent.FindUses)
 local FrontOffice = require(script.Parent.FrontOffice)
 local HomeUses = require(script.Parent.HomeUses)
 local Saving = require(script.Parent.Saving)
+local Sits = require(script.Parent.Sits)
 local Slots = require(script.Parent.Slots)
 local Takes = require(script.Parent.Takes)
 
@@ -179,7 +180,7 @@ function Arranging.new(): ArrangingSystem
 			if d:IsA("BasePart") and d.Name == "MilkCrate" then
 				d.Color = crate
 			end
-			if d:IsA("BasePart") then
+			if d:IsA("BasePart") and not d:IsA("Seat") then -- a seat is Home.piece's (Sits)
 				-- a bed or a shelf stops you, as the starter set's pieces do; what hangs on a wall
 				-- or from the ceiling is never walked into, and its lit parts are Home.paint's; a
 				-- starter piece's are Home.piece's (the rug and a seat never stop you)
@@ -200,6 +201,7 @@ function Arranging.new(): ArrangingSystem
 		model:SetAttribute(Spots.OwnerAttribute, owner.UserId)
 		model:AddTag(Spots.Tag)
 		model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+		Sits.offer(model) -- the crate, the beanbag, the blanket and the bed: Sit (S5-03i4)
 		local drawn: Drawn = {
 			model = model,
 			size = size,
@@ -286,6 +288,9 @@ function Arranging.new(): ArrangingSystem
 			home.room.heights[id] = size.Y -- a top's height is the drawn box's
 		end
 		local d = drawn :: Drawn
+		if moved then
+			Sits.stand(d.model) -- nobody rides a crate across the room
+		end
 		d.model:PivotTo(
 			if d.starter
 				then Arrange.starterPivot(t, d.starter)
@@ -312,6 +317,7 @@ function Arranging.new(): ArrangingSystem
 			if e.kind == "removed" then
 				local drawn = home.drawn[e.id]
 				if drawn then
+					Sits.stand(drawn.model)
 					drawn.model:Destroy()
 					home.drawn[e.id] = nil
 				end

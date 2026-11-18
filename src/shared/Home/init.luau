@@ -29,6 +29,7 @@ Home.JobBox = require(script.JobBox)
 Home.BoxPanel = require(script.BoxPanel)
 Home.Gold = require(script.Gold)
 Home.Taken = require(script.Taken)
+Home.Sit = require(script.Sit)
 
 -- A home's name card over its door (Lobby lays it, FrontOffice letters its holder's name on it,
 -- HomeCards sprays the name on): the card's part carries this tag and its slot's number.
@@ -204,8 +205,10 @@ Home.Mirror = {
 Home.InsideOnly = { "Drum", "Hardware" }
 Home.InsideMargin = 2
 
--- The seats (Roblox Seats): where you sit, in a piece's own frame (its front toward -Z), each
--- turned so you face out the way the piece does. Studs: x, seat's top, z; Turn about Y in degrees.
+-- The lobby's seats (Roblox Seats you sit on by walking into them): where you sit, in a piece's
+-- own frame (its front toward -Z), each turned so you face out the way the piece does. Studs: x,
+-- seat's top, z; Turn about Y in degrees. A home's furniture seats are `Home.Sit`'s, sat on by a
+-- button (S5-03i4).
 Home.Seats = {
 	Bench = { { -1.4, 1.7, -0.25, 0 }, { 1.4, 1.7, -0.25, 0 } },
 	Planter = {
@@ -214,7 +217,6 @@ Home.Seats = {
 		{ 0, 1.7, 3.15, 180 },
 		{ -3.15, 1.7, 0, 90 },
 	},
-	Beanbag = { { 0, 1.25, 0.1, 0 } },
 } :: { [string]: { { number } } }
 -- Which pieces' meshes stop you (as boxes): the rug and the leaves don't.
 local SOLID: { [string]: boolean } = {
@@ -389,7 +391,7 @@ end
 
 -- One furnishing (Specs.Pieces: Plant, Bench, Planter, Rug, Beanbag, FloorLamp, Shelf, JobBox)
 -- standing at `at`, its front looking the way `at` does, in a Model named for it: its meshes (the
--- solid ones collide as boxes), its Seats, the floor lamp's light (tagged LampTag, off until a
+-- solid ones collide as boxes), its Seats (the lobby's, sat on by walking in; a home's, by Sit), the floor lamp's light (tagged LampTag, off until a
 -- screen lights it), and the job box tagged JobBox.Tag (its lid swings on every screen).
 function Home.piece(template: Model, kind: string, at: CFrame, parent: Instance): Model
 	local names = Specs.Pieces[kind]
@@ -405,17 +407,32 @@ function Home.piece(template: Model, kind: string, at: CFrame, parent: Instance)
 		end
 		p.Parent = model
 	end
-	local seats: { { number } } = Home.Seats[kind] or {}
-	for i, s in seats do
-		local seat = Instance.new("Seat")
-		seat.Name = `Seat{i}`
-		seat.Anchored = true
-		seat.CanCollide = false
-		seat.Transparency = 1
-		seat.CastShadow = false
-		seat.Size = Vector3.new(1.6, 0.2, 1.4)
-		seat.CFrame = at * CFrame.new(s[1], s[2] - 0.1, s[3]) * CFrame.Angles(0, math.rad(s[4]), 0)
-		seat.Parent = model
+	local function seat(i: number, x: number, top: number, z: number, turn: number): Seat
+		local p = Instance.new("Seat")
+		p.Name = `Seat{i}`
+		p.Anchored = true
+		p.CanCollide = false
+		p.Transparency = 1
+		p.CastShadow = false
+		p.Size = Vector3.new(1.6, 0.2, 1.4)
+		p.CFrame = at * CFrame.new(x, top - 0.1, z) * CFrame.Angles(0, math.rad(turn), 0)
+		p.Parent = model
+		return p
+	end
+	local lobby: { { number } } = Home.Seats[kind] or {}
+	for i, s in lobby do
+		seat(i, s[1], s[2], s[3], s[4])
+	end
+	local rows = Home.Sit.Seats[kind]
+	if rows then
+		for i, s in rows do
+			-- sat on by its button only (Sits), never by walking into it
+			local made = seat(i, s.x, s.top, s.z, s.turn)
+			made.CanTouch = false
+			made.CanQuery = false
+			made:SetAttribute(Home.Sit.KindAttribute, kind)
+			made:SetAttribute(Home.Sit.IndexAttribute, i)
+		end
 	end
 	if kind == "FloorLamp" then
 		local shade = part(model, "LampShade")

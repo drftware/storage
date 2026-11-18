@@ -9266,3 +9266,36 @@ as Lethal Company's breaker brings a facility's power back. My default (OWNER.md
 
 Not chosen: no breaker on that floor (the dark would last the whole floor with nothing to do
 about it but the torch's battery); unit bulbs on every floor's breaker (changes S2-02's floors).
+
+## D-353 Sit on your furniture by its button (S5-03i4, 2026-11-18)
+
+The moment: you walk up to the milk crate in your home, press Sit, and your view glides down into
+the seat with a hollow knock; the beanbag gives under you with a soft puff, on the blanket by the
+pallet you sit cross-legged, and a friend lands on the camp bed beside you (D-345: "sit on a
+crate, the beanbag, the cushion, the camp bed"; Adopt Me's and Bloxburg's furniture: walk up,
+press Sit, jump to get up).
+- **A button, not a bump** (`Sits`, `Home.Sit`): every seat of a home's furniture is a Roblox
+  Seat you can't sit on by walking into it (no touch), with a Sit button over it (R on a
+  keyboard, B on a pad; Take is E and a find's own press F, so a teddy on the bed keeps its Take
+  beside the bed's Sit). Walking across the blanket never drops you onto it. The lobby's benches
+  and planters still seat you as you walk in, as before.
+- **Where you sit** (`Sit.Seats`, `tests/homesit.spec`): the crate's lid at its top (1.65, feet
+  on the floor); the beanbag low and a little back (1.25, it swallows you); the folded blanket at
+  its top (0.44), cross-legged; the camp bed two side by side along its front edge, 2 studs apart,
+  clear of the pillow, on the canvas where it rises toward the rail (its top plus 0.3). Every seat
+  faces out its piece's front.
+- **Who may sit** (`Sits`): anyone in the home, its holder or a friend, alive, not sat already, the
+  seat free, within reach (`HomeUses.near`, as a find's own button). Each screen shows the button
+  only to a player in that home with Arrange shut (`HomeSitView`). Arrange's lifted ghost has no
+  seats or buttons. A piece moved or put away stands its sitters up first, so nobody rides a crate
+  across the room.
+- **Every landing answers on every screen** (`HomeSitView`): the seat's sound where you land (the
+  crate a wood knock, the cushions a low cloth puff, the bed's canvas a shorter rub; getting up the
+  same at half), and the part under you squashes and springs back (the beanbag 12%, the blanket
+  25%, the canvas 10%; the crate is wood and doesn't). Your own view glides from where you stood
+  into the seat over 0.35 s (`Humanoid.CameraOffset` eased to nothing). On the blanket every screen
+  turns the sitter's legs past the sit animation into a cross-legged pose (`Sit.Cross`, eased in,
+  as the peek's kneel is posed).
+- **The camp bed is sat on, not lain on** (my default, `OWNER.md`): Roblox Seats only sit, and lying
+  down needs a sleeping pose and a way to get up that we haven't seen work here: an untested bet
+  for the owner.
