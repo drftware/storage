@@ -84,7 +84,7 @@ local TOP_TOP, TOP_BOTTOM = Color3.fromRGB(62, 46, 30), Color3.fromRGB(14, 11, 8
 -- Specs' CarBack). The game is first person: from the front row (Boarding.backSpot, 5.5 studs off
 -- the wall) the whole board fits the view, a little room round it.
 local SIZE = Vector3.new(9.6, 5.2, 0.05)
-local AT = CFrame.new(0, 5.6, 11.9)
+local AT = CFrame.new(0, Boarding.BoardHeight, Boarding.BoardDepth)
 -- Pixels a stud: the canvas is SIZE times this (538 by 291). The title's 76 px is 1.4 studs.
 local PER_STUD = 56
 -- How much the car lamp's light shades the board: a little, so it sits in the car rather than

@@ -3546,3 +3546,21 @@ verified: a doc page, Studio, or "untested".
   1386 by 972 Studio window's `screencapture -l`; each capture takes about 1.4 s in a loop. A
   yellow torch pokes up into the bound camera's view from the bottom right: the test rig's, not
   the board's.
+
+## A real climb back to the car's board (S5-01d, Nov 18)
+
+- **The whole loop from the MCP:** Server pivot into `FrontOffice.Car1` (`* CFrame.new(0, 3, 6)`),
+  Client `Remotes.CarPanel:FireServer(car, "Go", true)`; you land on `LobbyClimb.Floor1` about
+  12 s later. Read the floor's code from the Server with `LogService:GetLogHistory()` (the last
+  "floor n's code is" line), not `get_console_output` (thousands of lines). `GiveFind` takes a
+  plain key only; a sealed one is `DealFind "Teddy sealed"`, then pivot by the marked box and
+  `InputHoldBegin` its Open prompt from the Client: the find goes to your hands. Punch, board,
+  wait for z below the next floor; GatePay's Output line names what the gate kept. End: Server
+  `Kept` true, wait for `ClimbEnd`, 3 s, clear it; Client `Remotes.Again:FireServer()`.
+- **The car leaves with you:** you land standing in the car, so its 20 s count runs out and a
+  new climb starts (good for a second run; stop Play to end it).
+- **`screencapture -l` is now about 0.15 s a frame:** a loop without a pause took 34 frames in
+  5 s. Put `sleep 0.75` between frames for one a second. The A16 phone in the 1454 by 1040
+  window capture: `crop=690:322:381:394`.
+- **A Server `GetAttributeChangedSignal` connection made in `execute_luau` stays live** after the
+  call returns (it swapped a car's `Results` as it arrived), unlike a spawned client loop.

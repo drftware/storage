@@ -10221,3 +10221,28 @@ ranking the brief rules out (left to the owner, `OWNER.md`); a small 3D picture 
 (six viewports on a phone; a polish line); each line's worth counting up (six ticking figures
 after the total's count is noise); the haul's chips flying from the row into their owner's line
 (the lines would cover chips still waiting in the row).
+
+## D-431: The board seen after a real climb, and the eye turned to it (S5-01d, Nov 18)
+
+Seen in Studio Play at Galaxy A16 size after three real climbs from lobby car 1 and back: finds
+banked at the gates (a sealed Teddy dealt by `DealFind "Teddy sealed"`, a Stained glass lamp,
+Skates, a Boombox, the Secret Unplugged lamp; then a Teddy, Skates and a Galaxy goo ball), each
+ended as a wipe, Again. ClimbEnds' Output and the car's `Results` carried every find; the board
+played the team page, the haul cheapest first with the stings, the total, then the line; a tap
+mid-haul went straight to the lines. Nothing ran into the car's 20-second count.
+
+- **The eye turns to the board's middle as you land in the car.** EndView turned the camera
+  level (the way the server stood you). The board hangs just above the upper rail, so from the
+  front row its top sits 34 degrees up, at the screen's edge: its title ("Caught") under the
+  count's LEDs and the top of the haul's stage card under the top bar. The staged captures of
+  S5-01b and c used a camera aimed at the board's middle, which is why they never showed it.
+  Back in your lobby car (`EndsInLobby`), EndView's turn now looks at the board's middle on the
+  nearest lobby car (`Boarding.BoardHeight`, `BoardDepth`, shared with CarResults); about 11
+  degrees up from the front row, and the camera keeps it. Proven: a results screen framed for
+  you, as Lethal Company's end-of-day report fills the view.
+- **One check used a real value twice:** the third climb's own (empty) results were replaced, as
+  they arrived, by the first climb's value, to watch the five-card haul under the new camera.
+
+Not chosen: lowering the board (it would sit behind the front row's heads from the back row);
+moving the count's LEDs (every car's count lives there). Left as a fix: your own held torch in
+first person crosses the board's lower middle (ROADMAP S5-01d).

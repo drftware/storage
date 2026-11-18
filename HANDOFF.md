@@ -18,11 +18,10 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   cash 38, no card styles owned, Boombox 10, Skates 1.
 - Not the home's: the checkout's uncommitted `BigFinds`, `MinimapView` and the D-417 lines in
   OWNER, CODEMAP and DECISIONS are the climb run's work in progress; the home leaves them alone.
-- **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403
-  to D-413), S4-05 the big find (D-414 to D-419), the hard hat (D-420, D-421), S5-02 rarer and
-  sealed finds (D-422 to D-427), S5-01a, b and c the haul and each friend's line on the car's
-  board (D-428 to D-430, seen in Studio). Next: S5-01d (a real climb back to the car, watched to
-  the end, a tap; `docs/art/S5-01c-*.jpg`), then S6-01 best floor.
+- **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403 to
+  D-413), S4-05 the big find (D-414 to D-419), the hard hat (D-420, D-421), S5-02 (D-422 to
+  D-427), S5-01 the haul on the car's board, seen after real climbs (D-428 to D-431). Next:
+  S6-01 best floor (the run's last ticket); S5-01d's held-torch fix if time (ROADMAP).
 
 ## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
 The home's look settling without a seam. One line a session if they won't fit together; split

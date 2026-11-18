@@ -26,6 +26,7 @@
 	from the moment it draws something, so the ride's controls answer until then. The mouse is
 	freed for the button (FreeCursor).
 ]]
+local CollectionService = game:GetService("CollectionService")
 local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -34,10 +35,12 @@ local SoundService = game:GetService("SoundService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
+local Boarding = require(ReplicatedStorage.Shared.Lobby.Boarding)
 local Brix = require(ReplicatedStorage.Brix)
 local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local DoorSound = require(ReplicatedStorage.Shared.StorageUnit.DoorSound)
+local Elevator = require(ReplicatedStorage.Shared.Elevator)
 local ElevatorSounds = require(ReplicatedStorage.Shared.Elevator.Sounds)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Kept = require(ReplicatedStorage.Shared.Kept)
@@ -85,6 +88,27 @@ local LATE = 0.4
 -- the results; one that resets a frame late still ends up turned.
 local TURN_FRAMES = 4
 local TURN_BIND = "EndViewTurn"
+-- Back in your lobby car the turn looks at the results board's middle, not level (S5-01d, D-431):
+-- the board hangs high, and a level look leaves its title under the top bar and the count. The car
+-- is the lobby car whose middle is nearest where you were stood, within this many studs.
+local CAR_REACH = 16
+
+-- The middle of the results board on the lobby car nearest `at` (Boarding's board spot), or nil.
+local function boardNear(at: Vector3): Vector3?
+	local best: Vector3? = nil
+	local bestAway = CAR_REACH
+	for _, inst in CollectionService:GetTagged(Elevator.Tag) do
+		if inst:IsA("Model") and inst:GetAttribute(Boarding.CarAttribute) ~= nil then
+			local frame = inst:GetPivot()
+			local away = (frame.Position - at).Magnitude
+			if away < bestAway then
+				bestAway = away
+				best = frame * Vector3.new(0, Boarding.BoardHeight, Boarding.BoardDepth)
+			end
+		end
+	end
+	return best
+end
 
 type Screen = {
 	backGui: ScreenGui,
@@ -358,6 +382,7 @@ function EndView.new(need: (who: string, on: boolean) -> ()): Brix.System
 	local liftAt: number? = nil -- os.clock() the black began lifting off our new character
 	local turning = 0 -- frames of the camera's turn still to make
 	local turnTo: Vector3? = nil -- the way it turns, flat
+	local turnAim: Vector3? = nil -- or the point it looks at (the car's board), when there is one
 
 	local plays: { [Sound]: number } = {}
 	local function play(s: Sound?, from: number, length: number, volume: number, pitch: number)
@@ -745,12 +770,17 @@ function EndView.new(need: (who: string, on: boolean) -> ()): Brix.System
 					elseif root and root:IsA("BasePart") then root.CFrame.LookVector
 					else nil
 				local flat = if look then look * Vector3.new(1, 0, 1) else nil
-				if flat and flat.Magnitude > 0.01 then
-					turnTo = flat.Unit
+				local inLobby = Workspace:GetAttribute(ClimbEnd.LobbyAttribute) == true
+				local from = if typeof(stood) == "CFrame"
+					then stood.Position
+					elseif root and root:IsA("BasePart") then root.Position
+					else nil
+				turnAim = if inLobby and from then boardNear(from) else nil
+				if (flat and flat.Magnitude > 0.01) or turnAim then
+					turnTo = if flat and flat.Magnitude > 0.01 then flat.Unit else nil
 					turning = TURN_FRAMES
 				end
 				-- back in your lobby car, its count's chime is the sound; on a fresh floor 1, the bell
-				local inLobby = Workspace:GetAttribute(ClimbEnd.LobbyAttribute) == true
 				if not inLobby then
 					local r = Ride.Sounds.Bell
 					play(bell, r.Start, r.Stop - r.Start, r.Volume * 0.7, 1)
@@ -862,9 +892,15 @@ function EndView.new(need: (who: string, on: boolean) -> ()): Brix.System
 				end
 				turning -= 1
 				local camera = Workspace.CurrentCamera
-				local look = turnTo
-				if camera and look then
-					local eye = camera.CFrame.Position
+				if not camera then
+					return
+				end
+				local eye = camera.CFrame.Position
+				local aim = turnAim
+				local look = if aim and (aim - eye).Magnitude > 0.5
+					then (aim - eye).Unit
+					else turnTo
+				if look then
 					camera.CFrame = CFrame.lookAt(eye, eye + look)
 				end
 			end)

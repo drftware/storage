@@ -2489,7 +2489,7 @@ Done when two climbs in a row feel different and players talk about their best f
 
 Done when players watch the results to the end and change their perks between climbs.
 
-- [ ] **S5-01 Finds valued one at a time** on the results: picture, name, how rare, what it's
+- [x] **S5-01 Finds valued one at a time** on the results: picture, name, how rare, what it's
   worth, the haul's worth counting up (the cash comes when you sell at your chest, D-251); then
   a line for each player. The moment: back in the lobby car after a climb, the team stands facing
   the board on its back wall and watches the haul flip up card by card, cheapest first, the
@@ -2526,9 +2526,17 @@ Done when players watch the results to the end and change their perks between cl
     friend in a unit): they need counting on the server and read as ranking (`OWNER.md`).
     Polish: the called-out find's small 3D picture (six viewports on a phone, a budget check);
     the stage card flying into its owner's line instead of the page turning.
-  - [ ] **S5-01d Seen in Studio.** Play a climb with a few finds banked (one sealed, one high
-    grade), ride back to the car, watch the board to the end; captures to `docs/art/`; the
-    two-player run and a phone's look in `OWNER.md`.
+  - [x] **S5-01d Seen in Studio.** Done Nov 18 (D-431; `docs/art/S5-01d-*.jpg`): three real
+    climbs from the lobby car back to it in Studio Play at A16 size, finds banked at the gates
+    (a sealed Teddy, a Legendary, a Secret), ended as a wipe, Again. The results now: the team
+    page under the count, the page turning, five cards flipping up cheapest first with the
+    total ticking to $7,535 and the Secret's red flash, then the line; a tap mid-haul went
+    straight to the lines. Fixed: the camera landed level and left the board's title under the
+    top bar and the count; it now turns to the board's middle (`Boarding.BoardHeight`).
+    The two-player run and the sounds: `OWNER.md`.
+    Fix (next): your own held torch, first person, crosses the board's lower middle (the chips'
+    right end, the bottom lines' chips); hide its look locally while you stand facing a board.
+    Seen once: the real board is read for ~7 to 12 s after the lines land, the count running.
 - [ ] **S5-02 Rarity, and finds still sealed.** Rarer finds on higher floors, in the catalog's
   six grades (Secret on top, from floor 10; D-188); about one in
   twenty still in its packaging, worth three times as much. A padlocked unit's find draws a

@@ -277,6 +277,13 @@ end
 -- wall, then either side, then the row behind them, nearer the gate. The front row stands 5.5
 -- studs off the wall, so in first person the whole board fits the view with a little round it.
 local BACK_SPOTS = { { 0, 6.5 }, { -3.5, 6.5 }, { 3.5, 6.5 }, { 0, 3 }, { -3.5, 3 }, { 3.5, 3 } }
+
+-- The results board's middle on the car's back wall, in the same frame (CarResults hangs it
+-- there; EndView turns your eye to it as you land back in the car, S5-01d, D-431). It hangs high
+-- (just above the wall's upper rail), so a level look from the front row puts its title under
+-- the phone's top bar and the count; looking at its middle centres the whole board.
+Boarding.BoardHeight = 5.6
+Boarding.BoardDepth = 11.9
 function Boarding.backSpot(i: number): (number, number)
 	local s = BACK_SPOTS[(i - 1) % #BACK_SPOTS + 1]
 	return s[1], s[2]

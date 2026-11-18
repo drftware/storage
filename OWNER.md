@@ -240,7 +240,10 @@ nowhere else.
   worth, the best haul last at the top with a glint, no ranking words. The proposal's deeds (who
   freed the most friends, opened the most doors, shut a friend in) are left out: they'd need
   counting on the server and read as a ranking. Say if you want them as a line under each face.
-- [ ] **Watch and listen to the haul come up** (S5-01b, D-429; seen in Studio Play, not heard).
+- [ ] **Watch and listen to the haul come up** (S5-01b, D-429; seen in Studio Play after real
+  climbs back to the car, S5-01d, D-431, `docs/art/S5-01d-*.jpg`; not heard, not two players).
+  New since: as the black lifts in the car your view tilts up to the board's middle (it hung
+  under the top bar and the count before). Say if that tilt feels like being grabbed.
   On a phone (or Studio's Galaxy A16 device), climb with a few finds, at least one sealed (the
   dev command `DealFind "Teddy sealed"` on floor 2) and one Rare or better, and ride back to the
   car. Look for: the page turning from the photos to the haul once the cash lands; each card
