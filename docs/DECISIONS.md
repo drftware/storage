@@ -10426,3 +10426,34 @@ two-finger camera move, never two at once. What it means for the game:
   ceiling by flattening the tilt, so zoom always zooms; S5-03j1 decides whether to set one.
 - The walls' fade is the camera's `cutaway(point, outward)`: how far the eye is out past a wall's plane.
 
+
+## D-439 The build camera keeps its eye under the ceiling and inside your slot (S5-03j1a, Nov 18)
+
+The Sims 4's build camera over your home, built as `ArrangeCamera` (client) on Brix's `Gestures`
+and `OrbitCamera` (D-437, D-438), the only screen piece moved out of ArrangeView so far; the later
+pieces follow its pattern: their own module, a small typed interface, ArrangeView only wiring.
+- **The eye stays under the ceiling** (HANDOFF asked: hide the ceiling, or keep under it). Every
+  unit's ceiling is one lobby mesh (`UnitTops`), and above it are the hall's joists and lamps, so
+  hiding it would show the lobby's insides; the plan doc also says the camera can't go through the
+  ceiling. `OrbitCamera`'s `ceiling` flattens the tilt instead, so zoom always zooms.
+- **The eye stays inside the lobby slot your home stands in** (the XL box), and goes at most
+  `Arrange.Camera.Hall` (5 studs) out into the hall through your door. The slot's own walls are
+  lobby meshes shared by every unit (`UnitWallsLeft`, `UnitWallsRight`) and can't fade per unit.
+  It pulls in along its line of sight (`BuildView.keepIn`), as a third-person camera pulls in
+  from a wall, so the picture never jumps. A Small, Medium or Large home has room in the slot
+  round it, so its walls fade as the eye passes them; an XL home's walls are the lobby's, so its
+  camera stays inside the room there (only the door's wall, the unit's own, fades).
+- **What fades:** the unit's own pieces flush with or past a wall's plane (`BuildView.sideOf`:
+  the movable walls, their paint, the facade, the roll-up door, its coil and the switch) and
+  finds set out on a wall; never the floor, the lamp or furniture standing in the room. The fade
+  is how far the eye is past the wall (`FadeDepth`), eased on top (`FadeHalf`), all the way to
+  gone. It comes back on the front tab (you face your door) and as Arrange closes.
+- **Home view:** today's corner view (`Feel.Below`, `Feel.In`) told as a heading, tilt and
+  distance about the room's middle, 3 studs up (`FocusUp`). Far stop: the room's longer side plus
+  4 studs, at most 30.
+- **Mouse and stick turn as Roblox's own camera does** (drag right, look right): `MouseTurn` and
+  `StickTurn` negative. Unchecked by feel until S5-03j1b.
+- A press that takes a find (a lifted one, or one under the finger) is ArrangeView's drag; the
+  camera reads every other press. The edge follow is wired with the drag's rebuild (S5-03j2).
+- The ticket ran out of room before Studio (the run's context cap), so it split: S5-03j1b sees
+  it in Studio Play at A16 size, tunes it and captures it.

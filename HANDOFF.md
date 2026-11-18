@@ -2,44 +2,44 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-18, ENG-28 OrbitCamera in Brix (D-438) · **Checks:** green · **Git:** `main`, not pushed; Brix `0b2230c`.
+**Updated:** 2026-11-18, S5-03j1a the build camera, built (D-439) · **Checks:** green · **Git:** `main`, not pushed; Brix `0b2230c`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only). Order: S5-03j1, ENG-26c, j2 to j7, ENG-29, k1 to k6.
-- **ENG-28 done** (D-438): `Brix.OrbitCamera` circles a point on the floor on springs that never
-  swing past, drifts after a flick, stops softly (focus in any Zone, near, far, the tilt's ends),
-  keeps the eye under an optional ceiling, follows a drag to the screen's edge, and answers
-  `floorAt` and `cutaway` (the walls' fade). With ENG-27's `Brix.Gestures`, pinned, unused yet.
+  only). Order: S5-03j1b, ENG-26c, j2 to j7, ENG-29, k1 to k6.
+- **S5-03j1a done** (D-439), passes checks, untested in Studio: `src/client/ArrangeCamera.luau`
+  (Brix Gestures into Brix OrbitCamera; swoop in and out; front tab's swing and dip; the eye kept
+  in the lobby slot and 5 studs into the hall; the home's walls fade), pure sums in
+  `src/shared/Home/BuildView.luau` (Lune spec), feel in `Arrange.Camera`. ArrangeView only wires it
+  (`buildCam.open/show/close/destroy`, `takenAt`); its old camera code is gone.
 - Studio hooks: `CardTest`; `ShelfTest`; `ArrangeTest` "take", "own", "place", "rows", "fromShelf",
   "shelfAway", "size"; `GrowTest` "cash"; `DevTripFinds`. Home doc: https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww.
 - **Climb run (on hold until S5-03j and k are done, the owner, Nov 18):** left: S5-01d's held
   torch over the car's board, S5-02b2c2, then S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j1 The build camera (The Sims' camera in Arrange)
-The moment: Arrange swoops up out of your eyes; one finger slides, two pinch, twist and tilt; it
-glides and settles; the walls nearest you melt away. Its own client module; ArrangeView shrinks.
-1. `ArrangeCamera.luau`: one `Brix.Gestures` and one `Brix.OrbitCamera` while Arrange is open.
-   Feed Gestures from UserInputService (touch, mouse, wheel, gamepad; WASD as a per-frame slide),
-   map intents: drag on empty floor or slide -> `slide` (+ `flick` on its end), pinch -> `zoom`,
-   twist with no thing -> `turn`, tilt -> `tilt`, double tap on empty floor -> `reset`. `pick` asks
-   what's under a point (empty floor = nil for now; j2 adds things). Step on RenderStepped, write
-   `CFrame.lookAt(eye, look, up)`; on close disconnect all and `gestures:cancel()`.
-2. The room: `Zone.box` turned to the room's face with a floor pathing; focus in the room's middle
-   about 3 studs up; a home view like today's corner view (`view` in ArrangeView ~line 1291). Decide
-   the `ceiling` (hide the ceiling while open, or keep the eye under it) and say which in DECISIONS.
-3. Walls (and what hangs on them) fade by `cutaway`, tweened, never snapping.
-4. Opening swoops from your eyes to the orbit's view over `Feel.Rise`; closing swoops back. The
-   front tab's door view and hall dip still work. The old camera code leaves ArrangeView.
-5. Feel numbers in Config, commented; mouse and stick signs tuned by feel.
-6. Studio Play at 685 by 338: slide, pinch (two fingers can't be faked: use mouse wheel and right-
-   drag), reset; capture to `docs/art/` at half scale. Phone-only steps go in OWNER.md.
+## Next task: S5-03j1b The build camera, seen and tuned
+The moment: Arrange swoops up out of your eyes; drag, wheel and right-drag move it; it glides and
+settles; the walls nearest you melt away as it turns. Nothing new to build: see it, fix, tune.
+1. Studio Play, A16 (STUDIO.md "Picking the A16 from the shell"), Unit1 (Medium). Open Arrange
+   (the button failed from the MCP before, STUDIO.md ~line 3201: try `caffeinate -d -u -t 600 &`
+   and Studio brought forward, else the job box's Set out, which calls ArrangeView's `hold`).
+2. Check the swoop, then the wheel (sign: up zooms in), right-drag (drag right should look
+   right), a left drag on empty floor (the floor stays under the cursor), WASD, a double click
+   (glides home). Fix signs in `Arrange.Camera`; tune `Settle`, `Drift`, `FarPast` by feel.
+3. Turn all the way round: the door's wall, both sides and the back fade and return, never pop;
+   furniture and the lamp never fade; the eye never shows a neighbour's unit or the lobby's
+   insides. `ArrangeTest` "size" to Small and back to check a smaller room.
+4. The front tab (swing to the door and back) and a card chip's hall dip; Done swoops back into
+   your eyes and your camera is yours again.
+5. Capture the home view and a turned, faded view to `docs/art/` at half scale.
+6. OWNER.md: phone steps (one finger slides, pinch, twist, two-finger tilt, flick, double tap),
+   a gamepad step (left stick slides, the body doesn't walk; right stick; triggers), and the
+   default picked in D-439 (the eye under the ceiling, inside the slot; XL's walls don't fade).
 **Acceptance:** seen in Studio Play at A16 size, captured; walls fade from every side; check green.
-**Read first:** ROADMAP's S5-03j1 (grep `S5-03j1`); the doc's camera list (block
-`mmpnpe7tg17.2368`); `vendor/brix/docs/modules/OrbitCamera.md`; `vendor/brix/docs/modules/Gestures.md`;
-`src/client/ArrangeView.luau` lines 1285 to 1480 (the camera today); `src/shared/Home/Arrange.luau`'s
-Feel (grep `Rise`).
+**Read first:** ROADMAP's S5-03j1b (grep `S5-03j1b`); D-439 in `docs/DECISIONS.md`;
+`src/client/ArrangeCamera.luau`; `Arrange.Camera` in `src/shared/Home/Arrange.luau` (grep
+`Arrange.Camera =`); STUDIO.md's "The Arrange screen on the Galaxy A16" section.
 
 ## Queue (next sessions, the owner's ticket order)
 0. After S5-03j and k: the home's three "Polish:" lines under S5-03g2b (the hand-over's shade,

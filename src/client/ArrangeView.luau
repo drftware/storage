@@ -57,7 +57,9 @@ local Layout = require(ReplicatedStorage.Shared.Home.Layout)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local CardPlate = require(ReplicatedStorage.Shared.Home.CardPlate)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
+local ArrangeCamera = require(script.Parent.ArrangeCamera)
 local LooksTab = require(script.Parent.LooksTab)
+local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 local ToolPicture = require(script.Parent.ToolPicture)
 local Tools = require(ReplicatedStorage.Shared.Tools)
@@ -77,7 +79,6 @@ local HEAVY = Font.fromEnum(Enum.Font.BuilderSansExtraBold)
 local RISE = TweenInfo.new(Feel.Rise, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local POP = TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local QUICK = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-local DIP = TweenInfo.new(Feel.Dip, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
 local LAND = TweenInfo.new(Feel.Land, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local BACK = TweenInfo.new(Feel.Back, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local FILL = TweenInfo.new(Feel.Fill, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -127,6 +128,8 @@ local STILL_KEYS = {
 	Enum.KeyCode.Left,
 	Enum.KeyCode.Right,
 	Enum.KeyCode.Space,
+	Enum.KeyCode.Thumbstick1, -- the left stick slides the build camera (ArrangeCamera)
+	Enum.KeyCode.Thumbstick2,
 }
 -- How far past an area's edge a finger still aims at it (studs): a find dragged toward a wall
 -- slides along it, flush, rather than stopping short.
@@ -228,6 +231,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	local unitWatch: { [Instance]: RBXScriptConnection } = {}
 	local home: Model? = nil
 	local inside: { face: CFrame, centre: Vector3, size: Vector3 }? = nil
+	-- The lobby slot your home stands in, at XL (the lobby's walls round it): the build camera's
+	-- eye stays inside it.
+	local slotBox: ArrangeCamera.Box? = nil
 	local homeSized: RBXScriptConnection? = nil -- your home's size, re-measuring `inside`
 	local running = false
 	local open = false
@@ -263,9 +269,20 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	local tabs: { TextButton } = {}
 	local onTab = FINDS
 	local listAt, looksAt = UDim2.new(), UDim2.new()
-	-- What moves the camera now (the ease over the room, its swing between tabs, the ease back):
-	-- a new move stops it, so two never fight over the camera.
-	local moving: Tween? = nil
+	-- Whether a press at a gui point takes a find (set once `pickAt` is made, below).
+	local takenAt: (at: Vector2) -> boolean = function()
+		return false
+	end
+	-- The build camera (S5-03j1a): it swoops up as Arrange opens, the hands move it, and it
+	-- leaves a press that takes a find to the drag.
+	local buildCam = ArrangeCamera.new({
+		gui = function(): ScreenGui?
+			return gui
+		end,
+		taken = function(x: number, y: number): boolean
+			return takenAt(Vector2.new(x, y))
+		end,
+	})
 	-- What the front tab shows (S5-03g3c): the door from inside, or after a card chip your
 	-- plate from the hall. Back to the door each time Arrange opens.
 	local frontAt: "door" | "card" = "door"
@@ -1288,14 +1305,6 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		t:Play()
 	end
 
-	-- The camera high in the corner by the door, the room under it.
-	local function view(r: Arrange.Room): CFrame
-		local c, s = r.centre, r.size
-		local eye = r.face * Vector3.new(c.X, c.Y + s.Y / 2 - Feel.Below, c.Z - s.Z / 2 + Feel.In)
-		local look = r.face * Vector3.new(c.X, c.Y - s.Y / 2, c.Z + s.Z * Feel.Look)
-		return CFrame.lookAt(eye, look)
-	end
-
 	-- The camera on the front tab: near the back of the room, a little over head height, facing
 	-- the door; the doorway's head and an open door's coil in view above the tray (S5-03g3a2).
 	local function front(r: Arrange.Room): CFrame
@@ -1327,91 +1336,6 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	-- Where the front tab's camera stands now: the plate's, else the door's.
 	local function frontView(r: Arrange.Room): CFrame
 		return (if frontAt == "card" then hall() else nil) or front(r)
-	end
-
-	local function stopMoving()
-		local m = moving
-		moving = nil
-		if m then
-			m:Cancel()
-		end
-	end
-
-	-- Where a camera at `cf` stands in the room's frame, and its heading and tilt (radians).
-	local function heading(cf: CFrame, face: CFrame): (Vector3, number, number)
-		local l = face:ToObjectSpace(cf)
-		local look = l.LookVector
-		return l.Position, math.atan2(-look.X, -look.Z), math.asin(math.clamp(look.Y, -1, 1))
-	end
-
-	-- Swings the camera from where it is to `goal` over `Feel.Rise`: its place, heading and tilt
-	-- eased apart, so the half turn from the dollhouse corner round to the door never rolls the
-	-- picture over, as one tween of the whole CFrame would.
-	local function swing(r: Arrange.Room, goal: CFrame)
-		local camera = Workspace.CurrentCamera
-		if not camera then
-			return
-		end
-		stopMoving()
-		local face = r.face
-		local p0, y0, t0 = heading(camera.CFrame, face)
-		local p1, y1, t1 = heading(goal, face)
-		local turn = (y1 - y0 + math.pi) % (2 * math.pi) - math.pi -- the short way round
-		if math.abs(turn) > math.pi - 0.05 then
-			turn = math.pi -- a half turn: always round by the left, never a shudder between ways
-		end
-		local value = Instance.new("NumberValue")
-		value.Changed:Connect(function(a: number)
-			camera.CFrame = face
-				* CFrame.new(p0:Lerp(p1, a))
-				* CFrame.Angles(0, y0 + turn * a, 0)
-				* CFrame.Angles(t0 + (t1 - t0) * a, 0, 0)
-		end)
-		local tween = TweenService:Create(value, RISE, { Value = 1 })
-		tween.Completed:Once(function()
-			value:Destroy()
-			if moving == tween then
-				moving = nil
-			end
-		end)
-		moving = tween
-		tween:Play()
-	end
-
-	-- Takes the camera to `goal` through black: out to the hall and back in, which a swing would
-	-- take through the wall. The tray and buttons stay over it.
-	local function dip(goal: CFrame)
-		local camera = Workspace.CurrentCamera
-		local g = gui
-		if not (camera and g) then
-			return
-		end
-		stopMoving()
-		local shade = Instance.new("Frame")
-		shade.Name = "Dip"
-		shade.Position = UDim2.fromOffset(0, -80) -- over the top bar's inset too
-		shade.Size = UDim2.new(1, 0, 1, 80)
-		shade.BackgroundColor3 = Color3.new(0, 0, 0)
-		shade.BackgroundTransparency = 1
-		shade.BorderSizePixel = 0
-		shade.ZIndex = 0 -- under every button and the tray
-		shade.Parent = g
-		local down = TweenService:Create(shade, DIP, { BackgroundTransparency = 0 })
-		down.Completed:Once(function(state: Enum.PlaybackState)
-			if moving == down then
-				moving = nil
-			end
-			if state == Enum.PlaybackState.Completed then
-				camera.CFrame = goal
-			end
-			local up = TweenService:Create(shade, DIP, { BackgroundTransparency = 1 })
-			up.Completed:Once(function()
-				shade:Destroy()
-			end)
-			up:Play()
-		end)
-		moving = down
-		down:Play()
 	end
 
 	-- The faint grid on the floor, a line each `Feel.Grid` studs from its edges.
@@ -1585,11 +1509,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 		local r, m = room, meter
 		if open and r and changed and (n == FRONT or was == FRONT) then
-			if frontAt == "card" then -- in or out of the hall: through black, never the wall
-				dip(if n == FRONT then frontView(r) else view(r))
-			else
-				swing(r, if n == FRONT then front(r) else view(r))
-			end
+			-- in or out of the hall through black, never the wall; to the door and back a swing
+			buildCam.show(if n == FRONT then frontView(r) else nil, frontAt == "card")
 			if m then -- the limit bar counts finds: it rises off the top while you face the door
 				TweenService:Create(m, RISE, { Position = meterAt(n) }):Play()
 			end
@@ -1637,8 +1558,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	end
 
 	local function openNow()
-		local camera = Workspace.CurrentCamera
-		if open or not camera then
+		local eyes = Workspace.CurrentCamera
+		local h = home
+		if open or not (eyes and h) then
 			return
 		end
 		local r = build()
@@ -1650,20 +1572,16 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		still(true)
 		body(true)
 		me:SetAttribute(Tools.StowAttribute, true) -- the tool wheel slides away, clear of the room
-		camera:SetAttribute(SEIZED, true)
+		eyes:SetAttribute(SEIZED, true)
 		need("ArrangeView", true)
 		showButton(false)
-		savedCamera = camera.CFrame
+		savedCamera = eyes.CFrame
 		frontAt = "door"
-		camera.CameraType = Enum.CameraType.Scriptable
-		stopMoving()
-		local rise = TweenService:Create(
-			camera,
-			RISE,
-			{ CFrame = if onTab == FRONT then front(r) else view(r) }
-		)
-		moving = rise
-		rise:Play()
+		buildCam.open({
+			inside = { face = r.face, centre = r.centre, size = r.size },
+			slot = slotBox or { face = r.face, centre = r.centre, size = r.size },
+			unit = h,
+		}, if onTab == FRONT then front(r) else nil)
 		grid = makeGrid(r)
 		local d, t, m = doneButton, tray, meter
 		if d then
@@ -1707,23 +1625,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			seized:SetAttribute(SEIZED, nil)
 		end
 		need("ArrangeView", false)
-		local camera = Workspace.CurrentCamera
-		if camera then
-			local back = savedCamera
-			stopMoving()
-			if back then
-				local t = TweenService:Create(camera, RISE, { CFrame = back })
-				moving = t
-				t.Completed:Once(function()
-					if not open then
-						camera.CameraType = Enum.CameraType.Custom
-					end
-				end)
-				t:Play()
-			else
-				camera.CameraType = Enum.CameraType.Custom
-			end
-		end
+		buildCam.close(savedCamera) -- swoops back into your eyes
 		local g = grid
 		grid = nil
 		if g then
@@ -1972,7 +1874,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 					return -- the plate isn't here to look at: stay on the door
 				end
 				frontAt = want
-				dip(frontView(r))
+				buildCam.show(frontView(r), true)
 			end,
 			rim = RIM,
 		}
@@ -2145,6 +2047,10 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		return nil, nil
 	end
 
+	takenAt = function(at: Vector2): boolean
+		return lifted ~= nil or (pickAt(at)) ~= nil
+	end
+
 	local function pointer(t: Enum.UserInputType): boolean
 		return t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1
 	end
@@ -2249,6 +2155,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		-- the room inside its walls at its size (S5-03h5, D-354), measured again as it grows
 		local function measure()
 			inside = nil
+			slotBox = nil
 			local n = if mine then mine:GetAttribute(Arrange.SlotAttribute) else nil
 			local slot = if type(n) == "number" then Arrange.slot(n) else nil
 			if mine and slot then
@@ -2257,6 +2164,12 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 					face = face,
 					centre = Vector3.new(c[1], c[2], c[3]),
 					size = Vector3.new(s[1], s[2], s[3]),
+				}
+				local xlFace, _, xc, xs = Arrange.areas(slot, Lobby.Origin, Sizes.Biggest)
+				slotBox = {
+					face = xlFace,
+					centre = Vector3.new(xc[1], xc[2], xc[3]),
+					size = Vector3.new(xs[1], xs[2], xs[3]),
 				}
 			end
 		end
@@ -2371,6 +2284,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		stop = function(_: any)
 			running = false
 			closeNow()
+			buildCam.destroy()
 			stopFollow()
 			for _, c in connections do
 				c:Disconnect()

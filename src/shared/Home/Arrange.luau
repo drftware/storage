@@ -124,6 +124,47 @@ Arrange.Feel = table.freeze({
 	Fresh = 1.5,
 })
 
+-- The build camera's feel (ArrangeCamera, S5-03j1a, D-439): The Sims 4's build camera over your
+-- home. It opens on today's corner view (`Feel.Below`, `Feel.In`) and swoops there over `Feel.Rise`.
+Arrange.Camera = table.freeze({
+	-- The point it circles stands this high off the floor (studs): about a table's top, so a
+	-- pinch or twist turns about what you're arranging, not the floorboards.
+	FocusUp = 3,
+	-- The nearest a pinch brings the eye (studs), and how far past the room's longer side it can
+	-- back away: enough to back out through the door and see the whole room.
+	Near = 4,
+	FarPast = 4,
+	FarMost = 30,
+	-- The flattest and steepest it looks (radians from level): never quite across, so the floor
+	-- always shows; nearly straight down, a floor plan.
+	LowTilt = 0.25,
+	HighTilt = 1.45,
+	-- The eye stays this far under the ceiling (studs): the unit's ceiling is the whole lobby's.
+	UnderCeiling = 0.75,
+	-- Seconds the camera takes to glide where your fingers sent it (shorter is snappier), and how
+	-- long a flick drifts on.
+	Settle = 0.3,
+	Drift = 0.35,
+	-- The eye stays this far inside the slot's own walls (the lobby's, which can't fade), and goes
+	-- at most this far out into the hall through your door (studs).
+	WallGap = 0.6,
+	Hall = 5,
+	-- A wall is gone once the eye is this far past it (studs); it fades in and out with a half
+	-- life of this many seconds on top, so even a reset's glide never pops a wall.
+	FadeDepth = 1.2,
+	FadeHalf = 0.05,
+	-- What counts as part of a wall (studs): pieces within this of its plane or past it; the door's
+	-- wall reaches further in, for the roll-up door's coil and curtain.
+	WallBand = 0.3,
+	FrontBand = 1.75,
+	-- WASD and the arrow keys slide the floor this fast (points a second, as a finger would).
+	KeySlide = 520,
+	-- Right-drag and the right stick turn as Roblox's own camera does (drag right, look right):
+	-- radians per point and radians a second. Negative turns the room the other way on screen.
+	MouseTurn = -0.008,
+	StickTurn = -2.5,
+})
+
 -- The grid snap the screen drags by: half a stud, quarter turns (Bloxburg's grid).
 Arrange.Step = 0.5
 Arrange.Turn = 90

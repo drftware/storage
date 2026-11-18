@@ -3296,13 +3296,25 @@ Done when players watch the results to the end and change their perks between cl
       stand-in; critically damped springs, a flick's drift, soft stops (any Zone, near, far, the
       tilt's ends), a ceiling the eye stays under, an edge follow, `floorAt` and `cutaway` for the
       walls' fade. A frame allocates nothing. Pin moved; nothing in the game uses it yet.
-    - [ ] **S5-03j1 The build camera.** Arrange's camera turns, slides, zooms and tilts: one
-      finger on empty floor slides, two fingers pinch, twist and tilt; right-drag, wheel and
+    - [x] **S5-03j1a The build camera, built.** Arrange's camera turns, slides, zooms and tilts:
+      one finger on empty floor slides, two fingers pinch, twist and tilt; right-drag, wheel and
       WASD; gamepad sticks and triggers. The walls between the camera and the room's middle fade
       (and what hangs on them), as The Sims cuts walls away. Opening swoops up from your eyes,
       closing swoops back; double tap on empty floor resets. The front tab's door view and the
-      hall dip still work. Its own module (`ArrangeCamera` or as the session names it).
-      **Acceptance:** seen in Studio Play at Galaxy A16 size, captured; check green.
+      hall dip still work.
+      Done (D-439): `ArrangeCamera` (client) on Brix's `Gestures` and `OrbitCamera`, the pure
+      sums in `Home/BuildView` (Lune spec), feel numbers in `Arrange.Camera`; the eye stays in
+      the lobby slot and up to 5 studs out into the hall; the old camera code left ArrangeView.
+      Passes checks, untested in Studio.
+    - [ ] **S5-03j1b The build camera, seen and tuned.** Studio Play at Galaxy A16 size: Arrange
+      opens with a swoop, right-drag turns, the wheel zooms, a left drag on empty floor slides,
+      WASD slides, double click resets; the walls fade from the door's side, both sides and the
+      back as it turns (a Small home, then Medium); the front tab's swing and the hall dip; close
+      swoops back. Tune `Arrange.Camera`'s signs and numbers by feel. Capture to `docs/art/` at
+      half scale; phone and gamepad steps in OWNER.md. Edge follow (`ArrangeCamera.follow`) is
+      wired in j2 with the drag.
+      **Acceptance:** seen in Studio Play at A16 size, captured; walls fade from every side;
+      check green.
     - [ ] **ENG-26c Nearest free spot and guides, in Brix.** Placements answers the nearest free
       pose to a blocked one within a reach, and the guide lines where a footprint's edge or
       middle meets a neighbour's on the same area. Suite cases first; the pin moves.
