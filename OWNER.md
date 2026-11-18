@@ -155,8 +155,11 @@ nowhere else.
   Studio's Test tab, 2 players; on the Server, `workspace:SetAttribute("GiveFind", "HardHat")`
   puts one in player 1's hands. Player 1 presses Wear. Look for, on player 2's screen: the hat sits
   on player 1's head (not floating, not sunk to the eyes, its battery hidden), you hear a hollow
-  knock and then the lamp's click, and a warm light shines from their forehead the way they face.
-  On player 1's screen: the hat's slot is empty and the hall ahead lights up. Then let a Mannequin
+  knock and then the lamp's click, the hat drops onto their head with a little hop and rocks
+  level (F-G1b4a2, D-420), and a hard white cone shines from their lamp, tipping up and down as
+  they look up and down. On player 1's screen: the hat's slot is empty and a white cone swings up
+  from your feet into the hall as the hat goes on, then follows your eyes and nods as you walk
+  (`docs/art/F-G1b4a2-headlamp-cone.jpg`). Say whether it's too bright, too tight, or bobs too much. Then let a Mannequin
   catch player 1 on a floor: the hat falls with everything else. Say whether 1.4 times its real
   size looks right on a Roblox head. My defaults, say which to change: a worn hat is kept at the
   gate with your other finds (it goes from your head in a glint); you can't wear a second hat over

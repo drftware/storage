@@ -31,6 +31,7 @@ local Battery = require(ReplicatedStorage.Shared.Battery)
 local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
+local Head = require(ReplicatedStorage.Shared.Finds.Head)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 
 local Torch = Flashlight.Torch
@@ -212,9 +213,10 @@ function Flashlights.new(): Flashlights
 		if degrees == nil or round == nil then
 			return
 		end
-		-- range: a lit torch of theirs
+		-- range: a lit torch of theirs, or the hard hat on their head (its beam goes where they
+		-- look on friends' screens, HeadlampView; keepers test only a lit torch's)
 		local h = held[player]
-		if not (h and h.on) then
+		if not (h and (h.on or Head.wearing(player:GetAttribute(Head.Attribute)))) then
 			return
 		end
 		-- rate: no faster than the client sends at its soonest

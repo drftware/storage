@@ -303,15 +303,21 @@ end
 
 -- Which friends' torches get real light: the nearest lit ones within `BeamSeen`, up to
 -- `RealBeams - 1` (your own takes one). `distances[i]` is friend i's distance (math.huge when
--- their torch is off). Fills `into` with true or false for each and returns it.
-function Torch.budget(distances: { number }, into: { boolean }): { boolean }
+-- their torch is off). Fills `into` with true or false for each and returns it. `most` and
+-- `seen` give another light's own cap (the headlamps', Finds/Headlamp).
+function Torch.budget(
+	distances: { number },
+	into: { boolean },
+	most: number?,
+	seen: number?
+): { boolean }
 	local n = #distances
 	table.clear(into)
 	for i = 1, n do
 		into[i] = false
 	end
-	for _ = 1, Torch.RealBeams - 1 do
-		local best, bestAt = Torch.BeamSeen, 0
+	for _ = 1, most or (Torch.RealBeams - 1) do
+		local best, bestAt = seen or Torch.BeamSeen, 0
 		for i = 1, n do
 			if not into[i] and distances[i] <= best then
 				best, bestAt = distances[i], i

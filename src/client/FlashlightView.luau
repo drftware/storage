@@ -44,6 +44,7 @@ local Caught = require(ReplicatedStorage.Shared.Caught)
 local Charge = require(ReplicatedStorage.Shared.Flashlight.Charge)
 local Drive = require(ReplicatedStorage.Shared.Finds.Drive)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
+local Head = require(ReplicatedStorage.Shared.Finds.Head)
 local HandRoom = require(script.Parent.HandRoom)
 local InFlight = require(script.Parent.InFlight)
 local Hands = require(ReplicatedStorage.Shared.Hands)
@@ -335,6 +336,7 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 	local aimAt = -math.huge
 	local soon = false -- your beam landed on a keeper since the last send
 	local lastYaw: number?, lastPitch = nil, 0
+	local woreLast = false -- the hard hat on your head when your aim was last looked at
 	local friends: { [Model]: Friend } = {}
 	local order: { Friend } = {}
 	local distances: { number } = {}
@@ -913,7 +915,15 @@ function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 		end
 		local camera = Workspace.CurrentCamera
 		local r = aimRemote
-		if not (mine and camera and r) then
+		-- and while the hard hat is on your head, so friends see its beam go where you look
+		local wearing = Head.wearing(player:GetAttribute(Head.Attribute))
+		if wearing ~= woreLast then
+			woreLast = wearing
+			if wearing and not mine then
+				aimSent = nil -- sent again soon, not when you next look about
+			end
+		end
+		if not ((mine or wearing) and camera and r) then
 			return
 		end
 		local pitch = math.deg(math.asin(math.clamp(camera.CFrame.LookVector.Y, -1, 1)))

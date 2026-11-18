@@ -38,6 +38,7 @@ local Workspace = game:GetService("Workspace")
 local Art = require(ReplicatedStorage.Shared.Finds.Art)
 local Brix = require(ReplicatedStorage.Brix)
 local Finds = require(ReplicatedStorage.Shared.Finds)
+local Head = require(ReplicatedStorage.Shared.Finds.Head)
 local Pose = require(ReplicatedStorage.Shared.Finds.Pose)
 local ToolView = require(script.Parent.ToolView)
 local Tools = require(ReplicatedStorage.Shared.Tools)
@@ -514,8 +515,10 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		local far: { [Entry]: number } = {}
 		for _, e in entries do
 			local d = if e.model == mine then -1 else (e.model:GetPivot().Position - eye).Magnitude
-			-- only near enough to be posed: past that its light can't be put out when it ends
-			if e.glowing and d <= STEP_RANGE then
+			-- only near enough to be posed: past that its light can't be put out when it ends; a
+			-- find worn on a head has its own beam instead (HeadlampView), its bulb still glowing
+			local worn = e.model:GetAttribute(Head.WornAttribute) ~= nil
+			if e.glowing and d <= STEP_RANGE and not worn then
 				table.insert(lit, e)
 				far[e] = d
 			end

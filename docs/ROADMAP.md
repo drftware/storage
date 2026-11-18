@@ -2590,7 +2590,7 @@ Done when players watch the results to the end and change their perks between cl
         (D-263), ShutIn's depth for a home. It runs Brix's ENG-25b in Studio as it goes.
   - [x] **F-G1b4a1 The hard hat on your head, lit** (D-277; its own ticket in Step 4's finds,
     the owner put it here, Nov 16; seen in Studio Play with one player).
-  - [ ] **F-G1b4a2 The headlamp's beam** (after S5-03b; see Step 4's F-G1b4a2).
+  - [x] **F-G1b4a2 The headlamp's beam** (D-420; see Step 4's F-G1b4a2).
   - [x] **S5-03b The mirror test** (ideas 21, 22; D-280): a mirror leaning in every home, a
     world built behind its glass; checked by numbers in Studio Play (copies within 0.002 studs of
     their reflections, your right hand on your right), the picture itself not yet seen (Studio
@@ -3359,15 +3359,16 @@ actions themselves and dealing the new finds on floors are later game tickets.
         With your camera at your head, the hat you wear is hidden from you alone (`HeadView`,
         eased), even under a camera the game holds, where Roblox's own first-person hiding
         stops; friends and the mirror still see it on you, and its lamp still lights the way.
-      - [ ] **F-G1b4a2 The headlamp's beam.** Your own beam drawn from your eyes, tighter and
+      - [x] **F-G1b4a2 The headlamp's beam** (D-420; seen in Studio Play with one player, a
+        friend's view through `HeadlampTest`, the two-player look waits on `OWNER.md`). Your own beam drawn from your eyes, tighter and
         whiter than the torch's, going where you look (pitch too, not just where your head
         turns) and bobbing with your walk (`Torch.step`'s stride); the beam swinging up into
         place as the hat goes on (the pull-on, felt in first person); friends' beams from their
         lamp along their aim (`Aim`), replacing the hat's warm art light while it's worn; the
         hat dropping onto a friend's head with a little settle rather than appearing there.
       - [ ] **F-G1b4b Spent and broken.** Its minute dims and stutters out as the flashlight
-        dies; spent, it falls off your head and breaks (D-141); on a phone only the nearest
-        few headlamps light the walls.
+        dies; spent, it falls off your head and breaks (D-141). (On a phone only the nearest
+        few light the walls: done in F-G1b4a2, `Headlamp.RealBeams`, yours and two friends'.)
     - [ ] **F-G1b5 Skates and slippers**, their art first (not yet in `art/finds/WAVES.md`):
       Wear puts them on your feet. Slippers are looks only. Skates make you faster (default:
       faster than your walk, still slower than a chasing monster, tuned in play), with the

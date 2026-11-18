@@ -45,6 +45,7 @@ local GateClock = require(script.GateClock)
 local HallHaze = require(script.HallHaze)
 local HallLights = require(script.HallLights)
 local HeadView = require(script.HeadView)
+local HeadlampView = require(script.HeadlampView)
 local HomeCards = require(script.HomeCards)
 local HomeGlows = require(script.HomeGlows)
 local HomeLights = require(script.HomeLights)
@@ -164,6 +165,8 @@ local host = Brix.Host.new({
 		{ slot = "looksView", system = LooksView.new() },
 		-- the find on your head kept out of your own eye, still on you for friends and the mirror
 		{ slot = "headView", system = HeadView.new() },
+		-- the hard hat's own beam: yours from your eyes, friends' along their aim (F-G1b4a2)
+		{ slot = "headlampView", system = HeadlampView.new() },
 		-- the fairy lights laid along a hall, on every screen (F-G1e5c)
 		{ slot = "strandView", system = StrandView.new() },
 		-- a cracked find's crack on your view's copy of it (F-G1e5e)

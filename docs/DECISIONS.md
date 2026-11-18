@@ -9871,3 +9871,35 @@ elevator", as Lethal Company's scrap counts once it's in the ship, held or on th
   finds): it now knows every big find (spec first).
 - Not chosen: carrying a lying find up with the car into the next floor (it would have to ride
   out of the floor's lying folder; the gate keeps it at once instead, as any held find).
+
+## D-420 · 2026-11-18 · The hard hat's own beam: white, from your eyes, swinging up as it goes on (F-G1b4a2)
+
+Phasmophobia's head torch: the hat's light is a hard white cone that goes where you look, so your
+hands stay free for the jukebox or a tool.
+
+- **Tighter and whiter than the torch** (`Finds/Headlamp`): 34 degrees across (the torch 54), a
+  white LED's cold white (236, 243, 255), brightness 2.8, 48 studs, shadows on. Yours adds a faint
+  white spill (no shadows) for a wall right in front of you at low graphics, as the torch does.
+- **Yours from your eyes** (`HeadlampView`): 0.3 studs over and 0.7 ahead of your camera (past
+  your face and the hidden brim, never past a wall), along your camera's look, pitch included. It
+  nods and weaves with `Torch.step`'s stride (1.3 times the torch's nod, 0.6 degrees of weave),
+  fed no turns so it never lags your look. With your view away from your head (the RC car), it
+  leaves the hat's lamp along your head instead.
+- **The pull-on**: from the moment its bulb lights (0.155 s after the press, or when the hat lands
+  on your head if that's later), the LED rises in 0.06 s and the cone swings up from 55 degrees
+  below your look into place in 0.45 s, about 4 degrees past and back (seen in Play: -55, -26, +4,
+  +0.6, 0). No camera move: the swing is the feel.
+- **Friends' along their aim**: their screen now sends its aim while the hat is worn, not only
+  while their torch is on (`FlashlightView.report`); the server takes it then too (`Flashlights`,
+  range: a lit torch or `Head.wearing`). Keepers still test only a lit torch's beam. On your
+  screen their beam leaves the art's lamp along their body's heading and their `Aim`, eased.
+- **It replaces the hat's warm art light while worn**: `FindUseView.rank` skips worn finds, so
+  their art lights stay out; the bulb still glows on the brow.
+- **The phone's cap** (F-G1b4b's line, done here): yours and the nearest two friends' headlamps
+  within 140 studs are real (`Headlamp.RealBeams` 3), from three rigs made once; the rest glow.
+  On top of the torches' four, a full squad in hats and torches is at most seven spotlights.
+- **A friend's hat settles onto their head** (seen in Play through `HeadlampTest`): their weld's
+  C0 is eased on your screen alone, dropping 0.7 studs (grown with their head) in 0.16 s, tipped
+  back 7 degrees, then a 0.05-stud hop that rocks level in 0.22 s. Only when it lands on a head
+  this screen saw bare: a respawned character arrives wearing it and it's simply there.
+- Defaults for the owner (OWNER.md): the cone's brightness, width and bob.

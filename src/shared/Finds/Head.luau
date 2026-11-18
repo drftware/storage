@@ -17,6 +17,10 @@ Head.Verb = "Wear"
 Head.Attribute = "ToolHead"
 -- On a worn find's model: its wearer's UserId, while it's on their head.
 Head.WornAttribute = "WornBy"
+-- Whether a Player's `Attribute` says they wear something (their headlamp's aim is taken then).
+function Head.wearing(value: unknown): boolean
+	return type(value) == "string" and value ~= ""
+end
 -- The weld holding a worn find to its wearer's head, and the find's model's name on them (not
 -- `Tools.HeldName`: it isn't the thing in their hand).
 Head.WeldName = "HeadWeld"
