@@ -90,6 +90,10 @@ export type Row = {
 	-- Fragile (F-G1e5e, as R.E.P.O.'s valuables): the glass part that cracks when it's dropped
 	-- hard, by name; cracked once, it's worth half for good (`Finds/Chip`, `Slots`).
 	fragile: string?,
+	-- A find's size, as its art judged it ("Small", "Medium", "Large"; "Big" for a floor's big
+	-- find): where a kit find sits in your view, and which packaging it's sealed in (`Finds/Seal`,
+	-- S5-02b2a). None: a tool.
+	size: string?,
 	-- It wears out (S1-08). None: it never does (the ladder, a find), or it's used up whole as it's
 	-- placed (the padlock hung on a door, the roll laid across a hall: `Slots:spend`).
 	wear: Wear?,
@@ -327,6 +331,7 @@ local Catalog: { [string]: Row } = {
 		name = "Boombox",
 		template = "Boombox",
 		find = true,
+		size = "Large", -- its packaging when sealed (Finds/Seal)
 		verb = "Play", -- loud music, monsters come to look (`Finds/OneMesh`)
 		grade = "Uncommon",
 		worth = 25,
@@ -359,6 +364,7 @@ local Catalog: { [string]: Row } = {
 		name = "TV",
 		template = "Television",
 		find = true,
+		size = "Large", -- its packaging when sealed (Finds/Seal)
 		grade = "Uncommon",
 		worth = 22,
 		grip = { 0, 1.24, 0 }, -- the cabinet's top, between the ears
@@ -395,6 +401,7 @@ local Catalog: { [string]: Row } = {
 		name = "Teddy",
 		template = "Teddy",
 		find = true,
+		size = "Medium", -- its packaging when sealed (Finds/Seal)
 		verb = "Hug", -- a tiny squeak (`Finds/OneMesh`)
 		grade = "Common",
 		worth = 4,
@@ -424,6 +431,7 @@ local Catalog: { [string]: Row } = {
 		name = "Skates",
 		template = "Skates",
 		find = true,
+		size = "Large", -- its packaging when sealed (Finds/Seal)
 		grade = "Uncommon",
 		worth = 18,
 		grip = { -0.1, 0.88, 0.42 }, -- the standing skate's collar
@@ -492,6 +500,7 @@ for _, row in Rows do
 		from = row.from,
 		loose = row.loose,
 		fragile = row.fragile,
+		size = row.size,
 		grip = row.grip,
 		heft = row.heft,
 		hold = hold.at,

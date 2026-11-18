@@ -158,7 +158,9 @@ local function said(contents: Deal.Contents): string
 	elseif kind == "Find" then
 		local row = if contents.find then Tools.Catalog[contents.find] else nil
 		local grade = if row and row.grade then ` ({row.grade})` else ""
-		return `a find, the {contents.find}{grade}{with}`
+		-- still in its packaging (S5-02b2a); b2b wraps it on the floor, plain until then
+		local sealed = if contents.sealed then ", still sealed" else ""
+		return `a find, the {contents.find}{grade}{sealed}{with}`
 	elseif kind == "Asleep" or kind == "Awake" then
 		local pile = contents.pile
 		local among = if pile then `, among its pile: {table.concat(pile, ", ")}` else ""

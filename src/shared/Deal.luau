@@ -28,6 +28,7 @@ local Grades = require("./Grades")
 local KeeperMix = require("./KeeperMix")
 local KeeperRows = require("./KeeperRows")
 local Rows = require("./Finds/Rows")
+local Seal = require("./Finds/Seal")
 local Waking = require("./Waking")
 
 type Floor = Floor.Floor
@@ -59,6 +60,9 @@ export type Contents = {
 	-- the finds of its own the Packrat sleeps among (S2-06b2b), names in `Deal.Finds`, laid round
 	-- it; nil in any other unit
 	pile: { string }?,
+	-- its find still in its packaging (S5-02b2a, `Finds/Seal`), from the unit's own pick; nil for
+	-- a loose find, anything that isn't a find, and the floor's big find
+	sealed: true?,
 }
 
 -- A note: the unit it lies in (an index into the floor's slots) and the places of the code it
@@ -984,6 +988,13 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 		contents.find = Deal.findFrom(deck.floor.number, deck.picks[index], nil, better)
 		if not contents.find then
 			contents.kind = "Nothing" -- never: the floor-1 commons are always left to deal
+		else
+			-- about one in twenty still in its packaging, from the same pick (S5-02b2a), so the
+			-- seed deals it and nothing else moves
+			local row = Catalog[contents.find]
+			if row and Seal.packOf(row.size) and Seal.sealed(deck.picks[index]) then
+				contents.sealed = true
+			end
 		end
 	elseif kind == "Asleep" or kind == "Awake" then
 		contents.keeper = deck.sleepers[index] or keeperFrom(deck, deck.picks[index])

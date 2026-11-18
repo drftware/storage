@@ -195,7 +195,11 @@ nowhere else.
   brown carton with a window cut in it. Look for: each reads as "still in its packaging" at a
   glance and the find shows through. Decide: these colours and prints, or another look; and the
   defaults S5-02b2 will build (a sealed find takes no press; a hard drop tears the packaging off
-  and leaves a plain find, worth the loose price).
+  and leaves a plain find, worth the loose price). The packs are now imported into the place
+  (S5-02b2a, D-424): save the place so they stay. Also decide (my defaults, D-424): about one find
+  in twenty sealed, worth three times; the boombox, television and skates sealed in the carton,
+  the teddy in the window box; a sealed find too big for the marked box (the boombox, the lamps,
+  the RC car, the fairy lights) stands loose on the unit's floor in its pack.
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

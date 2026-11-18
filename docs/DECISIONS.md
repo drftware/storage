@@ -9989,3 +9989,34 @@ both are now imported as `..._SOUND` (its rows unchanged).
 Not chosen: one pack per find (95 more models for a 1 in 20 roll); scaling a pack uniformly (a
 cube-ish RC car in a carton came out 3 studs wide); torn-packaging art (b2 pulls the pack off
 with a rip and scraps, the crack's way).
+
+## D-424 Sealed finds' rules and their deal: one in twenty from the unit's pick (S5-02b2a, Nov 18)
+
+S5-02b2 split in three: a (the rules and the deal, pure), b (sealed on the floor: wrapped in its
+pack in the box and your hands, no press, the tear), c (through the gate and into the home). The
+rules are `Finds/Seal`, specs in `tests/seal.spec`.
+
+- **The roll.** A find is sealed when the unit's own pick, times 7919, has a fraction under 0.05
+  (`Seal.sealed`). The grade and the find within it read the pick as it is, and the unit's stuff
+  reads it times 89, so a large prime keeps the seal apart from all three: the spec finds about
+  1 in 20 in every fifth of the picks, every grade on floors 1, 12 and 30, and units with stuff
+  as often as any. No new draw from the floor's Random, so every deal and the seed fingerprint
+  are as they were (stuffdeal, findgrade, deal and boxdeal specs unchanged). Seen in Studio's
+  Edit view from a fresh clone of `Shared`: 32 of 589 finds sealed over seeds 1 to 20.
+- **What's never sealed:** the floor's big find (it returns before the roll), the Packrat's
+  pile, a note's unit (its box holds the note), a tool, and any find with no pack for its size.
+- **The pack by size.** Catalog rows now carry the find's `size` (kit rows from `Finds/Rows`;
+  the bedroom four by hand: the boombox, television and skates Large, the teddy Medium), and
+  `Seal.packOf` maps Small, Medium and Large to `PackFit`'s keys; Big has none.
+- **The fit** mirrors `spec.py` on Roblox's axes; a find more than 1.5 times deeper than wide is
+  turned a quarter round (`Seal.held`) so the window shows its long side.
+- **Boxed or loose:** the deal boxes a sealed find by its packed outside size (`Seal.outer`,
+  `Deal.packs`). Packed, these stand loose: Boombox, DeskLamp, FairyLights, HardHat, NeonSign,
+  OilLamp, RCCar, Skates, StainedGlassLamp, Television, UnpluggedLamp. Every palm-sized find
+  still boxes. The fairy lights are Small but near a stud across, and the blister's 1.15
+  stretch grows the card to about 1.9 studs tall. b2b should stand a flat find up so its face
+  shows through the window; that would also keep its card smaller.
+- **Worth** three times (`Seal.worth`). A sealed find never cracks: a hard drop tears its pack
+  instead (`Seal.tears`, the crack's own `Chip.hard`), so the two never stack.
+- The packs are imported (`Props.Finds.Blister`, `WindowBox`, `Carton`, two parts each, no
+  Bones); the owner saves the place.

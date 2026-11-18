@@ -2540,7 +2540,27 @@ Done when players watch the results to the end and change their perks between cl
       drop (the packaging pulled off with a rip and a few scraps, the crack's way), `GatePay` and
       `Save.keep`'s `sealed` count, the home's shelf and selling panel at 3x. First, in Studio's
       Edit view, import the packs (PIPELINE step 6: `Kit.import("Packs")` from a clone of
-      `Shared`; the owner saves the place).
+      `Shared`; the owner saves the place). Split in three (Nov 18, D-424):
+      - [x] **S5-02b2a The sealed find's rules, dealt by the seed.** Done Nov 18 (D-424): seen
+        in Studio's Edit view (32 of 589 finds sealed over seeds 1 to 20); packs imported.
+        Pure, Lune specs first
+        (`Finds/Seal`): the 1 in 20 roll from the unit's own pick, the fit mirrored from
+        `spec.py` (a find much deeper than wide turned to show its side), 3x worth beside the
+        cracked rule, the tear on a hard drop (`Chip.hard`), and whether a packed find still fits
+        the marked box. `Deal.open` deals `sealed` on a find (never the big find, the Packrat's
+        pile or a note's unit); the seed fingerprint unmoved. The packs imported in Studio's Edit.
+      - [ ] **S5-02b2b Sealed on the floor: in its box, in your hands, torn.** The find wrapped in
+        its pack on the server (every screen, `Seal.fit`, turned when deep), in the marked box
+        or loose where the packed size won't box (`Deal.packs`); the box's reveal and your view's
+        copy wrapped too (as `ChipView` copies the crack); no press while sealed (the press
+        ignored, no copy); a careful set-down's soft cardboard thud; a hard drop tears it (the
+        pack pulled off with a rip and a few scraps, the crack's way), a plain find from then. A
+        dev pick (`DealFind`) that deals one sealed; seen in Studio Play and captured. A flat
+        find (the fairy lights) stood up so its face shows through the window (D-424).
+      - [ ] **S5-02b2c Sealed through the gate and into the home.** `GatePay` and the save
+        (`Save.keep`'s `sealed`, its stamp), the kept glint, a trip and a friend's box
+        (`Taken`), the home's shelf and placing (standing in its pack), the job box's panel
+        selling at 3x (`Seal.worth`), your slot's picture in its pack.
   - [ ] **S5-02c Seen in Studio.** A sealed find dealt (a dev pick), lifted out of its box,
     carried through the gate and shown on the home shelf and the selling panel at 3x; the
     padlock's better grade on floors 2, 10 and 12. Captures to `docs/art/`.
