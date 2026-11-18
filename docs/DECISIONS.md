@@ -9531,3 +9531,30 @@ don't own marked), Bloxburg's and Adopt Me's house signs (D-322).
   back exactly where the server laid it (the card's rest worked out from its style, never read,
   so a pick mid-swing can't keep a swung place). A plate further than 80 studs from the camera
   just changes. It also plays when a home is taken by someone with a sold style.
+
+## D-413 The whole climb in Studio, second part: back to the lobby picked on a ride; the cards done (S4-03d2, Nov 18)
+
+The last Studio check of the next-floor cards, and S4-03 ticked. Seed 7, one player, Play at
+Galaxy A16 size; nothing needed fixing.
+- **Start on floor 2 to reach the red card fast.** `DevFloorNumber` 2 starts the climb on floor
+  2, and its ride deals floor 3's cards (the power's out, back to the lobby, twice the monsters):
+  one ride instead of two. Offers and codes come from the seed and floor alone (D-403, D-406).
+- **Back to the lobby, picked and played.** A real tap on the middle card put my head on it. On
+  the arrival a red wash and a ring pop over the view for under a second, then the hall past the
+  gate glows red for about a second and a half while the car's walls keep their colour: D-412's
+  tamed light holds. A real catch on that floor (`CatchTest`, a stand-in in the car so the climb
+  went on) sent me down the shaft and stood me in the lobby car within three seconds.
+- **The lobby is black for two seconds after you land**, then its ceiling lights flicker on. The
+  front office's ceiling fixtures are motion lights (HallLights); standing still a minute later,
+  they read off again. My default: leave it, the lobby waking as you arrive. The owner judges it
+  (`OWNER.md`).
+- **The power coming back is one quick ragged wave.** Held to the end with the grip on screen,
+  the breaker brought the whole hall from black to lit inside 0.3 s, one capture catching its far
+  end still dark (`HallLight.BackStagger`). Turning the camera away mid-hold hides the prompt and
+  cancels the hold.
+- **Twice the padlocks' pop at its gate.** Floor 4 (10 padlocked) paid 24: the floor's coins
+  poured first, then the card's picture flashed over the gate and its own coins burst in its
+  colour and flew to the count.
+- **Left to two players**: the back-to-the-lobby floor's pop is seen by whoever rides out, never
+  by the one sent down, so it's in the owner's two-player test with the rest of that floor.
+  Captures `docs/art/S4-03d2-*.jpg`.

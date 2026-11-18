@@ -3299,6 +3299,18 @@ verified: a doc page, Studio, or "untested".
   A16, as the Arrange notes say; it fired `Activated` and the press reached the server.
 - **Stand-in friends' heads**: a Server `SetAttribute` of the car's `NextFloorPresses` with other
   UserIds draws their heads; the next real press rewrites the attribute from the server's table.
+- **Start on floor 2 for floor 3's cards** (S4-03d2): Edit `DevFloorNumber` 2 (back to 1 after);
+  on seed 7 its ride offers PowerOut, CaughtToLobby, TwiceMonsters (cards 1 to 3), floor 3's ride
+  TwicePadlocks, TwiceMonsters, PowerOut. The client can't see `DevCorridor.Floor2` from the
+  spawn (streaming): pivot the character to the keypad from the Server first, then fire
+  `Remotes.Keypad` from the Client. A later floor's car: pivot `(0, 0, -588 - 1000 (n - 2))`.
+- **A breaker's hold from the MCP** (S4-03d2): keep the grip on screen until the prompt's
+  `Triggered` fires, then turn the camera; turning it mid-hold hides the prompt and cancels the
+  hold (the power stayed off). The halls come back inside 0.3 s, so start the capture burst
+  before `InputHoldBegin`. `ThrowBreakers` puts the power out again for another try.
+- **A gate's pay from the shell**: the Client's return of `Departs - GetServerTimeNow()` (about
+  31 s after the code) sets a background burst's `sleep` (that minus 5) to catch the pour and
+  the version's pop. In zsh write `${C}` inside an ffmpeg filter, not `$C[a]` (an array index).
 
 ## Two buttons on one find (S5-03i3, Nov 18)
 

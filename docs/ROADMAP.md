@@ -2274,11 +2274,18 @@ Done when two climbs in a row feel different and players talk about their best f
   (bring a monster or keep it away), and a floor always keeps one that hunts; the deal places
   only the floor's monsters. Seen in Studio Play: floor 4 of climb 7 had only Mannequins, of
   climb 4 the Packrat on its pile too. `tests/keepermix.spec.luau`.
-- [ ] **S4-03 The choice on the elevator's buttons.** Three buttons light up on the car's
+- [x] **S4-03 The choice on the elevator's buttons.** Three buttons light up on the car's
   panel, each a version of the next floor and what it pays; most presses wins, a tie at random;
   it lasts that one floor (GDD "The team's choice"). A version that brings or keeps away a
   monster passes a lean as `KeeperMix.on`'s third argument (D-401). The owner calls them the
-  next-floor cards: the mechanic that makes no two climbs the same. Split Nov 17 (D-403):
+  next-floor cards: the mechanic that makes no two climbs the same. Done Nov 18 (D-403 to
+  D-413): on every ride from floor 2 up, three picture cards slide up as the car lurches off;
+  the team taps them (heads on cards, most wins, a tie at random) and on the cable's second
+  knock the winner flares, rides with you and flies into the next floor as its gate opens. The
+  four versions (the power's out, twice the monsters, twice the padlocks, caught goes back to
+  the lobby) each change that floor as promised and pay their own pop at its gate. All seen in
+  Studio with one player; left for the owner (`OWNER.md`): the vote with a friend on phones,
+  two players on the back-to-the-lobby floor, and the defaults listed there. Split Nov 17 (D-403):
   - [x] **S4-03a The versions and the vote.** The moment: the car lurches off, friends jab at
     three versions of the next floor and change their minds; on the cable's second knock the
     winner is the floor the car stops at. Proven: a lobby's map vote (most presses wins, a tie at
@@ -2379,7 +2386,7 @@ Done when two climbs in a row feel different and players talk about their best f
         Again standing the team back in a trip's own car (test hall: a fresh floor 1); two
         players: `OWNER.md`. Polish: the team's faces in the dial's seats while they climb, and
         the floor on the car's inside readout too, so you see it without stepping out.
-  - [ ] **S4-03d The whole climb in Studio.** Ride floors 1 to 5 in Play with the cards, each
+  - [x] **S4-03d The whole climb in Studio.** Ride floors 1 to 5 in Play with the cards, each
     version picked once, captures; fixes. Two-player vote and phones go to `OWNER.md`. Split
     Nov 18 (D-412):
     - [x] **S4-03d1 The held ride and three cards ridden.** Done Nov 18 (D-412): `DevRideHold`
@@ -2388,12 +2395,20 @@ Done when two climbs in a row feel different and players talk about their best f
       the power out, twice the monsters, twice the padlocks, each floor as promised, the pops at
       floors 2 and 3's gates. Fixed: the arrival's light flooding the car (`NextFloorView`).
       Captures `docs/art/S4-03d-*.jpg`.
-    - [ ] **S4-03d2 The back-to-the-lobby card on a ride.** Play from floor 1 (seed 7; floor 3's
+    - [x] **S4-03d2 The back-to-the-lobby card on a ride.** Play from floor 1 (seed 7; floor 3's
       ride offers it, or floor 5's): pick caught-to-the-lobby, see the arrival with the tamed
       light (burst running before the 19.6 step; capture it), its floor's red, a catch there
       (STUDIO.md's c4b recipe), and its pop at the gate if the team gets out. Then the
       twice-the-padlocks pop at its gate, and one look at the halls coming back on the
-      power-out floor with the camera down a hall (not at the box's wall).
+      power-out floor with the camera down a hall (not at the box's wall). Done Nov 18 (D-413),
+      nothing needed fixing: from floor 2 (seed 7) a tap on the middle card picked it; floor 3
+      arrived with the red wash and ring, the hall past the gate glowing red for about a second
+      and a half while the car kept its own colour; a real catch there sent me down the shaft into
+      the lobby car. A second Play picked the power out for floor 3: its breaker's hold brought
+      the hall back as one ragged wave inside 0.3 s; then twice the padlocks for floor 4 (10
+      padlocked) and its pop at the gate after the floor's pour (paid 24). The pop on a floor
+      where a friend was sent down is the riders' to see: two players, `OWNER.md`. Captures
+      `docs/art/S4-03d2-*.jpg`.
 - [x] **S4-04 Trapping pays** (Nov 17, D-402). Each monster the team has shut in a unit as the
   gate shuts pays everyone aboard 5 more coins (`Pay.Trap`, D-188; Keepers' `trappedOn`); one
   freed first, or one the floor woke behind its own door, doesn't count. On your screen each

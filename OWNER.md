@@ -63,7 +63,10 @@ nowhere else.
   picking the power out, then 2 to 3 picking anything else, and stop at each open gate: can you
   tell the two apart before you step out? If not, should a plain floor's lobby light trip on as
   its gate opens? The arrival's light in the hall past the gate is now dimmer and shorter (my
-  default, D-412): before, it flooded the whole car near white for over a second.
+  default, D-412): before, it flooded the whole car near white for over a second. Seen in Play
+  since (S4-03d2, D-413): a red wash over your view for a moment, then the hall past the gate
+  glows the card's colour for about a second and a half while the car keeps its own (open
+  `docs/art/S4-03d2-arrival.jpg`); say if it's still too much or now too little.
 - [ ] **Vote with a friend, on phones** (S4-03b2, D-405; seen with one player and stand-in
   presses). Two phones (or Studio's Test tab, 2 players), both in one car leaving floor 1 (any
   later floor's ride works; floor 1's from the lobby has no vote). Look for: as the car lurches
@@ -93,7 +96,12 @@ nowhere else.
   stepping out and turning round, the dial over it shows the floor the other is on, changing as
   they ride up. When the other's climb ends, Again stands you both back in that car together.
   My default, yours to change: sent down, you sit the rest of the climb out; nothing brings you
-  back into it.
+  back into it. The one still climbing (S4-03d2, D-413): punch that floor's code and ride out;
+  as the gate shuts, after the floor's coins pour in, the red card's picture flashes over the
+  gate and its own coins burst and fly to your count. Seen alone in Studio, the one sent down
+  lands in the car looking out at a black lobby for about two seconds before its ceiling lights
+  flicker on (the front office's motion lights finding you, I think): say if that reads as the
+  lobby waking up or as a glitch.
 - [ ] **Your home, with a friend** (S5-03a3b, D-275; seen with one player only). Studio's Test
   tab, Clients and Servers, 2 players. Look for: each player gets a home by the front door (1 then
   7), their name sprays onto its card with a soft hiss and the door rolls up. Player 1 pulls their
