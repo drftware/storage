@@ -2,16 +2,16 @@
 --[[
 	HomeSitView: sitting on a home's furniture, on this screen (S5-03i4, D-353). The moment: you
 	walk up to the milk crate in your home and press Sit; your view glides down into the seat with
-	a hollow knock. The beanbag gives under you with a soft puff, on the blanket you sit
-	cross-legged, and a friend lands on the camp bed beside you with the canvas taking up the slack.
+	a hollow knock. The beanbag gives under you with a soft puff, the blanket takes you low, and a friend lands on the camp bed beside you with the canvas taking up the slack.
 
 	- The buttons: the server's Sit (Sits) shows here only while this screen's player stands in
 	  that home (its folder's room, `Press.inside`), Arrange isn't open (your tools are stowed then),
 	  you aren't sat already, and the seat is free. Checked a few times a second.
 	- Every screen, as anyone lands: the seat's sound (`Sit.Sounds`) where they land, and the part
 	  under them squashes and comes back up (`give`); getting up plays the sound softer.
-	- Every screen: a body on a floor seat (the blanket) sits cross-legged, its legs turned past the
-	  sit animation before physics (`Joints`, as KneelView's kneel), eased in.
+	- Not yet: cross-legged on the blanket. A body sat on an anchored Seat has its legs written by
+	  its Animator after any script's joint write (seen in Play, D-353), so it takes an animation
+	  of our own (queued).
 	- Your own landing: the view glides from where you stood into the seat (`Humanoid.CameraOffset`
 	  eased back to nothing over `Sit.Ease`) instead of dropping in one frame.
 ]]
@@ -27,10 +27,7 @@ local Press = require(ReplicatedStorage.Shared.Home.Press)
 local Sit = require(ReplicatedStorage.Shared.Home.Sit)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
-local Joints = require(script.Parent.Joints)
 local SoundPrimer = require(script.Parent.SoundPrimer)
-
-type Joint = Joints.Joint
 
 -- Seconds between looks at who's in which home and which seats are free.
 local LOOK = 0.2
@@ -47,39 +44,6 @@ type Held = {
 	sat: Humanoid?, -- who sits on it now, as this screen last saw
 	changed: RBXScriptConnection,
 }
-
--- A body sat cross-legged on this screen: its leg joints, how far into the pose (0 to 1), and
--- what this screen wrote to each last frame.
-type Crossed = {
-	joints: { [Joint]: CFrame },
-	level: number,
-	written: { [Joint]: CFrame },
-}
-
--- Each leg joint of R15 body `character` and its turn sat cross-legged.
-local function crossed(character: Model): { [Joint]: CFrame }
-	local c = Sit.Cross
-	local joints: { [Joint]: CFrame } = {}
-	for _, side in { "Left", "Right" } do
-		local m = if side == "Left" then 1 else -1 -- the right leg mirrors the left
-		local function add(part: string, name: string, to: CFrame)
-			local j = Joints.find(character, `{side}{part}`, `{side}{name}`)
-			if j then
-				joints[j] = to
-			end
-		end
-		add(
-			"UpperLeg",
-			"Hip",
-			CFrame.Angles(0, -m * c.Out, 0)
-				* CFrame.Angles(c.Pitch, 0, 0)
-				* CFrame.Angles(0, 0, m * c.Roll)
-		)
-		add("LowerLeg", "Knee", CFrame.Angles(c.Knee, 0, 0))
-		add("Foot", "Ankle", CFrame.Angles(0, 0, m * c.Ankle))
-	end
-	return joints
-end
 
 -- The seat's landing sound at `seat`, at `share` of its volume, its end faded.
 local function thump(seat: Seat, spec: Sit.Sound, share: number)
@@ -150,7 +114,6 @@ local HomeSitView = {}
 function HomeSitView.new(): Brix.System
 	local me = Players.LocalPlayer
 	local held: { [Seat]: Held } = {}
-	local bodies: { [Model]: Crossed } = {}
 	local inHome: { [Instance]: boolean } = {} -- per home folder, this look: am I in it
 	local connections: { RBXScriptConnection } = {}
 	local since = 0
@@ -189,21 +152,13 @@ function HomeSitView.new(): Brix.System
 		local spec = Sit.Sounds[h.row.sound]
 		if was then
 			thump(h.seat, spec, Sit.Up)
-			local body = was.Parent
-			if body and body:IsA("Model") then
-				bodies[body] = nil
-			end
 		end
 		if now then
 			thump(h.seat, spec, 1)
 			if h.row.give and h.row.squash > 0 then
 				give(h.model, h.row.give, h.row.squash)
 			end
-			local body = now.Parent
-			if h.row.pose == "Floor" and body and body:IsA("Model") then
-				bodies[body] = { joints = crossed(body), level = 0, written = {} }
-			end
-			if body == me.Character then
+			if now.Parent == me.Character then
 				glide(now)
 			end
 		end
@@ -274,7 +229,7 @@ function HomeSitView.new(): Brix.System
 			}
 			held[seat] = h
 			if seat.Occupant then
-				occupied(h) -- someone already sat as this screen arrives: pose them, quietly or not
+				occupied(h) -- someone already sat as this screen arrives
 			end
 		end
 	end
@@ -291,30 +246,13 @@ function HomeSitView.new(): Brix.System
 		end
 	end
 
-	-- Before physics: bodies on floor seats cross their legs (eased in), and where you stand is
-	-- noted for your next landing.
-	local function step(dt: number)
+	-- Before physics: where you stand is noted for your next landing.
+	local function step()
 		local character = me.Character
 		local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
 		local root = if humanoid then humanoid.RootPart else nil
 		if humanoid and root and humanoid.SeatPart == nil then
 			stood = root.Position
-		end
-		for body, b in bodies do
-			if not body.Parent then
-				bodies[body] = nil
-				continue
-			end
-			b.level = math.min(1, b.level + dt / Sit.Ease)
-			local w = 1 - (1 - b.level) * (1 - b.level) -- eased out
-			for j, to in b.joints do
-				local now = Joints.get(j)
-				-- a joint no animation drives still holds this screen's last turn: start from rest
-				local from = if now == b.written[j] then CFrame.identity else now
-				local set = from:Lerp(to, w)
-				Joints.set(j, set)
-				b.written[j] = set
-			end
 		end
 	end
 
@@ -355,7 +293,6 @@ function HomeSitView.new(): Brix.System
 			h.changed:Disconnect()
 		end
 		table.clear(held)
-		table.clear(bodies)
 	end
 
 	return system

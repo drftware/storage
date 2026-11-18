@@ -9271,7 +9271,7 @@ about it but the torch's battery); unit bulbs on every floor's breaker (changes 
 
 The moment: you walk up to the milk crate in your home, press Sit, and your view glides down into
 the seat with a hollow knock; the beanbag gives under you with a soft puff, on the blanket by the
-pallet you sit cross-legged, and a friend lands on the camp bed beside you (D-345: "sit on a
+pallet you sit low on it, and a friend lands on the camp bed beside you (D-345: "sit on a
 crate, the beanbag, the cushion, the camp bed"; Adopt Me's and Bloxburg's furniture: walk up,
 press Sit, jump to get up).
 - **A button, not a bump** (`Sits`, `Home.Sit`): every seat of a home's furniture is a Roblox
@@ -9281,7 +9281,7 @@ press Sit, jump to get up).
   and planters still seat you as you walk in, as before.
 - **Where you sit** (`Sit.Seats`, `tests/homesit.spec`): the crate's lid at its top (1.65, feet
   on the floor); the beanbag low and a little back (1.25, it swallows you); the folded blanket at
-  its top (0.44), cross-legged; the camp bed two side by side along its front edge, 2 studs apart,
+  its top (0.44), low (cross-legged waits, below); the camp bed two side by side along its front edge, 2 studs apart,
   clear of the pillow, on the canvas where it rises toward the rail (its top plus 0.3). Every seat
   faces out its piece's front.
 - **Who may sit** (`Sits`): anyone in the home, its holder or a friend, alive, not sat already, the
@@ -9293,9 +9293,16 @@ press Sit, jump to get up).
   crate a wood knock, the cushions a low cloth puff, the bed's canvas a shorter rub; getting up the
   same at half), and the part under you squashes and springs back (the beanbag 12%, the blanket
   25%, the canvas 10%; the crate is wood and doesn't). Your own view glides from where you stood
-  into the seat over 0.35 s (`Humanoid.CameraOffset` eased to nothing). On the blanket every screen
-  turns the sitter's legs past the sit animation into a cross-legged pose (`Sit.Cross`, eased in,
-  as the peek's kneel is posed).
+  into the seat over 0.35 s (`Humanoid.CameraOffset` eased to nothing).
+- **Cross-legged on the blanket isn't built** (seen in Play): a body sat on an anchored Seat has
+  its legs written by its Animator after any script's joint write (PreSimulation and PreRender
+  both lost), so the blanket shows Roblox's sit, low, for now. It needs an animation of our own
+  played over the sit (queued; an uploaded animation is the owner's).
+- **Seen in Studio Play at Galaxy A16 size** (`docs/art/S5-03i4-*`): Sit over the crate beside the
+  folding table's Switch and Take; a real R press sat you on the crate (the view glided 1.7 studs in
+  over 0.3 s); Space stood you up; a real R press sat you on the blanket; a press sat you on the
+  camp bed's second place; the server sat you on the beanbag, sunk in on the rug. Not seen: a
+  friend's landing, the sounds by ear, the squash frame by frame, the bed's first place by a press.
 - **The camp bed is sat on, not lain on** (my default, `OWNER.md`): Roblox Seats only sit, and lying
   down needs a sleeping pose and a way to get up that we haven't seen work here: an untested bet
   for the owner.

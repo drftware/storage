@@ -161,6 +161,14 @@ nowhere else.
   rubber mats; walls are plain (a home's), stripes, leaves and daisies; eight paints from warm
   white to ink; eight door colours from clay; carpet, checker and mats each come in five colours;
   every paper takes the wall's paint as its ground.
+- [ ] **Sit on your furniture, on a real phone, with a friend** (S5-03i4, D-353; seen in Studio
+  Play alone). Walk up to the crate, the beanbag, the blanket and the camp bed: Sit shows over
+  each; press it and you're sat, jump to get up. Have a friend sit beside you on the bed. Listen
+  for: a wood knock on the crate, a soft puff on the cushions, the canvas on the bed; watch the
+  beanbag give. My defaults, say which to change: you sit by a button (R or the pad's B), never by
+  walking into a seat; the bed is sat on, not lain on (lying down needs a sleeping animation:
+  an untested bet, say if you want it); on the blanket you sit Roblox's way for now, cross-legged
+  needs an animation we make and upload (say if you want it).
 - [ ] **Lift a find out of your shelf in Arrange, on a real phone** (S5-03i2b, D-352; seen in
   Studio Play). Open Arrange, tap a find in a cubby: it rises out at its own size and the cubby
   is empty. Set it on a table: it stays, and the shelf still has its other finds. Lift another

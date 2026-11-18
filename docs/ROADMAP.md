@@ -2896,7 +2896,7 @@ Done when players watch the results to the end and change their perks between cl
       - [ ] **S5-03h6 The walls grind back** (idea 31): when it grows, you're there to watch: the
         partitions slide along their rails, the back wall rolls away, the door frame widens, dust
         drifts down, with the steel's grind (Animal Crossing's house growing).
-  - [ ] **S5-03i Everything in the room moves, lifts and works** (the owner, Nov 18, D-345;
+  - [x] **S5-03i Everything in the room moves, lifts and works** (the owner, Nov 18, D-345;
     Animal Crossing's house, Bloxburg's build mode). Next, ahead of S5-03h5 and h6. The moment:
     you buy an end table, set it by the bed, stand your lamp on it, walk up and press Switch, and
     the corner glows; the shelf goes wherever you want it. In this order:
@@ -2961,7 +2961,11 @@ Done when players watch the results to the end and change their perks between cl
       beside Take for every find at once (`Home.Press`, HomeUses, HomeUseView, FindUses'
       `setOut`); lights under D-271's caps; anyone in the home may press. Queued: a lamp left on
       kept through a rejoin; the shelf's cubby finds' own buttons.
-    - [ ] **S5-03i4 Sit on the furniture**: the crates, the beanbag, the cushion, the camp bed.
+    - [x] **S5-03i4 Sit on the furniture** (done Nov 18, D-353; seen in Studio Play at Galaxy A16
+      size): a Sit button over every seat (R/ButtonB; `Sits`, `HomeSitView`, `Home.Sit`), the
+      crate, the beanbag, the blanket and the camp bed's two; jump to stand; the landing's sound,
+      the cushion's give and your view gliding in. Queued: cross-legged on the blanket (needs our
+      own animation; script joint writes lose to a seated body's Animator) and lying on the bed.
   Later, each its own ticket (finds doing things at home moved into S5-03i3, D-345): living
   finds (17); the home score, visits to friends on other servers, photos (27 to 29; 29 is
   untested and waits on the owner). Trading comes later still.

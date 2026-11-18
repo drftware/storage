@@ -1,8 +1,8 @@
 --!strict
 --[[
 	Sit: where you sit on a home's furniture (S5-03i4, D-353). The moment: you walk up to the milk
-	crate in your home and sit on it, the beanbag gives under you, you sit cross-legged on the
-	blanket by the pallet, and you sit on the camp bed's edge with a friend beside you. As Adopt
+	crate in your home and sit on it, the beanbag gives under you, you sit low on the blanket by
+	the pallet, and you sit on the camp bed's edge with a friend beside you. As Adopt
 	Me's and Bloxburg's furniture: walk up, press Sit, jump to get up.
 
 	Each seat is a Roblox Seat in its piece's own frame (its front toward -Z), turned to face out
@@ -11,7 +11,8 @@
 	onto it. The seat's top is where you sit, from the piece's top (`Specs.Tops`): the crate's lid,
 	the folded blanket, the camp bed's canvas where it rises to its rail at the edge.
 
-	Each seat also says how you sit (`pose`: a chair's sit, or cross-legged on the floor), what you
+	Each seat also says how you sit (`pose`: a chair's sit, or on the floor, where cross-legged
+	waits on an animation of our own, D-353), what you
 	hear as you land (`sound`), and which part gives under you and how far (`give`: a cushion's
 	squash; the crate is wood and doesn't).
 
@@ -107,7 +108,7 @@ Sit.Seats = table.freeze((function(): { [string]: { Row } }
 		MilkCrate = { row(crate.At[1], crate.At[2], crate.At[3], "Chair", "Wood", nil, 0) },
 		-- sunk low into the bag, a little back from its front: it swallows you
 		Beanbag = { row(0, 1.25, 0.1, "Chair", "Cushion", "Beanbag", 0.12) },
-		-- on the folded blanket, legs crossed: a floor cushion round the coffee table
+		-- on the folded blanket, low: a floor cushion round the coffee table
 		Blanket = {
 			row(blanket.At[1], blanket.At[2], blanket.At[3], "Floor", "Cushion", "Blanket", 0.25),
 		},
@@ -124,19 +125,6 @@ function Sit.row(kind: string, index: number): Row?
 	local seats = Sit.Seats[kind]
 	return if seats then seats[index] else nil
 end
-
--- Cross-legged on the floor (the blanket): each leg's joints turned from rest, in radians, the
--- left leg's (the right mirrors its turn out and its roll). Hip: the thigh lifted forward to
--- level (Pitch), swung out to the side (Out) and rolled so the knee drops outward (Roll). Knee:
--- the shin folded back under the other thigh. Ankle: the foot turned in to lie on its side.
--- Tuned in Studio on an R15 body (D-353).
-Sit.Cross = table.freeze({
-	Pitch = math.rad(90),
-	Out = math.rad(40),
-	Roll = math.rad(-25),
-	Knee = math.rad(-140),
-	Ankle = math.rad(-20),
-})
 
 export type Sound = { id: string, from: number, length: number, volume: number, pitch: number }
 -- What you hear as you land, at the seat, close by only (a friend beside you hears it). Getting

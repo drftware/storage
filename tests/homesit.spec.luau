@@ -3,7 +3,7 @@
 -- Sit on the furniture (S5-03i4, D-353): the crate, the beanbag, the blanket and the camp bed each
 -- have seats; every seat lies inside its piece's box, at or over its top and under the piece's
 -- highest point, facing out its front; the bed seats two side by side, clear of its pillow; the
--- blanket is the one you sit on cross-legged; every seat's landing has a sound.
+-- blanket is the one you sit on the floor; every seat's landing has a sound.
 local Sit = require("../src/shared/Home/Sit")
 local Specs = require("../src/shared/Home/Specs")
 
@@ -63,8 +63,8 @@ ok(math.min(bed[1].x, bed[2].x) - 0.5 > pillowEnd, "nobody sits on the pillow")
 ok(bed[1].z < 0 and bed[2].z < 0, "the bed's seats are along its front")
 ok(Sit.Seats.Beanbag[1].top < bed[1].top, "the beanbag sinks you lower")
 
--- Cross-legged on the blanket, and only there.
-ok(Sit.Seats.Blanket[1].pose == "Floor", "on the blanket you sit cross-legged")
+-- On the floor on the blanket, and only there.
+ok(Sit.Seats.Blanket[1].pose == "Floor", "on the blanket you sit on the floor")
 for _, kind in { "MilkCrate", "Beanbag", "CampBed" } do
 	for i, s in Sit.Seats[kind] do
 		ok(s.pose == "Chair", `{kind} seat {i} is a chair's sit`)

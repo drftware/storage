@@ -3308,3 +3308,20 @@ verified: a doc page, Studio, or "untested".
   mapping didn't move: a world point's viewport (X, Y) at (X + 47, Y - 58), a gui button at its
   middle (X + 47, Y). A ShotCam at (78.5, 5.2, 478) looking at (89, 2.6, 478) framed Unit1's
   shelf against the right wall with its six cubbies tappable.
+
+## Sitting in a home, seen on the A16 (S5-03i4, Nov 18)
+
+- **A body sat on an anchored Seat ignores script joint writes**: the blanket's sitter's
+  `LeftHip` (an AnimationConstraint) read back the sit animation's turn after a write in
+  `PreSimulation` and after one in `PreRender`, and the capture didn't move. KneelView's and
+  DriverBodies' writes work on bodies that aren't welded to an anchored part. A pose on a seat
+  needs an animation of our own played over the sit.
+- **`Seat` has a `Sit` method**: `seat.Sit` is the function, not the `Sit` attachment; use
+  `seat:FindFirstChild("Sit")`.
+- **`Humanoid.Jump = true` from a Client script didn't stand a seated body**; a real Space press
+  did. A script `Sit = false` stands you on your screen but the server still sees you sat for a
+  moment, so its next Sit is refused. A prompt's `InputHoldBegin` from the MCP missed on the
+  beanbag while the same checks passed by `seat:Sit` on the server: press R for real.
+- **First person hides your body**: for a capture, a render step after the camera
+  (`Camera + 2`) setting every character part's `LocalTransparencyModifier` to 0 shows it.
+
