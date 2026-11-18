@@ -133,8 +133,14 @@ nowhere else.
   rubber mats; walls are plain (a home's), stripes, leaves and daisies; eight paints from warm
   white to ink; eight door colours from clay; carpet, checker and mats each come in five colours;
   every paper takes the wall's paint as its ground.
+- [ ] **Press your lamp and take your finds, on a real phone** (S5-03i3, D-351; seen in Studio
+  Play: the moon lamp on the folding table switched on, Switch and Take side by side; a Take
+  press lifted the boombox off the job box). Buy a folding table, stand a lamp on it, walk up,
+  press Switch: it lights and stays lit. Squeeze, Wind, Play the others; have a friend press
+  them too (they see no Take). My defaults to judge: the diecast car, the RC car and the hard
+  hat get only Take; a wind-up walks on the spot; a lamp left on is off after you rejoin.
 - [ ] **Take a find straight off your shelf or a table, on a real phone** (S5-03i2a1, D-350;
-  passes checks, untested in Studio: the next session sees it in Studio Play first). Walk up to a
+  the cubby take by a real press and a rejoin's counts not yet seen in Studio). Walk up to a
   find in a cubby: Take shows over it. Press it: it hops up and flies into your hand with its
   pick-up sound, and the cubby is empty. Do the same with a find on the job box's top and one on
   the floor. Open the job box: the count hasn't changed. Leave and come back: nothing doubled or

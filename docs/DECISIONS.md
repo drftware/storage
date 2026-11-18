@@ -9143,6 +9143,30 @@ the climb's own Take on a find lying loose).
   it's simply there. Numbers in `Shared/Home/Take`.
 - **Split** (context): i2a1 this, built and green; i2a2 sees it in Studio Play and captures it.
 
+## D-351 Every find set out keeps its own button (S5-03i3, 2026-11-18)
+
+The moment: you stand your moon lamp on the folding table, walk up, press Switch, and it lights
+(D-345; Animal Crossing's lamps and Bloxburg's switches work where they stand).
+- **The climb's own word, every find at once** (`Home.Press`, `tests/homepress.spec`): a find set
+  out gets its `Finds/Use` row's press (Switch, Play, Hug, Wind, Squeeze, Light...) beside its
+  Take, F on a keyboard and Y on a pad, the two a button's width apart (`Press.Side`). Its press is
+  FindUses' own stamp (`setOut`), so every screen plays it as from a hand, and at home a light
+  never runs down (D-259). Real lights stay under the screen's cap (`Use.LightsShown`, D-271).
+- **No button where the press needs the hand** (my default, `OWNER.md`): the hard hat's Wear, the
+  RC car's Drive and the diecast car's Push (it would roll off and just stop dead): Take them
+  first. A wind-up that walks plays on where it stands, as one stopped by a wall (`Press.stop`).
+- **Anyone in the home may press** (D-345): its holder or a friend, never move or take. Only a
+  player inside the home's walls or in its doorway sees it or is heard (`Press.inside`, the room
+  on the home's folder), so a neighbour through the wall never does. Hidden while your Arrange is
+  open, and while a press would do nothing (a lit tea light, a jack mid-tune).
+- **Not kept yet** (queued): a lamp left on is off after a rejoin or a re-lay (the stamp is the
+  model's, not the save's); a lit find taken comes into your hand unlit.
+- **Seen in Studio Play at Galaxy A16 size** (`docs/art/S5-03i3-*`): the lamp's Switch and Take
+  side by side; Switch stamped On, its light lit, never running down. Found and fixed: the take
+  screen grabbed a find's first button, now its Switch, so Take never showed (HomeTakeView finds
+  Take by its attachment). After the fix a real Take press lifted the boombox off the job box
+  into hand slot 1 (S5-03i2a2); the floor teddy went to slot 1 through the server hook.
+
 ## D-406 Each next-floor card felt on its floor: the deal and the pay (S4-03c1, Nov 18)
 
 The team's pick has to be the floor it gets, from the moment the gate opens, or the choice means

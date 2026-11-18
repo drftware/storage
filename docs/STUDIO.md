@@ -3283,3 +3283,17 @@ verified: a doc page, Studio, or "untested".
   A16, as the Arrange notes say; it fired `Activated` and the press reached the server.
 - **Stand-in friends' heads**: a Server `SetAttribute` of the car's `NextFloorPresses` with other
   UserIds draws their heads; the next real press rewrites the attribute from the server's table.
+
+## Two buttons on one find (S5-03i3, Nov 18)
+
+- **Find a model's prompt by name, never `FindFirstChildWhichIsA("ProximityPrompt", true)`**: with
+  a find's own button beside its Take, that returned whichever came first (the cymbal monkey's
+  Wind), so the take screen switched the wrong one and Take never showed. Take is the prompt under
+  the `Take` attachment; a find's own is named `Press`.
+- **A prompt's `InputHoldBegin` from the MCP does nothing while it isn't Enabled on that screen**
+  (no `Triggered`, no error): read `Enabled` first.
+- **Unit1's room (XL)**: middle (75.125, 5, 478), its width along world Z (468 to 488) and its
+  depth along world X (60.25 to 90). A Client `PivotTo` to z 466.5 put the character past the
+  left wall, outside the home: its finds' own buttons hid there, as they should.
+- **A lit moon lamp in a home lit by its bulb** shows its moon face but throws little on the
+  table: turn the room's switch off to judge a lamp's glow.

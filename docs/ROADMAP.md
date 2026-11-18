@@ -2926,15 +2926,18 @@ Done when players watch the results to the end and change their perks between cl
         - [x] **S5-03i2a1 Built** (D-350): `Save.unshelf`, `Spots.takeable`/`lift` (spec first,
           `tests/hometake.spec`), Takes' button on cubby and set-out finds, `Slots:room`, the
           flight (HomeTakeView). Passes checks, untested in Studio.
-        - [ ] **S5-03i2a2 Seen in Studio Play at Galaxy A16 size**: Take a cubby find, one on a
-          top and one on the floor (the E key by each); rejoin: none doubled or lost (rows and
-          the box's count). Captures `docs/art/S5-03i2a-*.jpg`.
+        - [x] **S5-03i2a2 Seen in Studio Play at Galaxy A16 size** (done Nov 18, D-351): a real
+          Take press lifted the boombox off the job box into your hand; the floor teddy through
+          the hook. Fixed: Take never showed on a find that also has its own button. Not seen:
+          a cubby take by a real press, the flight frame by frame, a rejoin's counts (`OWNER.md`).
       - [ ] **S5-03i2b Lift a find out of the shelf in Arrange**: a tap on a cubby's find lifts
         that find, not the shelf (the shelf's own boards still lift the shelf); set it anywhere
         or Put away; the server moves it from the shelf spot to a row in one step.
-    - [ ] **S5-03i3 Every find set out keeps its button**: walk up and its own verb shows, the
-      climb's press from its `Finds/Use` row (Switch, Play, Wind, Squeeze...), for every find at
-      once; lights under D-271's caps; friends may press, not move or take.
+    - [x] **S5-03i3 Every find set out keeps its button** (done Nov 18, D-351; seen in Studio
+      Play at Galaxy A16 size: the lamp on the folding table switched on): its `Finds/Use` press
+      beside Take for every find at once (`Home.Press`, HomeUses, HomeUseView, FindUses'
+      `setOut`); lights under D-271's caps; anyone in the home may press. Queued: a lamp left on
+      kept through a rejoin; the shelf's cubby finds' own buttons.
     - [ ] **S5-03i4 Sit on the furniture**: the crates, the beanbag, the cushion, the camp bed.
   Later, each its own ticket (finds doing things at home moved into S5-03i3, D-345): living
   finds (17); the home score, visits to friends on other servers, photos (27 to 29; 29 is
