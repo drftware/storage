@@ -38,6 +38,7 @@
 local Chip = require("../Finds/Chip")
 local Furniture = require("./Furniture")
 local Gold = require("./Gold")
+local Seal = require("../Finds/Seal")
 local Grades = require("../Grades")
 
 local BoxPanel = {}
@@ -63,6 +64,8 @@ BoxPanel.TakeLimit = { perSecond = 4, burst = 5 }
 BoxPanel.SellSave = 6
 -- The most one find sells for: the dearest Secret's worth (Grades.Worth).
 BoxPanel.PriceMost = 12000
+-- A sealed find's card names it so (D-427): "Sealed Teddy bear", as a Gold's says "Gold".
+BoxPanel.Sealed = "Sealed"
 
 -- Where a find taken out goes: into your hands, onto a free spot of your shelf, sold for cash, or,
 -- four of it, into one Gold.
@@ -103,11 +106,12 @@ end
 -- What one find sells for (S5-03c3a): its catalog worth, as the Packrat weighs it and the item
 -- catalog prices it, whole; with none, its grade's least (Grades.Worth); never under 1 or over
 -- PriceMost. Its Gold (`gold`) sells for Gold.Times that; a cracked one (`cracked`, D-296) for half
--- (Chip.worth).
+-- (Chip.worth); one still sealed in its packaging (`sealed`, D-427) for Seal.Times (Seal.worth).
 function BoxPanel.price(
 	row: { grade: Grades.Grade?, worth: number? },
 	gold: boolean?,
-	cracked: boolean?
+	cracked: boolean?,
+	sealed: boolean?
 ): number
 	local worth = row.worth
 	if type(worth) ~= "number" or worth ~= worth then
@@ -116,7 +120,7 @@ function BoxPanel.price(
 	end
 	local price = math.clamp(math.floor(worth :: number), 1, BoxPanel.PriceMost)
 	price = if gold then price * Gold.Times else price
-	return Chip.worth(price, cracked == true)
+	return Seal.worth(Chip.worth(price, cracked == true), sealed == true)
 end
 
 -- What a sale changes: what you own, which of it is cracked, and your cash (the save's Data is
@@ -222,6 +226,7 @@ function BoxPanel.gold(
 	local inBox, owned = boxed[name], data.finds[name]
 	if
 		Gold.base(name) ~= nil
+		or Seal.base(name) ~= nil -- a sealed one is never melted down (D-427)
 		or type(inBox) ~= "number"
 		or inBox < Gold.Need
 		or type(owned) ~= "number"
@@ -250,13 +255,14 @@ function BoxPanel.gold(
 end
 
 -- A kind of find you own, as its card shows it. A Gold's card (`gold`) is its find's, gilded:
--- `base` is the find it's made of.
+-- `base` is the find it's made of. A sealed one's (`sealed`, D-427) is its find's in its pack.
 export type Card = {
 	key: string,
 	name: string,
 	grade: Grades.Grade,
 	count: number,
 	gold: boolean?,
+	sealed: boolean?,
 	base: string?,
 	piece: string?, -- a piece of the counter's furniture: its id (S5-03g4c2); its grade means nothing
 }
@@ -305,20 +311,26 @@ local function plain(text: string): string
 	return (string.gsub(string.lower(text), "[^%w]", ""))
 end
 
--- The card for `count` of `key` (a find's, or a Gold's) when the catalog knows its find.
+-- The card for `count` of `key` (a find's, a Gold's or a sealed one's) when the catalog knows its
+-- find.
 local function cardOf(key: string, count: number, catalog: { [string]: Row }): Card?
 	local base = Gold.base(key)
-	local row = catalog[base or key]
+	local sealed = Seal.base(key)
+	local row = catalog[base or sealed or key]
 	if not (row and row.find and count >= 1) or (base and not Gold.can(row)) then
 		return nil
 	end
 	return {
 		key = key,
-		name = if base then `{Gold.Word} {row.name}` else row.name,
+		name = if base
+			then `{Gold.Word} {row.name}`
+			elseif sealed then `{BoxPanel.Sealed} {row.name}`
+			else row.name,
 		grade = row.grade or "Common",
 		count = count,
 		gold = base ~= nil,
-		base = base or key,
+		sealed = if sealed then true else nil,
+		base = base or sealed or key,
 	}
 end
 
@@ -326,11 +338,14 @@ end
 local function nameOf(card: Card): string
 	if card.gold then
 		return string.sub(card.name, #Gold.Word + 2)
+	elseif card.sealed then
+		return string.sub(card.name, #BoxPanel.Sealed + 2)
 	end
 	return card.name
 end
 
--- Rarest first, then by its find's name, a Gold just before its find (made beside the four).
+-- Rarest first, then by its find's name, a Gold just before its find (made beside the four), then
+-- a sealed one.
 local function before(a: Card, b: Card): boolean
 	local ra, rb = RANK[a.grade] or 0, RANK[b.grade] or 0
 	if ra ~= rb then
@@ -342,6 +357,9 @@ local function before(a: Card, b: Card): boolean
 	end
 	if (a.gold == true) ~= (b.gold == true) then
 		return a.gold == true
+	end
+	if (a.sealed == true) ~= (b.sealed == true) then
+		return a.sealed == true -- the sealed one just before its loose ones (D-427)
 	end
 	return a.key < b.key
 end
@@ -386,7 +404,7 @@ end
 
 -- Whether the panel offers to make `card` Gold: four or more of a find that can be, not a Gold.
 function BoxPanel.offers(card: Card, row: Row?): boolean
-	return card.gold ~= true and card.count >= Gold.Need and Gold.can(row)
+	return card.gold ~= true and card.sealed ~= true and card.count >= Gold.Need and Gold.can(row)
 end
 
 -- Four of `name` made one Gold (S5-03c3b): its card counts four fewer, and goes at none; the

@@ -32,7 +32,9 @@ local ServerStorage = game:GetService("ServerStorage")
 local Brix = require(ReplicatedStorage.Brix)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local HomeSpecs = require(ReplicatedStorage.Shared.Home.Specs)
+local Pack = require(ReplicatedStorage.Shared.Finds.Pack)
 local Save = require(ReplicatedStorage.Shared.Save)
+local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
 local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local GatePay = require(script.Parent.GatePay)
@@ -78,12 +80,19 @@ end
 -- its lights off (a find on a shelf isn't switched on, and a phone's lights are few). Not parented.
 local function stand(key: string, at: CFrame): Model?
 	local base = Gold.base(key) -- a Gold ("Teddy:Gold") stands as its find, gilded
-	local model = Tools.clone(base or key, CFrame.identity)
+	local sealed = Seal.base(key) -- a sealed one ("Teddy:Sealed") stands in its pack (D-427)
+	local find = base or sealed or key
+	local model = Tools.clone(find, CFrame.identity)
 	if not model then
 		return nil
 	end
 	if base then
 		Gold.gild(model) -- solid gold, catching the bulb's light
+	end
+	local body = if sealed then Tools.body(model) else nil
+	if sealed and body then
+		-- in its window box, fitted to the cubby with it: mint in box, the shelf's best piece
+		Pack.wrap(model, body, Tools.Catalog[find].size, Tools.bounds(find))
 	end
 	local pivot = model:GetPivot()
 	local low = Vector3.one * math.huge

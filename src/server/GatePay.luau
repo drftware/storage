@@ -37,6 +37,10 @@
 	its owner's box brings home its crack (Slots' `taken`). A leaving owner's strike rides in their
 	save's last write (Saving's `leaving`). A server stopping settles nothing: each is settled on
 	the server's next step, and a stopping server steps no more (D-305).
+
+	A find still sealed (S5-02b2c, D-427) is kept sealed: Slots' `keep` names it "Teddy:Sealed"
+	(Finds/Seal), so it lands on the shelf and in the box in its pack, worth Seal.Times. One out of
+	a job box whose pack tore on the climb settles plain (`Taken`'s `torn`).
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -47,6 +51,7 @@ local Home = require(ReplicatedStorage.Shared.Home)
 local NextFloor = require(ReplicatedStorage.Shared.NextFloor)
 local Pay = require(ReplicatedStorage.Shared.Pay)
 local Save = require(ReplicatedStorage.Shared.Save)
+local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
 local Taken = require(ReplicatedStorage.Shared.Home.Taken)
 local BigFinds = require(script.Parent.BigFinds)
 local Climbs = require(script.Parent.Climbs)
@@ -126,8 +131,20 @@ function GatePay.new(): GatePaySystem
 		end
 	end
 
-	local function ending(name: string, how: Taken.How, cracked: boolean): Taken.Ending
-		return { name = name, how = how, cracked = cracked, now = os.time(), spots = SPOTS }
+	local function ending(
+		name: string,
+		how: Taken.How,
+		cracked: boolean,
+		torn: boolean
+	): Taken.Ending
+		return {
+			name = name,
+			how = how,
+			cracked = cracked,
+			torn = torn,
+			now = os.time(),
+			spots = SPOTS,
+		}
 	end
 
 	-- `rider` carried friends' finds taken up aboard as a gate shut: theirs now, struck off each
@@ -142,12 +159,14 @@ function GatePay.new(): GatePaySystem
 		for _, m in moved do
 			local owner = s:leaving(m.home)
 			if theirs then
-				Taken.settle(ending(m.name, Taken.Hows.Aboard, m.cracked), owner, theirs)
+				Taken.settle(ending(m.name, Taken.Hows.Aboard, m.cracked, m.torn), owner, theirs)
 				touched[rider] = true
 			else
 				-- their save hasn't loaded: held with the rest they kept, struck off its owner's now
-				store(rider, { m.name }, if m.cracked then { m.name } else {})
-				Taken.settle(ending(m.name, Taken.Hows.Lost, m.cracked), owner, nil)
+				-- torn on the climb, it's theirs plain (D-427)
+				local kept = if m.torn then Seal.base(m.name) or m.name else m.name
+				store(rider, { kept }, if m.cracked then { kept } else {})
+				Taken.settle(ending(m.name, Taken.Hows.Lost, m.cracked, m.torn), owner, nil)
 			end
 			local ownerPlayer = Players:GetPlayerByUserId(m.home)
 			if ownerPlayer then
@@ -173,9 +192,9 @@ function GatePay.new(): GatePaySystem
 			if not owner then
 				return
 			end
-			local fate = Taken.settle(ending(t.name, t.how, t.cracked), owner, nil)
+			local fate = Taken.settle(ending(t.name, t.how, t.cracked, t.torn), owner, nil)
 			local player = Players:GetPlayerByUserId(t.home)
-			if player and (fate == "Lost" or (fate == "Back" and t.cracked)) then
+			if player and (fate == "Lost" or (fate == "Back" and (t.cracked or t.torn))) then
 				writeAll({ [player] = true })
 			end
 			if RunService:IsStudio() then

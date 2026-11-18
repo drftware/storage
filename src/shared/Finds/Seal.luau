@@ -158,4 +158,30 @@ function Seal.tears(sealed: boolean, speed: number, fall: number): boolean
 	return sealed and Chip.hard(speed, fall)
 end
 
+--[[
+	Kept sealed (S5-02b2c, D-427). A sealed find is kept in the save's `finds` as a name of its
+	own, the find's name with `Mark` after it ("Teddy:Sealed"), the way a Gold is ("Teddy:Gold",
+	Home/Gold): the shelf, the job box, what's set out and a trip each hold one particular find, so
+	each knows which of your teddies is the sealed one, and the save's shape is unchanged. Its
+	catalog row is its find's (`base`); what's sealed about it is drawn (`Finds/Pack`) and priced
+	(`worth`, `BoxPanel.price`). The book's sealed page (`Save.keep`) is stamped by the find's name.
+]]
+-- After a find's name, its sealed one's: never in a find's own name (letters only), never a
+-- Gold's (a Gold is never sealed).
+Seal.Mark = ":Sealed"
+
+-- The sealed one of find `name`: its name in the save.
+function Seal.key(name: string): string
+	return name .. Seal.Mark
+end
+
+-- The find a sealed one's `key` is of, or nil when `key` isn't a sealed one's.
+function Seal.base(key: string): string?
+	local n = #Seal.Mark
+	if #key > n and string.sub(key, -n) == Seal.Mark then
+		return string.sub(key, 1, -n - 1)
+	end
+	return nil
+end
+
 return table.freeze(Seal)

@@ -152,9 +152,10 @@ export type Taken = {
 	name: string, -- its name in the save (a Gold's "Teddy:Gold")
 	how: "Lost" | "Back",
 	cracked: boolean, -- its glass cracked while it was out (D-296)
+	torn: boolean, -- out of its box sealed, its pack torn while it was out (D-427)
 }
 -- A friend's find taken up, carried aboard by someone else as a gate shut (`keep`): theirs now.
-export type Moved = { home: number, name: string, cracked: boolean }
+export type Moved = { home: number, name: string, cracked: boolean, torn: boolean }
 -- A dropped tool hitting the floor: its clank, heard `reach` studs off (Carry.DropHeard).
 export type Landed = { key: string, at: Vector3, reach: number }
 -- A find's piece out on a floor away from the rest (the RC car set down, F-G1b3c3), as the
@@ -363,11 +364,18 @@ type Tool = {
 	-- still in its packaging (S5-02b, D-424): its model wrapped in its pack for everyone
 	-- (`Finds/Pack`), its slot marked (`Seal.slotAttribute`); it takes no press and never cracks
 	sealed: boolean?,
+	-- out of a job box sealed, its pack torn on the climb (D-427): still its owner's sealed one by
+	-- name till it's settled (`named`), then a plain one (`Taken`'s `torn`)
+	torn: boolean?,
 }
 
--- The name `t` goes by in a save: "Teddy", or its Gold's "Teddy:Gold".
+-- The name `t` goes by in a save: "Teddy", its Gold's "Teddy:Gold", or its sealed one's
+-- "Teddy:Sealed" (D-427; one out of a job box torn on the climb too, till it's settled).
 local function named(t: Tool): string
-	return if t.gold then Gold.key(t.key) else t.key
+	if t.gold then
+		return Gold.key(t.key)
+	end
+	return if t.sealed or t.torn then Seal.key(t.key) else t.key
 end
 
 type Hand = {
@@ -822,6 +830,7 @@ function Slots.new(): Slots
 		local box = Tools.bounds(t.key)
 		local drop = Pack.lift(Catalog[t.key].size, box)
 		t.sealed = nil
+		t.torn = if t.home then true else nil -- its owner's save still has it sealed (D-427)
 		Pack.tear(t.model)
 		Tools.play(Pack.Rip, t.body, Carry.DropHeard)
 		local middle = (pose * CFrame.new(box.Centre)).Position
@@ -960,7 +969,13 @@ function Slots.new(): Slots
 	local function lost(t: Tool)
 		local home = t.home
 		if home and t.up then
-			taken:fire({ home = home, name = named(t), how = "Lost", cracked = t.chipped == true })
+			taken:fire({
+				home = home,
+				name = named(t),
+				how = "Lost",
+				cracked = t.chipped == true,
+				torn = t.torn == true,
+			})
 		end
 	end
 
@@ -1017,7 +1032,13 @@ function Slots.new(): Slots
 				glint(t.body.Position)
 			end
 			-- back in the box: a crack it took while out comes home with it (D-296)
-			taken:fire({ home = home, name = named(t), how = "Back", cracked = t.chipped == true })
+			taken:fire({
+				home = home,
+				name = named(t),
+				how = "Back",
+				cracked = t.chipped == true,
+				torn = t.torn == true,
+			})
 			t.owner = nil
 			stow(t)
 			t.model:Destroy()
@@ -1932,7 +1953,12 @@ function Slots.new(): Slots
 					-- a friend's, taken up: theirs now (S5-03d2), told apart for both saves
 					table.insert(
 						moved,
-						{ home = home, name = named(t), cracked = t.chipped == true }
+						{
+							home = home,
+							name = named(t),
+							cracked = t.chipped == true,
+							torn = t.torn == true,
+						}
 					)
 				else
 					table.insert(keys, named(t))
@@ -2300,11 +2326,17 @@ function Slots.new(): Slots
 
 	function system.unbox(_: any, player: Player, key: string): number?
 		local base = Gold.base(key) -- a Gold's find: carried as the find, gilded
-		local row = Catalog[base or key]
+		local sealed = Seal.base(key) -- a sealed one's (D-427): carried as the find, in its pack
+		local find = base or sealed or key
+		local row = Catalog[find]
 		if not (row and row.find) then
 			return nil
 		end
-		return (make(player, base or key, true, player.UserId, base ~= nil))
+		local n, t = make(player, find, true, player.UserId, base ~= nil, nil, sealed ~= nil)
+		if t and sealed and not t.sealed then
+			t.torn = true -- the place lacks its pack: dealt plain, settled as the sealed one
+		end
+		return n
 	end
 
 	function system.room(_: any, player: Player): boolean
@@ -2324,6 +2356,9 @@ function Slots.new(): Slots
 	end
 
 	function system.boxToHead(_: any, player: Player, name: string): Model?
+		if Seal.base(name) then
+			return nil -- still in its pack: carried in the hand, never worn (D-427)
+		end
 		local base = Gold.base(name)
 		local key = base or name
 		local row = Catalog[key]
@@ -2365,7 +2400,8 @@ function Slots.new(): Slots
 
 	function system.carryUp(_: any, holder: Player, u: Up, quiet: boolean): boolean
 		local base = Gold.base(u.name)
-		local key = base or u.name
+		local sealed = Seal.base(u.name) -- still in its pack across the trip (D-427)
+		local key = base or sealed or u.name
 		local row = Catalog[key]
 		if not (row and row.find) then
 			return false
@@ -2376,8 +2412,11 @@ function Slots.new(): Slots
 			t = if id then tools[id] else nil
 		end
 		if not t then
-			local _, made = make(holder, key, quiet, u.owner, base ~= nil)
+			local _, made = make(holder, key, quiet, u.owner, base ~= nil, nil, sealed ~= nil)
 			t = made
+			if made and sealed and not made.sealed then
+				made.torn = true -- the place lacks its pack: settled as the sealed one
+			end
 		end
 		if not t then
 			return false
@@ -2418,7 +2457,13 @@ function Slots.new(): Slots
 		grounds[t.id] = nil
 		unoffer(t)
 		-- back in the box: a crack it took while out comes home with it (D-296)
-		taken:fire({ home = player.UserId, name = name, how = "Back", cracked = t.chipped == true })
+		taken:fire({
+			home = player.UserId,
+			name = name,
+			how = "Back",
+			cracked = t.chipped == true,
+			torn = t.torn == true,
+		})
 		t.owner = nil
 		stow(t)
 		t.model:Destroy()

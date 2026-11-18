@@ -20,9 +20,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   OWNER, CODEMAP and DECISIONS are the climb run's work in progress; the home leaves them alone.
 - **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403
   to D-413), S4-05 the big find (D-414 to D-419), the hard hat's beam and run-down (D-420, D-421),
-  S5-02a better finds up the floors (D-422), b1 the packs' art (D-423), b2a sealed dealt 1 in 20
-  (D-424), b2b1 wrapped in box and hands (D-425), b2b2 the tear on a hard drop (D-426). Next:
-  S5-02b2c (sealed through `GatePay`, the save's `sealed`, the home's shelf and panel at 3x).
+  S5-02a better finds up the floors (D-422), b1-b2b2 sealed finds dealt, wrapped, torn (D-423 to
+  D-426), b2c1 kept sealed ("Teddy:Sealed"), on the shelf, sold at 3x (D-427). Next: S5-02c (see
+  b2c1 in Studio Play, OWNER.md's steps), then S5-02b2c2 (set out in its pack, a trip's torn one).
 
 ## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
 The home's look settling without a seam. One line a session if they won't fit together; split

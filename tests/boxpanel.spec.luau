@@ -353,6 +353,33 @@ do -- the furniture in the box (S5-03g4c2): a card a piece, in the counter's ord
 	ok(read ~= nil and read.CampBed == 1, "the box's pieces read as a list")
 end
 
+-- A sealed find's card (S5-02b2c, D-427): its own, named so, just before its loose ones, priced
+-- three times; never made Gold.
+do
+	local cards = BoxPanel.cards({ Teddy = 5, ["Teddy:Sealed"] = 4, Boombox = 1 }, catalog)
+	ok(#cards == 3, "a sealed teddy has a card of its own")
+	ok(cards[1].key == "Boombox", "the boombox is rarer")
+	local sealed, loose = cards[2], cards[3]
+	ok(
+		sealed.key == "Teddy:Sealed" and sealed.sealed == true,
+		"the sealed one before its loose ones"
+	)
+	ok(sealed.name == "Sealed Teddy bear" and sealed.base == "Teddy", "named so, of the teddy")
+	ok(loose.key == "Teddy" and loose.sealed == nil, "then the loose teddies")
+	ok(not BoxPanel.offers(sealed, catalog.Teddy), "four sealed teddies are never made Gold")
+	ok(BoxPanel.offers(loose, catalog.Teddy), "five loose ones can be")
+	local row = { grade = "Common" :: any, worth = 40 }
+	ok(BoxPanel.price(row, false, false, true) == 120, "sealed, three times")
+	ok(BoxPanel.price(row) == 40, "loose, its worth")
+	local data = Save.fresh()
+	data.finds["Teddy:Sealed"] = 4
+	ok(
+		BoxPanel.gold(data, Save.boxed(data, {}), "Teddy:Sealed", data.stamps.finds, 1) == nil,
+		"the server melts no sealed one down either"
+	)
+	ok(data.finds["Teddy:Sealed"] == 4, "and they're all still there")
+end
+
 print(`boxpanel: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

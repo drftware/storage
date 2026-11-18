@@ -48,6 +48,9 @@
 	("Teddy:Gold") sells at Gold.Times its find's price, and comes out to the hand (carried as its
 	find, gilded: Slots' `unbox`) and to the shelf (stood gilded: Shelves) as any find does
 	(S5-03c3b3); a Gold of a Gold is refused.
+
+	A find kept still sealed (S5-02b2c, D-427: "Teddy:Sealed", Finds/Seal) sells at Seal.Times its
+	find's price, comes out to the hand still in its pack (Slots' `unbox`) and is never made Gold.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -58,6 +61,7 @@ local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Save = require(ReplicatedStorage.Shared.Save)
+local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
 local FrontOffice = require(script.Parent.FrontOffice)
 local Prompts = require(script.Parent.Prompts)
 local Saving = require(script.Parent.Saving)
@@ -223,13 +227,14 @@ function JobBoxes.new(): Brix.System
 		local data = if saving then saving:data(player) else nil
 		local s, sh = slots, shelves
 		local plain = Gold.base(key) -- a Gold's find, when it's a Gold that's asked for
-		local row = (Tools.Catalog :: any)[plain or key] -- any: the catalog is keyed by text
+		local sealed = Seal.base(key) -- a sealed one's find (D-427): sold at Seal.Times
+		local row = (Tools.Catalog :: any)[plain or sealed or key] -- any: the catalog is keyed by text
 		local boxed = if data and s then Save.boxed(data, s:fromBox(player)) else {}
 		if
 			not (data and s and sh and openOf(player) and row and row.find)
 			or Prompts.wrapped(player)
 			or not BoxPanel.canTake(boxed, key)
-			or (plain and to == BoxPanel.Ways.Gold) -- never a Gold of a Gold
+			or ((plain or sealed) and to == BoxPanel.Ways.Gold) -- never a Gold of a Gold or a sealed one
 			or (to == BoxPanel.Ways.Gold and not Gold.can(row))
 		then
 			answer(false)
@@ -251,7 +256,12 @@ function JobBoxes.new(): Brix.System
 		if to == BoxPanel.Ways.Sell then
 			local before = data.cash
 			-- whole: a cracked one goes first, at half (BoxPanel.sell, S5-03c3a2)
-			local cash = BoxPanel.sell(data, boxed, key, BoxPanel.price(row, plain ~= nil))
+			local cash = BoxPanel.sell(
+				data,
+				boxed,
+				key,
+				BoxPanel.price(row, plain ~= nil, false, sealed ~= nil)
+			)
 			if cash then
 				keepSale(player)
 				if RunService:IsStudio() then

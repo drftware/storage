@@ -27,6 +27,7 @@
 	rest stays in the box. Nothing is written on the way: the save still holds every one of them.
 ]]
 local Save = require("../Save")
+local Seal = require("../Finds/Seal")
 
 local Taken = {}
 
@@ -48,6 +49,8 @@ export type Ending = {
 	name: string, -- its key in the save ("Teddy", a Gold's "Teddy:Gold")
 	how: How,
 	cracked: boolean?, -- its glass cracked on the climb (D-296)
+	-- out of its box sealed ("Teddy:Sealed"), its pack torn on the climb (D-427): it ends plain
+	torn: boolean?,
 	now: number, -- os.time: a new kind's page in the carrier's book
 	spots: number, -- the carrier's shelf spots: a find they keep walks onto their shelf
 }
@@ -86,9 +89,11 @@ function Taken.settle(e: Ending, owner: Save.Data?, carrier: Save.Data?): Fate
 		if not carrier then
 			return if owner then "Out" else "Gone" -- yours: still out, nothing written
 		end
-		Save.keep(carrier, { name }, e.now, e.spots)
+		-- torn on the climb, it's theirs as the plain find (D-427)
+		local kept = if e.torn then Seal.base(name) or name else name
+		Save.keep(carrier, { kept }, e.now, e.spots)
 		if e.cracked then
-			Save.chip(carrier, { name })
+			Save.chip(carrier, { kept })
 		end
 		if owner then
 			Save.lose(owner, name)
@@ -99,6 +104,9 @@ function Taken.settle(e: Ending, owner: Save.Data?, carrier: Save.Data?): Fate
 	elseif e.how == Taken.Hows.Back then
 		if not owner then
 			return "Gone"
+		end
+		if e.torn then
+			Save.unseal(owner, name) -- back in the box plain (D-427)
 		end
 		if e.cracked then
 			Save.chip(owner, { name })

@@ -7,6 +7,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
+local Pack = require(ReplicatedStorage.Shared.Finds.Pack)
+local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 
 local Catalog = Tools.Catalog
@@ -14,16 +16,19 @@ local RAD = math.pi / 180
 
 local ToolPicture = {}
 
--- Draws `key`'s tool in `frame` (empty for ""), a Gold's ("Teddy:Gold") as its find gilded.
--- Returns the model drawn, if any.
+-- Draws `key`'s tool in `frame` (empty for ""), a Gold's ("Teddy:Gold") as its find gilded, a
+-- sealed one's ("Teddy:Sealed", D-427) as its find in its pack, framed whole. Returns the model
+-- drawn, if any.
 function ToolPicture.draw(frame: ViewportFrame, key: string): Model?
 	frame:ClearAllChildren()
 	local base = Gold.base(key)
-	local row = Catalog[base or key]
+	local sealed = Seal.base(key)
+	local find = base or sealed or key
+	local row = Catalog[find]
 	if not row then
 		return nil
 	end
-	local model = Tools.clone(base or key, CFrame.identity)
+	local model = Tools.clone(find, CFrame.identity)
 	if not model then
 		return nil
 	end
@@ -31,6 +36,9 @@ function ToolPicture.draw(frame: ViewportFrame, key: string): Model?
 		Gold.gild(model)
 	end
 	local body = Tools.body(model)
+	if sealed and body then
+		Pack.wrap(model, body, row.size, Tools.bounds(find))
+	end
 	local length = if body then body.Size.Magnitude else 2
 	local centre = if body then body.Position else Vector3.zero
 	local i = row.icon

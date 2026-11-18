@@ -2577,7 +2577,23 @@ Done when players watch the results to the end and change their perks between cl
       - [ ] **S5-02b2c Sealed through the gate and into the home.** `GatePay` and the save
         (`Save.keep`'s `sealed`, its stamp), the kept glint, a trip and a friend's box
         (`Taken`), the home's shelf and placing (standing in its pack), the job box's panel
-        selling at 3x (`Seal.worth`), your slot's picture in its pack.
+        selling at 3x (`Seal.worth`), your slot's picture in its pack. Split in two (Nov 18,
+        D-427):
+        - [x] **S5-02b2c1 Kept sealed, on the shelf and sold at 3x.** Done Nov 18 (D-427): passes
+          checks, untested in Studio (S5-02c). A sealed find is kept under a name of its own
+          ("Teddy:Sealed", `Seal.key`), as a Gold is, so the shelf and the box know which one
+          is sealed; the book's sealed page stamped; it stands in its pack on the shelf, rises
+          in its pack as the gate keeps it, shows in its pack in your slot, has its own card in
+          the job box's panel ("Sealed Teddy bear", before its loose ones) selling at 3x, comes
+          out to your hand still sealed, is never made Gold or worn; one out of your box torn on
+          the climb comes back (or moves to a friend) plain (`Taken`'s `torn`, `Save.unseal`).
+        - [ ] **S5-02b2c2 Set out in its pack, and a trip's torn one.** Arrange stands a sealed
+          one in its pack (the footprint by its packed size, `Pack.outer`; raised by `Pack.lift`;
+          the ghost wrapped in ArrangeView); today Arrange's tray leaves sealed cards out and the
+          server refuses one (`Spots.Refusals.Unknown`). A trip's `Up` carries a torn one plain
+          (one torn in the lobby before a car leaves is sealed again across the trip). The
+          Packrat's snatched flyer (ToolView) in its pack. The shelf's fit may turn a pack
+          sideways in a cubby: judge it in Studio and keep the window out.
   - [ ] **S5-02c Seen in Studio.** A sealed find dealt (a dev pick), lifted out of its box,
     carried through the gate and shown on the home shelf and the selling panel at 3x; the
     padlock's better grade on floors 2, 10 and 12. Captures to `docs/art/`.

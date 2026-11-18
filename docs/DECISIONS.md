@@ -10076,3 +10076,34 @@ dev pick, seen in Studio). Context ran short for all of it in one session.
   their box into your hand (both read clearly in their packs at A16 size), set down with the
   thud and still sealed, dropped from high and torn into a plain find. The press's crinkle
   wasn't driven from a script (the Wind button can't be clicked from the MCP): `OWNER.md`.
+
+## D-427 · 2026-11-18 · A sealed find is kept sealed, under a name of its own (S5-02b2c1)
+
+The moment: back home, the mint-in-box find stands on your shelf in its window box, and in the
+job box's panel its card reads "Sealed Teddy bear" at three times the loose one's price. S5-02b2c
+split in two: c1 (kept, shelved, sold, carried out of the box) and c2 (set out in its pack with
+Arrange, a trip's torn one, the Packrat's flyer).
+
+- **Kept as a name, not a count.** A sealed find goes into the save's `finds` as "Teddy:Sealed"
+  (`Seal.key`/`Seal.base`), the way a Gold is "Teddy:Gold" (D-298). The shelf's spots, the job
+  box, what's set out and a trip's `Up` each hold one particular find, so a name tells each
+  which teddy is the sealed one; a count beside `finds` (as `chipped` is) can't say which spot's
+  teddy is sealed. Save v1's own `sealed` counts stay empty (the header says so); no new save
+  version. The book: the find's page is stamped by the find's name, and the sealed page
+  (`stamps.sealed`) the first time one of it is kept sealed; a first sealed one of a kind you
+  own lands on the shelf as a new kind (it chimes).
+- **Through the gate:** Slots' `named` gives a sealed find's name, so `keep`, `GatePay` and the
+  keep's rise (KeepView, ToolPicture) carry it in its pack with no new remote.
+- **At home:** the shelf stands it wrapped (`Pack.wrap` before the cubby's fit, so the pack is
+  fitted with it); the panel gives it its own card, just before its loose ones, sells it at
+  `Seal.Times` (`BoxPanel.price`'s `sealed`), never offers or makes a Gold of it; Take puts it in
+  your hand still sealed (Slots' `unbox`, `carryUp`); it's never worn (`boxToHead` refuses it)
+  and never goes on the clothes rail (`Rail.row` doesn't know the name).
+- **Torn while out of your box:** the find keeps its sealed name (`Tool.torn`) until it's
+  settled, so the right one is struck; back in the box it's plain (`Save.unseal`), carried
+  aboard by a friend it's theirs plain (`Taken`'s `torn`).
+- **Not yet:** setting one out in your home (Arrange's tray leaves sealed cards out and the
+  server refuses one, till c2 stands it in its pack by its packed size).
+
+Not chosen: `data.sealed` as a count under `finds` (which one is sealed is lost the moment two
+teddies are kept); a new save version moving a count to names (nothing was ever written to it).

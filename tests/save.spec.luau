@@ -543,6 +543,32 @@ do
 	ok(back ~= nil and back.chipped.OilLamp == 2, "the cracks are saved")
 end
 
+-- Finds kept still sealed (S5-02b2c, D-427): a name of their own ("Teddy:Sealed"), stamped in the
+-- book by the find's name on its finds page and its sealed page; a first sealed one of a kind you
+-- own is a new page, so it lands as a kind; torn out of its pack, it's the plain find.
+do
+	local data = Save.fresh()
+	local stamped = Save.keep(data, { "Teddy", "Teddy:Sealed" }, 100, 4)
+	ok(data.finds.Teddy == 1 and data.finds["Teddy:Sealed"] == 1, "the sealed one counted apart")
+	ok(stamped[1] == "Teddy" and #stamped == 1, "the teddy's page stamped once")
+	ok(data.stamps.finds["Teddy:Sealed"] == nil, "no finds page for the sealed name")
+	ok(data.stamps.sealed.Teddy == 100, "the book's sealed page stamped by the find's name")
+	ok(data.shelf[2].find == "Teddy:Sealed", "the sealed one stands on the shelf")
+	ok(data.shelf[2].fresh == Save.Fresh.Kind, "a first sealed one is a new page: a kind")
+	Save.keep(data, { "Teddy:Sealed" }, 200, 4)
+	ok(data.shelf[3].fresh == Save.Fresh.New and data.stamps.sealed.Teddy == 100, "then only new")
+	local first = Save.fresh()
+	local stampedFirst = Save.keep(first, { "Boombox:Sealed" }, 300, 0)
+	ok(stampedFirst[1] == "Boombox" and first.stamps.finds.Boombox == 300, "its find's page too")
+	ok(Save.unseal(data, "Teddy:Sealed"), "a sealed teddy torn out of its pack")
+	ok(data.finds["Teddy:Sealed"] == 1 and data.finds.Teddy == 2, "is a plain teddy from then")
+	ok(Save.unseal(data, "Teddy:Sealed") and data.finds["Teddy:Sealed"] == nil, "none sealed left")
+	ok(not Save.unseal(data, "Teddy:Sealed"), "nothing sealed left to tear")
+	ok(not Save.unseal(data, "Teddy"), "a plain one has no pack")
+	local stored = format:encode(data)
+	ok(stored ~= nil, "a save with sealed finds can be stored")
+end
+
 -- Finds set out in your home (S5-03e2, D-308): still yours, never in the box as well, never two;
 -- a broken row is never stored.
 do

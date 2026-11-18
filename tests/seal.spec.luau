@@ -278,6 +278,23 @@ do
 	ok(#tipped <= 6, `only flat finds are tipped ({#tipped})`)
 end
 
+-- Kept sealed (S5-02b2c, D-427): a name of its own in the save, back to its find, never a Gold's
+-- or a find's own name; three times the worth.
+do
+	ok(Seal.key("Teddy") == "Teddy:Sealed", "a sealed teddy is kept as Teddy:Sealed")
+	ok(Seal.base("Teddy:Sealed") == "Teddy", "and back to the teddy")
+	ok(Seal.base("Teddy") == nil, "a plain find's name isn't a sealed one's")
+	ok(Seal.base("Teddy:Gold") == nil, "nor a Gold's")
+	ok(Seal.base(":Sealed") == nil, "the mark alone names no find")
+	for key, row in Catalog do
+		if row.find then
+			ok(Seal.base(key) == nil, `{key}: no find's own name reads as sealed`)
+			ok(Seal.base(Seal.key(key)) == key, `{key}: its sealed name goes back to it`)
+		end
+	end
+	ok(Seal.worth(40, true) == 120 and Seal.worth(40, false) == 40, "sealed, three times")
+end
+
 if failures > 0 then
 	print(`seal: {failures} of {checks} checks failed`)
 	error("seal spec failed")

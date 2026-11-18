@@ -226,6 +226,40 @@ do
 	ok(#Taken.backed({ up(101, "Lamp") }, 101, data, {}) == 0, "the one left is the shelf's")
 end
 
+-- A sealed find out of its box (S5-02b2c, D-427): settled by its sealed name; torn on the climb,
+-- it comes back or moves on plain, the sealed one struck.
+do
+	local SPOTS_ = 6
+	local mine = Save.fresh()
+	mine.finds["Teddy:Sealed"] = 2
+	local theirs = Save.fresh()
+	local e = { name = "Teddy:Sealed", how = "Back" :: Taken.How, now = 1, spots = SPOTS_ }
+	ok(Taken.settle(e, mine, nil) == "Back", "a sealed teddy back in its box whole")
+	ok(mine.finds["Teddy:Sealed"] == 2 and mine.finds.Teddy == nil, "still sealed in the save")
+	local torn =
+		{ name = "Teddy:Sealed", how = "Back" :: Taken.How, torn = true, now = 1, spots = SPOTS_ }
+	ok(Taken.settle(torn, mine, nil) == "Back", "a torn one back in its box")
+	ok(mine.finds["Teddy:Sealed"] == 1 and mine.finds.Teddy == 1, "back plain, one sealed left")
+	local moved =
+		{ name = "Teddy:Sealed", how = "Aboard" :: Taken.How, torn = true, now = 2, spots = SPOTS_ }
+	ok(Taken.settle(moved, mine, theirs) == "Moved", "a torn one carried aboard by a friend")
+	ok(mine.finds["Teddy:Sealed"] == nil and mine.finds.Teddy == 1, "struck sealed off its owner's")
+	ok(theirs.finds.Teddy == 1 and theirs.finds["Teddy:Sealed"] == nil, "theirs now, plain")
+	ok(theirs.stamps.sealed.Teddy == nil, "a torn one stamps no sealed page")
+	mine.finds["Teddy:Sealed"] = 1
+	local whole = { name = "Teddy:Sealed", how = "Aboard" :: Taken.How, now = 3, spots = SPOTS_ }
+	ok(Taken.settle(whole, mine, theirs) == "Moved", "a whole sealed one carried aboard")
+	ok(theirs.finds["Teddy:Sealed"] == 1 and theirs.stamps.sealed.Teddy == 3, "theirs, sealed")
+	local lost =
+		{ name = "Teddy:Sealed", how = "Lost" :: Taken.How, torn = true, now = 4, spots = SPOTS_ }
+	mine.finds["Teddy:Sealed"] = 1
+	ok(
+		Taken.settle(lost, mine, nil) == "Lost" and mine.finds["Teddy:Sealed"] == nil,
+		"lost: struck"
+	)
+	ok(mine.finds.Teddy == 1, "never a plain one struck for it")
+end
+
 print(`taken.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

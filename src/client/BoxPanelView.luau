@@ -71,6 +71,7 @@ local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
 local Boxes = require(ReplicatedStorage.Shared.Boxes)
 local JobBox = Home.JobBox
 local Gold = Home.Gold
+local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
 local G = Gold.Show
 local Carry = Tools.Carry
 local me = Players.LocalPlayer
@@ -375,6 +376,8 @@ function BoxPanelView.new(
 		local key = if type(value) == "string" then value else ""
 		if key ~= "" and me:GetAttribute(Gold.slotAttribute(i)) == true then
 			key = Gold.key(key) -- a Gold in your hand: drawn gilded, matched to the Gold asked for
+		elseif key ~= "" and me:GetAttribute(Seal.slotAttribute(i)) == true then
+			key = Seal.key(key) -- a sealed one (D-427): drawn in its pack, matched the same way
 		end
 		-- the server fills your slot just before it answers: an empty hand that a find asked for
 		-- is filling stays empty until the picture lands in it
@@ -459,7 +462,7 @@ function BoxPanelView.new(
 				- pending(card.key, BoxPanel.Ways.Sell)
 				- pending(card.key, BoxPanel.Ways.Gold) * Gold.Need
 			local base = (Tools.Catalog :: any)[card.base or card.key] -- any: keyed by text
-			local price = BoxPanel.price(base or {}, card.gold, cracks > 0)
+			local price = BoxPanel.price(base or {}, card.gold, cracks > 0, card.sealed)
 			sellButton.Text = `{BoxPanel.Words.sell} {Cash.text(price)}`
 		end
 		takeButton.Visible = true
@@ -1092,7 +1095,7 @@ function BoxPanelView.new(
 					well.pop.Scale = 1.3
 					TweenService:Create(well.pop, LAND, { Scale = 1 }):Play()
 					-- any: the catalog is keyed by text; a Gold picks up with its find's own sound
-					local row = (Tools.Catalog :: any)[Gold.base(key) or key]
+					local row = (Tools.Catalog :: any)[Gold.base(key) or Seal.base(key) or key]
 					if row and gui then
 						Tools.play(row.pickUp, gui, 50)
 					end

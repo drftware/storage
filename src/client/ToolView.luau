@@ -339,9 +339,15 @@ local function sealedAt(i: number): boolean
 	return player:GetAttribute(Seal.slotAttribute(i)) == true
 end
 
--- What slot `i`'s picture draws for `key`: a Gold's name when it holds one, so it's gilded.
+-- What slot `i`'s picture draws for `key`: a Gold's name when it holds one, so it's gilded; a
+-- sealed one's when it's still in its pack (D-427), so the picture shows the pack.
 local function drawnAt(i: number, key: string): string
-	return if key ~= "" and goldAt(i) then Gold.key(key) else key
+	if key == "" then
+		return key
+	elseif goldAt(i) then
+		return Gold.key(key)
+	end
+	return if sealedAt(i) then Seal.key(key) else key
 end
 
 -- A slot's wear mark (S1-08): a row of notches along its foot, as Minecraft's bar under a worn
@@ -1674,6 +1680,10 @@ function ToolView.new(
 			table.insert(
 				connections,
 				player:GetAttributeChangedSignal(Gold.slotAttribute(i)):Connect(refresh)
+			)
+			table.insert(
+				connections,
+				player:GetAttributeChangedSignal(Seal.slotAttribute(i)):Connect(refresh)
 			)
 		end
 		-- the server agreed (or overruled): its word from here

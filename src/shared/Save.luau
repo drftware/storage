@@ -5,8 +5,10 @@
 
 	- `cash`: what selling finds earned, spent in the store. A whole number from 0.
 	- `finds`: the finds kept in your unit in the lobby, by name (`Finds.Names`, "Boombox"), each
-	  with how many. `sealed`: the same for finds still in their packaging, worth three times as much.
-	  A name is listed only while you keep at least one.
+	  with how many. A name is listed only while you keep at least one. A find still in its
+	  packaging, worth three times as much, is kept under a name of its own ("Teddy:Sealed",
+	  `Finds/Seal`, D-427), as a Gold is ("Teddy:Gold"). `sealed`: version 1's own count for them,
+	  never written (the name does it, so the shelf and the box know which one is sealed).
 	- `stamps`: the collection book, its pages stamped by name with when (`os.time`) each was first
 	  stamped: `finds` for each kind of find you've had, `sealed` for each you've had still sealed,
 	  `keepers` for each kind of monster you've trapped (the code calls monsters keepers).
@@ -129,6 +131,8 @@ export type Format = {
 
 -- what you wear goes on your clothes rail, never the shelf (S5-03f2b, D-316)
 local Rail = require("./Home/Rail")
+-- a find kept still sealed has a name of its own (S5-02b2c, D-427)
+local Seal = require("./Finds/Seal")
 
 local Save = {}
 
@@ -207,12 +211,23 @@ end
 -- the names stamped for the first time, in order, each once.
 function Save.keep(data: Data, names: { string }, now: number, spots: number?): { string }
 	local fresh: { string } = {}
+	local stamp = math.max(0, math.floor(now))
 	for _, name in names do
 		data.finds[name] = (data.finds[name] or 0) + 1
-		local kind = data.stamps.finds[name] == nil
+		-- a sealed one ("Teddy:Sealed", D-427) stamps its find's page, and the sealed page too: a
+		-- first sealed one of a kind you own is still a new page in the book
+		local find = Seal.base(name)
+		local page = find or name
+		local kind = data.stamps.finds[page] == nil
 		if kind then
-			data.stamps.finds[name] = math.max(0, math.floor(now))
-			table.insert(fresh, name)
+			data.stamps.finds[page] = stamp
+			if not table.find(fresh, page) then
+				table.insert(fresh, page)
+			end
+		end
+		if find and data.stamps.sealed[find] == nil then
+			data.stamps.sealed[find] = stamp
+			kind = true
 		end
 		local level = if kind then Save.Fresh.Kind else Save.Fresh.New
 		if Rail.row(name) or not Save.shelve(data, name, level, spots or 0) then
@@ -368,6 +383,18 @@ function Save.lose(data: Data, name: string): boolean
 	else
 		data.chipped[name] = nil
 	end
+	return true
+end
+
+-- A sealed find of yours (`name`, "Teddy:Sealed") out of your box whose pack tore on the climb
+-- (D-427): one struck off the sealed name and one more of its plain find. Never touches the shelf
+-- or the book. Whether there was one to tear.
+function Save.unseal(data: Data, name: string): boolean
+	local find = Seal.base(name)
+	if not find or not Save.lose(data, name) then
+		return false
+	end
+	data.finds[find] = math.floor(data.finds[find] or 0) + 1
 	return true
 end
 

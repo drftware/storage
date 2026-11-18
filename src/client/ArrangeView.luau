@@ -1145,7 +1145,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			end
 		end
 		for _, card in BoxPanel.cards(counts, Tools.Catalog :: any) do -- any: its rows carry more than Row
-			table.insert(dealt, card)
+			-- a sealed one stays on the shelf or in the box for now: set out standing in its pack
+			-- is S5-02b2c2's (D-427), and the server refuses one till then
+			if not card.sealed then
+				table.insert(dealt, card)
+			end
 		end
 		for i, card in dealt do
 			local piece = card.piece
