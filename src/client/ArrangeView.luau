@@ -41,6 +41,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
+local Walls = require(ReplicatedStorage.Shared.Home.Walls)
 local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
 local BoxPanel = require(ReplicatedStorage.Shared.Home.BoxPanel)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
@@ -225,6 +226,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	local unitWatch: { [Instance]: RBXScriptConnection } = {}
 	local home: Model? = nil
 	local inside: { face: CFrame, centre: Vector3, size: Vector3 }? = nil
+	local homeSized: RBXScriptConnection? = nil -- your home's size, re-measuring `inside`
 	local running = false
 	local open = false
 	local room: Arrange.Room? = nil
@@ -2156,16 +2158,27 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		closeNow()
 		home = mine
 		inside = nil
-		local n = if mine then mine:GetAttribute(Arrange.SlotAttribute) else nil
-		local slot = if type(n) == "number" then Arrange.slot(n) else nil
-		if slot then
-			local face = Arranged.face(Lobby.Origin, slot.Door, slot.Out)
-			local c, s = Arranged.inside(Lobby.Origin, face, slot.Inside.Centre, slot.Inside.Size)
-			inside = {
-				face = face,
-				centre = Vector3.new(c[1], c[2], c[3]),
-				size = Vector3.new(s[1], s[2], s[3]),
-			}
+		if homeSized then
+			homeSized:Disconnect()
+			homeSized = nil
+		end
+		-- the room inside its walls at its size (S5-03h5, D-354), measured again as it grows
+		local function measure()
+			inside = nil
+			local n = if mine then mine:GetAttribute(Arrange.SlotAttribute) else nil
+			local slot = if type(n) == "number" then Arrange.slot(n) else nil
+			if mine and slot then
+				local face, _, c, s = Arrange.areas(slot, Lobby.Origin, Walls.sizeOf(mine))
+				inside = {
+					face = face,
+					centre = Vector3.new(c[1], c[2], c[3]),
+					size = Vector3.new(s[1], s[2], s[3]),
+				}
+			end
+		end
+		measure()
+		if mine then
+			homeSized = mine:GetAttributeChangedSignal(Spots.SizeAttribute):Connect(measure)
 		end
 	end
 

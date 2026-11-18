@@ -37,6 +37,7 @@ local Specs = require(script.Specs)
 local Spots = require(script.Parent.Home.Spots)
 local StorageUnit = require(script.Parent.StorageUnit)
 local UnitLight = require(script.Parent.UnitLight)
+local Walls = require(script.Parent.Home.Walls)
 
 local Lobby = {}
 Lobby.Specs = Specs
@@ -412,6 +413,12 @@ function Lobby.front(template: Model, home: Model?, pivot: CFrame, slot: Specs.S
 		local across = Vector3.new(into.Z, 0, -into.X) -- level, square to `into`
 		unit:SetAttribute(StorageUnit.RollUpDoor.RoomDepth, back)
 		unit:SetAttribute(StorageUnit.RollUpDoor.RoomWidth, math.abs(size:Dot(across)))
+		-- a smaller home ends at its movable walls (S5-03h5, D-354): a spare stands Small, a held
+		-- home at its holder's size (Arranging's `HomeSize`), and the door counts you in by it
+		Walls.lay(home, unit, face, Walls.sizeOf(unit), math.abs(size:Dot(across)), back)
+		unit:GetAttributeChangedSignal(Spots.SizeAttribute):Connect(function()
+			Walls.size(unit, Walls.sizeOf(unit))
+		end)
 	end
 	return unit
 end

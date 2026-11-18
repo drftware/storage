@@ -2893,6 +2893,16 @@ Done when players watch the results to the end and change their perks between cl
         ends (the unit kit's steel, the home's panels following, D-325), the door frame per size
         (Small's doorway narrower than the M door), the room depth and width the door counts you
         in by, and the Arrange button's inside box from the size. Art first, the unit's way.
+        Split Nov 18:
+          - [x] **S5-03h5a The walls where the size ends**: three movable walls per home (steel
+            under the home's own plaster panel, `Home.Walls`), the ceiling lamp over the room's
+            middle, the picked paint and paper riding them, and the door's count, the lights'
+            room, Arrange's fixed lamp and its button's inside box and the look's wipe all from
+            the size (`Sizes.inset`, `Sizes.onWall`). Done Nov 18, D-354.
+          - [ ] **S5-03h5b Small's narrower doorway**: the front built round the S door's
+            opening (6 wide, in the M's wall: plaster and oak casing fill the M's sides, the M
+            curtain rolling behind them), shown at Small, the M's at Medium and up; art first
+            (`art/home/front.py`), rebuilt, uploaded and seen at phone size.
       - [ ] **S5-03h6 The walls grind back** (idea 31): when it grows, you're there to watch: the
         partitions slide along their rails, the back wall rolls away, the door frame widens, dust
         drifts down, with the steel's grind (Animal Crossing's house growing).

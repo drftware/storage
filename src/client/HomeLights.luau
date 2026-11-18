@@ -27,7 +27,9 @@ local Home = require(ReplicatedStorage.Shared.Home)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
+local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local UnitLight = require(ReplicatedStorage.Shared.UnitLight)
+local Walls = require(ReplicatedStorage.Shared.Home.Walls)
 
 -- One home's light on this screen.
 type Shown = {
@@ -193,7 +195,8 @@ function HomeLights.new(): Brix.System
 			return nil, Vector3.zero
 		end
 		local size, out = slot.Inside.Size, slot.Out
-		local width = if math.abs(out[1]) > 0.5 then size[3] else size[1]
+		local side = Sizes.inset(Walls.sizeOf(unit)) -- a smaller home's partitions (S5-03h5)
+		local width = (if math.abs(out[1]) > 0.5 then size[3] else size[1]) - 2 * side
 		local half = Vector3.new(width / 2, 0, inward.Magnitude + Home.InsideMargin)
 		return CFrame.lookAt(middle, middle + inward), half
 	end
@@ -239,6 +242,13 @@ function HomeLights.new(): Brix.System
 		end
 		local t = if toggle and toggle:IsA("BasePart") then toggle else nil
 		local room, half = roomOf(inst, lamp)
+		-- the lamp rides the room's middle as the home's size changes (D-354): so does its room
+		lamp:GetPropertyChangedSignal("CFrame"):Connect(function()
+			local each = shown[inst]
+			if each then
+				each.room, each.half = roomOf(inst, lamp)
+			end
+		end)
 		local s: Shown
 		s = {
 			unit = inst,

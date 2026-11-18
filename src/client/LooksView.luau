@@ -33,6 +33,8 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
+local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
+local Walls = require(ReplicatedStorage.Shared.Home.Walls)
 local Specs = require(ReplicatedStorage.Shared.Home.Specs)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 
@@ -244,8 +246,12 @@ function LooksView.new(): Brix.System
 		if not base:IsA("BasePart") or not (wallsOff or floorOff) then
 			return
 		end
-		local wide = back.Size.X
-		local deep = left.Size.X + 2 * Looks.Proud
+		-- the room inside its walls at its size (S5-03h5, D-354): the paper rolls round that
+		local size = Walls.sizeOf(unit)
+		local side, backIn = Sizes.inset(size)
+		local wide = back.Size.X - 2 * side
+		local deepXL = left.Size.X + 2 * Looks.Proud
+		local deep = deepXL - backIn
 		local folder = Instance.new("Folder")
 		folder.Name = "LookWipe"
 		folder.Parent = Workspace
@@ -261,8 +267,8 @@ function LooksView.new(): Brix.System
 			frontSpan = wide / 2,
 			floor = nil,
 			floorTexture = nil,
-			floorCf = frame * CFrame.new(vec(Specs.Panels.Floor.At)),
-			floorDeep = base.Size.Z,
+			floorCf = frame * CFrame.new(vec(Sizes.onWall(size, "Middle", Specs.Panels.Floor.At))),
+			floorDeep = base.Size.Z - backIn,
 			floorTop = base.Size.Y / 2 + GAP / 2 + FLOOR_SHEET / 2,
 			folder = folder,
 			sound = nil,
@@ -277,13 +283,11 @@ function LooksView.new(): Brix.System
 			end
 			local mids = {
 				PanelBack = 0,
-				PanelRight = wide / 2 + deep / 2,
-				PanelLeft = -(wide / 2 + deep / 2),
+				PanelRight = wide / 2 + deepXL / 2 - backIn, -- its middle, behind a smaller back wall
+				PanelLeft = -(wide / 2 + deepXL / 2 - backIn),
 			}
 			for _, spec in Specs.Panels.Walls do
-				local cf = frame
-					* CFrame.new(vec(spec.At))
-					* CFrame.Angles(0, math.rad(spec.Turn), 0)
+				local cf = Walls.panelFrame(spec, frame, size)
 				local mid = mids[spec.Part]
 				local source = template:FindFirstChild(spec.Part, true)
 				if source and source:IsA("MeshPart") then

@@ -76,4 +76,31 @@ function Sizes.inside(name: string, centre: Vec, size: Vec): (Vec, Vec)
 	return { centre[1], centre[2], front + deep / 2 }, { across, size[2], deep }
 end
 
+-- How far size `name`'s walls stand in from the slot's (S5-03h5, D-354): each partition
+-- `side` studs in across, the back wall `back` studs toward the door. Nothing for XL.
+function Sizes.inset(name: string): (number, number)
+	local s, xl = Sizes.of(name), Sizes.of(Sizes.Biggest)
+	return (xl.across - s.across) / 2, xl.deep - s.deep
+end
+
+-- Where something on wall `wall` stands at size `name`, from where it stands in the XL slot
+-- (`at`, the unit's frame: X across, + on your left as you walk in; Z in from the door): "Left"
+-- and "Right" ride their partitions in, "Back" rides the back wall toward the door, "Middle"
+-- (the ceiling's lamp) stays halfway between the door and the back wall; anything else (the
+-- floor, the front wall) stays put. A new table.
+function Sizes.onWall(name: string, wall: string, at: Vec): Vec
+	local side, back = Sizes.inset(name)
+	local x, y, z = at[1], at[2], at[3]
+	if wall == "Left" then
+		x -= side
+	elseif wall == "Right" then
+		x += side
+	elseif wall == "Back" then
+		z -= back
+	elseif wall == "Middle" then
+		z -= back / 2
+	end
+	return { x, y, z }
+end
+
 return table.freeze(Sizes)

@@ -9307,6 +9307,36 @@ press Sit, jump to get up).
   down needs a sleeping pose and a way to get up that we haven't seen work here: an untested bet
   for the owner.
 
+## D-354 A smaller home ends at movable steel walls under its own plaster (S5-03h5a, 2026-11-18)
+
+The moment: you buy your first unit and it's snug, the walls close round you; grow it and the room
+is plainly bigger (Animal Crossing's house rooms by size; real storage buildings cut units of any
+size out of one floor with movable steel walls).
+- **Three movable walls per home, no new mesh** (`Home.Walls`): the left partition, the back wall
+  and the right partition, each a 1-stud steel slab (DiamondPlate, the unit kit's grey) under a
+  clone of the home's own panel (`PanelLeft`, `PanelBack`, `PanelRight`, D-325) in a new home's
+  look, set back by the panel's thickness so its face is where the lobby's wall's would be. A
+  picked paint or paper still goes on Decorating's panels a hair proud of it, riding the same
+  wall. D-325 built the panels on their own origins "so S5-03h can move them"; that's this.
+- **Every wall is the XL wall's whole length**: the side walls run on behind the back wall and the
+  back wall on behind the partitions, so the corners close at every size and a wall only ever
+  slides, never stretches (h6 grinds them). At XL they're put away and the slot's own walls stand.
+- **Pure first** (`Sizes.inset`, `Sizes.onWall`, `tests/walls.spec`): a partition stands in by
+  half what the size is narrower than XL, the back wall by what it's shallower, so the room
+  between them is exactly `Sizes.inside`'s box (the one Arrange already judged by); the
+  ceiling's lamp hangs over the room's middle at every size, and Arrange's fixed lamp with it.
+- **Everything that measured the XL room reads the size**: the door's count (`RoomWidth`,
+  `RoomDepth`, set by `Walls.size`), the home lights' room (`HomeLights`, re-measured as the lamp
+  moves), Arrange's button's inside box (re-measured on `HomeSize`) and the look's wipe
+  (`LooksView`: it rolls round the size's room). A spare home stands Small (its set is Small's).
+- **The steel shows only at a partition's end**: Small's room (7.75 across) is narrower than the
+  M doorway (8.2 with its lining), so from the hall the open door shows the partitions' steel ends
+  just inside its edges. S5-03h5b builds Small its own narrower doorway (the S door's 6).
+- **Paper at the back corners**: a side panel's paper keeps its XL place as the wall slides in, so
+  at Medium (half a 4-stud tile off) a paper's pattern breaks at the back corners, as it always
+  did at the front; Small, Large and XL meet whole. Building a panel per size would mend it but
+  snap the paper at h6's end; not worth it (my call).
+
 ## D-409 Caught on the back-to-the-lobby floor: down the shaft to the lobby car (S4-03c4a, Nov 18)
 
 - **What happens.** On the floor the team picked with the "back to the lobby" card, a catch plays

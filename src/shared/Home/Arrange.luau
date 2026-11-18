@@ -164,20 +164,21 @@ function Arrange.slot(n: number): LobbySpecs.Slot?
 	return slotOf[n]
 end
 
--- What's fixed in every home: the round lamp in the ceiling, wired to the room as a real unit's
--- is (D-345). Everything else, the starter pieces too, is a row you arrange (S5-03i1b).
-Arrange.Fixed = (function(): { Spots.Fixed }
+-- What's fixed in every home at size `size`: the round lamp in the ceiling, wired to the room as
+-- a real unit's is (D-345), over the room's middle at every size (S5-03h5, D-354). Everything
+-- else, the starter pieces too, is a row you arrange (S5-03i1b).
+function Arrange.fixed(size: string): { Spots.Fixed }
 	local lamp = HomeSpecs.Parts.Lamp
 	return {
 		{
 			id = "Lamp",
 			on = "Ceiling",
-			at = HomeSpecs.Lamp,
+			at = Sizes.onWall(size, "Middle", HomeSpecs.Lamp),
 			width = lamp.Size[1],
 			depth = lamp.Size[3],
 		},
 	}
-end)()
+end
 
 -- Where starter piece `kind` (`Furniture.Starter`) is pivoted to stand at pose frame `t`: its
 -- spec box (`Spots.pieceBox`, not the drawn one, so the mirror keeps its lean) stood on the face,
@@ -234,7 +235,7 @@ function Arrange.room(slot: LobbySpecs.Slot, pivot: CFrame, size: string): Room
 		frames[name] = Arranged.area(face, r)
 	end
 	local blocks: { Spots.Block } = {}
-	for _, b in Spots.blocks(room, {}, HomeSpecs.Pieces, HomeSpecs.Parts, Arrange.Fixed) do
+	for _, b in Spots.blocks(room, {}, HomeSpecs.Pieces, HomeSpecs.Parts, Arrange.fixed(size)) do
 		if Spots.within(room, b) then
 			table.insert(blocks, b)
 		end

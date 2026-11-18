@@ -43,6 +43,7 @@ local Home = require(ReplicatedStorage.Shared.Home)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local Specs = require(ReplicatedStorage.Shared.Home.Specs)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
+local Walls = require(ReplicatedStorage.Shared.Home.Walls)
 local FrontOffice = require(script.Parent.FrontOffice)
 local Saving = require(script.Parent.Saving)
 
@@ -57,6 +58,7 @@ type Held = {
 	floor: { MeshPart },
 	pending: thread?,
 	doorPending: thread?, -- the door's paint, waiting for every screen's roll
+	sized: RBXScriptConnection?, -- the walls' panels ride the home's walls by size (S5-03h5)
 }
 
 local Decorating = {}
@@ -70,46 +72,7 @@ local ATTRIBUTES = {
 	Looks.CardAttribute,
 }
 
-local function vec(v: { number }): Vector3
-	return Vector3.new(v[1], v[2], v[3])
-end
-
--- The panel `spec` laid in the unit at `frame`, bare (its set and colour come with `wear`).
-local function panel(template: Model, spec: Specs.Panel, frame: CFrame, folder: Folder): MeshPart?
-	local source = template:FindFirstChild(spec.Part, true)
-	if not (source and source:IsA("MeshPart")) then
-		return nil
-	end
-	local p = source:Clone()
-	for _, d in p:GetChildren() do
-		d:Destroy()
-	end
-	p.Anchored = true
-	p.CanCollide = false
-	p.CanTouch = false
-	p.CanQuery = false
-	p.CastShadow = false
-	p.CFrame = frame * CFrame.new(vec(spec.At)) * CFrame.Angles(0, math.rad(spec.Turn), 0)
-	p.Parent = folder
-	return p
-end
-
--- Dresses `parts` in `wear`: the set's swatch's SurfaceAppearance and the part's colour.
-local function wear(template: Model, parts: { MeshPart }, w: Looks.Wear)
-	local swatch = template:FindFirstChild(Specs.Swatches[w.set] or "", true)
-	local look = if swatch then swatch:FindFirstChildOfClass("SurfaceAppearance") else nil
-	local colour = if w.colour ~= "" then Color3.fromHex(w.colour) else Color3.new(1, 1, 1)
-	for _, p in parts do
-		local old = p:FindFirstChildOfClass("SurfaceAppearance")
-		if old then
-			old:Destroy()
-		end
-		if look then
-			look:Clone().Parent = p
-		end
-		p.Color = colour
-	end
-end
+local panel, wear = Walls.panel, Walls.wear
 
 export type DecoratingSystem = Brix.System
 
@@ -146,14 +109,20 @@ function Decorating.new(): DecoratingSystem
 		local wallsOff, floorOff = Looks.changes(start, home.chosen)
 		if wallsOff and #home.walls == 0 then
 			for _, spec in Specs.Panels.Walls do
-				local p = panel(template, spec, home.frame, home.folder)
+				local p = panel(template, spec, home.frame, home.folder, Walls.sizeOf(home.unit))
 				if p then
 					table.insert(home.walls, p)
 				end
 			end
 		end
 		if floorOff and #home.floor == 0 then
-			local p = panel(template, Specs.Panels.Floor, home.frame, home.folder)
+			local p = panel(
+				template,
+				Specs.Panels.Floor,
+				home.frame,
+				home.folder,
+				Walls.sizeOf(home.unit)
+			)
 			if p then
 				table.insert(home.floor, p)
 			end
@@ -175,6 +144,9 @@ function Decorating.new(): DecoratingSystem
 		end
 		if home.doorPending then
 			task.cancel(home.doorPending)
+		end
+		if home.sized then
+			home.sized:Disconnect()
 		end
 		home.folder:Destroy()
 		Home.paintDoor(home.unit, Home.Paint.Door) -- let go: clay again, as every spare home is
@@ -211,6 +183,17 @@ function Decorating.new(): DecoratingSystem
 			doorPending = nil,
 		}
 		homes[player] = home
+		-- the picked paint and paper stand on the home's walls wherever its size has them (D-354)
+		home.sized = unit:GetAttributeChangedSignal(Spots.SizeAttribute):Connect(function()
+			local size = Walls.sizeOf(unit)
+			for _, p in home.walls do
+				for _, spec in Specs.Panels.Walls do
+					if spec.Part == p.Name then
+						p.CFrame = Walls.panelFrame(spec, home.frame, size)
+					end
+				end
+			end
+		end)
 		dress(home)
 		Home.paintDoor(unit, Color3.fromHex(Looks.doorOf(home.chosen.door)))
 		unit:SetAttribute(Looks.DoorAttribute, home.chosen.door) -- before the tag: no roll on a join
