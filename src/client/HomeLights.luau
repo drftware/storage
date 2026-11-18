@@ -42,7 +42,6 @@ type Shown = {
 	room: CFrame?, -- the inside's middle on the floor, looking in from the door (nil: no hiding)
 	half: Vector3, -- the inside's half width (X) and half depth plus InsideMargin (Z)
 	inside: boolean?, -- whether the camera was inside at the last pick
-	floorAt: Vector3?, -- the floor lamp's shade, for nearness
 	near: boolean, -- its floor lamp is one of the nearest: it throws real light here
 	real: number, -- 0 to 1: how much of that real light shows, easing toward `near`
 	distance: number, -- from the camera's lead point, at the last pick
@@ -151,10 +150,10 @@ function HomeLights.new(): Brix.System
 					end
 				end
 			end
-			local floorAt = s.floorAt
-			if floorAt then
+			local shade = s.shades[1] -- where it stands now: the lamp moves in Arrange (S5-03i1c)
+			if shade then
 				-- a lamp already lit keeps it until another is clearly nearer
-				s.distance = (floorAt - from).Magnitude
+				s.distance = (shade.Position - from).Magnitude
 					- (if s.near then UnitLight.NearMargin else 0)
 				if s.distance <= Home.FloorLamp.Reach then
 					table.insert(ranked, s)
@@ -253,7 +252,6 @@ function HomeLights.new(): Brix.System
 			room = room,
 			half = half,
 			inside = nil,
-			floorAt = if shades[1] then shades[1].Position else nil,
 			near = false,
 			real = 0,
 			distance = 0,
@@ -300,7 +298,6 @@ function HomeLights.new(): Brix.System
 				local shade = inst.Parent
 				if shade and shade:IsA("BasePart") then
 					table.insert(s.shades, shade)
-					s.floorAt = shade.Position
 				end
 				follow(s, true)
 				return
@@ -318,7 +315,6 @@ function HomeLights.new(): Brix.System
 				if j then
 					table.remove(s.shades, j)
 				end
-				s.floorAt = if s.shades[1] then s.shades[1].Position else nil
 				return
 			end
 		end

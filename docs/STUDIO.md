@@ -3225,3 +3225,21 @@ verified: a doc page, Studio, or "untested".
   468.15 and 487.85, its back wall at 90). A ShotCam past the starter shelf, (78.5, 4.4, 471)
   looking at (90, 7.6, 478.5), shows the back wall and the ceiling's back half.
 
+## Arrange on the A16, lifting a home's own pieces (S5-03i1c1, Nov 18)
+
+- **The A16 capture this session**: the Studio window (1386x972, not Retina) drew the phone at
+  physical size; the phone's screen crops at x 356, y 360, 672 by 314 (`sips --cropOffset 360
+  356 -c 314 672`). Taps by the old mapping: a world point's `WorldToViewportPoint` (X, Y) is
+  clicked at (X + 47, Y - 58); a gui button at (AbsolutePosition X + 47, Y) of its middle.
+- **Dragging with `user_mouse_input`**: `mouseButtonDown` on the piece, a few `moveTo`s 120 ms
+  apart, `mouseButtonUp`; the lifted piece stays lifted, and a fresh press anywhere drags it on.
+  A press lifts the nearest of your pieces under the finger: the floor lamp in front of the job
+  box came up instead of the box. Aim the finger 1 to 2 studs past a wall to set a piece flush:
+  the grid snaps from the wall, so a finger short of it leaves half a step's gap.
+- **The limit bar covers the back wall** from Arrange's corner camera in an XL home: the shelf
+  set there is half behind it (queued).
+- **`Model:GetBoundingBox()` is in the model's own frame**, not the world's: measure a piece's
+  world extent from its parts' corners.
+- **Opening a job box from a script**: set its model's `Lid` attribute to 1 on the server; the
+  client's lid reads 88 degrees about the hinge (`WorldPivot:ToObjectSpace(lid.CFrame)`).
+

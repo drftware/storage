@@ -105,6 +105,13 @@ nowhere else.
   rubber mats; walls are plain (a home's), stripes, leaves and daisies; eight paints from warm
   white to ink; eight door colours from clay; carpet, checker and mats each come in five colours;
   every paper takes the wall's paint as its ground.
+- [ ] **Move your own shelf, mirror and job box in Arrange, on a real phone** (S5-03i1c1, D-348;
+  seen in Studio Play on the Galaxy A16 simulator). Tap Arrange, then press on the shelf and drag
+  it to the back wall: its finds ride with it, it shows green, Place sets it down with a thud.
+  Drag the mirror toward another wall: it swings its back to the wall and leans; mid-room it's
+  red. Push the job box at a wall: it stops a little short so its lid still opens. Done, then
+  open the job box: the lid swings up clear. Stop and Play: everything is where you left it.
+  Does dragging a big piece feel heavy enough, and is it easy to grab the box behind the lamp?
 - [ ] **Re-do your home from the Arrange screen, on a real phone** (S5-03g2b3, D-328; seen in
   Studio Play on the Galaxy A16 simulator, not on a phone). Walk into your home, tap Arrange, then
   the tab with the fan of paint chips on the tray's top edge. Tap a paper, a paint, a floor and
@@ -458,6 +465,12 @@ nowhere else.
       you move the rug (D-346).
   19. An empty home nobody holds shows Small's starter layout behind its padlocked door; yours
       replaces it while you hold the home (D-347).
+  20. The mirror only stands leaning on the back wall or a side wall: carry it near one and it
+      turns its back to that wall and leans there; mid-room, on the rug or against the door it
+      shows red. It turns itself, so Turn is hidden while you hold it (D-348).
+  21. The job box keeps 0.8 studs behind it so its lid opens upright: push it at a wall and it
+      stops there. While you hold it there's no Put away button, since it holds everything
+      (D-348).
 - [ ] **Walk into your home** (S5-03a2b3 and b4, D-268; seen in Studio Play by me, the switch
   pressed with T and with a tap on the A16 simulator, but I couldn't take a single picture, so
   how it looks is yours). Press Play, or publish and play on a phone (Galaxy A16):

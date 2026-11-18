@@ -425,6 +425,12 @@ function Arranging.new(): ArrangingSystem
 				return home.placements:poseOf(each) ~= nil
 			end)
 		end
+		-- the mirror leans on a wall: only on the floor, its back to one at its lean (D-348)
+		local kind = Layout.kind(id)
+		local floor = home.placements:areaOf("Floor")
+		if kind and floor and not Layout.stands(kind, pose, floor) then
+			return "", Spots.Refusals.Wall
+		end
 		local shape = shapeOf(id)
 		local refusal = if shape then home.placements:place(id, shape, pose) else "badShape"
 		if refusal then

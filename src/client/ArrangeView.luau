@@ -50,6 +50,7 @@ local FurnitureTab = require(script.Parent.FurnitureTab)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Grades = require(ReplicatedStorage.Shared.Grades)
 local Home = require(ReplicatedStorage.Shared.Home)
+local Layout = require(ReplicatedStorage.Shared.Home.Layout)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local LooksTab = require(script.Parent.LooksTab)
@@ -146,6 +147,8 @@ type Lifted = {
 	centre: Vector3,
 	highlight: Highlight,
 	original: Model?, -- the drawn find, hidden while it's lifted
+	starter: string?, -- a home's own piece's kind (`Layout.kind`): it stands by its spec box
+	kept: boolean, -- the job box: it moves, never away, so it has no Put away
 	riders: { Model }, -- what stands on it, drawn, hidden while copies ride in the ghost (D-338)
 	from: CFrame, -- where the ghost began
 	pose: Brix.PlacementPose?, -- where it would stand now, snapped
@@ -235,6 +238,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	local verbs: Frame? = nil
 	local placeButton: TextButton? = nil
 	local awayButton: TextButton? = nil
+	local turnButton: TextButton? = nil
 	local cards: { [string]: TextButton } = {}
 	-- The tray's three tabs (FINDS, ROOM: the paint tab, FRONT: your door; LooksTab's pages),
 	-- which one shows (kept between opens), and where each tab's things rest in the tray (they
@@ -447,7 +451,30 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		local hx, hy = math.max(0, (area.width - w) / 2), math.max(0, (area.depth - d) / 2)
 		local sx, sy, st =
 			snap:snap(area, l.shape, math.clamp(x, -hx, hx), math.clamp(y, -hy, hy), l.turn)
-		return { on = on, x = math.clamp(sx, -hx, hx), y = math.clamp(sy, -hy, hy), turn = st }
+		local pose =
+			{ on = on, x = math.clamp(sx, -hx, hx), y = math.clamp(sy, -hy, hy), turn = st }
+		local kind, floor = l.starter, r.placements:areaOf("Floor")
+		if kind and floor and Layout.Lean[kind] then
+			-- the mirror finds the wall nearest the finger and turns its back to it (D-348)
+			local leant = Layout.leanTo(kind, pose, floor)
+			if leant then
+				l.turn = leant.turn
+				return leant
+			end
+		elseif kind and floor then
+			return Layout.clearOf(kind, pose, floor) -- the job box keeps its lid's room
+		end
+		return pose
+	end
+
+	-- Whether `l` may stand at `pose`: Brix's judge, and the mirror against a wall, as the
+	-- server's.
+	local function fitsAt(r: Arrange.Room, l: Lifted, pose: Brix.PlacementPose): boolean
+		if r.placements:check(l.id, l.shape, pose) ~= nil then
+			return false
+		end
+		local kind, floor = l.starter, r.placements:areaOf("Floor")
+		return not (kind and floor) or Layout.stands(kind, pose, floor)
 	end
 
 	-- Where the find's pivot stands at `pose`, and the area's normal (out of it, into the room).
@@ -457,6 +484,10 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			return nil, Vector3.yAxis
 		end
 		local t = Arranged.pose(a, pose.x, pose.y, pose.turn)
+		local kind = l.starter
+		if kind then -- by its spec box, as the server draws it (the mirror keeps its lean)
+			return Arrange.starterPivot(t, kind), t.YVector
+		end
 		return Arranged.pivot(t, l.spot, l.size, l.centre), t.YVector
 	end
 
@@ -490,7 +521,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			or was.y ~= pose.y
 			or was.turn ~= pose.turn
 		l.pose = pose
-		l.fits = r.placements:check(l.id, l.shape, pose) == nil
+		l.fits = fitsAt(r, l, pose)
 		l.target = at + normal * Feel.Hover
 		paint(l)
 		if moved and was then
@@ -553,7 +584,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 		local a = awayButton
 		if a then
-			a.Visible = l ~= nil and l.original ~= nil
+			a.Visible = l ~= nil and l.original ~= nil and not l.kept
+		end
+		local turner = turnButton
+		if turner then -- the mirror turns itself to the wall it's carried to
+			turner.Visible = not (l and l.starter and Layout.Lean[l.starter])
 		end
 		local s = list
 		if s then
@@ -610,6 +645,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		highlight.Parent = ghost
 		ghost.Parent = Workspace.CurrentCamera
 		local from = ghost:GetPivot()
+		local kind = Layout.kind(id)
+		local row = if kind then Furniture.byId(kind) else nil
 		local l: Lifted = {
 			what = what,
 			id = id,
@@ -621,6 +658,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			centre = centre,
 			highlight = highlight,
 			original = original,
+			starter = kind,
+			kept = row ~= nil and row.kept == true,
 			riders = {},
 			from = from,
 			pose = nil,
@@ -685,7 +724,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 					for j = -ring, ring do
 						if math.max(math.abs(i), math.abs(j)) == ring then
 							local pose = settle(r, l, on, i * step, j * step)
-							if pose and r.placements:check(l.id, l.shape, pose) == nil then
+							if pose and fitsAt(r, l, pose) then
 								return pose
 							end
 						end
@@ -707,7 +746,12 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		local template = if piece then Home.template() else nil
 		local base = if piece then nil else Gold.base(key)
 		local ghost: Model? = nil
-		if r and piece and template and Home.has(template, piece.id) then
+		if r and piece and template and piece.id == "Mirror" and Home.has(template, piece.id) then
+			-- leaning on its foot, pivoted upright there, as the server draws it
+			local m = Home.mirrorAt(template, CFrame.identity, Workspace)
+			m.WorldPivot = CFrame.identity
+			ghost = m
+		elseif r and piece and template and Home.has(template, piece.id) then
 			ghost = Home.piece(template, piece.id, CFrame.identity, Workspace)
 		elseif r and not piece then
 			ghost = Tools.clone(base or key, CFrame.identity)
@@ -877,8 +921,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	local function awayNow()
 		local l = lifted
 		local ask = remote(Spots.PutAwayRemote)
-		if not (l and l.original and ask) or l.asking then
-			return
+		if not (l and l.original and ask) or l.asking or l.kept then
+			return -- the job box holds everything: it has no Put away
 		end
 		l.asking = "away"
 		stopFollow()
@@ -1891,6 +1935,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			press(turn)
 			turnNow()
 		end)
+		turnButton = turn
 		local placeB = pill("Place", 112, FITS, v)
 		at(placeB, 0, 0)
 		placeB.TextColor3 = PANEL

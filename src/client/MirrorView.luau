@@ -557,7 +557,12 @@ function MirrorView.new(): Brix.System
 		local best: BasePart? = nil
 		local bestDistance = Mirror.Still
 		for _, inst in CollectionService:GetTagged(Mirror.Tag) do
-			if inst:IsA("BasePart") and inst:IsDescendantOf(Workspace) then
+			-- a mirror lifted in Arrange is hidden where it stood; its copy in your hands shows you
+			if
+				inst:IsA("BasePart")
+				and inst:IsDescendantOf(Workspace)
+				and inst.LocalTransparencyModifier < 1
+			then
 				local distance = (inst.Position - eye).Magnitude
 				if distance < bestDistance then
 					best, bestDistance = inst, distance

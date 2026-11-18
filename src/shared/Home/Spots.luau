@@ -124,6 +124,7 @@ Spots.Refusals = table.freeze({
 	Unknown = "unknownFind",
 	NotYours = "notYours",
 	Kept = "kept",
+	Wall = "wall", -- a leaning piece (the mirror) set with its back to no wall (`Layout.stands`)
 })
 
 -- The longest name or id a screen may send, and how far from an area's middle a pose may be.

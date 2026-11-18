@@ -20,6 +20,9 @@
 	  shelf's and the job box's tops move onto those pieces' rows, where they were.
 	- `grow`: a home that changes size: a piece against a wall rides that wall, so the shelf on
 	  Small's back wall is on Medium's back wall, never mid-room.
+	- `leanTo`, `stands` (S5-03i1c): the mirror leans on a wall, so it stands only on the floor
+	  with its back to the back wall or a side wall, its foot its lean off it; carried near one it
+	  turns its back to that wall and settles there, as Animal Crossing's wall pieces find a wall.
 
 	Rows come out job box first, so Brix, loading in order, always stands it: it holds everything
 	else and is never put away. Poses are on the room's areas (`Spots.room`): the floor's `x` runs
@@ -44,6 +47,24 @@ Layout.BoxOff = 0.8
 Layout.Touch = 0.9
 -- The beanbag's turn on the floor: a little toward the room, as it always stood.
 Layout.BeanbagTurn = 338
+
+-- How far a leaning piece's back stands off the wall it leans on, at its foot (studs), so its top
+-- rests on the wall: the mirror's, as it stood in XL's room (D-348).
+Layout.Lean = table.freeze({
+	Mirror = HomeSpecs.Mirror.At[1] + Sizes.of(Sizes.Biggest).across / 2 - (Spots.pieceBox(
+		"Mirror"
+	) or Spots.Unknown)[3] / 2,
+}) :: { [string]: number }
+-- How near its wall a leaning piece carried in Arrange finds it (studs, from where it would lean
+-- to where the finger holds it): farther out it shows red, leaning on nothing.
+Layout.LeanReach = 2
+-- Pieces whose back keeps clear of the wall behind it (studs): the job box's lid opens upright,
+-- so it stands at least `BoxOff` off a wall, as the layout lays it; pushed nearer in Arrange it
+-- stops at that line (`clearOf`), and the server refuses one nearer (D-348).
+Layout.Clear = table.freeze({ JobBox = Layout.BoxOff }) :: { [string]: number }
+-- How far off its lean a leaning piece may stand and still lean (studs): the wire's rounding, and
+-- the fixed set's mirror, adopted where it stood (`stood`), 0.02 nearer its wall than `default`'s.
+Layout.LeanSlack = 0.05
 
 -- The order the starter pieces are laid in: the job box first (it always stands), the rug before
 -- the beanbag on it.
@@ -386,6 +407,103 @@ function Layout.grow(
 		end
 	end
 	return out
+end
+
+-- A pose on one of the room's areas, as Brix takes it.
+export type Pose = { on: string, x: number, y: number, turn: number }
+-- The floor's size, as Brix and `Spots.room` give it.
+export type Floor = { width: number, depth: number }
+
+-- How far piece `kind` at `pose` stands with its back off the wall behind it, nil when it faces
+-- no wall square. A piece's back is its box's far side from the way it faces: the back wall at
+-- turn 0, the left wall at 90, the door's wall at 180, the right wall at 270.
+local function backGap(kind: string, pose: Pose, floor: Floor): number?
+	local half = (Spots.pieceBox(kind) or Spots.Unknown)[3] / 2
+	local turn = pose.turn % 360
+	if turn == 0 then
+		return pose.y - half + floor.depth / 2
+	elseif turn == 90 then
+		return floor.width / 2 - (pose.x + half)
+	elseif turn == 180 then
+		return floor.depth / 2 - (pose.y + half)
+	elseif turn == 270 then
+		return pose.x - half + floor.width / 2
+	end
+	return nil
+end
+
+-- Whether piece `kind` may stand at `pose` in a room with floor `floor`: a leaning piece
+-- (`Lean`) only on the floor itself, its back to the back wall or a side wall at its lean; any
+-- other piece wherever Brix lets it. The server refuses a Place that breaks this (D-348).
+function Layout.stands(kind: string, pose: Pose, floor: Floor): boolean
+	local clear = Layout.Clear[kind]
+	if clear then -- the job box's lid opens upright behind it
+		local gap = if pose.on == "Floor" then backGap(kind, pose, floor) else nil
+		return gap == nil or gap >= clear - Layout.LeanSlack
+	end
+	local lean = Layout.Lean[kind]
+	if not lean then
+		return true
+	elseif pose.on ~= "Floor" or pose.turn % 360 == 180 then
+		return false -- on the rug or a top, or against the door, it would lean on nothing
+	end
+	local gap = backGap(kind, pose, floor)
+	return gap ~= nil and math.abs(gap - lean) <= Layout.LeanSlack
+end
+
+-- `pose` for piece `kind` (`Clear`) pushed out from the wall behind it, so its back stands at
+-- least its clearance off it: the job box slides up to that line and stops, its lid's room kept.
+-- Any other piece's pose, or one on a top, as it is.
+function Layout.clearOf(kind: string, pose: Pose, floor: Floor): Pose
+	local clear = Layout.Clear[kind]
+	local gap = if clear and pose.on == "Floor" then backGap(kind, pose, floor) else nil
+	if not (clear and gap and gap < clear) then
+		return pose
+	end
+	local push = clear - gap
+	local turn = pose.turn % 360
+	local x, y = pose.x, pose.y
+	if turn == 0 then
+		y += push
+	elseif turn == 90 then
+		x -= push
+	elseif turn == 180 then
+		y -= push
+	else
+		x += push
+	end
+	return { on = pose.on, x = x, y = y, turn = pose.turn }
+end
+
+-- `pose` for leaning piece `kind` carried to the wall nearest its middle (the back wall or a
+-- side; never the door's): turned to face the room, its back at its lean off that wall, as far
+-- along it as it was and kept inside the floor. Nil when no wall is within `LeanReach` or it
+-- isn't on the floor. Any other piece's pose as it is.
+function Layout.leanTo(kind: string, pose: Pose, floor: Floor): Pose?
+	local lean = Layout.Lean[kind]
+	if not lean then
+		return pose
+	elseif pose.on ~= "Floor" then
+		return nil
+	end
+	local on: string = pose.on
+	local box = Spots.pieceBox(kind) or Spots.Unknown
+	local off, along = lean + box[3] / 2, box[1] / 2 -- its middle off the wall; half its width
+	local hw, hd = floor.width / 2, floor.depth / 2
+	local back, left, right = pose.y + hd, hw - pose.x, pose.x + hw
+	local nearest = math.min(back, left, right)
+	if nearest - off > Layout.LeanReach then
+		return nil
+	end
+	local function within(v: number, half: number): number
+		return math.clamp(v, -math.max(0, half - along), math.max(0, half - along))
+	end
+	if nearest == back then
+		return { on = on, x = within(pose.x, hw), y = -hd + off, turn = 0 }
+	elseif nearest == left then
+		return { on = on, x = hw - off, y = within(pose.y, hd), turn = 90 }
+	end
+	return { on = on, x = -hw + off, y = within(pose.y, hd), turn = 270 }
 end
 
 return table.freeze(Layout)

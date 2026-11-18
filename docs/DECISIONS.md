@@ -8927,6 +8927,31 @@ keeps its set where it stood, with the finds on its shelf and box.
   home's switch (HomeLights).
 - **Not seen yet**: Studio was in another session's Play; the pass moves to S5-03i1c, first.
 
+## D-348 Your own pieces lift like anything else; the mirror finds a wall, the box keeps its lid's room (S5-03i1c1, 2026-11-18)
+
+The moment: in Arrange you lift your shelf, finds and all, carry it off the middle of the room to
+the back wall and set it down with a thud; carry the mirror to another wall and it turns its back
+to that wall and leans there, still showing you; the job box slides up to a wall and stops where
+its lid still opens. Seen in Studio Play at Galaxy A16 size on the XL test save.
+- **A home's own piece is lifted as a find is** (`ArrangeView`): a tap on it (or on a find in the
+  shelf, which is the shelf's child) lifts it with what stands on it; it stands by its spec box
+  (`Arrange.starterPivot`), as the server draws it. The job box has no Put away button (my
+  default over a press that does nothing: no copy for what's plain on screen).
+- **The mirror leans on a wall** (`Layout.leanTo`, `stands`, `Lean`): carried within
+  `LeanReach` (2 studs) of the back wall or a side wall, it turns its back to the nearest and
+  stands at its lean (its foot 0.79 off, as it stood in XL's room, so its top rests on the wall);
+  farther out, on the rug or a top, or against the door, it's red and the server refuses it
+  ("wall"). It turns itself, so Turn is hidden while it's held. As Animal Crossing's and The
+  Sims' wall pieces find the wall you point at.
+- **The job box keeps its lid's room** (`Layout.Clear`, `clearOf`): its back stands at least
+  `BoxOff` (0.8) off the wall behind it, door included; pushed nearer it stops at that line, and
+  the server refuses one nearer. Found in the pass: pushed flush, the open lid went into the wall.
+- **What follows a moved piece**: the job box's lid swings about the box's hinge where it stands
+  now (`JobBoxView.frame`); the floor lamp's nearness reads its shade where it is now
+  (`HomeLights`); a mirror hidden while it's lifted gives up the picture (`MirrorView`); the rail's
+  hangers and Wear, the box's Open and the mirror's Try on are the piece's children, so they ride.
+- **Not seen yet** (S5-03i1c2): the box's stop at its line, a true rejoin, a resize, the rail moved.
+
 ## D-400 A find that lands after you chose what to hold keeps your hand where you put it (F-G1e6q2, Nov 17)
 - **The rule**: a marked box's find reaches your hand as its reveal ends (about 2.4 s for an
   Epic). If you switched slots or put your tool away since the box opened, the find goes into a

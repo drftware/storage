@@ -237,6 +237,106 @@ do
 	ok(first[3].id == "Lamp#1" and #first == 3, "the rest keep their order")
 end
 
+-- The mirror leans on a wall (S5-03i1c, D-348): it stands only on the floor with its back to the
+-- back wall or a side wall at its lean; carried near one it turns its back to it and settles.
+do
+	local function mirrorIn(rows: { Save.PlacedRow }): Save.PlacedRow?
+		for _, row in rows do
+			if Layout.kind(row.id) == "Mirror" then
+				return row
+			end
+		end
+		return nil
+	end
+	for _, size in Sizes.Names do
+		local room = roomOf(size)
+		local m = mirrorIn(Layout.default(room))
+		ok(m ~= nil and Layout.stands("Mirror", m :: any, room.Floor), `{size}'s mirror leans`)
+	end
+	local small, medium, xl = roomOf("Small"), roomOf("Medium"), roomOf("XL")
+	local floor = small.Floor
+	local m = mirrorIn(Layout.default(small)) :: Save.PlacedRow
+	ok(not Layout.stands("Mirror", { on = "Floor", x = 0, y = 0, turn = 270 }, floor), "mid-room")
+	ok(not Layout.stands("Mirror", { on = "Floor", x = m.x, y = m.y, turn = 180 }, floor), "door")
+	ok(
+		not Layout.stands("Mirror", { on = "Rug:Furniture#1", x = m.x, y = m.y, turn = 270 }, floor),
+		"on the rug it leans on nothing"
+	)
+	ok(
+		not Layout.stands("Mirror", { on = "Floor", x = m.x - 0.5, y = m.y, turn = 270 }, floor),
+		"pushed into its wall"
+	)
+	ok(
+		not Layout.stands("Mirror", { on = "Floor", x = m.x, y = m.y, turn = 90 }, floor),
+		"backwards"
+	)
+	ok(Layout.leanTo("Mirror", { on = "Floor", x = 0, y = 0, turn = 0 }, xl.Floor) == nil, "far")
+	-- carried by the right wall, turned the wrong way, flush: it turns and stands off at its lean
+	local right = Layout.leanTo("Mirror", { on = "Floor", x = -3.9, y = 1, turn = 0 }, floor)
+	ok(right ~= nil and right.turn == 270 and near(right.x, m.x), "the right wall: turned, leant")
+	ok(right ~= nil and near(right.y, 1) and Layout.stands("Mirror", right, floor), "and stands")
+	local left = Layout.leanTo("Mirror", { on = "Floor", x = 3.5, y = 0.5, turn = 270 }, floor)
+	ok(left ~= nil and left.turn == 90 and Layout.stands("Mirror", left, floor), "the left wall")
+	local back = Layout.leanTo("Mirror", { on = "Floor", x = 3.5, y = -3.7, turn = 90 }, floor)
+	ok(back ~= nil and back.turn == 0 and Layout.stands("Mirror", back, floor), "the back wall")
+	local box = Spots.pieceBox("Mirror") :: { number }
+	ok(back ~= nil and near(back.x, floor.width / 2 - box[1] / 2), "kept inside the floor")
+	ok(
+		Layout.leanTo("Mirror", { on = "Rug:Furniture#1", x = 0, y = 0, turn = 0 }, floor) == nil,
+		"rug"
+	)
+	-- the near door: nearest the front wall, it goes to the nearest side wall instead
+	local front = Layout.leanTo("Mirror", { on = "Floor", x = -3, y = 3.8, turn = 0 }, floor)
+	ok(front ~= nil and front.turn == 270 and Layout.stands("Mirror", front, floor), "not the door")
+	-- anything else stands anywhere Brix lets it, and is carried as it is
+	local p = { on = "Floor", x = 0, y = 0, turn = 180 }
+	ok(Layout.stands("Shelf", p, floor) and Layout.leanTo("Shelf", p, floor) == p, "not leaning")
+	-- growing keeps it leaning, and an XL home laid before adopts it leaning where it stood
+	local grown = mirrorIn(Layout.grow(Layout.default(small), small, medium))
+	ok(grown ~= nil and Layout.stands("Mirror", grown :: any, medium.Floor), "grown, it leans")
+	local adopted = mirrorIn(Layout.adopt({}, xl))
+	ok(adopted ~= nil and Layout.stands("Mirror", adopted :: any, xl.Floor), "adopted, it leans")
+end
+
+-- The job box keeps its lid's room (S5-03i1c, D-348): its back stands at least `BoxOff` off the
+-- wall behind it; pushed nearer in Arrange it stops at that line.
+do
+	local function boxIn(rows: { Save.PlacedRow }): Save.PlacedRow
+		for _, row in rows do
+			if Layout.kind(row.id) == "JobBox" then
+				return row
+			end
+		end
+		error("no job box")
+	end
+	for _, size in Sizes.Names do
+		local room = roomOf(size)
+		ok(Layout.stands("JobBox", boxIn(Layout.default(room)) :: any, room.Floor), `{size}'s box`)
+		ok(
+			Layout.stands("JobBox", boxIn(Layout.adopt({}, room)) :: any, room.Floor),
+			`{size} adopted`
+		)
+	end
+	local floor = roomOf("Small").Floor
+	local deep = (Spots.pieceBox("JobBox") :: { number })[3]
+	local flushX = floor.width / 2 - deep / 2 -- turned 90, its back on the left wall
+	local flush = { on = "Floor", x = flushX, y = 0, turn = 90 }
+	ok(not Layout.stands("JobBox", flush, floor), "flush on the left wall: no room for the lid")
+	local pushed = Layout.clearOf("JobBox", flush, floor)
+	ok(near(pushed.x, flushX - Layout.BoxOff) and pushed.y == 0, "pushed out to the line")
+	ok(Layout.stands("JobBox", pushed, floor), "and stands there")
+	local door = { on = "Floor", x = 0, y = floor.depth / 2 - deep / 2, turn = 180 }
+	ok(not Layout.stands("JobBox", door, floor), "its back on the door")
+	ok(near(Layout.clearOf("JobBox", door, floor).y, door.y - Layout.BoxOff), "pushed off the door")
+	local back = { on = "Floor", x = 0, y = -floor.depth / 2 + deep / 2, turn = 0 }
+	ok(near(Layout.clearOf("JobBox", back, floor).y, back.y + Layout.BoxOff), "off the back wall")
+	local right = { on = "Floor", x = -flushX, y = 0, turn = 270 }
+	ok(near(Layout.clearOf("JobBox", right, floor).x, -flushX + Layout.BoxOff), "off the right")
+	local mid = { on = "Floor", x = 0, y = 0, turn = 90 }
+	ok(Layout.stands("JobBox", mid, floor) and Layout.clearOf("JobBox", mid, floor) == mid, "mid")
+	ok(Layout.clearOf("Shelf", flush, floor) == flush, "only the box keeps clear")
+end
+
 print(`layout: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

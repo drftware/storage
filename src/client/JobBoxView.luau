@@ -46,8 +46,8 @@ type Rider = { rest: CFrame, set: CFrame? }
 type Shown = {
 	model: Model,
 	lid: BasePart,
-	rest: CFrame, -- the lid shut
-	hinge: CFrame, -- the hinge line's middle, square to the box
+	rest: CFrame, -- the lid shut, where the box stands now (`frame`)
+	hinge: CFrame, -- the hinge line's middle, square to the box, likewise
 	angle: number, -- degrees up now
 	from: number, -- degrees up as this swing began
 	t: number, -- seconds into it
@@ -64,6 +64,10 @@ local JobBoxView = {}
 local function vec(v: { number }): Vector3
 	return Vector3.new(v[1], v[2], v[3])
 end
+
+-- The lid shut and the hinge line's middle, in the box's frame.
+local LID = CFrame.new(vec(Home.Specs.Parts.JobBoxLid.Centre))
+local HINGE = CFrame.new(vec(Home.Specs.JobBox.Hinge))
 
 local function number(model: Model, name: string): number
 	local v = model:GetAttribute(name)
@@ -89,9 +93,18 @@ function JobBoxView.new(): Brix.System
 	local moving: { [Shown]: true } = {}
 	local connections: { RBXScriptConnection } = {}
 
+	-- The lid's rest and hinge where the box stands now: the box is a piece you move in Arrange
+	-- (S5-03i1c), and the server's move carries the shut lid with it.
+	local function frame(s: Shown)
+		local pivot = s.model.WorldPivot
+		s.rest = pivot * LID
+		s.hinge = pivot * HINGE
+	end
+
 	-- Finds what stands on `s`'s lid, however high up (a lamp on a drum on the lid), keeping the
 	-- ones already riding as they are; new ones ride from where the server drew them.
 	local function gather(s: Shown)
+		frame(s)
 		local folder = placedBy(s.model)
 		local on: { [string]: { Model } } = {}
 		if folder then
@@ -164,6 +177,7 @@ function JobBoxView.new(): Brix.System
 	end
 
 	local function pose(s: Shown)
+		frame(s)
 		local hinge = s.hinge
 		local turn = hinge * CFrame.Angles(math.rad(s.angle), 0, 0) * hinge:Inverse()
 		s.lid.CFrame = turn * s.rest
@@ -273,8 +287,8 @@ function JobBoxView.new(): Brix.System
 		local s: Shown = {
 			model = model,
 			lid = lid,
-			rest = pivot * CFrame.new(vec(Home.Specs.Parts.JobBoxLid.Centre)),
-			hinge = pivot * CFrame.new(vec(Home.Specs.JobBox.Hinge)),
+			rest = pivot * LID,
+			hinge = pivot * HINGE,
 			angle = 0,
 			from = 0,
 			t = 0,
