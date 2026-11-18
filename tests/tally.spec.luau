@@ -252,6 +252,26 @@ ok(old ~= nil and old.haul == "" and #old.rows == 1, "results with no haul read 
 local empty = ClimbEnd.decodeResults(ClimbEnd.encodeResults("Kept", 3, 60, {}))
 ok(empty ~= nil and empty.haul == "" and #empty.rows == 0, "no rows, no haul")
 
+-- The row under the stage (S5-01b): every landed card fits it as a chip, as wide as allowed for a
+-- short haul, crowding to slivers with a hairline gap for the longest, never past the row.
+do
+	local w0, g0 = Tally.row(0, 506)
+	ok(w0 == 0 and g0 == 0, "no chips, no row")
+	local w1 = Tally.row(1, 506)
+	ok(w1 == Tally.ChipMost, "one chip is as wide as a chip gets")
+	local w5, g5 = Tally.row(5, 506)
+	ok(
+		w5 == Tally.ChipMost and g5 == Tally.ChipGap,
+		"a short haul's chips keep their width and gap"
+	)
+	for _, n in { 12, 20, 40, Tally.Cap } do
+		local w, g = Tally.row(n, 506)
+		ok(w > 0 and n * w + (n - 1) * g <= 506 + 1e-6, `{n} chips fit the row`)
+	end
+	local w60, g60 = Tally.row(Tally.Cap, 506)
+	ok(g60 == 1 and w60 >= 6, "sixty crowd to slivers with a hairline gap, each still seen")
+end
+
 print(`tally.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

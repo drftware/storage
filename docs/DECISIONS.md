@@ -10149,3 +10149,42 @@ Not chosen: the haul on the "Caught" screen (no one stands anywhere there, and i
 Again button back); the order kept in (cheap and dear jumbled, no build); a separate attribute for
 the haul (two values arriving apart would build the board twice); the cover renders as pictures
 (they were never uploaded as images; ToolPicture's 3D picture is what every other card uses).
+
+## D-429: The haul's cards on the car's board (S5-01b, Nov 18)
+
+The moment: back in the lobby car, the board shows the team first (who made it, the photos, the
+cash counting up), then, once the last cash has landed and a breath later (`Tally.Read`), its page
+turns over: the team lifts off and the haul rises in. Each card flips open in the stage left of
+the middle (its width opening, as a card turns over) with its 3D picture on a deep wash of its
+grade's colour, its name ("Sealed Teddy" for a sealed one), its grade's name in its colour (a
+cracked one "Rare · Cracked" in red) and its worth in gold, with a paper flap (the code note's
+"File Folder Movement 5", a touch lower for each grade up). As the next flips up it turns to its
+colour and drops into the row along the board's foot, a chip as wide as fits (`Tally.row`: 44 px
+at most, slivers with a hairline gap for sixty). The total to the right ("Total", in dollars)
+ticks with the cash count's rising tick. A sting card hits as it lands: the slam's bang pitched
+down under its grade's own burst from the boxes' reveals (a sealed one's pack crinkle instead), a
+flash of its colour over the board, a swell, a thicker edge, then the hold's quiet. The last (the
+best) stays face up as the total lands with the cash's swell, chink and jingle. Lethal Company's
+end-of-day scrap tally, Hades' end-of-run summary.
+
+- **The board's gui moves to your PlayerGui** with the part as its Adornee: a ViewportFrame on a
+  SurfaceGui parented into the Workspace drew nothing in Studio Play (the clipping, light and the
+  part's transparency weren't it); the same gui in PlayerGui drew the find at once, as the
+  home's mirror does. `ResetOnSpawn` off; the gui is destroyed with the board.
+- **One picture at a time.** The stage card's ViewportFrame is redrawn for each card; chips are
+  plain coloured frames (a phone draws one viewport, not sixty).
+- **A tap is `TouchTap`, a click `MouseButton1`,** not processed by a button, and only skips the
+  board within 14 studs of you (anywhere in its car), for you alone. In Studio's device view a
+  click arrives as a touch and a TouchTap. A tap skips through `Tally.skip`: the cards between
+  pop into the row with a ripple, the total jumps, a quick high flap answers. A sting card just
+  come up and tapped past loses its hit: the player asked to move on.
+- **The clock runs only while cards come up:** one Heartbeat connection from the first card to
+  the total landing, then disconnected; a board taken down cancels its wait and its clock.
+- A board built late (you stream in, or join the lobby while the car still shows the climb)
+  plays from the top, as the photos and cash already did.
+
+Not chosen: two ViewportFrames taking turns so the dropping card keeps its picture (the ticket's
+phone budget; the drop is quick enough to read as the card turning over); the haul beside the
+photos (538 by 291 px holds one or the other at a size a phone reads); hiding the grade's name
+(every card game names its rarity, and a colour alone fails the colour-blind).
+

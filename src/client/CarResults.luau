@@ -14,23 +14,44 @@
 
 	From the car's `Boarding.ResultsAttribute` (ClimbEnd.encodeResults), which the server sets as
 	the group is stood back in and clears as the car next leaves. Anyone in the lobby can see it.
-	Each board is a plain client part on the car's back wall with a SurfaceGui, sized to read on a
-	phone from the back of the car; the photos drop onto it one after another as the black lifts.
+	Each board is a plain client part on the car's back wall with a SurfaceGui (kept in your
+	PlayerGui, shown on the part), sized to read on a phone from the back of the car; the photos
+	drop onto it one after another as the black lifts.
 	Nothing runs per frame: a board is built when its value changes, its tweens play once (a figure
 	counting up is a tween too, its text set as its value moves).
+
+	Then the haul (S5-01b, D-429; `Tally`): once the cash has landed, the page turns over and what
+	the team carried home flips up card by card in the board's middle, cheapest first, as Lethal
+	Company's end of day tallies the scrap brought in: each card its 3D picture, its name, its
+	grade's colour and what it sells for at your chest, with a flap; it drops into the row along
+	the board's foot as the next flips up, and the total beside it ticks higher with each. A
+	Secret, the floor's big find, a find still sealed or a Legendary hits the board: a bang under
+	its grade's own burst (a sealed pack's crinkle), a flash of its colour, a swell, a beat of
+	quiet. The best stays face up as the total lands. A tap (or a click) near the board skips to
+	the next sting card, the cards between landing at once; a long haul rattles through its cheap
+	ones (`Tally.times`). One picture is drawn at a time (the stage card's), and the haul's clock
+	steps only while its cards are coming up.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Boarding = require(ReplicatedStorage.Shared.Lobby.Boarding)
+local BoxPanel = require(ReplicatedStorage.Shared.Home.BoxPanel)
+local Boxes = require(ReplicatedStorage.Shared.Boxes)
 local Brix = require(ReplicatedStorage.Brix)
 local Cash = require(ReplicatedStorage.Shared.Cash)
 local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local Coins = require(ReplicatedStorage.Shared.Coins)
 local Elevator = require(ReplicatedStorage.Shared.Elevator)
+local Grades = require(ReplicatedStorage.Shared.Grades)
+local Pack = require(ReplicatedStorage.Shared.Finds.Pack)
+local Tally = require(ReplicatedStorage.Shared.Tally)
+local ToolPicture = require(script.Parent.ToolPicture)
 
 local HEAVY = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
 local BOLD = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
@@ -71,11 +92,47 @@ local DROP = 18
 local DROP_AT = 0.5
 local DROP_EVERY = 0.12
 local DROP_IN = 0.32
+-- The haul's page (S5-01b), px on the canvas: the stage card face up left of the middle (its
+-- centre, size, and the picture's height inside it), the total centred to its right, and the row
+-- of landed chips along the foot (its left, width, top and the chips' height).
+local STAGE_X, STAGE_Y = 186, 113
+local STAGE_W, STAGE_H = 172, 210
+local PICTURE_H = 120
+local TOTAL_X, TOTAL_W = 412, 210
+local ROW_X, ROW_W, ROW_Y, CHIP_H = 16, 506, 228, 48
+-- The card's face, and how far its picture's backdrop and a chip lean from its grade's colour
+-- towards the dark: the picture sits on a deep wash of it, a chip is the colour itself, dimmed.
+local CARD = Color3.fromRGB(26, 22, 20)
+local BACKDROP = 0.72
+local CHIP = 0.3
+local CRACKED = Color3.fromRGB(214, 104, 92)
+-- Studs from the board within which your tap skips its haul ahead: anywhere in the car.
+local SKIP_REACH = 14
+-- Seconds between one skipped card's chip popping into the row and the next: a ripple.
+local RIPPLE = 0.012
 
-type Board = { value: string, part: Part, tweens: { Tween } }
+type Board = {
+	value: string,
+	part: Part,
+	gui: SurfaceGui,
+	tweens: { Tween },
+	stops: { () -> () },
+	skip: (() -> ())?,
+}
+
+local function gradeColour(grade: string): Color3
+	local c = Grades.Colours[grade] or Grades.Colours.Common
+	return Color3.fromRGB(c[1], c[2], c[3])
+end
+
+local function corner(parent: Instance, px: number)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, px)
+	c.Parent = parent
+end
 
 -- A sound on the board from one of the coins' recordings (Coins' sounds), heard from the wall.
-local function sound(spec: Coins.Sound, parent: Instance): Sound
+local function sound(spec: Tally.Sound, parent: Instance): Sound
 	local s = Instance.new("Sound")
 	s.SoundId = spec.id
 	s.Volume = spec.volume
@@ -126,9 +183,13 @@ function CarResults.new(): Brix.System
 	local function remove(model: Model)
 		local b = boards[model]
 		if b then
+			for _, stop in b.stops do
+				stop()
+			end
 			for _, tween in b.tweens do
 				tween:Cancel()
 			end
+			b.gui:Destroy()
 			b.part:Destroy()
 			boards[model] = nil
 		end
@@ -229,6 +290,376 @@ function CarResults.new(): Brix.System
 		run:Play()
 	end
 
+	-- A one-shot sound from the board, gone once played.
+	local function once(spec: Tally.Sound, part: Part, pitch: number?)
+		local s = sound(spec, part)
+		if pitch then
+			s.PlaybackSpeed = pitch
+		end
+		s.Ended:Once(function()
+			s:Destroy()
+		end)
+		s:Play()
+	end
+
+	-- The haul on the board (S5-01b): the page turns from the team to it `at` seconds in, then each
+	-- card flips up on the stage, drops into the row as the next comes, and the total ticks up.
+	local function tally(
+		part: Part,
+		back: Frame,
+		team: Frame,
+		cards: { Tally.Card },
+		at: number,
+		board: Board
+	)
+		local n = #cards
+		local starts, ends = Tally.times(cards)
+		local final = 0
+		for _, card in cards do
+			final += card.worth
+		end
+		final = math.max(math.floor(final), 1)
+		local tweens = board.tweens
+		local function play(inst: Instance, info: TweenInfo, goal: { [string]: any }) -- any: tween goals
+			local t = TweenService:Create(inst, info, goal)
+			table.insert(tweens, t)
+			t:Play()
+		end
+		back.ClipsDescendants = true
+
+		local page = Instance.new("Frame")
+		page.Name = "Haul"
+		page.BackgroundTransparency = 1
+		page.Size = UDim2.fromScale(1, 1)
+		page.Position = UDim2.fromScale(0, 1)
+		page.Parent = back
+
+		-- the stage: the card face up, flipped open by its width
+		local stage = Instance.new("Frame")
+		stage.Name = "Stage"
+		stage.AnchorPoint = Vector2.new(0.5, 0.5)
+		stage.Position = UDim2.fromOffset(STAGE_X, STAGE_Y)
+		stage.Size = UDim2.fromOffset(0, STAGE_H)
+		stage.BackgroundColor3 = CARD
+		stage.ClipsDescendants = true
+		stage.Visible = false
+		stage.ZIndex = 3
+		stage.Parent = page
+		corner(stage, 12)
+		local edge = Instance.new("UIStroke")
+		edge.Thickness = 3
+		edge.Parent = stage
+		local swell = Instance.new("UIScale")
+		swell.Parent = stage
+		local picture = Instance.new("ViewportFrame")
+		picture.Name = "Picture"
+		picture.Position = UDim2.fromOffset(8, 8)
+		picture.Size = UDim2.new(1, -16, 0, PICTURE_H)
+		picture.BorderSizePixel = 0
+		picture.ZIndex = 3
+		picture.Parent = stage
+		local function line(
+			name: string,
+			font: Font,
+			colour: Color3,
+			size: number,
+			y: number,
+			h: number
+		): TextLabel
+			local l = label(stage, name, font, colour, size)
+			l.Position = UDim2.fromOffset(6, y)
+			l.Size = UDim2.new(1, -12, 0, h)
+			l.TextScaled = true
+			l.ZIndex = 3
+			local most = Instance.new("UITextSizeConstraint")
+			most.MaxTextSize = size
+			most.Parent = l
+			return l
+		end
+		local named = line("Name", BOLD, INK, 24, PICTURE_H + 12, 26)
+		local graded = line("Grade", BOLD, INK, 19, PICTURE_H + 38, 20)
+		local worth = line("Worth", HEAVY, GOLD, 28, PICTURE_H + 58, 30)
+
+		-- the total, beside the stage
+		local caption = label(page, "Caption", PLAIN, INK, 24)
+		caption.AnchorPoint = Vector2.new(0.5, 0)
+		caption.Position = UDim2.fromOffset(TOTAL_X, 70)
+		caption.Size = UDim2.fromOffset(TOTAL_W, 28)
+		caption.TextTransparency = 0.25
+		caption.Text = Tally.Copy.Total
+		local total = label(page, "Total", HEAVY, GOLD, 64)
+		total.AnchorPoint = Vector2.new(0.5, 0)
+		total.Position = UDim2.fromOffset(TOTAL_X, 98)
+		total.Size = UDim2.fromOffset(TOTAL_W, 68)
+		total.TextScaled = true
+		local most = Instance.new("UITextSizeConstraint")
+		most.MaxTextSize = 64
+		most.Parent = total
+		total.Text = Cash.text(0)
+		local totalSwell = Instance.new("UIScale")
+		totalSwell.Parent = total
+
+		-- a sting card's flash of its grade's colour, over the whole page
+		local flash = Instance.new("Frame")
+		flash.Name = "Flash"
+		flash.Size = UDim2.fromScale(1, 1)
+		flash.BackgroundTransparency = 1
+		flash.BorderSizePixel = 0
+		flash.ZIndex = 5
+		flash.Parent = page
+
+		-- the row: every card but the last ends there as a chip of its grade's colour
+		local chipW, gap = Tally.row(n - 1, ROW_W)
+		local span = (n - 1) * chipW + math.max(n - 2, 0) * gap
+		local rowLeft = ROW_X + (ROW_W - span) / 2
+		local function slot(i: number): UDim2
+			return UDim2.fromOffset(
+				rowLeft + (i - 1) * (chipW + gap) + chipW / 2,
+				ROW_Y + CHIP_H / 2
+			)
+		end
+		local function chip(i: number): Frame
+			local card = cards[i]
+			local c = Instance.new("Frame")
+			c.Name = `Chip{i}`
+			c.AnchorPoint = Vector2.new(0.5, 0.5)
+			c.BackgroundColor3 = gradeColour(card.grade):Lerp(Color3.new(0, 0, 0), CHIP)
+			c.BorderSizePixel = 0
+			c.ZIndex = 2
+			corner(c, if chipW >= 14 then 6 else 2)
+			if chipW >= 34 then
+				local w = label(c, "Worth", BOLD, INK, 16)
+				w.Size = UDim2.fromScale(1, 1)
+				w.ZIndex = 2
+				w.Text = Cash.text(card.worth)
+			end
+			c.Parent = page
+			return c
+		end
+		-- the card on the stage turns over to its colour and drops into its place in the row
+		local function fly(i: number, within: number)
+			local c = chip(i)
+			c.Position = UDim2.fromOffset(STAGE_X, STAGE_Y)
+			c.Size = UDim2.fromOffset(STAGE_W, STAGE_H)
+			play(
+				c,
+				TweenInfo.new(
+					math.min(Tally.Drop, within * 0.8),
+					Enum.EasingStyle.Quad,
+					Enum.EasingDirection.Out
+				),
+				{ Position = slot(i), Size = UDim2.fromOffset(chipW, CHIP_H) }
+			)
+		end
+		-- a card skipped past lands in the row at once, popping in
+		local function pop(i: number, k: number)
+			local c = chip(i)
+			c.Position = slot(i)
+			c.Size = UDim2.fromOffset(chipW, CHIP_H)
+			local grow = Instance.new("UIScale")
+			grow.Scale = 0
+			grow.Parent = c
+			play(
+				grow,
+				TweenInfo.new(
+					0.16,
+					Enum.EasingStyle.Back,
+					Enum.EasingDirection.Out,
+					0,
+					false,
+					k * RIPPLE
+				),
+				{ Scale = 1 }
+			)
+		end
+		local rank: { [string]: number } = {}
+		for r, g in Grades.Names do
+			rank[g] = r
+		end
+		-- the next card flips up on the stage, its picture drawn as it opens
+		local function flip(i: number)
+			local card = cards[i]
+			local colour = gradeColour(card.grade)
+			ToolPicture.draw(picture, card.key)
+			picture.BackgroundColor3 = colour:Lerp(CARD, BACKDROP)
+			picture.ImageTransparency = 1
+			edge.Color = colour
+			named.Text = if card.sealed then `{BoxPanel.Sealed} {card.name}` else card.name
+			graded.Text = if card.cracked
+				then `{card.grade} · {Tally.Copy.Cracked}`
+				else card.grade
+			graded.TextColor3 = if card.cracked then CRACKED else colour
+			worth.Text = Cash.text(card.worth)
+			stage.Visible = true
+			stage.Size = UDim2.fromOffset(0, STAGE_H)
+			swell.Scale = 1
+			local open = TweenInfo.new(Tally.Land, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+			play(stage, open, { Size = UDim2.fromOffset(STAGE_W, STAGE_H) })
+			play(picture, TweenInfo.new(Tally.Land), { ImageTransparency = 0 })
+			once(
+				Tally.Flap,
+				part,
+				(Tally.Flap.pitch or 1) - Tally.FlapDrop * ((rank[card.grade] or 1) - 1)
+			)
+		end
+		-- a sting card hits the board: a bang under its grade's burst, a flash, a swell
+		local function sting(i: number)
+			local card = cards[i]
+			local colour = gradeColour(card.grade)
+			once(Tally.Hit, part)
+			if card.sting == "Sealed" then
+				once(Pack.Crinkle, part)
+			else
+				local b = (Boxes.Reveal[card.grade] or Boxes.Reveal.Common).burst
+				once({
+					id = b.id,
+					from = b.from,
+					length = b.length,
+					volume = b.volume,
+					pitch = b.pitch,
+				}, part)
+			end
+			flash.BackgroundColor3 = colour
+			flash.BackgroundTransparency = Tally.FlashFrom
+			play(
+				flash,
+				TweenInfo.new(Tally.Flash, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+				{ BackgroundTransparency = 1 }
+			)
+			swell.Scale = Tally.Swell
+			play(
+				swell,
+				TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+				{ Scale = 1 }
+			)
+			edge.Thickness = 7
+			play(
+				edge,
+				TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+				{ Thickness = 3 }
+			)
+		end
+
+		-- the total's tick, two taking turns, higher as it climbs
+		local ticks = { sound(Coins.Tick, part), sound(Coins.Tick, part) }
+		local turn, lastTick = 0, -math.huge
+		local function tick(share: number)
+			local now = os.clock()
+			if now - lastTick < Cash.TickGap then
+				return
+			end
+			lastTick = now
+			turn = turn % #ticks + 1
+			local t = ticks[turn]
+			t.PlaybackSpeed = (Coins.Tick.pitch or 1) + Cash.TickRise * share
+			t:Play()
+		end
+
+		local began = 0
+		local shown, stung, figure = 0, 0, 0
+		local loop: RBXScriptConnection? = nil
+		local alive = true
+		local function finish()
+			if loop then
+				loop:Disconnect()
+				loop = nil
+			end
+			board.skip = nil
+			total.Text = Cash.text(final)
+			totalSwell.Scale = Cash.Pop
+			play(
+				totalSwell,
+				TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+				{ Scale = 1 }
+			)
+			once(Coins.Chink, part)
+			once(Coins.Jingle, part)
+		end
+		local function step()
+			local t = os.clock() - began
+			local up = shown
+			while up < n and starts[up + 1] <= t + 1e-6 do
+				up += 1
+			end
+			if up > shown then
+				if shown > 0 then
+					fly(shown, (starts[up + 1] or ends) - starts[up])
+				end
+				for j = shown + 1, up - 1 do
+					pop(j, j - shown)
+				end
+				flip(up)
+				shown = up
+			end
+			if shown > stung and t >= starts[shown] + Tally.Land then
+				stung = shown
+				if cards[shown].sting then
+					sting(shown)
+				end
+			end
+			local v = if t >= ends then final else Tally.total(cards, starts, ends, t)
+			if v ~= figure then
+				figure = v
+				total.Text = Cash.text(v)
+				tick(v / final)
+			end
+			if t >= ends then
+				finish()
+			end
+		end
+		local function skip()
+			local t = os.clock() - began
+			local to = Tally.skip(cards, starts, ends, t)
+			if to <= t + 0.05 then
+				return
+			end
+			began -= to - t
+			once(Tally.Flap, part, 1.4)
+			step()
+		end
+		table.insert(board.stops, function()
+			alive = false
+			board.skip = nil
+			if loop then
+				loop:Disconnect()
+				loop = nil
+			end
+		end)
+		task.delay(at, function()
+			if not alive then
+				return
+			end
+			-- the page turns: the team lifts off the board and the haul rises into its place
+			play(
+				team,
+				TweenInfo.new(Tally.Turn, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+				{ Position = UDim2.fromScale(0, -1) }
+			)
+			play(
+				page,
+				TweenInfo.new(
+					Tally.Turn,
+					Enum.EasingStyle.Back,
+					Enum.EasingDirection.Out,
+					0,
+					false,
+					Tally.Turn * 0.35
+				),
+				{ Position = UDim2.fromScale(0, 0) }
+			)
+			once(Tally.Flap, part, 0.8)
+			task.delay(Tally.Turn * 1.3, function()
+				if not alive then
+					return
+				end
+				began = os.clock()
+				loop = RunService.Heartbeat:Connect(step)
+				board.skip = skip
+				step()
+			end)
+		end)
+	end
+
 	local function build(model: Model, results: ClimbEnd.Results, value: string)
 		local f = folder
 		if not f then
@@ -254,7 +685,10 @@ function CarResults.new(): Brix.System
 		gui.LightInfluence = LIGHT
 		gui.Brightness = 1
 		gui.MaxDistance = 120
-		gui.Parent = part
+		-- held in your PlayerGui and shown on the part: a ViewportFrame (the haul's picture) draws
+		-- nothing on a SurfaceGui parented into the Workspace (STUDIO.md)
+		gui.ResetOnSpawn = false
+		gui.Adornee = part
 
 		local back = Instance.new("Frame")
 		back.Name = "Back"
@@ -267,20 +701,25 @@ function CarResults.new(): Brix.System
 			then ColorSequence.new(KEPT_TOP, KEPT_BOTTOM)
 			else ColorSequence.new(TOP_TOP, TOP_BOTTOM)
 		gradient.Parent = back
-		local corner = Instance.new("UICorner")
-		corner.CornerRadius = UDim.new(0, 14)
-		corner.Parent = back
+		corner(back, 14)
 		local stroke = Instance.new("UIStroke")
 		stroke.Color = if kept then LOST_FLOOR else WARM
 		stroke.Transparency = 0.55
 		stroke.Thickness = 3
 		stroke.Parent = back
 
-		local title = label(back, "Title", HEAVY, if kept then COLD else WARM, 76)
+		-- the team's page: who made it, how far, the photos and their cash; the haul turns it over
+		local team = Instance.new("Frame")
+		team.Name = "Team"
+		team.BackgroundTransparency = 1
+		team.Size = UDim2.fromScale(1, 1)
+		team.Parent = back
+
+		local title = label(team, "Title", HEAVY, if kept then COLD else WARM, 76)
 		title.Position = UDim2.fromOffset(0, 6)
 		title.Size = UDim2.new(1, 0, 0, 78)
 		title.Text = if kept then ClimbEnd.Copy.Caught else ClimbEnd.Copy.Top
-		local stats = label(back, "Stats", PLAIN, INK, 30)
+		local stats = label(team, "Stats", PLAIN, INK, 30)
 		stats.Position = UDim2.fromOffset(0, 84)
 		stats.Size = UDim2.new(1, 0, 0, 32)
 		stats.Text = `{string.format(ClimbEnd.Copy.Floor, results.floor)}   ·   {ClimbEnd.clock(
@@ -296,7 +735,7 @@ function CarResults.new(): Brix.System
 			math.max(#results.rows, 1) * (PHOTO + CARD_GAP) - CARD_GAP,
 			PHOTO + UNDER
 		)
-		row.Parent = back
+		row.Parent = team
 		local layout = Instance.new("UIListLayout")
 		layout.FillDirection = Enum.FillDirection.Horizontal
 		layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -305,6 +744,10 @@ function CarResults.new(): Brix.System
 		layout.Parent = row
 
 		local tweens: { Tween } = {}
+		local board: Board =
+			{ value = value, part = part, gui = gui, tweens = tweens, stops = {}, skip = nil }
+		-- the page holds until the photos are pinned and the last cash has landed (with its swell)
+		local settled = DROP_AT + math.max(#results.rows - 1, 0) * DROP_EVERY + DROP_IN
 		for i, r in results.rows do
 			local lost = r.fate ~= "Out"
 			local holder = Instance.new("Frame")
@@ -365,6 +808,7 @@ function CarResults.new(): Brix.System
 			figure.Text = if cash > 0 then `+{Cash.text(0)}` else Cash.text(0)
 			if cash > 0 then
 				count(part, figure, cash, mine, tweens)
+				settled = math.max(settled, Cash.CountAt + Cash.countFor(cash) + 0.4)
 			end
 			-- dropped on one after another, pinned with a little give
 			local info = TweenInfo.new(
@@ -402,8 +846,14 @@ function CarResults.new(): Brix.System
 			end
 		end
 
+		local cards = Tally.cards(Tally.decode(results.haul))
+		if #cards > 0 then
+			tally(part, back, team, cards, settled + Tally.Read, board)
+		end
+
 		part.Parent = f
-		boards[model] = { value = value, part = part, tweens = tweens }
+		gui.Parent = Players.LocalPlayer:FindFirstChildOfClass("PlayerGui") or part
+		boards[model] = board
 	end
 
 	-- The car's results changed (or it streamed in): its board built afresh, or taken down.
@@ -467,6 +917,41 @@ function CarResults.new(): Brix.System
 			for _, inst in CollectionService:GetTagged(Elevator.Tag) do
 				added(inst)
 			end
+			-- a tap or a click anywhere skips the nearest running haul ahead, for you alone
+			local function tapped()
+				local character = Players.LocalPlayer.Character
+				local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
+				if not (root and root:IsA("BasePart")) then
+					return
+				end
+				local best: Board?, nearest = nil, SKIP_REACH
+				for _, b in boards do
+					local d = (b.part.Position - root.Position).Magnitude
+					if b.skip and d < nearest then
+						best, nearest = b, d
+					end
+				end
+				local go = if best then best.skip else nil
+				if go then
+					go()
+				end
+			end
+			table.insert(
+				connections,
+				UserInputService.TouchTap:Connect(function(_, processed: boolean)
+					if not processed then
+						tapped()
+					end
+				end)
+			)
+			table.insert(
+				connections,
+				UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
+					if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 then
+						tapped()
+					end
+				end)
+			)
 		end,
 		stop = function(_: any)
 			for _, c in connections do

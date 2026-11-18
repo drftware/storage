@@ -225,14 +225,26 @@ nowhere else.
   out of your box, tear it on a floor (sprint and drop it), and ride with it: it's theirs plain.
   Decide (my defaults): the card's word "Sealed"; a sealed find can't be worn (the hard hat in
   its carton) or set out in your home yet (S5-02b2c2 will stand it in its pack).
-- [ ] **Decide: how the haul comes up on the car's board** (S5-01a, D-428; nothing on screen yet,
-  S5-01b draws it). My defaults: 1. the finds come up on the board on the lobby car's back wall,
+- [ ] **Decide: how the haul comes up on the car's board** (S5-01a, D-428; drawn by S5-01b,
+  D-429, pictures in `docs/art/S5-01b-haul-*.jpg`). My defaults: 1. the finds come up on the board on the lobby car's back wall,
   where you stand after Again, not on the black "Caught" screen before it; 2. cheapest first,
   the most valuable last; 3. four kinds land with their own sting and a pause: a Secret (the
   longest), the jukebox, a find still sealed, a Legendary; 4. a short haul gives each card about
   two thirds of a second, a long one speeds its cheap cards up to seven a second so it's done in
   about eight seconds, inside the car's 20-second count; 5. a tap skips to the next sting card;
-  6. only the finds of friends standing in the car count (a friend who left took theirs).
+  6. only the finds of friends standing in the car count (a friend who left took theirs);
+  7. the board shows the team's photos and cash first, then its page turns over to the haul;
+  8. the card says the grade's name in its colour ("Legendary"), a cracked one "Rare · Cracked",
+  and the total is headed "Total" in dollars.
+- [ ] **Watch and listen to the haul come up** (S5-01b, D-429; seen in Studio Play, not heard).
+  On a phone (or Studio's Galaxy A16 device), climb with a few finds, at least one sealed (the
+  dev command `DealFind "Teddy sealed"` on floor 2) and one Rare or better, and ride back to the
+  car. Look for: the page turning from the photos to the haul once the cash lands; each card
+  flipping open with a paper flap and its 3D picture, then dropping into the row; the total
+  ticking higher as it climbs; a sealed find, a Legendary or a Secret hitting the board with a
+  bang, a flash of its colour and a pause; the best card left face up as the total swells with
+  a jingle. Tap the screen mid-haul: it jumps to the next big card. Say if any sound is too loud,
+  too quiet or wrong, and whether it all fits before the car leaves.
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

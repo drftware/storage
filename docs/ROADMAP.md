@@ -2506,7 +2506,10 @@ Done when players watch the results to the end and change their perks between cl
     with the car's results. GatePay's kept event tells ClimbEnds each rider's own finds (not a
     friend's taken from home); ClimbEnds gathers the climb's haul and puts it on the board's
     value. Studio's Output prints the haul as the group is stood back in the car.
-  - [ ] **S5-01b The cards on the board.** The moment: each card flips up big in the board's
+  - [x] **S5-01b The cards on the board.** Done Nov 18 (D-429; CarResults' haul page, `Tally.row`,
+    `docs/art/S5-01b-haul-*.jpg`): seen in Studio Play at A16 size with a set haul (sealed, cracked,
+    Legendary, Secret) and a tap skipping ahead; not after a real climb (S5-01d) nor heard by ear.
+    The moment: each card flips up big in the board's
     middle (its 3D picture, name, the grade's colour, its worth), then drops into the row below
     as the next comes; the total ticks with a rising chink; a sting card (Secret, Legendary,
     sealed, the jukebox) lands with a hit, a flash in its grade's colour and a beat of quiet. A

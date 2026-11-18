@@ -78,6 +78,66 @@ Tally.Count = 0.4
 -- The most cards a board shows: past it (a haul no climb keeps today), the cheapest are left off.
 Tally.Cap = 60
 
+-- The board (S5-01b, CarResults): the team's page holds this long once its photos are pinned and
+-- its cash has landed, then turns over to the haul: long enough to see who made it, never a wait.
+Tally.Read = 0.9
+-- Seconds the page takes to turn from the team to the haul (the team lifts off, the haul rises).
+Tally.Turn = 0.42
+-- Seconds the card on the stage takes to drop into its chip in the row as the next flips up, at
+-- most: quicker when a long haul's next card comes sooner, so the row never lags the stage.
+Tally.Drop = 0.24
+-- How big a sting card swells as it lands, before settling: it hits the board.
+Tally.Swell = 1.24
+-- Seconds a sting card's flash of its grade's colour takes to fade off the board.
+Tally.Flash = 0.6
+-- How strong that flash starts (0 a solid wash of colour, 1 none): the board still reads through.
+Tally.FlashFrom = 0.4
+-- The widest a chip in the row gets (px on the board's canvas), and the gap between two; once
+-- they crowd (a long haul) the gap is a hairline, so even `Cap` chips fit.
+Tally.ChipMost = 44
+Tally.ChipGap = 4
+
+-- The board's few words: the haul's total, and a cracked find's mark beside its grade.
+Tally.Copy = table.freeze({ Total = "Total", Cracked = "Cracked" })
+
+export type Sound = { id: string, from: number, length: number, volume: number, pitch: number? }
+-- A card flipping up: "File Folder Movement 5", the sheet's sharp flap (NoteView's card, the
+-- code's note coming out of its box), its flap 0.04 s in.
+Tally.Flap = table.freeze({
+	id = "rbxassetid://9114409576",
+	from = 0.74,
+	length = 0.26,
+	volume = 0.55,
+	pitch = 1.08,
+}) :: Sound
+-- How much lower each grade's flap is than the last: the better the find, the heavier the card.
+Tally.FlapDrop = 0.04
+-- A sting card hitting the board: the slam's bang (a gas tank dropped on loose metal, Pay's
+-- PopBang), pitched well down, under the grade's own burst (Boxes.Reveal) or a sealed pack's
+-- crinkle.
+Tally.Hit = table.freeze({
+	id = "rbxassetid://9120381070",
+	from = 0.36,
+	length = 0.75,
+	volume = 0.8,
+	pitch = 0.68,
+}) :: Sound
+
+-- The row under the stage: how wide each of `n` chips is, and the gap between two, to fit `width`
+-- (px). As wide as `ChipMost` while they fit; past that they crowd, the gap a hairline.
+function Tally.row(n: number, width: number): (number, number)
+	if n <= 0 then
+		return 0, 0
+	end
+	local gap = Tally.ChipGap
+	local w = (width + gap) / n - gap
+	if w < Tally.ChipGap * 3 then
+		gap = 1
+		w = (width + gap) / n - gap
+	end
+	return math.min(w, Tally.ChipMost), gap
+end
+
 local RANK: { [string]: number } = {}
 for i, grade in Grades.Names do
 	RANK[grade] = i

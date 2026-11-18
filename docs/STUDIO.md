@@ -3522,3 +3522,22 @@ verified: a doc page, Studio, or "untested".
   (Slots' `recall`), GatePay prints "<name> out of <id>'s job box: Back" and the save's last
   write lands within a few seconds (a torn sealed one came home plain). Studio's Stop settles
   nothing.
+
+## The haul's board in Play (S5-01b, Nov 18)
+
+- **A ViewportFrame draws nothing on a SurfaceGui parented to a part in the Workspace.** The car
+  board's find picture was blank in Play (its model and camera in place, ImageTransparency 0);
+  turning off ClipsDescendants, LightInfluence and the part's full transparency changed nothing.
+  The same SurfaceGui moved into PlayerGui with `Adornee` set to the part drew it at once (the
+  home's mirror is built that way). Put any 3D picture on a wall in a PlayerGui SurfaceGui.
+- **A child named `Name` hides behind the property:** `stage.Name.Text` reads the frame's own
+  Name string. Use `FindFirstChild("Name")` in test scripts.
+- **The MCP's mouse click reaches the game in the device view as a touch:** `user_mouse_input`'s
+  left click fired `InputBegan` (Touch, not processed) and then `TouchTap`, so a tap-anywhere
+  skip can be driven from it. Log `os.clock()` stamps in the Client to tell a skip from the
+  board's own pace: each MCP call takes a second or more.
+- **Watching the lobby car's board:** standing in a car starts its count and it leaves with you.
+  Anchor the character just outside its gate (car pivot * (0, 3, -1.6)), bind a camera to the
+  front row ((0, 4.6, 6.4) in the car's frame, looking at (0, 5.5, 11.9)), set the car's
+  `Results` from the Server (`ClimbEnd.encodeResults` with `Tally.encode`), and take timed macOS
+  window captures (`screen_capture` timed out three times here).
