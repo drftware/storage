@@ -121,6 +121,18 @@ ok(
 )
 ok((Looks.decode(Looks.encode(sage)) :: Looks.Chosen).card == "Stencil", "no card: the stencil")
 ok(Looks.cardOf("Neon") ~= nil and Looks.cardOf("Gone") == nil, "card styles by id")
+-- What a card style's chip wears on the front tab (S5-03g3c): nothing on the Starter stencil, a
+-- coin on the cash ones, the Robux mark on the neon.
+ok(Looks.cardLock("Stencil") == nil, "the stencil is every home's: no mark")
+ok(Looks.cardLock("Painted") == "Cash" and Looks.cardLock("Chalk") == "Cash", "cash styles")
+ok(Looks.cardLock("Neon") == "Robux", "the neon is sold for Robux")
+ok(Looks.cardLock("Gone") == "Cash", "a style not offered is locked")
+for _, style in Specs.Cards do
+	ok(
+		(Looks.cardLock(style.Id) == nil) == (Looks.pick(start, "card", style.Id) ~= nil),
+		`{style.Id}: picked exactly when its chip is unmarked`
+	)
+end
 
 -- The colour's roll down the slats (slat 1 at the foot): top first, the coil's with the top,
 -- an open door's coil round from its outside wrap; every slat turned by the roll's end.

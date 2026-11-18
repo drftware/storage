@@ -195,6 +195,16 @@ nowhere else.
   on a phone: is the grind (the roll-up curtain's rumble pitched down) heavy enough, the clunk
   solid, the shake too much? My defaults, say which to change: the holder sees it only when next
   inside (bought at the counter, you're never home when it happens); others see it only if near.
+- [ ] **Choosing your name card's style** (S5-03g3c, D-357). In your home tap Arrange, then the
+  little door tab. Under the door colours is a row of four little plates with your name on them:
+  stencilled steel (yours), a painted board and chalk (a gold coin on each) and neon (the Robux
+  mark). Tap the neon: it shakes and its mark pops, nothing else. Tap the steel: the screen dips
+  to black and comes up out in the hall facing your plate; tap a door colour and it dips back
+  inside. To see a new plate swing down, on the Server run
+  `workspace.Lobby:FindFirstChild("Unit1", true):SetAttribute("LookCard", "Chalk")` (your
+  home's unit) while you look at it: the chalk plate falls on its top edge, bounces twice and
+  clacks. Listen on a phone for the clack; say if the dip is too quick or the plate too small in
+  the picture. My defaults: the plates dim a shade while locked; the camera stands 11 studs out.
 - [ ] **Your home's walls by size and Small's doorway** (S5-03h5a and h5b, D-354, D-355; seen in
   Studio Play at all four sizes). Play and walk into your Small home: the walls close round you,
   the lamp over the middle, and from the hall the doorway is plainly narrower than a Medium's.

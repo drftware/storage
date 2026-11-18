@@ -81,6 +81,15 @@ Arrange.Feel = table.freeze({
 	FrontBack = 13.4,
 	FrontEye = 6.3,
 	FrontAim = 4.5,
+	-- After a name card chip on the front tab (S5-03g3c), the camera stands out in the hall
+	-- facing your plate: this far out from the wall (studs), this far under the plate's middle,
+	-- looking at the wall this far under it, so on the Galaxy A16 the plate sits in the middle
+	-- of the picture over the tray with the top of your door under it. The camera dips through
+	-- black (`Dip` seconds each way) to get out there and back, never through the wall.
+	HallOut = 11,
+	HallBelow = 3.5,
+	HallAim = 3.4,
+	Dip = 0.16,
 	-- The lifted find rides this high over where it would stand (studs), and settles in this long
 	-- (seconds) when it lands; it follows the finger this quickly (seconds to close half the gap).
 	Hover = 0.6,

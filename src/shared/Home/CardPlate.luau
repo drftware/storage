@@ -48,6 +48,7 @@ local PLAIN: { [string]: { material: Enum.Material, colour: string } } = {
 	CardNeonBack = { material = Enum.Material.SmoothPlastic, colour = "Paint" },
 	CardNeonTube = { material = Enum.Material.Neon, colour = "Glow" },
 }
+CardPlate.Plain = table.freeze(PLAIN) -- the front tab's chips dot the bolts and screws in these
 
 local function vec(v: { number }): Vector3
 	return Vector3.new(v[1], v[2], v[3])
@@ -61,6 +62,8 @@ local function weight(name: string): Enum.FontWeight
 	end
 	return Enum.FontWeight.Regular
 end
+
+CardPlate.weight = weight -- a style's `Weight` as Enum.FontWeight (the front tab's chips too)
 
 -- Style `id`'s row, or the Starter stencil's for nil or one not offered.
 function CardPlate.style(id: unknown): Specs.CardStyle

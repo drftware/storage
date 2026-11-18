@@ -55,6 +55,7 @@ local Grades = require(ReplicatedStorage.Shared.Grades)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Layout = require(ReplicatedStorage.Shared.Home.Layout)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
+local CardPlate = require(ReplicatedStorage.Shared.Home.CardPlate)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local LooksTab = require(script.Parent.LooksTab)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
@@ -76,6 +77,7 @@ local HEAVY = Font.fromEnum(Enum.Font.BuilderSansExtraBold)
 local RISE = TweenInfo.new(Feel.Rise, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local POP = TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local QUICK = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local DIP = TweenInfo.new(Feel.Dip, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
 local LAND = TweenInfo.new(Feel.Land, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local BACK = TweenInfo.new(Feel.Back, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local FILL = TweenInfo.new(Feel.Fill, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -264,6 +266,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	-- What moves the camera now (the ease over the room, its swing between tabs, the ease back):
 	-- a new move stops it, so two never fight over the camera.
 	local moving: Tween? = nil
+	-- What the front tab shows (S5-03g3c): the door from inside, or after a card chip your
+	-- plate from the hall. Back to the door each time Arrange opens.
+	local frontAt: "door" | "card" = "door"
 	-- The limit bar: how many finds are set out of the most the home holds (the server's count,
 	-- sent with the box), and whether that's all (then a card in the tray won't lift).
 	local meter: Frame? = nil
@@ -1298,6 +1303,28 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		return CFrame.lookAt(eye, look)
 	end
 
+	-- The camera on the front tab after a card chip: out in the hall facing your home's plate, a
+	-- little under it (S5-03g3c). Nil when the card isn't here (not streamed in).
+	local function hall(): CFrame?
+		local n = if home then home:GetAttribute(Arrange.SlotAttribute) else nil
+		if n == nil then
+			return nil
+		end
+		for _, card in CollectionService:GetTagged(Home.CardTag) do
+			local wall = card:GetAttribute(CardPlate.WallAttribute)
+			if card:GetAttribute(Home.CardSlot) == n and typeof(wall) == "CFrame" then
+				local eye = wall * Vector3.new(0, -Feel.HallBelow, -Feel.HallOut)
+				return CFrame.lookAt(eye, wall * Vector3.new(0, -Feel.HallAim, 0))
+			end
+		end
+		return nil
+	end
+
+	-- Where the front tab's camera stands now: the plate's, else the door's.
+	local function frontView(r: Arrange.Room): CFrame
+		return (if frontAt == "card" then hall() else nil) or front(r)
+	end
+
 	local function stopMoving()
 		local m = moving
 		moving = nil
@@ -1345,6 +1372,42 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end)
 		moving = tween
 		tween:Play()
+	end
+
+	-- Takes the camera to `goal` through black: out to the hall and back in, which a swing would
+	-- take through the wall. The tray and buttons stay over it.
+	local function dip(goal: CFrame)
+		local camera = Workspace.CurrentCamera
+		local g = gui
+		if not (camera and g) then
+			return
+		end
+		stopMoving()
+		local shade = Instance.new("Frame")
+		shade.Name = "Dip"
+		shade.Position = UDim2.fromOffset(0, -80) -- over the top bar's inset too
+		shade.Size = UDim2.new(1, 0, 1, 80)
+		shade.BackgroundColor3 = Color3.new(0, 0, 0)
+		shade.BackgroundTransparency = 1
+		shade.BorderSizePixel = 0
+		shade.ZIndex = 0 -- under every button and the tray
+		shade.Parent = g
+		local down = TweenService:Create(shade, DIP, { BackgroundTransparency = 0 })
+		down.Completed:Once(function(state: Enum.PlaybackState)
+			if moving == down then
+				moving = nil
+			end
+			if state == Enum.PlaybackState.Completed then
+				camera.CFrame = goal
+			end
+			local up = TweenService:Create(shade, DIP, { BackgroundTransparency = 1 })
+			up.Completed:Once(function()
+				shade:Destroy()
+			end)
+			up:Play()
+		end)
+		moving = down
+		down:Play()
 	end
 
 	-- The faint grid on the floor, a line each `Feel.Grid` studs from its edges.
@@ -1518,7 +1581,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 		local r, m = room, meter
 		if open and r and changed and (n == FRONT or was == FRONT) then
-			swing(r, if n == FRONT then front(r) else view(r))
+			if frontAt == "card" then -- in or out of the hall: through black, never the wall
+				dip(if n == FRONT then frontView(r) else view(r))
+			else
+				swing(r, if n == FRONT then front(r) else view(r))
+			end
 			if m then -- the limit bar counts finds: it rises off the top while you face the door
 				TweenService:Create(m, RISE, { Position = meterAt(n) }):Play()
 			end
@@ -1583,6 +1650,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		need("ArrangeView", true)
 		showButton(false)
 		savedCamera = camera.CFrame
+		frontAt = "door"
 		camera.CameraType = Enum.CameraType.Scriptable
 		stopMoving()
 		local rise = TweenService:Create(
@@ -1889,6 +1957,18 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 				if r then
 					r:FireServer(kind, id)
 				end
+			end,
+			focus = function(kind: Looks.Kind)
+				local r = room
+				local want: "door" | "card" = if kind == "card" then "card" else "door"
+				if not (open and r and onTab == FRONT) or want == frontAt then
+					return
+				end
+				if want == "card" and not hall() then
+					return -- the plate isn't here to look at: stay on the door
+				end
+				frontAt = want
+				dip(frontView(r))
 			end,
 			rim = RIM,
 		}

@@ -98,6 +98,22 @@ Holding.Card = {
 	Reach = 60, -- studs it's heard to: across the floor, so friends hear a home taken
 	-- A name blanked as its holder leaves fades over this many seconds.
 	Fade = 0.6,
+	-- A new style's plate swings down into place on its top edge (S5-03g3c, D-357), a hung
+	-- sign let fall, and bounces twice off the wall: the answer to a card picked on the front
+	-- tab, seen from the hall. It starts lifted `Lift` degrees out from the wall.
+	Swing = table.freeze({
+		Seconds = 0.6, -- the fall and its bounces: quick enough not to keep the picker waiting
+		Lift = 75, -- degrees out from the wall it falls from: plainly a new plate coming down
+		Reach = 80, -- studs from the camera past which a plate just changes (nobody sees it fall)
+		-- the clack as it lands: Pro Sound Effects' "Mail Box Lid Open Close Metal Flap 10" (the
+		-- job box lid's), a touch higher for a lighter plate
+		Sound = "rbxassetid://9116436662",
+		From = 1.45,
+		Length = 0.5,
+		Volume = 0.45,
+		Pitch = 0.95,
+		Hit = 0.15 / 0.95, -- seconds into the cut to its clack, at that pitch
+	}),
 }
 
 return Holding

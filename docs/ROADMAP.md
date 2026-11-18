@@ -2817,9 +2817,15 @@ Done when players watch the results to the end and change their perks between cl
           budget; from across the floor the neon reads as the brightest thing on the wall.
         Polish (g3b): a new style's plate swapping in plays (the old one down, the new one up,
         a clunk) instead of snapping; names are small from mid-floor at A16 size (`OWNER.md`).
-      - [ ] **S5-03g3c Choosing a card's style** in the paint tab: Starter styles free, Cash and
+      - [x] **S5-03g3c Choosing a card's style** in the paint tab: Starter styles free, Cash and
         Robux ones shown as not yours yet (a small coin or Robux mark on the chip, never a popup);
         a tap on one you don't own does nothing until the counter sells it (the store's rules).
+        Done Nov 18, D-357: a second row on the front tab, the camera dipping out to the hall,
+        the new plate swinging down.
+      - [ ] **S5-03g3d The other card styles sold at the counter**: the painted board and the
+        chalk for cash, the neon for Robux, as the furniture is (S5-03g4b's tab, Shop's rules,
+        granted only after the save writes); owned styles saved with a migration, `Looks.cardLock`
+        reading them, so a bought style's mark goes and its chip picks. Prices wait on `OWNER.md`.
     - [ ] **S5-03g4 Furniture at the counter in a weekly stock** (idea 19; Animal Crossing's
       Nook's Cranny and Fortnite's item shop for the stock that changes, Lethal Company's ship
       store for buying furniture with what the run earned). The moment: back from a climb with

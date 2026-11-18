@@ -11,6 +11,9 @@
 	- A name blanked as its holder leaves fades off the card.
 	- A home's light switch shows only on its holder's screen (D-263): the server answers only
 	  their press, so nobody else sees a button that does nothing.
+	- A card given a new style (S5-03g3c, D-357) has its new plate swing down into place on its
+	  top edge and bounce off the wall with a metal clack (`Holding.Card.Swing`), on every screen
+	  near enough to see it: the answer to a card picked on the front tab, and to a home taken.
 	- A neon card washes the wall round it in pink (D-332), but only the few nearest you
 	  (CardPlate.Neon.Near) throw that light on this screen, made as you come and faded out and
 	  gone as you leave, so twelve neon cards never cost a phone twelve lights (D-271).
@@ -37,6 +40,9 @@ local SETTLE = TweenInfo.new(CARD.Settle, Enum.EasingStyle.Sine, Enum.EasingDire
 local FADE = TweenInfo.new(CARD.Fade, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local NEON = CardPlate.Neon
 local WASH = TweenInfo.new(NEON.Fade, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+local SWING = CARD.Swing
+-- Bounce's out ease: the plate falls to the wall and bounces twice off it, as a hung sign does.
+local FALL = TweenInfo.new(SWING.Seconds, Enum.EasingStyle.Bounce, Enum.EasingDirection.Out)
 local LIGHT = Home.Specs.CardLight
 
 -- A neon card on this screen: its wall light exists only while it's one of the nearest.
@@ -61,6 +67,7 @@ function HomeCards.new(): HomeCards
 	local conns: { [Instance]: { RBXScriptConnection } } = {}
 	local top: { RBXScriptConnection } = {}
 	local settling: { [BasePart]: Tween } = {} -- fresh ink settling to the card's own
+	local swinging: { [BasePart]: () -> () } = {} -- a plate swinging down: puts it at rest
 	local washes: { [BasePart]: Wash } = {}
 	local ranked: { Wash } = {} -- reused at each pick
 	local untilPick = 0
@@ -78,6 +85,84 @@ function HomeCards.new(): HomeCards
 		task.delay(CARD.Stop - CARD.Start, function()
 			s:Destroy()
 		end)
+	end
+
+	-- A card's new plate swings down onto the wall on its top edge, the card's writing with it.
+	-- The parts are the server's, anchored: this moves them on this screen only and leaves each
+	-- exactly where the server put it, so nothing is left out of place.
+	local function swing(card: BasePart)
+		local stop = swinging[card]
+		if stop then
+			stop()
+		end
+		local camera = Workspace.CurrentCamera
+		local wall = card:GetAttribute(CardPlate.WallAttribute)
+		local plate = card:FindFirstChild(CardPlate.Plate)
+		if
+			not (camera and typeof(wall) == "CFrame" and plate)
+			or (camera.CFrame.Position - card.Position).Magnitude > SWING.Reach
+		then
+			return
+		end
+		-- the card's rest is worked out as the server places it, never read: a pick in the middle
+		-- of another's swing would otherwise keep the swung place as its rest
+		local face = CardPlate.style(card:GetAttribute(CardPlate.StyleAttribute)).Face
+		local parts: { BasePart } = { card }
+		local rest: { CFrame } = { wall * CFrame.new(face[1], face[2], face[3]) }
+		local height = card.Size.Y / 2
+		for _, p in plate:GetChildren() do
+			if p:IsA("BasePart") then
+				table.insert(parts, p)
+				table.insert(rest, p.CFrame)
+				height = math.max(height, wall:ToObjectSpace(p.CFrame).Y + p.Size.Y / 2)
+			end
+		end
+		local hinge = wall * CFrame.new(0, height, 0) -- the plate's top edge on the wall
+		local value = Instance.new("NumberValue")
+		local function place(a: number)
+			-- turned on the hinge out into the hall (the card's front is -Z)
+			local turn = hinge
+				* CFrame.Angles(math.rad(SWING.Lift * (1 - a)), 0, 0)
+				* hinge:Inverse()
+			for i, p in parts do
+				p.CFrame = turn * rest[i]
+			end
+		end
+		place(0)
+		value.Changed:Connect(place)
+		local t = TweenService:Create(value, FALL, { Value = 1 })
+		local function finish()
+			if swinging[card] ~= finish then
+				return
+			end
+			swinging[card] = nil
+			t:Cancel()
+			value:Destroy()
+			for i, p in parts do
+				p.CFrame = rest[i]
+			end
+		end
+		swinging[card] = finish
+		t.Completed:Once(finish)
+		local s = Instance.new("Sound")
+		s.SoundId = SWING.Sound
+		s.Volume = SWING.Volume
+		s.PlaybackSpeed = SWING.Pitch
+		s.RollOffMode = Enum.RollOffMode.InverseTapered
+		s.RollOffMinDistance = CARD.Near
+		s.RollOffMaxDistance = CARD.Reach
+		s.TimePosition = SWING.From
+		s.Parent = card
+		-- Bounce's first touch of the wall is at 1/2.75 of the fall: the clack lands on it
+		task.delay(math.max(SWING.Seconds / 2.75 - SWING.Hit, 0), function()
+			if s.Parent then
+				s:Play()
+			end
+		end)
+		task.delay(SWING.Seconds / 2.75 + SWING.Length, function()
+			s:Destroy()
+		end)
+		t:Play()
 	end
 
 	-- The fresh ink settles to the lettering's own light in the style the card wears now (the
@@ -279,6 +364,7 @@ function HomeCards.new(): HomeCards
 			end),
 			inst:GetAttributeChangedSignal(CardPlate.StyleAttribute):Connect(function()
 				restyle(inst)
+				swing(inst)
 				if settling[inst] then
 					settle(inst, gui) -- a new plate under fresh ink: settle onto its own light
 				end
@@ -343,6 +429,10 @@ function HomeCards.new(): HomeCards
 		if inst:IsA("BasePart") then
 			dropWash(inst, false)
 			settling[inst] = nil
+			local stop = swinging[inst]
+			if stop then
+				stop()
+			end
 		end
 	end
 

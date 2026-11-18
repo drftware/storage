@@ -15,15 +15,22 @@
 
 	The same tab, on its "front" page, is your door's colours (S5-03g3a2, D-330): one row of dots,
 	the door's id read from the unit's `Looks.DoorAttribute`, the roll down the slats the answer
-	(RollUpDoor.paint). The name card styles (S5-03g3c) are to take that page's second row.
+	(RollUpDoor.paint). Under them, your name card's styles (S5-03g3c, D-357): each chip a little
+	plate with your name on it in that style's paint, font and ink (Animal Crossing's catalogue),
+	the style read from `Looks.CardAttribute`. One you don't have yet wears a small coin or the
+	Robux mark (`Looks.cardLock`) and a tap only shakes it and pops the mark: no popup, no words.
+	A door or card tap also asks the host to show what it changes (`focus`): the door from inside,
+	the plate from the hall, where it swings down into place (HomeCards).
 
 	Chips are ImageLabels of the colour maps LooksView fetches once a home is near, not
 	ViewportFrames: twelve 3D views in a tray cost a low-end phone a frame each, and a flat map at
 	46 px reads the pattern as well.
 ]]
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
+local CardPlate = require(ReplicatedStorage.Shared.Home.CardPlate)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local LooksView = require(script.Parent.LooksView)
@@ -34,6 +41,7 @@ export type Page = "room" | "front" -- the room's walls and floor, or your door 
 export type Host = {
 	press: (button: GuiObject) -> (), -- the button's pop and soft click
 	pick: (kind: Looks.Kind, id: string) -> (), -- asks the server for the look
+	focus: (kind: Looks.Kind) -> (), -- a door or card chip tapped: show the door, or the plate
 	rim: Color3, -- an unworn chip's faint outline
 }
 export type Tab = {
@@ -47,6 +55,7 @@ type Chip = {
 	id: string,
 	stroke: UIStroke,
 	scale: UIScale,
+	mark: GuiObject?, -- a card style's coin or Robux mark, while it isn't yours
 }
 
 local LooksTab = {}
@@ -56,13 +65,20 @@ local DOT = 44 -- a paint's or floor colour's dot
 local ROW = 54 -- a row's height: room round a chip for its ring
 local GAP = 6 -- between chips: eight paints and four papers fit a Galaxy A16's tray
 local PAD = 6 -- above and below the rows
--- The tray's height on each page: the room's two rows, the front's one (g3c adds its second).
-LooksTab.Heights = table.freeze({ room = ROW * 2 + PAD * 2, front = ROW + PAD * 2 })
+local PLATE = Vector2.new(100, 44) -- a card style's chip: the plate's long shape, a thumb tall
+local MARK = 18 -- a locked style's coin or Robux mark, on the chip's top right corner
+-- The tray's height on each page: two rows each, the walls over the floor, the door over its card.
+LooksTab.Heights = table.freeze({ room = ROW * 2 + PAD * 2, front = ROW * 2 + PAD * 2 })
 
 local RING = Color3.new(1, 1, 1) -- what the home wears
 local QUICK = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local TINT = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local GONE = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+local SHAKE = TweenInfo.new(0.05, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+local ROBUX = utf8.char(0xE002) -- Roblox's own Robux mark in its fonts
+local COIN = Color3.fromHex("#F2C14E") -- a locked cash style's coin, and its rim
+local COIN_RIM = Color3.fromHex("#A8741A")
+local OAK = Color3.fromHex("#8A6A44") -- the chalk slate's moulded frame
 
 -- A pop that waits `delay` seconds: the chips land one after another.
 local function pop(delay: number): TweenInfo
@@ -89,6 +105,8 @@ local function current(chosen: Looks.Chosen, kind: Looks.Kind): string
 		return chosen.floor
 	elseif kind == "door" then
 		return chosen.door
+	elseif kind == "card" then
+		return chosen.card
 	end
 	return chosen.floorColour
 end
@@ -243,11 +261,43 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 		end
 	end
 
+	-- A locked style tapped: the chip shakes its head and its mark pops, and nothing is asked.
+	local function nope(c: Chip)
+		local b = c.button
+		local mark = c.mark
+		if mark then
+			host.press(mark) -- the mark's pop and the soft click: it's what stands in the way
+		end
+		local out = TweenService:Create(b, SHAKE, { Rotation = 5 })
+		out.Completed:Once(function(state: Enum.PlaybackState)
+			if state ~= Enum.PlaybackState.Completed then
+				return
+			end
+			local back = TweenService:Create(b, TweenInfo.new(0.1, Enum.EasingStyle.Sine), {
+				Rotation = -4,
+			})
+			back.Completed:Once(function(s: Enum.PlaybackState)
+				if s == Enum.PlaybackState.Completed then
+					TweenService:Create(b, SHAKE, { Rotation = 0 }):Play()
+				end
+			end)
+			back:Play()
+		end)
+		out:Play()
+	end
+
 	local function tapped(c: Chip)
+		if c.mark then
+			nope(c)
+			return
+		end
 		host.press(c.button)
 		if current(chosen, c.kind) ~= c.id then
 			host.pick(c.kind, c.id)
 		end -- the look it wears already: the press is the whole answer
+		if c.kind == "door" or c.kind == "card" then
+			host.focus(c.kind)
+		end
 	end
 
 	-- A chip or dot: `uri` (a set's colour map) over `fill`, round when it's a dot.
@@ -292,6 +342,162 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 		return c
 	end
 
+	-- A card style's chip: a little plate in the style's paint (its map over it, as the plate's
+	-- Overlay shows the paint), your name in its font and ink, the neon's glowing; the steel's
+	-- bolts and the board's screws as dots at its ends; a coin or the Robux mark while locked.
+	local function plate(
+		into: Instance,
+		order: number,
+		style: Specs.CardStyle,
+		template: Model
+	): Chip
+		local b = Instance.new("TextButton")
+		b.Name = `card{style.Id}`
+		b.Text = ""
+		b.AutoButtonColor = false
+		b.LayoutOrder = order
+		b.Size = UDim2.fromOffset(PLATE.X, PLATE.Y)
+		b.BackgroundColor3 = if style.Paint
+			then Color3.fromHex(style.Paint)
+			else Color3.new(1, 1, 1)
+		b.BorderSizePixel = 0
+		local radius = UDim.new(0, 6)
+		corner(b, radius)
+		local first = template:FindFirstChild(style.Parts[1], true)
+		local look = if first then first:FindFirstChildOfClass("SurfaceAppearance") else nil
+		-- any: ColorMapContent (a Content) isn't in every type definition yet
+		local content = if look then (look :: any).ColorMapContent else nil
+		local uri = if content then content.Uri else nil
+		if type(uri) == "string" and uri ~= "" then
+			local image = Instance.new("ImageLabel")
+			image.BackgroundTransparency = 1
+			image.Size = UDim2.fromScale(1, 1)
+			image.Image = uri
+			image.ScaleType = Enum.ScaleType.Crop
+			image.ZIndex = 1
+			corner(image, radius)
+			image.Parent = b
+		end
+		if style.Parts[2] == "CardChalkFrame" then -- the slate's oak frame, inside the ring
+			local frame = Instance.new("Frame")
+			frame.AnchorPoint = Vector2.new(0.5, 0.5)
+			frame.Position = UDim2.fromScale(0.5, 0.5)
+			frame.Size = UDim2.new(1, -6, 1, -6)
+			frame.BackgroundTransparency = 1
+			frame.ZIndex = 2
+			corner(frame, UDim.new(0, 4))
+			local edge = Instance.new("UIStroke")
+			edge.Color = OAK
+			edge.Thickness = 3
+			edge.Parent = frame
+			frame.Parent = b
+		end
+		local fixing = CardPlate.Plain[style.Parts[2] or ""]
+		if fixing and fixing.colour:sub(1, 1) == "#" then -- the bolts or screws at its ends
+			for _, x in { 0, 1 } do
+				local dot = Instance.new("Frame")
+				dot.AnchorPoint = Vector2.new(x, 0.5)
+				dot.Position = UDim2.new(x, if x == 0 then 5 else -5, 0.5, 0)
+				dot.Size = UDim2.fromOffset(4, 4)
+				dot.BackgroundColor3 = Color3.fromHex(fixing.colour)
+				dot.BorderSizePixel = 0
+				dot.ZIndex = 2
+				corner(dot, UDim.new(0.5, 0))
+				dot.Parent = b
+			end
+		end
+		local name = Instance.new("TextLabel")
+		name.AnchorPoint = Vector2.new(0.5, 0.5)
+		name.Position = UDim2.fromScale(0.5, 0.5)
+		name.Size = UDim2.new(1, -20, 1, -14)
+		name.BackgroundTransparency = 1
+		name.Text = Home.Holding.words(Players.LocalPlayer.DisplayName)
+		name.TextScaled = true
+		name.FontFace = Font.fromName(style.Font, CardPlate.weight(style.Weight))
+		name.TextColor3 = Color3.fromHex(style.Ink)
+		name.ZIndex = 3
+		if style.Glow then
+			local glow = Instance.new("UIStroke")
+			glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+			glow.Color = Color3.fromHex(style.Glow)
+			glow.Thickness = 1.5
+			glow.Transparency = CardPlate.Neon.Haze
+			glow.Parent = name
+		end
+		name.Parent = b
+		local lock = Looks.cardLock(style.Id)
+		local mark: Frame? = nil
+		if lock then
+			local dim = Instance.new("Frame") -- not yours yet: a shade darker than the rest
+			dim.Size = UDim2.fromScale(1, 1)
+			dim.BackgroundColor3 = Color3.new(0, 0, 0)
+			dim.BackgroundTransparency = 0.7
+			dim.ZIndex = 4
+			corner(dim, radius)
+			dim.Parent = b
+			local m = Instance.new("Frame")
+			m.Name = "Mark"
+			m.AnchorPoint = Vector2.new(0.5, 0.5)
+			m.Position = UDim2.new(1, -4, 0, 4)
+			m.Size = UDim2.fromOffset(MARK, MARK)
+			m.BackgroundColor3 = if lock == "Cash" then COIN else Color3.fromHex("#1F2328")
+			m.BorderSizePixel = 0
+			m.ZIndex = 5
+			corner(m, UDim.new(0.5, 0))
+			local rim = Instance.new("UIStroke")
+			rim.Color = if lock == "Cash" then COIN_RIM else Color3.new(1, 1, 1)
+			rim.Thickness = 1.5
+			rim.Parent = m
+			if lock == "Cash" then -- the coin's inner ring, so it reads as a coin, not a dot
+				local inner = Instance.new("Frame")
+				inner.AnchorPoint = Vector2.new(0.5, 0.5)
+				inner.Position = UDim2.fromScale(0.5, 0.5)
+				inner.Size = UDim2.fromOffset(MARK - 8, MARK - 8)
+				inner.BackgroundTransparency = 1
+				inner.ZIndex = 6
+				corner(inner, UDim.new(0.5, 0))
+				local ring2 = Instance.new("UIStroke")
+				ring2.Color = COIN_RIM
+				ring2.Thickness = 1
+				ring2.Transparency = 0.3
+				ring2.Parent = inner
+				inner.Parent = m
+			else
+				local r = Instance.new("TextLabel")
+				r.BackgroundTransparency = 1
+				r.Size = UDim2.fromScale(1, 1)
+				r.Text = ROBUX
+				r.TextScaled = true
+				r.FontFace = Font.fromEnum(Enum.Font.BuilderSansBold)
+				r.TextColor3 = Color3.new(1, 1, 1)
+				r.ZIndex = 6
+				r.Parent = m
+			end
+			Instance.new("UIScale").Parent = m -- host.press pops it
+			m.Parent = b
+			mark = m
+		end
+		local stroke = Instance.new("UIStroke")
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Parent = b
+		local scale = Instance.new("UIScale")
+		scale.Parent = b
+		local c: Chip = {
+			button = b,
+			kind = "card",
+			id = style.Id,
+			stroke = stroke,
+			scale = scale,
+			mark = mark,
+		}
+		ring(c, false, false)
+		b.Activated:Connect(function()
+			tapped(c)
+		end)
+		b.Parent = into
+		return c
+	end
+
 	local function build(): boolean
 		local template = Home.template()
 		if built or not template then
@@ -299,9 +505,12 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 		end
 		built = true
 		if page == "front" then
-			local d = row(1) -- the door's colours (g3c's card styles to go in a row 2 under it)
+			local d, n = row(1), row(2) -- the door's colours over the name card's styles
 			for i, door in Specs.Looks.Doors do
 				table.insert(chips, chip(d, i, "door", door.Id, colour(door.Colour)))
+			end
+			for i, style in Specs.Cards do
+				table.insert(chips, plate(n, i, style, template))
 			end
 			return true
 		end
@@ -374,7 +583,11 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 	local function refresh(eased: boolean)
 		local u = unit
 		local read = if u
-			then Looks.decode(u:GetAttribute(Looks.Attribute), u:GetAttribute(Looks.DoorAttribute))
+			then Looks.decode(
+				u:GetAttribute(Looks.Attribute),
+				u:GetAttribute(Looks.DoorAttribute),
+				u:GetAttribute(Looks.CardAttribute)
+			)
 			else nil
 		chosen = Looks.tidy(read or Looks.start())
 		if not build() then
@@ -405,13 +618,17 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 			table.clear(watches)
 			unit = u
 			if u then
-				local name = if page == "front" then Looks.DoorAttribute else Looks.Attribute
-				table.insert(
-					watches,
-					u:GetAttributeChangedSignal(name):Connect(function()
-						refresh(true)
-					end)
-				)
+				local names: { string } = if page == "front"
+					then { Looks.DoorAttribute, Looks.CardAttribute }
+					else { Looks.Attribute }
+				for _, name in names do
+					table.insert(
+						watches,
+						u:GetAttributeChangedSignal(name):Connect(function()
+							refresh(true)
+						end)
+					)
+				end
 				refresh(false)
 			end
 		end,

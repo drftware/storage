@@ -82,6 +82,18 @@ function Looks.cardOf(id: string): Specs.CardStyle?
 	return find(Specs.Cards, id)
 end
 
+-- What still stands between a player and name card style `id` (S5-03g3c): nil when it's theirs
+-- (a Starter style, every home's), else how the counter will sell it ("Cash" or "Robux"), the
+-- mark its chip wears. A style not offered is "Cash", never pickable. The counter doesn't sell
+-- the rest yet, so only the Starter styles are anyone's.
+function Looks.cardLock(id: string): ("Cash" | "Robux")?
+	local style = Looks.cardOf(id)
+	if style and style.Sold == "Starter" then
+		return nil
+	end
+	return if style and style.Sold == "Robux" then "Robux" else "Cash"
+end
+
 -- The colour (hex) of door colour `id`, or the start's clay for one not offered.
 function Looks.doorOf(id: string): string
 	local door = find(Specs.Looks.Doors, id) or Specs.Looks.Doors[1]
@@ -165,9 +177,8 @@ function Looks.pick(chosen: Chosen, kind: Kind, id: string): Chosen?
 		end
 		after.door = id
 	elseif kind == "card" then
-		local style = find(Specs.Cards, id)
-		if not (style and style.Sold == "Starter") then
-			return nil -- the rest wait for the counter (S5-03g3c)
+		if Looks.cardLock(id) then
+			return nil -- the rest wait for the counter
 		end
 		after.card = id
 	elseif kind == "floor" then

@@ -9498,3 +9498,36 @@ tamed light seen. Ridden in Studio Play at Galaxy A16 size, seed 7, one player, 
 - **Found, left to the owner (`OWNER.md`):** a plain floor's lobby is as black from the car as the
   power-out floor's, its motion lights waiting for someone to walk under them; the two differ only
   once you step out. My default: leave it; the card's burst names the floor.
+
+## D-357 Choosing your name card's style on the front tab, and the plate swinging down (S5-03g3c, 2026-11-18)
+
+The moment: on Arrange's front tab you flick along your name card's styles, each a little plate
+with your own name on it, tap one and the camera dips out to the hall, where the new plate swings
+down over your door and clacks against the wall. The ones you don't have yet sit there marked,
+waiting for the counter. Precedent: Animal Crossing's catalogue (every style shown, the ones you
+don't own marked), Bloxburg's and Adopt Me's house signs (D-322).
+- **A second row on the front page, under the door's colours.** Each chip is the plate in small
+  (100 by 44 points, the plate's long shape a thumb tall): its paint under its own colour map (as
+  the plate's Overlay shows it), your name (`Holding.words`, as the server letters it) in the
+  style's font and ink, the neon's with its pink glow stroke, the steel's bolts and the board's
+  screws as dots at the ends (`CardPlate.Plain`), the chalk slate in its oak frame. The front
+  page's tray is two rows tall now, as the room's is (`LooksTab.Heights`).
+- **Not yours yet: a small mark, a shade darker, and a shake.** `Looks.cardLock` says what stands
+  between you and a style: nothing for a Starter style, else "Cash" (a gold coin with an inner
+  ring) or "Robux" (Roblox's own mark on a dark disc). A tap on a marked chip asks nothing: the
+  chip shakes its head and the mark pops with the soft click, no popup and no words (D-328's
+  promise, the owner's no-refusal-text rule). `Looks.pick` now judges a card by the same rule, so
+  the server and the chips can't disagree. Only the stencil is anyone's until the counter sells
+  the rest; owning them is the counter's ticket.
+- **The camera goes to what you changed.** A card chip you can pick (worn or not) takes the camera
+  out to the hall facing your plate (`Arrange.Feel.HallOut`, `HallBelow`, `HallAim`), a door chip
+  back inside to the door. Out and back are a quick dip through black (`Feel.Dip`, 0.16 s each
+  way, under the tray and buttons), not a swing: a swing from inside to the hall would pass
+  through the wall over your door. Arrange always opens on the door view.
+- **The plate swings down, on every screen near it.** HomeCards answers a card's new style by
+  swinging the new plate and its writing down from 75 degrees out on its top edge with a bounce
+  ease, two small bounces off the wall, and the job box lid's metal flap clack on the first touch
+  (`Holding.Card.Swing`). It moves the server's anchored parts on that screen only and puts each
+  back exactly where the server laid it (the card's rest worked out from its style, never read,
+  so a pick mid-swing can't keep a swung place). A plate further than 80 studs from the camera
+  just changes. It also plays when a home is taken by someone with a sold style.
