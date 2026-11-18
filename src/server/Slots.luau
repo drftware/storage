@@ -81,6 +81,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Chip = require(ReplicatedStorage.Shared.Finds.Chip)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Head = require(ReplicatedStorage.Shared.Finds.Head)
+local Headlamp = require(ReplicatedStorage.Shared.Finds.Headlamp)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Prompts = require(script.Parent.Prompts)
 local StorageUnit = require(ReplicatedStorage.Shared.StorageUnit)
@@ -276,6 +277,9 @@ export type Slots = Brix.System & {
 	-- Each living player's find on their head, and its model (for keepers: a lit hat holds a
 	-- Mannequin from where the head is).
 	worn: (self: any, each: (player: Player, model: Model) -> ()) -> (),
+	-- The find on `player`'s head spent (the hard hat's minute out, F-G1b4b): it slips off and
+	-- cracks apart on the floor, lost (D-141's break). True if they wore one.
+	breakWorn: (self: any, player: Player) -> boolean,
 	-- Each find's model `player` has on them now, in their slots (held or pocketed) or on their head
 	-- (S5-03f3: the lights they ride up with get their minute).
 	onThem: (self: any, player: Player, each: (model: Model) -> ()) -> (),
@@ -304,6 +308,16 @@ export type Slots = Brix.System & {
 		part: BasePart,
 		holder: Instance
 	) -> (Weld?, CFrame?),
+}
+
+-- A worn find falling off a head as it breaks (`shatter`): where it starts, its hop (studs a
+-- second up and ahead), and its crack and bits as it hits the floor.
+type Fall = {
+	from: CFrame,
+	up: number,
+	ahead: number,
+	snap: Tools.SoundSpec,
+	bits: { { number } },
 }
 
 type Tool = {
@@ -971,7 +985,9 @@ function Slots.new(): Slots
 	-- of the hand with its own snap and a burst of its bits, tumbles to the floor and clanks as it
 	-- lands (keepers hear it, as a dropped tool), lies there a moment, then fades. Never silent,
 	-- never just gone.
-	local function shatter(t: Tool)
+	-- `fall`: a worn find spent on a head (the hard hat, F-G1b4b): it slips off from `from` with a
+	-- smaller hop and cracks apart as it hits the floor (`snap`, `bits`), not in the air.
+	local function shatter(t: Tool, fall: Fall?)
 		if tools[t.id] ~= t then
 			return -- gone already: kept, or the floor it lay on cleared
 		end
@@ -979,6 +995,9 @@ function Slots.new(): Slots
 		lost(t) -- used up on the climb
 		local row = Catalog[t.key]
 		local w = row.wear
+		local snap = if fall then fall.snap elseif w then w.snap else nil
+		local colours = if fall then fall.bits elseif w then w.bits else nil
+		local jump = if fall then fall.up else BREAK_JUMP
 		local owner = t.owner
 		local inHand = t.weld ~= nil
 		local character = if owner then owner.Character else nil
@@ -986,7 +1005,9 @@ function Slots.new(): Slots
 		-- where it breaks: in the hand it's welded to, at its owner's hand if it was put away, or
 		-- where it lies
 		local pose = t.body.CFrame
-		if owner and not inHand and t.model.Parent == nil then
+		if fall then
+			pose = fall.from
+		elseif owner and not inHand and t.model.Parent == nil then
 			local hand = if character then handOf(character) else nil
 			pose = if hand then hand.CFrame else if root then root.CFrame else pose
 		end
@@ -1011,17 +1032,21 @@ function Slots.new(): Slots
 		local function spin(): number
 			return (math.random() * 2 - 1) * BREAK_SPIN
 		end
-		body.AssemblyLinearVelocity = ahead * BREAK_AHEAD + Vector3.new(0, BREAK_JUMP, 0)
+		body.AssemblyLinearVelocity = ahead * (if fall then fall.ahead else BREAK_AHEAD)
+			+ Vector3.new(0, jump, 0)
 		body.AssemblyAngularVelocity = Vector3.new(spin(), spin(), spin())
 		-- the server's to move, so every screen sees the same tumble
 		pcall(function() -- pcall: refused if the engine has it anchored to something still
 			body:SetNetworkOwner(nil)
 		end)
-		local at = body.Position
-		if w then
-			Tools.play(w.snap, body, BREAK_REACH)
-			for i = 1, if #w.bits > 0 then BITS else 0 do
-				local c = w.bits[(i - 1) % #w.bits + 1]
+		-- its snap and its bits flying from `at`
+		local function burst(at: Vector3)
+			if not (snap and colours) then
+				return
+			end
+			Tools.play(snap, body, BREAK_REACH)
+			for i = 1, if #colours > 0 then BITS else 0 do
+				local c = colours[(i - 1) % #colours + 1]
 				local function between(r: { number }): number
 					return r[1] + math.random() * (r[2] - r[1])
 				end
@@ -1053,6 +1078,10 @@ function Slots.new(): Slots
 				end)
 			end
 		end
+		local at = body.Position
+		if not fall then
+			burst(at)
+		end
 		-- its clank as it lands: the fall from here to the floor under it, at this place's gravity
 		local params = RaycastParams.new()
 		params.FilterType = Enum.RaycastFilterType.Exclude
@@ -1066,9 +1095,12 @@ function Slots.new(): Slots
 		local floor = Workspace:Raycast(at, Vector3.new(0, -20, 0), params)
 		local drop = if floor then math.max(0, at.Y - floor.Position.Y) else 3
 		local g = math.max(1, Workspace.Gravity)
-		local fall = (BREAK_JUMP + math.sqrt(BREAK_JUMP * BREAK_JUMP + 2 * g * drop)) / g
-		task.delay(fall, function()
+		local falls = (jump + math.sqrt(jump * jump + 2 * g * drop)) / g
+		task.delay(falls, function()
 			if model.Parent then
+				if fall then
+					burst(body.Position) -- it cracks apart as it hits
+				end
 				Tools.play(row.drop, body, Carry.DropHeard)
 				landed:fire({ key = t.key, at = body.Position, reach = Carry.DropHeard })
 			end
@@ -2037,6 +2069,24 @@ function Slots.new(): Slots
 				each(player, t.model)
 			end
 		end
+	end
+
+	function system.breakWorn(_: any, player: Player): boolean
+		local id = heads[player]
+		local t = if id then tools[id] else nil
+		if not t then
+			return false
+		end
+		local from = t.body.CFrame -- on their head, before it comes off
+		offHead(player)
+		shatter(t, {
+			from = from,
+			up = Headlamp.FallUp,
+			ahead = Headlamp.FallAhead,
+			snap = Headlamp.Crack,
+			bits = Headlamp.Bits,
+		})
+		return true
 	end
 
 	function system.onThem(_: any, player: Player, each: (model: Model) -> ())

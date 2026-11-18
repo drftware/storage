@@ -3334,7 +3334,7 @@ actions themselves and dealing the new finds on floors are later game tickets.
           picking the car up to end your drive (in the old line, not built: nobody can pick
           the car up; it's out of anyone's reach but its transmitter's).
         - Home: it drives round your home too, once home is built (S5-03).
-    - [ ] **F-G1b4 The hard hat goes on your head** (the owner, Nov 16, D-251; Phasmophobia's
+    - [x] **F-G1b4 The hard hat goes on your head** (the owner, Nov 16, D-251; Phasmophobia's
       head torch). The moment: your flashlight stutters out, no battery, the Mannequin two halls
       off, and you pull the hard hat on. First a head and feet on the character, apart from the
       slots (welded as the ladder is). Wear lifts the hat onto your head with the shell's knock
@@ -3366,9 +3366,12 @@ actions themselves and dealing the new finds on floors are later game tickets.
         place as the hat goes on (the pull-on, felt in first person); friends' beams from their
         lamp along their aim (`Aim`), replacing the hat's warm art light while it's worn; the
         hat dropping onto a friend's head with a little settle rather than appearing there.
-      - [ ] **F-G1b4b Spent and broken.** Its minute dims and stutters out as the flashlight
-        dies; spent, it falls off your head and breaks (D-141). (On a phone only the nearest
-        few light the walls: done in F-G1b4a2, `Headlamp.RealBeams`, yours and two friends'.)
+      - [x] **F-G1b4b Spent and broken** (D-421; seen in Studio Play with one player and a
+        20-second minute, `docs/art/F-G1b4b-*.jpg`). Its last 15 seconds stutter, sag and buzz as
+        a dying torch does, a friend's bulb dimming with its beam; then its bulb sputters out (the
+        art's `RunDown`) with the beam following it; spent, it slips off your head and cracks
+        apart on the floor, its bits flying, heard by monsters as a dropped tool (D-141's break),
+        and it's lost. (On a phone only the nearest few light the walls: F-G1b4a2.)
     - [ ] **F-G1b5 Skates and slippers**, their art first (not yet in `art/finds/WAVES.md`):
       Wear puts them on your feet. Slippers are looks only. Skates make you faster (default:
       faster than your walk, still slower than a chasing monster, tuned in play), with the

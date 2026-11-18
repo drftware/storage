@@ -65,6 +65,26 @@ Charge.RefuseVolume = 0.55
 -- full torch, and the lit ones go out one by one as it drains, red for its last half minute.
 Charge.Ticks = 12
 
+-- How a light runs down at the end (the torch's is `Charge.Torch`; the hard hat's LED has its own,
+-- `Headlamp.Shape`): the last seconds it flickers, how much it sags by the end, the seconds it
+-- dies to nothing over at the very end (0: something else puts it out), the first gap between
+-- stutters and the first stutter's length.
+export type Shape = {
+	flicker: number,
+	sag: number,
+	fade: number,
+	gapFirst: number,
+	firstStutter: number,
+}
+
+Charge.Torch = {
+	flicker = Charge.Flicker,
+	sag = Charge.Sag,
+	fade = Charge.Fade,
+	gapFirst = Charge.GapFirst,
+	firstStutter = Charge.FirstStutter,
+} :: Shape
+
 -- A flicker's state, carried from frame to frame on each screen that draws a torch.
 export type Flicker = {
 	began: boolean, -- the first stutter of this half minute has started
@@ -166,26 +186,28 @@ end
 	whether it's stuttering (the buzz). Steady above the last half minute. In it: the light sags
 	and, over its last `Fade` seconds, dies to nothing; stutters break it, a long one first, then
 	short and far apart, then longer, closer and darker until it barely holds. Allocates nothing.
+	`shape` is the torch's (`Charge.Torch`) unless given (the hard hat's minute, `Headlamp`).
 ]]
-function Charge.glow(f: Flicker, left: number, dt: number): (number, boolean)
+function Charge.glow(f: Flicker, left: number, dt: number, shape: Shape?): (number, boolean)
+	local k = shape or Charge.Torch
 	if left <= 0 then
 		return 0, false
 	end
-	if left > Charge.Flicker then
+	if left > k.flicker then
 		if f.began then
 			Charge.rewind(f)
 		end
 		return 1, false
 	end
 	dt = math.clamp(dt, 0, 0.1)
-	local u = Charge.urgency(left)
-	local steady = 1 - Charge.Sag * u * u
-	if left < Charge.Fade then
-		steady *= left / Charge.Fade
+	local u = math.clamp(1 - left / k.flicker, 0, 1)
+	local steady = 1 - k.sag * u * u
+	if left < k.fade then
+		steady *= left / k.fade
 	end
 	if not f.began then
 		f.began = true
-		f.stutter = Charge.FirstStutter
+		f.stutter = k.firstStutter
 		f.blink = 0
 		f.dark = false
 	elseif f.stutter <= 0 then
@@ -214,7 +236,7 @@ function Charge.glow(f: Flicker, left: number, dt: number): (number, boolean)
 		f.stutter = 0
 		f.dark = false
 		local closing = 1 - (1 - u) * (1 - u)
-		f.wait = lerp(Charge.GapFirst, Charge.GapLast, closing)
+		f.wait = lerp(k.gapFirst, Charge.GapLast, closing)
 			* (1 + Charge.GapJitter * (2 * random(f) - 1))
 		return steady, false
 	end

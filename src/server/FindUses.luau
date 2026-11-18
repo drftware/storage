@@ -32,6 +32,7 @@ local Pose = require(ReplicatedStorage.Shared.Finds.Pose)
 local Press = require(ReplicatedStorage.Shared.Home.Press)
 local Finds = require(ReplicatedStorage.Shared.Finds)
 local Head = require(ReplicatedStorage.Shared.Finds.Head)
+local Headlamp = require(ReplicatedStorage.Shared.Finds.Headlamp)
 local Keepers = require(script.Parent.Keepers)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
@@ -62,6 +63,10 @@ local STRAND_RISE = 0.5
 local STRAND_CLEAR = 0.3
 local STRAND_DROPPER = 8
 
+-- Seconds between looks for a worn hat that's spent (F-G1b4b): it falls off within this of its
+-- bulb going out, a beat in the dark before the crack.
+local SPENT_EVERY = 0.25
+
 -- The stamp on `model`, nil if it was never pressed.
 local function stampOf(model: Model): Use.Stamp?
 	return Use.read(
@@ -83,6 +88,7 @@ export type FindUsesSystem = Brix.System & {
 function FindUses.new(): FindUsesSystem
 	local connections: { Brix.SignalConnection } = {}
 	local leaving: RBXScriptConnection? = nil
+	local spending: RBXScriptConnection? = nil -- the look for spent hats, `breakSpent`
 	local last: { [Player]: number } = {} -- each player's last press that took, os.clock
 	local random = Random.new() -- the spinner's animal each pull
 	local keepers: Keepers.Keepers? = nil
@@ -407,6 +413,10 @@ function FindUses.new(): FindUsesSystem
 		if atHome(player) then
 			left = Use.home(row, state, left)
 		end
+		-- Studio only: a shorter minute for the hat, to see it run down (`Headlamp.Dev`)
+		if row.verb == Head.Verb and RunService:IsStudio() then
+			left = Headlamp.minute(Workspace:GetAttribute(Headlamp.Dev), left)
+		end
 		local path: Path? = nil
 		if row.down then
 			path = setDown(use, row, state, durations)
@@ -557,6 +567,42 @@ function FindUses.new(): FindUsesSystem
 		end
 	end
 
+	-- Each worn hat whose minute and its bulb's run-down are over (F-G1b4b): it falls off its
+	-- wearer's head and cracks apart on the floor (`Slots:breakWorn`). Spent is the stamp's own
+	-- reckoning (`Use.frame`), so every screen's bulb is out as it goes.
+	local spentIn = 0
+	local spentNow: { Player } = {}
+	local hatDurations: { [string]: { [string]: number } } = {}
+	local function breakSpent(dt: number)
+		spentIn -= dt
+		local s = slots
+		if spentIn > 0 or not s then
+			return
+		end
+		spentIn = SPENT_EVERY
+		local now = Workspace:GetServerTimeNow()
+		table.clear(spentNow)
+		s:worn(function(player: Player, model: Model)
+			local key = model:GetAttribute(Use.KeyAttribute)
+			local row = if type(key) == "string" then Use.Rows[key] else nil
+			local stamp = stampOf(model)
+			if not (row and stamp and type(key) == "string" and row.verb == Head.Verb) then
+				return
+			end
+			local d = hatDurations[key]
+			if not d then
+				d = Finds.durations(key)
+				hatDurations[key] = d
+			end
+			if Use.frame(row, stamp, now - stamp.at, d).spent then
+				table.insert(spentNow, player)
+			end
+		end)
+		for _, player in spentNow do
+			s:breakWorn(player) -- after the walk: breaking takes it out of the worn list
+		end
+	end
+
 	local system = { name = "FindUses" }
 
 	-- A find put on `player`'s head off their clothes rail (S5-03f2b, D-316): its Wear press stamped
@@ -620,6 +666,7 @@ function FindUses.new(): FindUsesSystem
 		leaving = Players.PlayerRemoving:Connect(function(player: Player)
 			last[player] = nil
 		end)
+		spending = RunService.Heartbeat:Connect(breakSpent)
 	end
 
 	function system.stop(_: any)
@@ -630,6 +677,10 @@ function FindUses.new(): FindUsesSystem
 		if leaving then
 			leaving:Disconnect()
 			leaving = nil
+		end
+		if spending then
+			spending:Disconnect()
+			spending = nil
 		end
 		table.clear(last)
 		table.clear(paths)

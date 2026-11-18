@@ -110,6 +110,84 @@ for _, real in torch do
 end
 ok(t == Torch.RealBeams - 1, "the torch keeps its own cap")
 
+-- F-G1b4b: its minute runs down as the torch dies, then its bulb sputters out
+local Charge = require("../src/shared/Flashlight/Charge")
+local K = Headlamp.Shape
+ok(Headlamp.minute(nil, 60) == 60, "the minute as pressed")
+ok(Headlamp.minute(8, 60) == 8, "Studio's dev seconds")
+ok(Headlamp.minute(0 / 0, 60) == 60 and Headlamp.minute(-2, 60) == 60, "nonsense ignored")
+ok(Headlamp.minute(8, math.huge) == math.huge, "at home it burns for good")
+
+local f = Charge.flicker(7)
+local l, st = Headlamp.light(f, 40, 1 / 30, nil)
+ok(l == 1 and not st, "steady before its last stretch")
+l, st = Headlamp.light(f, K.flicker - 0.01, 1 / 30, nil)
+ok(st and l < 1.0001, "the first stutter as its last stretch opens: you notice")
+ok(K.flicker < Charge.Flicker and K.flicker >= 10, "a shorter warning than the torch's half minute")
+
+-- through its last stretch at 30 frames a second: stutters close in, it sags, moments of black
+f = Charge.flicker(11)
+local dt = 1 / 30
+local starts = { 0, 0 } -- stutters starting in the stretch's first half and second half
+local was, darkLate, most = false, false, 0
+local sumFirst, nFirst, sumLast, nLast = 0, 0, 0, 0
+local left = K.flicker
+while left > 0 do
+	local lv, s2 = Headlamp.light(f, left, dt, nil)
+	most = math.max(most, lv)
+	if s2 and not was then
+		local half = if left > K.flicker / 2 then 1 else 2
+		starts[half] += 1
+	end
+	was = s2
+	if left < 3 and lv < 0.05 then
+		darkLate = true
+	end
+	if not s2 then
+		if left > K.flicker - 3 then
+			sumFirst += lv
+			nFirst += 1
+		elseif left < 1 then
+			sumLast += lv
+			nLast += 1
+		end
+	end
+	left -= dt
+end
+ok(starts[2] > starts[1], "the stutters close in toward the end")
+ok(darkLate, "moments of black near the end")
+ok(most <= 1, "never brighter than full")
+ok(nFirst > 0 and nLast > 0 and sumLast / nLast < sumFirst / nFirst - 0.2, "it sags as it starves")
+ok(nLast > 0 and math.abs(sumLast / nLast - (1 - K.sag)) < 0.05, "it ends at its sag")
+
+-- its run-down: the beam follows the bulb from where the sag left it, so the two go out together
+l, st = Headlamp.light(f, 0, dt, 1)
+ok(math.abs(l - (1 - K.sag)) < 1e-9 and st, "the run-down starts where the minute ended")
+l, st = Headlamp.light(f, -1, dt, 0.5)
+ok(math.abs(l - 0.5 * (1 - K.sag)) < 1e-9 and st, "it follows the bulb's sputter")
+l, st = Headlamp.light(f, -2.9, dt, 0)
+ok(l == 0 and not st, "the bulb out: dark and quiet")
+l, st = Headlamp.light(f, -4, dt, nil)
+ok(l == 0 and not st, "spent: dark")
+
+-- the torch's own flicker is the same as before (its shape is the default)
+local a, b = Charge.flicker(5), Charge.flicker(5)
+local same = true
+left = Charge.Flicker
+while left > 0 do
+	local x1, y1 = Charge.glow(a, left, dt)
+	local x2, y2 = Charge.glow(b, left, dt, Charge.Torch)
+	if x1 ~= x2 or y1 ~= y2 then
+		same = false
+	end
+	left -= dt
+end
+ok(same, "the torch's run-down unchanged")
+
+-- the break: a crack and its bits, as D-141's
+ok(#Headlamp.Bits >= 2 and Headlamp.Crack.id ~= "", "it cracks apart in its colours")
+ok(Headlamp.FallUp > 0 and Headlamp.FallUp < 8, "it slips off with a hop, not a tool's jump")
+
 print(`headlamp: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

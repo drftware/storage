@@ -164,6 +164,18 @@ nowhere else.
   size looks right on a Roblox head. My defaults, say which to change: a worn hat is kept at the
   gate with your other finds (it goes from your head in a glint); you can't wear a second hat over
   one; the Packrat robs your hands, never your head.
+- [ ] **The hard hat running out** (F-G1b4b, D-421; seen in Studio Play with one player and a
+  20-second minute, `docs/art/F-G1b4b-*.jpg`; the hat cracking on the floor not yet seen in a
+  picture). Studio's Test tab, 2 players, on a climb floor (not in the lobby, where it never runs
+  down). On the Server, `workspace:SetAttribute("DevHatSeconds", 20)` and `GiveFind` "HardHat";
+  player 1 presses Wear. After about 5 seconds, on both screens: the white cone stutters with a
+  crackling buzz, now and then at first, then closer together and darker, the light sagging; on
+  player 2's screen the bulb on player 1's brow dims and blinks with it. At 20 seconds the bulb
+  sputters out over 3 seconds, the cone going with it; a beat later the hat slips off player 1's
+  head, cracks apart on the floor in yellow and black bits, clanks, lies a moment and fades. Say
+  whether 15 seconds of warning is right, whether the stutter is too much or too little, and
+  whether losing the hat for good feels fair. My defaults: the last 15 s stutter (the torch's
+  last 30); it sags to 0.6 of its light; it's lost when it breaks, as a worn-out tool is.
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

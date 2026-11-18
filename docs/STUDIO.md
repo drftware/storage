@@ -3475,3 +3475,11 @@ verified: a doc page, Studio, or "untested".
 - **Floor n's car on seed 7** is at `(0, 0, -588 - 1000 (n - 2))`; its keypad spot the pivot plus
   `(-7.8, 3, -5.2)`, aboard the pivot plus `(0, 3, 7)` facing -Z. Floor 3 rolled the power-out
   card: a hauler sees black (no hand free for a light).
+- **Seeing the hard hat run out** (F-G1b4b, Nov 18): Play with `DevFloorNumber` 2 (the player
+  spawns in the lobby, where nothing runs down: pivot them to (0, 3.5, -641), in DevCorridor's
+  hall); Server `workspace:SetAttribute("DevHatSeconds", 20)` (Studio only, read as Wear is
+  pressed off the ground floor), `GiveFind` "HardHat", then a Client `Remotes.ToolUse:FireServer()`
+  wears it. Logging the own rig's SpotLight brightness every 0.2 s showed it: 2.23 sagging to 2.05,
+  stutters with the buzz from 16.5 s, closing in, 1.68 as the bulb's run-down starts at 20 s, out
+  at 22.8, the hat off the head by 23.3. A side camera bound at `RenderPriority.Last + 1` didn't
+  hold this time (the frames stayed first person), so the crack on the floor wasn't caught.

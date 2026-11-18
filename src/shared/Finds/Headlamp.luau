@@ -9,9 +9,16 @@
 	up from your feet into place. A friend's leaves the lamp on their brow along their aim (their
 	torch's `Aim`, sent while they wear it), and the hat drops onto their head with a little settle.
 	It replaces the hat's warm art light while worn; only the nearest few cast real light.
+
+	Its minute runs down as the flashlight dies (F-G1b4b, D-421): deep in a dark hall the white
+	cone starts to stutter and buzz, the stutters closing in as it sags, then its bulb sputters
+	out; spent, the hat slips off your head and cracks apart on the floor (D-141's break), leaving
+	you in the dark with whatever's coming. The server owns the minute and the break; each screen
+	draws the stutter from what's left (`light`).
 	Pure numbers and curves, so Lune tests them: `HeadlampView` draws them.
 ]]
 
+local Charge = require("../Flashlight/Charge")
 local Torch = require("../Flashlight/Torch")
 
 local Headlamp = {}
@@ -62,7 +69,77 @@ Headlamp.HopSeconds = 0.22
 Headlamp.RealBeams = 3
 Headlamp.Seen = 140
 
+-- Running down (F-G1b4b), as the torch's last half minute (D-142) squeezed into the end of a
+-- minute: its last `flicker` seconds stutter, a long first one you notice, then short ones far
+-- apart (`gapFirst` seconds) closing in, darker, as the LED sags to `1 - sag` of its light. No
+-- fade of its own (`fade` 0): the bulb's run-down after the minute (the art's `RunDown`, 3 s of
+-- sputter) carries the beam out with it, on every screen the same. What it does to the player:
+-- fifteen seconds' warning to get back to a friend's light before you're in the dark.
+Headlamp.Shape = {
+	flicker = 15,
+	sag = 0.4,
+	fade = 0,
+	gapFirst = 4,
+	firstStutter = 0.6,
+} :: Charge.Shape
+-- The hat's motion after its minute: its bulb sputtering out (Finds/Sets/Lights).
+Headlamp.RunDown = "RunDown"
+-- The bulb's glow channel the beam follows through that run-down.
+Headlamp.Bulb = "HardHat_Bulb"
+-- Studio only: a number on Workspace makes a hat worn on a climb hold that many seconds of light
+-- (to see it run down without waiting a minute).
+Headlamp.Dev = "DevHatSeconds"
+
+-- Spent, it falls off your head and breaks (D-141's break, as a worn-out saw does): it slips off
+-- forward with a small hop (studs a second up and ahead), and cracks apart as it hits the floor,
+-- its bits flying in its colours (safety yellow shell, the lamp's black, the lens), heard by
+-- monsters as a dropped tool. The crack: the finds kit's CRUNCH, lower, a plastic shell giving way.
+Headlamp.FallUp = 4
+Headlamp.FallAhead = 2.5
+Headlamp.Crack = {
+	id = "rbxassetid://9119075637",
+	from = 0,
+	length = 0.7,
+	volume = 1.3,
+	pitch = 0.72,
+}
+Headlamp.Bits = { { 222, 172, 38 }, { 38, 38, 42 }, { 214, 222, 230 } }
+
 local RAD = math.pi / 180
+
+-- The seconds of light a hat worn on a climb starts with: `left` as pressed, or Studio's dev
+-- number (`Dev`'s value) when that's a real number over zero. At home it burns for good anyway.
+function Headlamp.minute(dev: unknown, left: number): number
+	if left == math.huge then
+		return left
+	end
+	if type(dev) == "number" and dev == dev and dev > 0 and dev < math.huge then
+		return dev
+	end
+	return left
+end
+
+--[[
+	The beam's light this frame (0 to 1) and whether it's stuttering (the buzz): `left` seconds
+	of its minute still to burn, then (at 0 or under) the bulb's own glow in its run-down (`bulb`,
+	0 to 1, the art's track; nil once it's over). Steady until its last `Shape.flicker` seconds;
+	then it stutters as a dying torch does; through the run-down it follows the bulb from where
+	the sag left it, so the beam and the bulb on the brow sputter out together. Allocates nothing.
+]]
+function Headlamp.light(
+	f: Charge.Flicker,
+	left: number,
+	dt: number,
+	bulb: number?
+): (number, boolean)
+	if left > 0 then
+		return Charge.glow(f, left, dt, Headlamp.Shape)
+	end
+	if bulb and bulb > 0.001 then
+		return math.min(bulb, 1) * (1 - Headlamp.Shape.sag), true
+	end
+	return 0, false
+end
 
 -- The cone as the hat goes on, `t` seconds after its bulb lit: degrees below your look (a little
 -- under 0 as it rises past it) and its light (0 to 1).

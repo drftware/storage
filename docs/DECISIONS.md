@@ -9903,3 +9903,32 @@ hands stay free for the jukebox or a tool.
   back 7 degrees, then a 0.05-stud hop that rocks level in 0.22 s. Only when it lands on a head
   this screen saw bare: a respawned character arrives wearing it and it's simply there.
 - Defaults for the owner (OWNER.md): the cone's brightness, width and bob.
+
+## D-421 · 2026-11-18 · The hard hat runs out as a torch dies, then cracks off your head (F-G1b4b)
+
+The flashlight's run-down (D-142, after DOORS' and Lethal Company's flashlights) squeezed into the
+hat's minute, and the saw's break (D-141, Minecraft's tools) for the end. The moment: deep in a dark
+hall the white cone stutters and buzzes, the bulb sputters out, and the hat drops off your head
+with a crack, leaving you in the dark with whatever's coming.
+
+- **Its last 15 seconds stutter** (`Headlamp.Shape`, `Charge.glow` with a shape now; the torch's is
+  the default, unchanged): a long first stutter you notice, then short ones about 4 s apart that
+  close in and darken, with moments of black, the LED sagging to 0.6 of its light. No browning (an
+  LED dims, it doesn't brown) and no fade of its own. The buzz is the torch's filament buzz, heard
+  only in the stutters. 15 s, not the torch's 30: a quarter of a minute's light is warning enough
+  to get back to a friend's light, and the hat stays a short, strong light.
+- **Then its bulb's own run-down carries the beam out** (the art's `RunDown`, 3 s): the beam
+  follows the bulb's glow track from where the sag left it (`Headlamp.light`), so on a friend's
+  screen the bulb on the brow and the cone sputter out together. Through the stutter, a friend's
+  bulb is dimmed with their beam (`HeadlampView`), only in that stretch so the pull-on's own glow
+  isn't overwritten.
+- **Spent, it falls off and breaks** (the server's: `FindUses` looks four times a second for a
+  worn hat whose stamp is spent, `Slots:breakWorn`): it slips off forward with a small hop (4 up,
+  2.5 ahead, not a tool's 8 and 4), and cracks apart as it hits the floor, not in the air, ten
+  bits in safety yellow, black and the lens's grey flying, the finds kit's CRUNCH at 0.72 pitch,
+  then its drop clank that monsters hear as a dropped tool, 2.5 s lying, a fade. It's lost, as
+  a worn-out tool is (taken from home, it leaves your save). A hat dropped lit (caught) runs out
+  on the floor and only goes dark; spent, it can't be worn again.
+- **Studio's `DevHatSeconds`** shortens the minute for a hat worn off the ground floor.
+- Defaults for the owner (OWNER.md "The hard hat running out"): the 15 s, the sag, losing it.
+

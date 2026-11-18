@@ -15,6 +15,11 @@
 	still glows on the brow. Only yours and the nearest two friends' are real lights
 	(`Headlamp.budget`), from a pool made once.
 
+	Its minute running down (F-G1b4b, D-421): for its last seconds the beam stutters and sags as a
+	dying torch does, the filament's buzz heard in the stutters (`Headlamp.light`), and a friend's
+	bulb dims with their beam; then the bulb's own run-down (the art's `RunDown`) carries the beam
+	out with it. Spent, the server takes it off the head and breaks it, and the beam is simply gone.
+
 	Studio only: `workspace:SetAttribute("HeadlampTest", "friend")` draws your own hat as a friend
 	sees it (its beam from the lamp along your aim, the settle as it goes on), for one-player Play.
 ]]
@@ -23,7 +28,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
+local Art = require(ReplicatedStorage.Shared.Finds.Art)
 local Brix = require(ReplicatedStorage.Brix)
+local Charge = require(ReplicatedStorage.Shared.Flashlight.Charge)
 local Finds = require(ReplicatedStorage.Shared.Finds)
 local HandRoom = require(script.Parent.HandRoom)
 local Head = require(ReplicatedStorage.Shared.Finds.Head)
@@ -39,7 +46,7 @@ local BUDGET_EVERY = 0.25 -- seconds between choosing which friends' headlamps a
 local RAD = math.pi / 180
 local COLOR = Color3.fromRGB(Headlamp.Color[1], Headlamp.Color[2], Headlamp.Color[3])
 
-type Rig = { part: BasePart, at: Attachment, spot: SpotLight, spill: PointLight? }
+type Rig = { part: BasePart, at: Attachment, spot: SpotLight, spill: PointLight?, buzz: Sound }
 
 -- A worn hat on a friend's head, as this screen draws it.
 type Worn = {
@@ -52,7 +59,52 @@ type Worn = {
 	settleAt: number?, -- os.clock() it appeared, while it settles
 	k: number, -- their head's size against a standard one
 	pitch: number, -- their aim on this screen, eased, degrees
+	flicker: Charge.Flicker, -- its run-down's stutter on this screen
+	level: number, -- its light this frame (0 to 1), as it runs down
+	stuttering: boolean,
+	look: SurfaceAppearance?, -- its bulb's, dimmed with its beam as it stutters
 }
+
+-- The filament fighting, looped quietly at a lamp (the torch's buzz, `Charge.Buzz`); heard only
+-- while it stutters.
+local function buzzSound(parent: Instance): Sound
+	local s = Instance.new("Sound")
+	s.Name = "HeadlampBuzz"
+	s.SoundId = Charge.Buzz.id
+	s.PlaybackRegionsEnabled = true
+	s.PlaybackRegion = NumberRange.new(Charge.Buzz.from, Charge.Buzz.from + Charge.Buzz.length)
+	s.LoopRegion = s.PlaybackRegion
+	s.Looped = true
+	s.Volume = 0
+	s.RollOffMode = Enum.RollOffMode.InverseTapered
+	s.RollOffMinDistance = Charge.BuzzNear
+	s.RollOffMaxDistance = Charge.BuzzReach
+	s.Parent = parent
+	return s
+end
+
+-- A lamp's buzz this frame: loudest in a stutter's dips, retuned each blink so it crackles,
+-- silent while it burns steady, stopped once it's out.
+local function drive(s: Sound, stuttering: boolean, level: number, f: Charge.Flicker)
+	if not stuttering then
+		if s.IsPlaying then
+			s:Stop()
+		end
+		return
+	end
+	if not s.IsPlaying then
+		s.TimePosition = Charge.Buzz.from
+		s:Play()
+	end
+	local v = Charge.BuzzVolume * (1 - 0.5 * level)
+	if math.abs(s.Volume - v) > 0.02 then
+		s.Volume = v
+	end
+	local pitch = Charge.buzzPitch(f)
+	if s.PlaybackSpeed ~= pitch then
+		s.PlaybackSpeed = pitch
+	end
+end
 
 local HeadlampView = {}
 
@@ -74,6 +126,8 @@ function HeadlampView.new(): Brix.System
 	local bareNow: { [Model]: boolean } = {}
 	local budgetIn = 0
 	local durations: { [string]: { [string]: number } } = {}
+	local bulbs: { [string]: { Art.Key }? } = {} -- each worn find's bulb's run-down keys
+	local flicker = Charge.flicker(player.UserId + 1) -- your own hat's run-down
 
 	local function testing(): boolean
 		return studio and Workspace:GetAttribute(TEST) == "friend"
@@ -93,6 +147,7 @@ function HeadlampView.new(): Brix.System
 		spot.Angle, spot.Range, spot.Color = Headlamp.Angle, Headlamp.Range, COLOR
 		spot.Brightness, spot.Shadows, spot.Enabled = 0, true, false
 		spot.Parent = at
+		local buzz = buzzSound(part)
 		local p: PointLight? = nil
 		if spill then
 			local s = Instance.new("PointLight")
@@ -101,7 +156,7 @@ function HeadlampView.new(): Brix.System
 			p = s
 		end
 		part.Parent = folder
-		return { part = part, at = at, spot = spot, spill = p }
+		return { part = part, at = at, spot = spot, spill = p, buzz = buzz }
 	end
 
 	local function shine(r: Rig, light: number)
@@ -119,8 +174,31 @@ function HeadlampView.new(): Brix.System
 		end
 	end
 
-	-- Whether `model` (the find `key` on a head) is lit now, and its press's server time.
-	local function litOf(model: Model, key: unknown): (boolean, number)
+	-- The bulb's glow keys in `key`'s run-down (`Headlamp.RunDown`), or nil if it has none.
+	local function bulbKeys(key: string): { Art.Key }?
+		if bulbs[key] ~= nil then
+			return bulbs[key]
+		end
+		local find = Finds.art(key)
+		local m = if find then find.Motions[Headlamp.RunDown] else nil
+		local keys: { Art.Key }? = nil
+		if m then
+			for _, track in m.Tracks do
+				if track.Part == Headlamp.Bulb and track.Channel == "glow" then
+					keys = track.Keys
+				end
+			end
+		end
+		bulbs[key] = keys
+		return keys
+	end
+
+	--[[
+		Whether `model` (the find `key` on a head) is giving light now, its press's server time,
+		the seconds of its minute left (0 or under once it's out) and, in its run-down, its bulb's
+		glow (0 to 1); not lit once spent.
+	]]
+	local function litOf(model: Model, key: unknown): (boolean, number, number, number?)
 		local row = if type(key) == "string" then Use.Rows[key] else nil
 		local s = Use.read(
 			model:GetAttribute(Use.StateAttribute),
@@ -129,7 +207,7 @@ function HeadlampView.new(): Brix.System
 			model:GetAttribute(Use.CountAttribute)
 		)
 		if not (row and s and type(key) == "string") then
-			return false, 0
+			return false, 0, 0, nil
 		end
 		local d = durations[key]
 		if not d then
@@ -138,7 +216,15 @@ function HeadlampView.new(): Brix.System
 		end
 		local played = Use.played(row, Workspace:GetServerTimeNow() - s.at, nil)
 		local f = Use.frame(row, s, played, d)
-		return f.lit and not f.spent, s.at
+		if f.spent then
+			return false, s.at, 0, nil
+		elseif f.lit then
+			return true, s.at, s.left - played, nil
+		elseif f.motion == Headlamp.RunDown then
+			local keys = bulbKeys(key)
+			return true, s.at, 0, if keys then Art.sample(keys, f.t) else 0
+		end
+		return false, s.at, 0, nil
 	end
 
 	local function lampOf(model: Model): Attachment?
@@ -174,15 +260,20 @@ function HeadlampView.new(): Brix.System
 		if not (r and camera and character and model) or testing() then
 			if r then
 				shine(r, 0)
+				drive(r.buzz, false, 0, flicker)
 			end
 			return
 		end
-		local lit, at = litOf(model, player:GetAttribute(Head.Attribute))
+		local lit, at, left, bulb = litOf(model, player:GetAttribute(Head.Attribute))
 		if not lit then
 			shine(r, 0)
+			drive(r.buzz, false, 0, flicker)
 			return
 		end
+		local level, stuttering = Headlamp.light(flicker, left, dt, bulb)
+		drive(r.buzz, stuttering, level, flicker)
 		local down, light = Headlamp.swing(now - math.max(at + Headlamp.LightAt, appeared))
+		light *= level
 		local speed = 0
 		local root = character:FindFirstChild("HumanoidRootPart")
 		local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -230,7 +321,13 @@ function HeadlampView.new(): Brix.System
 			settleAt = if settle and weld then os.clock() else nil,
 			k = if head and head:IsA("BasePart") then head.Size.Y / Head.Standard else 1,
 			pitch = 0,
+			flicker = Charge.flicker(owner.UserId + 2),
+			level = 1,
+			stuttering = false,
+			look = nil,
 		}
+		local bulb = model:FindFirstChild(Headlamp.Bulb, true)
+		w.look = if bulb then bulb:FindFirstChildOfClass("SurfaceAppearance") else nil
 		friends[model] = w
 		if weld and w.settleAt then
 			-- lifted at once, so it's never drawn on its seat for a frame before it drops
@@ -276,6 +373,27 @@ function HeadlampView.new(): Brix.System
 				friends[model] = nil
 			end
 		end
+		-- each one's light as it runs down; its bulb dimmed with it while it stutters through its
+		-- minute (in the bulb's own run-down, FindUseView plays the bulb and the beam follows)
+		for _, w in order do
+			local key = w.owner:GetAttribute(Head.Attribute)
+			local lit, _, left, bulb = litOf(w.model, key)
+			if lit then
+				w.level, w.stuttering = Headlamp.light(w.flicker, left, dt, bulb)
+			else
+				w.level, w.stuttering = 0, false
+			end
+			local look = w.look
+			local find = if type(key) == "string" then Finds.art(key) else nil
+			local glow = if find then find.Glow else nil
+			-- only in its last stretch: before it, FindUseView's own pull-on lights the bulb
+			if look and glow and lit and left > 0 and left <= Headlamp.Shape.flicker then
+				local want = glow.Strength * w.level
+				if math.abs(look.EmissiveStrength - want) > 0.05 then
+					look.EmissiveStrength = want
+				end
+			end
+		end
 		local camera = Workspace.CurrentCamera
 		budgetIn -= dt
 		if budgetIn <= 0 and camera then
@@ -283,7 +401,7 @@ function HeadlampView.new(): Brix.System
 			table.clear(distances)
 			local eye = camera.CFrame.Position
 			for i, w in order do
-				local lit = litOf(w.model, w.owner:GetAttribute(Head.Attribute))
+				local lit = w.level > 0 or w.stuttering -- a dip to black is still lit
 				distances[i] = if lit
 					then (w.model:GetPivot().Position - eye).Magnitude
 					else math.huge
@@ -299,19 +417,20 @@ function HeadlampView.new(): Brix.System
 			local lamp = w.lamp
 			local root = w.character:FindFirstChild("HumanoidRootPart")
 			if real[i] and lamp and root and root:IsA("BasePart") and used < #pool then
-				local lit = litOf(w.model, w.owner:GetAttribute(Head.Attribute))
-				if lit then
+				if w.level > 0 or w.stuttering then
 					used += 1
 					local _, yaw = root.CFrame:ToOrientation()
 					local r = pool[used]
 					r.at.WorldCFrame = CFrame.new(lamp.WorldPosition)
 						* CFrame.fromEulerAnglesYXZ(w.pitch * RAD, yaw, 0)
-					shine(r, 1)
+					shine(r, w.level)
+					drive(r.buzz, w.stuttering, w.level, w.flicker)
 				end
 			end
 		end
 		for j = used + 1, #pool do
 			shine(pool[j], 0)
+			drive(pool[j].buzz, false, 0, flicker)
 		end
 	end
 
