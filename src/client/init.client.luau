@@ -21,6 +21,7 @@ local BatteryView = require(script.BatteryView)
 local BreakerView = require(script.BreakerView)
 local FeedView = require(script.FeedView)
 local FreeFriendView = require(script.FreeFriendView)
+local GiftedView = require(script.GiftedView)
 local CoinView = require(script.CoinView)
 local KeptWrapOn = require(script.KeptWrapOn)
 local ChaseMusic = require(script.ChaseMusic)
@@ -233,6 +234,8 @@ local host = Brix.Host.new({
 		{ slot = "cartRide", system = CartRide.new(ownCart, cartTold, kick, holdView) },
 		-- the counter's shop: its prompt, the lobby's Shop button, the wrap colours (S3-04b)
 		{ slot = "shopView", system = ShopView.new() },
+		-- a friend grew your home: their face and "More room!" wherever you stand (S5-03h3b2)
+		{ slot = "giftedView", system = GiftedView.new() },
 	},
 })
 host:start()

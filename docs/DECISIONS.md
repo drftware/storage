@@ -8799,3 +8799,30 @@ Pet Simulator and Adopt Me let you gift Robux things; their home opens out and t
   checks and the specs (Brix's real gift run over this game's save: given, written, once; a failed
   friend's write refused and given once after; late; a friend gone leaving a spare); untested in
   Studio.
+
+## D-344 The Gift deals your friends as cards beside the size you give; their "More room!" drops in at the top (S5-03h3b2, 2026-11-17)
+
+The moment, as Pet Simulator's and Adopt Me's gifts work: you tap the little wrapped box on Large's
+card, the other sizes fold away and your friends deal in beside it, each a card with their face,
+name and size and the price; you tap one, Roblox's box comes up, and once it's theirs their plan
+opens out from their size to Large over the steel's roll, their face over it, "Sent!". On their
+screen, wherever they stand, a banner drops in under the top bar with your face (a wrapped gift on
+its corner), "More room!" and your name; the roll lands on the knock and it eases away.
+- **Friends as cards, not a list inside one card.** On the Galaxy A16 a shop card is about 103 by
+  157 points: six rows inside it would be too small for a thumb. Dealing a card per friend in the
+  same row (the box you give stays first, its Gift pill pressed in gold; tapped again, back) keeps
+  faces big and reads as "pick who", as Pet Simulator's player picker does.
+- **The Gift pill is the box alone**, no word, beside the price (or the whole row on a size under
+  yours and while friends are dealt). A gift you hold already (a spare) shows the box on the
+  friend's pill instead of a price. Drawn from frames (`GiftMark`), not an emoji, so it sits in the
+  home's colours.
+- **No words on a refusal.** A friend already that big is dimmed and their tap does nothing; closed,
+  gone or had settles the card and asks the shelf again, so a friend who left simply isn't dealt.
+- **Studio's test players' UserIds are negative** (Player2 is -2), so `Grow.friendId` now takes any
+  whole id but 0: before, the owner's two-player test would never have listed a friend. A negative id
+  in a live game matches nobody here, so it changes nothing there.
+- **Seeing it with one player**: `GrowTest:Invoke(player, "friend", name, size)` lists a made-up
+  friend (Studio only); a gift to one lands after a beat with no save or prompt.
+- Passes checks. In Studio Play on the A16 the friend's banner arrived with the giver's name, face
+  and headline and hid after, no errors; Studio stopped drawing frames, so the motion, the Units
+  tab's Gift and the friend cards weren't watched (the owner's two-player test, `OWNER.md`).

@@ -160,9 +160,11 @@ function Grow.spares(data: { spares: { [string]: number }? }, name: string): num
 	return if held and held > 0 then held else 0
 end
 
--- The value the remote carried as a friend's UserId, or nil when it isn't one: never trusted.
+-- The value the remote carried as a friend's UserId, or nil when it isn't one: never trusted. A
+-- whole number other than 0; negative too, as Studio's test players' are (Player2 is -2), which
+-- in a live game simply matches nobody here.
 function Grow.friendId(value: unknown): number?
-	if type(value) ~= "number" or value ~= value or value < 1 or value >= 2 ^ 53 then
+	if type(value) ~= "number" or value ~= value or value == 0 or math.abs(value) >= 2 ^ 53 then
 		return nil
 	end
 	return if value == math.floor(value) then value else nil

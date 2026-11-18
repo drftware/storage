@@ -325,6 +325,13 @@ verified: a doc page, Studio, or "untested".
   request ... Access forbidden", though Play reaches them. To change the test save, use a
   Studio-only server hook in Play: `ServerStorage.StudioCrack:Invoke(player, "BlobLamp")` from a
   Server `execute_luau` cracks one (JobBoxes); then shut and reopen the job box to resend its list.
+- **Studio stops drawing when it isn't in front** (S5-03h3b2, Nov 17): a Client `RenderStepped`
+  count read 0 a second while Heartbeat ran 60, so tweens froze mid-way (`task.delay` still fired),
+  `screen_capture` timed out and `user_mouse_input` timed out unless sent right after
+  `osascript -e 'tell application "RobloxStudio" to activate'` (sandbox off). It drew 15 frames a
+  second just after that and stopped again within a minute. Count frames before judging motion.
+- **Studio's two-player test gives negative UserIds** (Player1 -1, Player2 -2): anything that
+  checks a UserId is a whole number of at least 1 refuses them (D-344, `Grow.friendId`).
 - **Clicking a button in Play** (S5-03c2b2b, Nov 17): `execute_luau` can't fire `Activated`,
   but the Studio MCP's `user_mouse_input` on the Client with `instance_path` (for example
   `LocalPlayer.PlayerGui.JobBoxPanel.Panel.Finds.Boombox.Pick`) moves to the button and clicks

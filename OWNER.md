@@ -237,14 +237,26 @@ nowhere else.
      Close it without buying: the card lets go at once. Tap again and buy: the card holds, then
      the steel rolls and "More room!"; walk home and tap Arrange: 16 by 20. Say whether the
      cards read on the phone.
-- [ ] **Give Large and XL as gifts** (S5-03h3b1, D-343; the rules and the server only, passing
-  checks, untested in Studio; the steps to try it on a screen come with S5-03h3b2's Gift screen).
+- [ ] **Give Large and XL as gifts** (S5-03h3b1 and h3b2, D-343, D-344; passes checks; in Studio
+  only the friend's banner was seen arriving, as Studio stopped drawing frames).
   1. **Decide (defaults in):** anyone in your server can be given one, not only your Roblox
      friends (Pet Simulator gifts that way); a gift for a friend who left before it went through
      waits in your save and goes on your next Gift press with no purchase box; gift prices, my
      guess the same as your own (Large 199, XL 399).
   2. Creator Hub > Developer Products: make two more, named exactly `Large Unit Gift` and
      `XL Unit Gift`. Their off switches: `sellGiftLarge` and `sellGiftXL`.
+  3. **Try it with two players** (Test > Clients and Servers, 2 players, Galaxy A16 in the Device
+     Simulator on Player1). On Player1 open the counter's shop, Units. Large's card shows a small
+     wrapped box beside its price. Tap it: the other sizes fold away and Player2 deals in as a
+     card with their face, name and "Small". Tap Player2: Roblox's box (or, with no product made,
+     a made-up purchase) and then Large's plan opens out from Small, Player2's face over it,
+     "Sent!". On Player2: a banner drops in at the top with Player1's face, "More room!" and
+     their name, with the steel's roll and a knock. Look for: faces big enough to pick by thumb,
+     the box readable, nothing snapping. Tap the box again to go back. Gift Player2 Large again:
+     their card is dimmed and does nothing.
+  4. **Quicker, one player**: in Play, from the server's command bar,
+     `game.ServerStorage.GrowTest:Invoke(game.Players:GetPlayers()[1], "friend", "Maya", "Small")`
+     lists a made-up friend; a gift to them lands after a second, no save.
 - [ ] **Furniture set out at home: my defaults** (S5-03g4c1, D-335, D-336, D-337, D-338). Say
   which to change:
   1. A piece set out counts against your home's limit, the same as a find (Bloxburg's budget).

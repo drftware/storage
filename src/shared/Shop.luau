@@ -59,7 +59,8 @@ Shop.Words = table.freeze({
 	inBox = "In your box", -- a piece just bought: it waits in your job box
 	units = "Units", -- the third tab: your home's sizes, yours then the bigger ones (S5-03h2)
 	yours = "Yours", -- the size your home is
-	grown = "More room!", -- the headline on a size just bought
+	grown = "More room!", -- the headline on a size just bought, and on a friend's gift arriving
+	sent = "Sent!", -- the headline on a size just given to a friend (S5-03h3b2)
 })
 
 -- The counter's prompt: in the lobby's own frame, just in front of the counter's face (its front
@@ -169,6 +170,10 @@ Shop.GrowRoll = table.freeze({
 	volume = 0.55,
 	pitch = 1.08,
 })
+-- A friend's gift arriving (S5-03h3b2, D-344): the banner with the giver's face drops in at the
+-- top of the screen wherever you stand, the steel rolls for `GrowTime` and lands on the knock, and
+-- it stays `GiftedFor` seconds before easing away: long enough to see who it was from.
+Shop.GiftedFor = 3.4
 Shop.GrowKnock = table.freeze({
 	id = "rbxassetid://9120370893",
 	from = 0.07,

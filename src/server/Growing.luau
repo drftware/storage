@@ -51,7 +51,9 @@
 	`:Invoke(player, "cash", n)` sets the save's cash to `n` (for trying a sale) and answers it;
 	`:Invoke(player, "price", n)` makes up a Robux price of `n` for the cards (0 clears it), so the
 	look can be judged before the products exist; `:Invoke(player, "gift", size, friend)` gives
-	`friend` (a Player) that size as the remote's gift does, answering "" or why not.
+	`friend` (a Player) that size as the remote's gift does, answering "" or why not;
+	`:Invoke(player, "friend", name, size)` lists a made-up friend on the Gift (one player can see
+	the screen: a gift to them lands after a beat, no save), and `"friend"` alone clears them.
 ]]
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
@@ -94,6 +96,10 @@ function Growing.new(): GrowingSystem
 	local pricedAt: { [Player]: number } = {} -- os.clock the prices were fetched
 	local fetching: { [Player]: true } = {}
 	local madeUp = 0 -- Studio's made-up Robux price for the cards (GrowTest "price")
+	-- Studio's made-up friends (GrowTest "friend"), by their made-up UserId: listed on the Gift
+	-- like anyone here, and a gift to one lands after a beat with no save or prompt, so the Gift
+	-- screen can be seen with one player.
+	local madeUpFriends: { [number]: Grow.Friend } = {}
 	local signals: { Brix.SignalConnection } = {}
 
 	-- Sells size `name` to `player`: "" once sold, written and the home set up at it, else why not.
@@ -217,6 +223,18 @@ function Growing.new(): GrowingSystem
 		local offer = Grow.giftOffer(name)
 		if id == nil or offer == nil then
 			return "unknown", 0
+		end
+		local fake = madeUpFriends[id]
+		if fake then
+			if Grow.owns({ homeSize = fake.size }, name) then
+				return "had", id
+			end
+			task.delay(1, function()
+				fake.size = name
+				print(`[Growing] {player.Name} gave made-up {fake.name} a {name} home`)
+				answer(player, name, "", id)
+			end)
+			return nil, id
 		end
 		local friend = Players:GetPlayerByUserId(id)
 		if friend == nil or friend == player then
@@ -456,6 +474,9 @@ function Growing.new(): GrowingSystem
 				table.insert(here, { id = p.UserId, name = p.DisplayName, size = data.homeSize })
 			end
 		end
+		for _, fake in madeUpFriends do
+			table.insert(here, fake)
+		end
 		return Grow.friends(here, player.UserId)
 	end
 
@@ -556,6 +577,20 @@ function Growing.new(): GrowingSystem
 						end
 						local theirs = if saving then saving:data(friend) else nil
 						return if theirs and theirs.homeSize == size then "" else "had"
+					end
+					if name == "friend" then
+						-- a made-up friend (`amount` their name, `friend` their size), or none left
+						if type(amount) ~= "string" then
+							table.clear(madeUpFriends)
+							return 0
+						end
+						local id = -(9000 + #Grow.friends(friendsOf(player), 0))
+						madeUpFriends[id] = {
+							id = id,
+							name = string.sub(amount, 1, 20),
+							size = Grow.ask(friend) or "Small",
+						}
+						return id
 					end
 					if name == "price" then
 						if type(amount) == "number" and amount == amount and amount >= 0 then

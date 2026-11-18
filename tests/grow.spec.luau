@@ -211,7 +211,8 @@ do
 	ok(Grow.giftOffer("Medium") == nil and Grow.giftOffer("Small") == nil, "no cash size is gifted")
 	ok(Grow.giftSize("giftXL") == "XL" and Grow.giftSize("homeXL") == nil, "a gift's size")
 	ok(Grow.friendId(1234) == 1234, "a UserId")
-	ok(Grow.friendId(0) == nil and Grow.friendId(-5) == nil, "not a UserId: none or negative")
+	ok(Grow.friendId(0) == nil, "not a UserId: none")
+	ok(Grow.friendId(-2) == -2, "Studio's test players' UserIds are negative: Player2 is -2")
 	ok(Grow.friendId(1.5) == nil and Grow.friendId(0 / 0) == nil, "not a UserId: not whole")
 	ok(Grow.friendId("1234") == nil and Grow.friendId(math.huge) == nil, "never trusted")
 
