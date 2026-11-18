@@ -10395,3 +10395,23 @@ from a kept seed, and what goes in and comes out changes in one save step. Defau
 (OWNER.md): the egg is dealt on climbs, the incubator sold at the counter, the chick a find set out
 where it lands (walking about is the living-finds ticket); 2 hours warming and 10 minutes
 wobbling; a taken find's spot kept until it's set elsewhere or you leave your home.
+
+## D-437 One touch means one thing: the room editor reads hands through Brix's Gestures (2026-11-18, ENG-27)
+
+The room editor's camera and its dragging both read Brix's `Gestures` (Brix `f291d7f`), so they never
+fight over a touch: a press is a tap, a hold, a drag on a thing or on empty floor, or half of a
+two-finger camera move, never two at once. What it means for the game:
+
+1. A second finger joining a drag on a thing turns that thing (The Sims' build mode on a phone); a
+   second finger joining anything else (a press not yet dragging, a drag on empty floor) moves the
+   camera: pinch, twist, slide, or tilt when both rise or fall together (Google Maps).
+2. What's under a finger is asked once when it lands (the game's raycast, passed in as `pick`).
+3. Mouse: right-drag turns and tilts, middle-drag slides, the wheel zooms, or turns the thing being
+   dragged (the doc's "R or the wheel while held"). Gamepad: left stick slides, right stick turns and
+   tilts, triggers zoom. Keys stay the game's: Alt (place freely) and R (a quarter turn) are read by
+   the game itself, and a game wanting Alt with the left button to turn the camera presses it as
+   right.
+4. A hold is a hold, then a drag from there, so "hold a finger on any of your things" (S5-03j5) lifts
+   it at once and the same finger carries it.
+5. Every feel number (slop 10, hold 0.5 s, double tap 0.3 s within 40 points, twist slop 0.2 rad,
+   wheel 1.15 a notch, sticks) has a stock value in Brix; S5-03j1 puts the ones it tunes in `Config`.

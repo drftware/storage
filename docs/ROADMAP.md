@@ -3280,11 +3280,14 @@ Done when players watch the results to the end and change their perks between cl
     editing, Grow a Garden's held egg placed where you point. Pure cores go in Brix (D-252),
     each by Brix's own AGENTS.md, then the pin moves. `ArrangeView` is taken apart as each piece
     is rebuilt: each ticket moves its piece into its own module; ArrangeView ends as wiring.
-    - [ ] **ENG-27 Gestures, in Brix.** Pointer events in (id, position, began, moved, ended,
+    - [x] **ENG-27 Gestures, in Brix.** Pointer events in (id, position, began, moved, ended,
       time); intents out: tap, double tap, hold, drag on a thing or on empty floor, pinch,
       twist, two-finger slide; the game answers what's under a point. Pure, a contract and a
       suite, a module page; the game's pin moves. **Acceptance:** each promise fails its suite
       when broken; check green in both repositories.
+      Done (D-437): Brix `f291d7f`, `Brix.Gestures`: 12 promises, each proven to fail a broken
+      stand-in; mouse right-drag twists and tilts, middle-drag slides, the wheel pinches or turns
+      a dragged thing, sticks and triggers move the camera at each `advance`. Pin moved.
     - [ ] **ENG-28 The orbit camera, in Brix.** A focus point, heading, tilt and distance on
       springs (Brix's Smoothings), a flick's drift, a box it can't leave, near and far stops,
       the edge follow while dragging; numbers in, a camera position and look point out. Pure,
