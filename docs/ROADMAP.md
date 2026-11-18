@@ -2524,6 +2524,23 @@ Done when players watch the results to the end and change their perks between cl
     carton for Large) in `art/finds/`, its find shown through the window, judged at phone size.
     Defaults for `OWNER.md`: a sealed find takes no press (it's in its packaging) and a hard
     drop tears the packaging, leaving it a plain find (the way fragile finds crack, F-G1e5e).
+    Split in two (art, then code):
+    - [x] **S5-02b1 The packaging's art.** Done Nov 18 (D-423): the three packs in
+      `art/finds/packs/` (the finds kit, no game rows), each fitted round a real find in the
+      sheets as the game will fit it (`spec.py`'s `fit`), judged at phone size held and from a
+      doorway (`art/sheets/packs-*.png`, `docs/art/S5-02b1-*.jpg`); uploaded, not yet imported.
+      `export` also writes `Finds/PackFit.luau` (each pack's room for a find) for b2. A photo
+      pass is owed (README).
+    - [ ] **S5-02b2 Sealed finds in the game.** The pure part first, with Lune specs: the 1 in
+      20 roll from the unit's own pick (the seed fingerprint unmoved for unsealed finds), the
+      fit (`PackFit` and `fit`, mirrored from `spec.py`; a find much deeper than wide turned to
+      show its side), the 3x worth beside the cracked rule, and whether a packed Large find
+      still fits the marked box (else it stands loose, `Deal.packs`). Then the deal, the find
+      shown in its pack in the box and in your hands, no press while sealed, the tear on a hard
+      drop (the packaging pulled off with a rip and a few scraps, the crack's way), `GatePay` and
+      `Save.keep`'s `sealed` count, the home's shelf and selling panel at 3x. First, in Studio's
+      Edit view, import the packs (PIPELINE step 6: `Kit.import("Packs")` from a clone of
+      `Shared`; the owner saves the place).
   - [ ] **S5-02c Seen in Studio.** A sealed find dealt (a dev pick), lifted out of its box,
     carried through the gate and shown on the home shelf and the selling panel at 3x; the
     padlock's better grade on floors 2, 10 and 12. Captures to `docs/art/`.

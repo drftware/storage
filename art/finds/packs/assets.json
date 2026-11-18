@@ -1,0 +1,14 @@
+{
+  "Blister": {
+    "assetId": 138135378518006,
+    "sha256": "8c896fa73a0930e92b4e2e77b87f8ffb6df2fe7a6fc64ff98d3ce4ffbeb61c7d"
+  },
+  "Carton": {
+    "assetId": 105858748679848,
+    "sha256": "8566e4b141bebf0101c801dcbfd36b25a5d00fea9b75e91edabff168806c682c"
+  },
+  "WindowBox": {
+    "assetId": 88115144026404,
+    "sha256": "07f135d86cfd91cf1248ed0a709dc812d73effc4eb60f9472f924366625a6bd3"
+  }
+}

@@ -51,4 +51,8 @@ return {
 	StainedGlassLamp = { "SwitchOn", "SwitchOff" },
 	TeaLight = { "Light", "Flicker", "GoOut", "Lift" },
 	UnpluggedLamp = { "Switch" },
+	-- the packs a sealed find sits in (art/finds/packs): nothing moves
+	Blister = {},
+	WindowBox = {},
+	Carton = {},
 } :: { [string]: { string } }

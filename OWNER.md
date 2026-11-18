@@ -188,6 +188,14 @@ nowhere else.
   had them change only at 10 and 25); and a padlock's find is exactly one grade better than an
   ordinary door's roll (its best grade stays its best: on floors 10 to 24 that's Legendary,
   since the one Secret built, the unplugged lamp, comes only from floor 25).
+- [ ] **Judge the sealed finds' packaging** (S5-02b1, D-423; pictures only, not in the place
+  yet). Open `docs/art/S5-02b1-studio.jpg`, `-held.jpg` (on a phone, in your hands) and
+  `-unit.jpg` (from a unit's doorway). A Small find comes sealed on a yellow and red blister
+  card, a Medium one in a red window box with a skylight in its top, a Large one in a taped
+  brown carton with a window cut in it. Look for: each reads as "still in its packaging" at a
+  glance and the find shows through. Decide: these colours and prints, or another look; and the
+  defaults S5-02b2 will build (a sealed find takes no press; a hard drop tears the packaging off
+  and leaves a plain find, worth the loose price).
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

@@ -9963,3 +9963,29 @@ its best loot (the GDD's padlock line: "the best chance of something great").
 
 Not chosen: rolling a padlock's grade on better odds (a pick-for-pick step is provable and keeps
 the seed's deal); two grades better (no commons and few uncommons already).
+
+## D-423 The sealed find's packaging: three shared packs, fitted round the find (S5-02b1, Nov 18)
+
+S5-02b split into b1 (the packaging's art) and b2 (sealed finds in the game). b1 built three
+packs as their own finds-kit set, `art/finds/packs/` (no game rows, never dealt alone): a
+card-backed blister for Small finds (yellow card, red header with a hang slot, a clear bubble),
+a window box for Medium (red and yellow print, a window in the front and a skylight in the top,
+a printed backdrop inside, a hang tab), a taped brown carton for Large (H-taped flaps, a window
+cut in the front, hand holes in the ends, one red print on a pale band). No words, no maker's
+name. Uploaded; not yet imported (b2 imports them in Studio).
+
+How a pack fits a find: each pack has a room for a find; it scales on each axis to the find's
+size plus a pad, and no axis less than the largest over a stretch (blister 1.15, box 1.3, carton
+1.8), so the print never squashes far; the find sits in the room's middle. `spec.py`'s `fit` is
+the rule, `Finds/PackFit.luau` its numbers for the game.
+
+Why the skylight: a closed box lets no bulb light in, and the cymbal monkey's dark fur read as a
+black shape behind the film; toy boxes often carry a second window, and the top one is where the
+unit's bulb is. Why the film is a grey-warm 0.14 with a broad soft glare: a pale film read
+milky, and a thin hard glare read as a white rod inside the box. The windups set's spec had two
+sounds (`SIREN`, `DUCK`) shadowing its own numbers (PIPELINE's gotcha), so the set couldn't load;
+both are now imported as `..._SOUND` (its rows unchanged).
+
+Not chosen: one pack per find (95 more models for a 1 in 20 roll); scaling a pack uniformly (a
+cube-ish RC car in a carton came out 3 studs wide); torn-packaging art (b2 pulls the pack off
+with a rip and scraps, the crack's way).

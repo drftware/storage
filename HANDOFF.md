@@ -21,7 +21,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403
   to D-413), S4-05 the big find (D-414 to D-419), F-G1b4a2 the hat's beam (D-420), F-G1b4b the hat
   runs down, stutters, cracks off your head (D-421), S5-02a finds better each floor, a padlock's
-  a grade up (D-422). Next: S5-02b sealed finds (its ROADMAP lines, `Deal.open`, `Save`), then S5-01.
+  a grade up (D-422), S5-02b1 the sealed finds' packaging art, uploaded (D-423). Next: S5-02b2
+  sealed finds in the game (import the packs, `PackFit`, `Deal.open`, `Save`), then S5-01.
 
 ## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
 The home's look settling without a seam. One line a session if they won't fit together; split

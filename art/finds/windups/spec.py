@@ -872,7 +872,7 @@ from game import (  # noqa: E402
     DOWN_THE_HALL,
     EEK,
     DRUM_HIT,
-    DUCK,
+    DUCK as DUCK_SOUND,  # the rubber duck's own numbers are DUCK
     HOLLOW,
     HORSE,
     HUM,
@@ -886,7 +886,7 @@ from game import (  # noqa: E402
     ROLL,
     ROOSTER,
     SHEEP,
-    SIREN,
+    SIREN as SIREN_SOUND,  # the siren car's own numbers are SIREN
     SLAP,
     SNAP,
     SOFT,
@@ -1001,7 +1001,7 @@ GAME = [
         # box). The die-cast car's roll, as the cymbal monkey lures
         press=dict(
             verb="Push",
-            on=[dict(motion="Push", sound=SIREN,
+            on=[dict(motion="Push", sound=SIREN_SOUND,
                      cues=[dict(at=1.05, sound=pitched(ROLL, 0.8, 0.45))])],
             noise="Push",
             heard=ACROSS_THE_FLOOR,
@@ -1142,7 +1142,7 @@ GAME = [
             on=[dict(motion="Pull", hit=dict(part="FarmSpinner_Arrow", sound=TICK),
                      cues=[dict(at=0.47, sound=LEVER)],
                      lands=dict(part="FarmSpinner_Arrow", every=45, at=3.2,
-                                calls=[COW, PIG, SHEEP, HORSE, DUCK, MEOW, ROOSTER, DOG]))],
+                                calls=[COW, PIG, SHEEP, HORSE, DUCK_SOUND, MEOW, ROOSTER, DOG]))],
             noise="Pull",
             heard=DOWN_THE_HALL,
             toy=True,

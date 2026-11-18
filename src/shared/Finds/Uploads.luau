@@ -28,6 +28,11 @@ return {
 		TeaLight = { Model = 111143504211306, Emissive = 73546862884548 },
 		UnpluggedLamp = { Model = 86157780275524, Emissive = 71456218738890 },
 	},
+	Packs = {
+		Blister = { Model = 138135378518006 },
+		Carton = { Model = 105858748679848 },
+		WindowBox = { Model = 88115144026404 },
+	},
 	Squishies = {
 		ButterStick = { Model = 91493472138143 },
 		CakeSlice = { Model = 98272687486525 },
