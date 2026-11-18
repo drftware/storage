@@ -197,6 +197,120 @@ do
 	ok(notTable ~= nil and next(notTable.robux) == nil, "Robux prices not a table: none")
 end
 
+-- Gifts (S5-03h3b, D-343): Large and XL given to a friend here, as Pet Simulator and Adopt Me
+-- let you gift Robux things. An offer each; the friend named by UserId, never trusted. A spare (a
+-- gift whose friend left before it landed) is spent on the friend's save first and the buyer's
+-- spare second, undone when the friend's write fails, never given to a home that big. Friends are
+-- listed by name, without you, a few at most; a gift size is dealt, even below yours, while
+-- someone here is smaller and it's on sale (or a spare's held).
+do
+	local function same(a: { string }, b: { string }): boolean
+		return table.concat(a, " ") == table.concat(b, " ")
+	end
+	ok(Grow.giftOffer("Large") == "giftLarge" and Grow.giftOffer("XL") == "giftXL", "a gift each")
+	ok(Grow.giftOffer("Medium") == nil and Grow.giftOffer("Small") == nil, "no cash size is gifted")
+	ok(Grow.giftSize("giftXL") == "XL" and Grow.giftSize("homeXL") == nil, "a gift's size")
+	ok(Grow.friendId(1234) == 1234, "a UserId")
+	ok(Grow.friendId(0) == nil and Grow.friendId(-5) == nil, "not a UserId: none or negative")
+	ok(Grow.friendId(1.5) == nil and Grow.friendId(0 / 0) == nil, "not a UserId: not whole")
+	ok(Grow.friendId("1234") == nil and Grow.friendId(math.huge) == nil, "never trusted")
+
+	local buyer = { homeSize = "Small", spares = {} :: { [string]: number } }
+	local friend = { homeSize = "Small" }
+	ok(Grow.spares(buyer, "Large") == 0, "no spare")
+	ok(Grow.give(buyer, friend, "Large") == "none", "no spare: nothing given")
+	ok(friend.homeSize == "Small", "no spare: the friend's home untouched")
+	buyer.spares.giftLarge = 1
+	local refusal, was = Grow.give(buyer, friend, "Large")
+	ok(refusal == nil and friend.homeSize == "Large" and was == "Small", "the friend's home first")
+	ok(Grow.spares(buyer, "Large") == 1, "the spare kept until the friend's save is written")
+	Grow.ungive(friend, "Large", was)
+	ok(friend.homeSize == "Small", "the friend's write failed: undone")
+	ok(Grow.spares(buyer, "Large") == 1, "the friend's write failed: the spare kept")
+	Grow.give(buyer, friend, "Large")
+	Grow.spend(buyer, "Large")
+	ok(friend.homeSize == "Large" and Grow.spares(buyer, "Large") == 0, "written: spent once")
+	Grow.spend(buyer, "Large")
+	ok(Grow.spares(buyer, "Large") == 0, "never below none")
+	buyer.spares.giftLarge = 1
+	ok(Grow.give(buyer, friend, "Large") == "had", "never given to a home that big")
+	ok(Grow.give(buyer, { homeSize = "XL" }, "Large") == "had", "nor a bigger one")
+	ok(Grow.give(buyer, friend, "Medium") == "unknown", "Medium isn't a gift")
+	local grownPast = { homeSize = "XL" }
+	Grow.ungive(grownPast, "Large", "Small")
+	ok(grownPast.homeSize == "XL", "an undo never shrinks a home grown past the gift")
+
+	local here = {
+		{ id = 3, name = "Zed", size = "Small" },
+		{ id = 1, name = "Me", size = "XL" },
+		{ id = 2, name = "Ana", size = "Large" },
+	}
+	local listed = Grow.friends(here, 1)
+	ok(#listed == 2 and listed[1].name == "Ana" and listed[2].name == "Zed", "by name, without you")
+	local many = {}
+	for i = 1, 20 do
+		table.insert(many, { id = i + 10, name = `P{i}`, size = "Small" })
+	end
+	ok(#Grow.friends(many, 1) == Grow.FriendsMost, "a few at most")
+
+	local shelf: Grow.Shelf = {
+		cash = 0,
+		size = "XL",
+		robux = {},
+		gifts = { Large = 0 },
+		spares = {},
+		friends = listed,
+	}
+	ok(Grow.giftable(shelf, "Large"), "Large giftable: Zed is Small")
+	ok(not Grow.giftable(shelf, "XL"), "XL's gift not on sale")
+	shelf.spares.XL = 1
+	ok(Grow.giftable(shelf, "XL"), "a spare gives it with nothing on sale")
+	shelf.friends = { { id = 2, name = "Ana", size = "XL" } }
+	ok(not Grow.giftable(shelf, "Large"), "nobody here smaller")
+	ok(not Grow.giftable(shelf, "Medium"), "Medium is never gifted")
+	ok(
+		same(Grow.ladder("XL", nil, { Large = true }), { "Large", "XL" }),
+		"a gift below yours dealt"
+	)
+	ok(
+		same(Grow.ladder("Small", nil, { XL = true }), { "Small", "Medium", "XL" }),
+		"a gift above yours dealt with its own not on sale"
+	)
+	ok(same(Grow.ladder("Medium", nil, { Medium = true }), { "Medium" }), "never a cash size")
+
+	local sent = Grow.shelf(
+		{ cash = 5, homeSize = "Large", spares = { giftXL = 2, cutFree = 1 } },
+		{ XL = 799 },
+		{ Large = 0, XL = 899, Medium = 5 },
+		{ { id = 7, name = "Bo", size = "Small" } }
+	)
+	local back = Grow.read(sent)
+	ok(back ~= nil and back.gifts.XL == 899 and back.gifts.Large == 0, "gift prices carried")
+	ok(back ~= nil and back.gifts.Medium == nil, "no gift price for a cash size")
+	ok(back ~= nil and back.spares.XL == 2 and back.spares.Large == nil, "spares by size")
+	ok(back ~= nil and #back.friends == 1 and back.friends[1].id == 7, "friends carried")
+	ok(back ~= nil and back.friends[1].size == "Small", "a friend's size carried")
+	local junk = Grow.read({
+		cash = 5,
+		size = "Small",
+		friends = { { id = 0, name = "x", size = "Small" }, { id = 9, name = 5 }, "x", { id = 8 } },
+	})
+	ok(junk ~= nil and #junk.friends == 1 and junk.friends[1].id == 8, "bad friends dropped")
+	ok(junk ~= nil and junk.friends[1].name == "" and junk.friends[1].size == "Small", "filled in")
+	local long = Grow.read({
+		cash = 5,
+		size = "Small",
+		friends = { { id = 9, name = string.rep("a", 80), size = "Huge" } },
+	})
+	ok(long ~= nil and #long.friends[1].name <= 32, "a name cut short")
+	local crowd = {}
+	for i = 1, 30 do
+		table.insert(crowd, { id = i, name = "p", size = "Small" })
+	end
+	local full = Grow.read({ cash = 5, size = "Small", friends = crowd })
+	ok(full ~= nil and #full.friends == Grow.FriendsMost, "a few friends read at most")
+end
+
 print(`grow: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

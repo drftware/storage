@@ -222,7 +222,8 @@ nowhere else.
   nothing. Not seen: the cards on a screen, Roblox's real purchase box, closing it unbought.)
   1. **Decide (defaults in):** your prices; my guess is Large 199 Robux and XL 399 (Medium is
      2,500 cash). A late receipt for a size you already have (two purchase boxes bought at once)
-     is kept as a purchase and changes nothing; say if it should become something, cash back say.
+     is kept as a purchase and changes nothing (so is a gift landing on a friend already that big);
+     say if it should become something, cash back say.
   2. Creator Hub > this experience > Monetization > Developer Products: make two, named exactly
      `Large Unit` and `XL Unit`, at your prices. Each has its own off switch in the experience's
      configs, `sellHomeLarge` and `sellHomeXL`: false takes it off sale within a minute.
@@ -236,6 +237,14 @@ nowhere else.
      Close it without buying: the card lets go at once. Tap again and buy: the card holds, then
      the steel rolls and "More room!"; walk home and tap Arrange: 16 by 20. Say whether the
      cards read on the phone.
+- [ ] **Give Large and XL as gifts** (S5-03h3b1, D-343; the rules and the server only, passing
+  checks, untested in Studio; the steps to try it on a screen come with S5-03h3b2's Gift screen).
+  1. **Decide (defaults in):** anyone in your server can be given one, not only your Roblox
+     friends (Pet Simulator gifts that way); a gift for a friend who left before it went through
+     waits in your save and goes on your next Gift press with no purchase box; gift prices, my
+     guess the same as your own (Large 199, XL 399).
+  2. Creator Hub > Developer Products: make two more, named exactly `Large Unit Gift` and
+     `XL Unit Gift`. Their off switches: `sellGiftLarge` and `sellGiftXL`.
 - [ ] **Furniture set out at home: my defaults** (S5-03g4c1, D-335, D-336, D-337, D-338). Say
   which to change:
   1. A piece set out counts against your home's limit, the same as a find (Bloxburg's budget).

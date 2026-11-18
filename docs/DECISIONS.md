@@ -8766,3 +8766,36 @@ at the same place its cheaper ones are bought.
   shelf dealt Small, Medium, Large, XL (Medium short, Large and XL "robux"); a Large press when
   Large answered "had" at once; XL answered "" 1.8 s after the press. Test save put back: Small,
   cash 188 (its `bought` now counts the made-up home purchases).
+
+## D-343 Large and XL as gifts go through Brix's own gift: the friend's save first, a spare if they left (S5-03h3b1, 2026-11-17)
+
+The moment: your friend's home is the little one, and from the counter you grow it for them, as
+Pet Simulator and Adopt Me let you gift Robux things; their home opens out and they hear who did it.
+- **Brix already had the gift** (Purchases' `gift`, `away`, at the pin `7f25310`), so no spare
+  hand-off was built in this game: an offer with a `gift` grows the friend's home in their save and
+  writes it before the buyer's ledger takes the purchase, so the buyer's ledger never holds a gift
+  that isn't saved, and a receipt sent again (on whichever server holds the friend) gives nothing
+  twice. The ticket's default (a spare in the buyer's save, spent friend-first) is kept only for the
+  one case Brix hands back: the friend's save not held here when the receipt lands (they left
+  mid-prompt). Then `away` puts a spare in the buyer's save (`spares.giftLarge` / `giftXL`, counted in
+  `bought`), and their next Gift press of that size gives it with no prompt: the friend's home grows
+  and their save is written first, then the spare is taken and the buyer's written; the friend's
+  write failing undoes it (`Grow.ungive`) and keeps the spare.
+- **Two rows in `Products`**: `giftLarge` ("Large Unit Gift", `sellGiftLarge`) and `giftXL` ("XL Unit
+  Gift", `sellGiftXL`), `forAnother`, from `Grow.Gifts`. No `buyable` is handed to Brix: Brix asks it of
+  the buyer's save when no recipient is given (the shop's price listing), and a buyer with a big home
+  must still see the small gift's price. The server checks the friend's size itself before the prompt.
+- **Who can be given one**: anyone in this server but you, whose save is loaded and whose home is
+  smaller than the size (`Grow.friends`, by name, `Grow.FriendsMost` = 6), not only Roblox friends,
+  as Pet Simulator's gifting works in a server. The owner's (`OWNER.md`).
+- **A late gift** (two players gift the same friend Large at once) is granted and changes nothing,
+  logged, as D-342's late receipt. Folded into D-342's owner question.
+- **The wire** (`Growing`): `GrowHome` carries the friend's UserId after the size (`Grow.friendId`, a
+  whole UserId, never trusted), answered on `HomeGrown` with that UserId last ("gone", "had",
+  "notLoaded", "busy", "off", "closed", "save", or ""). The friend hears `HomeGifted` (size, the
+  giver's UserId and name) once it's written and their home is set up again. The shelf now carries
+  `gifts` (gift prices by size), `spares` (yours by size) and `friends` ({ id, name, size }).
+- **Split**: the screen (the Units tab's Gift and the friend's own "More room!") is S5-03h3b2. Passes
+  checks and the specs (Brix's real gift run over this game's save: given, written, once; a failed
+  friend's write refused and given once after; late; a friend gone leaving a spare); untested in
+  Studio.

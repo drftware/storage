@@ -19,6 +19,10 @@
 	  D-206); its grant still lands in the buyer's save, and the sale's `recipient` says who.
 	- `owned`: for a thing bought once and kept (a wrap colour), whether the save already has it:
 	  an owned thing is never put on sale to that player again.
+	- `gift` and `away`: for a thing given into a friend's save (a bigger home, S5-03h3b), Brix's
+	  gift: `gift` changes the friend's save, written before the buyer's purchase counts, when this
+	  server holds it; `away` changes the buyer's instead when it doesn't (the friend left). Such a
+	  row has no `grant`.
 
 	Prices are never here: Roblox's are read each time an offer is shown (Brix's Marketplace).
 	Whatever a row grants, `offers` also counts the purchase in the save's `bought`, the same
@@ -40,13 +44,17 @@ export type Row = {
 	ownerOnly: boolean?,
 	forAnother: boolean?,
 	owned: ((data: Save.Data) -> boolean)?,
+	gift: Grant?,
+	away: Grant?,
 }
 
 -- The shape of each offer handed to `Brix.Purchases.new` (`Brix.PurchaseOffer<Save.Data, Player>`).
 export type Offer = {
 	product: number,
-	grant: Grant,
+	grant: Grant?,
 	forAnother: boolean?,
+	gift: Grant?,
+	away: Grant?,
 }
 
 local Products = {}
@@ -137,6 +145,29 @@ for size, offer in Grow.Robux do
 		end,
 	})
 end
+
+-- Your home's sizes as gifts (S5-03h3b, D-343): "Large Unit Gift" and "XL Unit Gift", bought for a
+-- friend here, as Pet Simulator and Adopt Me let you gift Robux things. Brix's gift grows the
+-- friend's home in their save, written before the buyer's purchase counts, so it's never lost
+-- and never twice; a late one (the friend already that big) changes nothing. A friend gone before
+-- it lands leaves a spare in the buyer's save, given on their next Gift press (Growing). The
+-- server never prompts it for a friend already that big; the prompt isn't refused by the buyer's
+-- own size, since a big home's owner gives the smaller sizes too.
+for size, offer in Grow.Gifts do
+	rows[offer] = table.freeze({
+		title = `{size} Unit Gift`,
+		switch = `sell{string.upper(string.sub(offer, 1, 1))}{string.sub(offer, 2)}`,
+		forAnother = true,
+		gift = function(_sale: Sale, data: Save.Data): string?
+			Grow.grant(data, size)
+			return nil
+		end,
+		away = function(_sale: Sale, data: Save.Data): string?
+			data.spares[offer] = (data.spares[offer] or 0) + 1
+			return nil
+		end,
+	})
+end
 Products.Rows = table.freeze(rows)
 
 -- Every offer name, sorted: the values Recording's `offer` field takes.
@@ -160,7 +191,8 @@ end
 
 -- The offers for Brix's Purchases, from `ids` (product id by offer name, as found on Roblox):
 -- an offer with no id isn't sold, and a receipt for it is left for a server that knows it. Each
--- grant runs the row's own, then counts the purchase in `bought`.
+-- grant (or a gift's away, into the buyer's save) runs the row's own, then counts the purchase in
+-- `bought`; a gift given into a friend's save is counted in Brix's records and the ledgers only.
 function Products.offers(ids: { [string]: number }): { [string]: Offer }
 	local offers: { [string]: Offer } = {}
 	for name, row in Products.Rows do
@@ -168,18 +200,21 @@ function Products.offers(ids: { [string]: number }): { [string]: Offer }
 		if product == nil then
 			continue
 		end
-		local own = row.grant
+		local own = if row.gift then row.away else row.grant
+		local counted = function(sale: Sale, data: Save.Data): string?
+			local why = if own then own(sale, data) else nil
+			if why ~= nil then
+				return why
+			end
+			data.bought[name] = (data.bought[name] or 0) + 1
+			return nil
+		end
 		offers[name] = {
 			product = product,
 			forAnother = row.forAnother,
-			grant = function(sale: Sale, data: Save.Data): string?
-				local why = if own then own(sale, data) else nil
-				if why ~= nil then
-					return why
-				end
-				data.bought[name] = (data.bought[name] or 0) + 1
-				return nil
-			end,
+			grant = if row.gift then nil else counted,
+			gift = row.gift,
+			away = if row.gift then counted else nil,
 		}
 	end
 	return offers

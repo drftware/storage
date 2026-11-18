@@ -2772,7 +2772,14 @@ Done when players watch the results to the end and change their perks between cl
             made-up receipts (a failed save held, granted once written, a late one changing
             nothing); the cards on a screen and Roblox's real prompt not yet seen.
           - [ ] **S5-03h3b The gift versions**: a friend grows your home, the recipient picked
-            on the server, the same ledger; never sold to a home already that big.
+            on the server, the same ledger; never sold to a home already that big. Split Nov 17:
+              - [x] **S5-03h3b1 The rules and the server**: `Grow`'s gifts, `Products` rows
+                "Large Unit Gift" and "XL Unit Gift" through Brix's gift, `Growing`'s Gift press,
+                spare, grant and `HomeGifted`. Done Nov 17, D-343: specs green; untested in Studio.
+              - [ ] **S5-03h3b2 The Gift screen and the friend's moment**: a Gift pill on Large
+                and XL in Units (dealt even below your size), the friends here with their faces
+                and sizes, the press held till answered, "Sent!" with the steel's roll; the friend's
+                own "More room!" with the giver's face wherever they stand; Studio's 2-player test.
       - [ ] **S5-03h4 The starter set laid by size**: where the shelf, the job box, the rug, the
         beanbag, the floor lamp, the mirror, the rail and the ceiling lamp stand at each size,
         from `art/home/home_spec.py` (Small holds what's "snug": the shelf, the box, the mirror

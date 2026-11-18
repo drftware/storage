@@ -93,7 +93,10 @@ local marketplace: Brix.Marketplace<string> = {
 }
 
 -- One server: its saves and its Purchases over the shared store.
-local function server(name: string): (Brix.Saves<Save.Data>, Brix.Purchases<string>, { string })
+local function server(
+	name: string,
+	ids: { [string]: number }?
+): (Brix.Saves<Save.Data>, Brix.Purchases<string>, { string })
 	local saves = Brix.Saves.new({
 		format = Save.format(Brix),
 		store = store,
@@ -111,7 +114,7 @@ local function server(name: string): (Brix.Saves<Save.Data>, Brix.Purchases<stri
 		recipients = function(data: Save.Data): { [string]: string }
 			return data.recipients
 		end,
-		offers = Products.offers({ testPurchase = 9001 }) :: any, -- any: Brix's offer shape, same fields
+		offers = Products.offers(ids or { testPurchase = 9001 }) :: any, -- any: Brix's offer shape, same fields
 		marketplace = marketplace,
 		switchedOn = function(offer: string): boolean
 			return Products.switchedOn(live, offer)
@@ -196,6 +199,52 @@ do
 		"an offer switched off isn't on sale"
 	)
 	live.sellTestPurchase = true
+end
+
+-- Gifts (S5-03h3b, D-343): Large and XL bought for a friend here, Brix's gift: given into the
+-- friend's save, written there before the buyer's ledger takes it, so never lost and never twice; a
+-- friend's write that fails waits for the next receipt; a late one (the friend already that big)
+-- is granted and changes nothing; a friend gone before it lands leaves a spare in the buyer's save.
+do
+	local giftLarge, giftXL = Products.Rows.giftLarge, Products.Rows.giftXL
+	ok(giftLarge ~= nil and giftLarge.title == "Large Unit Gift", "Large's gift is named")
+	ok(giftXL ~= nil and giftXL.title == "XL Unit Gift", "XL's gift is named")
+	ok(giftLarge ~= nil and giftLarge.switch == "sellGiftLarge", "Large's gift switch")
+	ok(giftLarge ~= nil and giftLarge.forAnother == true, "bought for a friend")
+	local gs, gp, gh = server("gifts", { giftLarge = 31, giftXL = 32 })
+	local ana, bo = Save.key(50), Save.key(51)
+	gs:claim(ana)
+	gs:claim(bo)
+	local function gift(id: string, product: number): Brix.PurchaseReceipt<string>
+		return { id = id, buyer = "Ana", key = ana, product = product, spent = 25 }
+	end
+	local a, b = gs:data(ana), gs:data(bo)
+	if a and b then
+		ok(gp:nameRecipient(ana, "giftLarge", bo) == nil, "Bo named before the prompt")
+		local first = gp:receive(gift("g1", 31))
+		ok(first == nil, `the gift is granted ({first and first.message})`)
+		ok(b.homeSize == "Large", "Bo's home is Large")
+		ok(a.homeSize == "Small" and a.spares.giftLarge == nil, "Ana's isn't, and no spare")
+		ok(table.find(b.purchases, "g1") ~= nil, "in Bo's ledger")
+		ok(table.find(a.purchases, "g1") ~= nil, "in Ana's ledger")
+		ok(gp:receive(gift("g1", 31)) == nil and #gh == 1, "the same receipt again: nothing more")
+		failing.on = true
+		gp:nameRecipient(ana, "giftXL", bo)
+		local held = gp:receive(gift("g2", 32))
+		ok(held ~= nil and held.reason == "unsaved", "Bo's save not written: refused")
+		ok(table.find(a.purchases, "g2") == nil, "Ana's ledger waits for Bo's write")
+		failing.on = false
+		local again = gp:receive(gift("g2", 32))
+		ok(again == nil and b.homeSize == "XL" and #gh == 2, "Bo's save written: granted once")
+		gp:nameRecipient(ana, "giftLarge", bo)
+		ok(gp:receive(gift("g3", 31)) == nil and b.homeSize == "XL", "a late gift never shrinks")
+		gs:release(bo)
+		gp:nameRecipient(ana, "giftLarge", bo)
+		ok(gp:receive(gift("g4", 31)) == nil, "a gift for a friend gone is granted")
+		ok(a.spares.giftLarge == 1 and a.bought.giftLarge == 1, "as a spare in Ana's save")
+	else
+		ok(false, "both saves claimed")
+	end
 end
 
 ok(#problems == 0, `every record fits the plan ({problems[1]})`)
