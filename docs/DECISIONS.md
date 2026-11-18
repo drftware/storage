@@ -9142,3 +9142,29 @@ the climb's own Take on a find lying loose).
   as it lands, heard by friends close by. Your hand stays empty until it lands (InFlight), then
   it's simply there. Numbers in `Shared/Home/Take`.
 - **Split** (context): i2a1 this, built and green; i2a2 sees it in Studio Play and captures it.
+
+## D-406 Each next-floor card felt on its floor: the deal and the pay (S4-03c1, Nov 18)
+
+The team's pick has to be the floor it gets, from the moment the gate opens, or the choice means
+nothing (the owner: the cards make no two climbs the same). S4-03c split in four: c1 the deal
+and the pay (this), c2 the arrival and the version's own pop, c3 the power out, c4 caught to the
+lobby.
+
+- **The deal takes a bend** (`Deal.Bend`, `Deal.new`'s fourth argument; the version's row is
+  one). It changes counts and chances, never what the seed draws, so a picked floor keeps its
+  code, its guard and every door a plain floor padlocks. A floor nobody picked deals as before.
+- **Twice the padlocks** is exactly twice a plain floor's count (as many as there are doors past
+  the lobby's hall), not the doubled share rounded: on floor 2 that rounded 3.5 to 3 against a
+  plain 2, which doesn't read as twice.
+- **Twice the monsters** is three things, so the floor is twice as dangerous whichever way you
+  meet them: twice each unit's chance of a sleeper (floor 3 in Play: 9 asleep, about 4 plain),
+  twice the awake ones behind a door you lift (out of its empty share), and twice the floor's
+  cap on loose ones (`Waking.cap`, used by the deal and by the waves' hold), never past five,
+  one short of what a phone carries (`Waking.AwakeMost`). The Packrat's lean (D-401) brings it
+  from its own lowest floor. As DOORS' modifiers raise how often its entities come.
+- **The version's coins** go into the gate's pay (`Pay.owed`'s `picked`, `NextFloor.payOf`), on
+  top of the floor's own and its traps, under the same rules: nothing while wrapped, nothing
+  again for a ride back. On screen they pour with the floor's coins until c2 gives them a pop.
+
+Not chosen: doubling the waves' size or pace (the sleepers are already twice as many, so the
+waves find twice as many to wake); a cap past five (a phone's limit, D-156).

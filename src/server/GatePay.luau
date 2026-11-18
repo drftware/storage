@@ -36,6 +36,7 @@ local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Home = require(ReplicatedStorage.Shared.Home)
+local NextFloor = require(ReplicatedStorage.Shared.NextFloor)
 local Pay = require(ReplicatedStorage.Shared.Pay)
 local Save = require(ReplicatedStorage.Shared.Save)
 local Taken = require(ReplicatedStorage.Shared.Home.Taken)
@@ -181,13 +182,17 @@ function GatePay.new(): GatePaySystem
 		-- the monsters shut in as the gate hits its post, the same for every rider
 		local k = keepers
 		local trapped = if k then k:trappedOn(event.from.model) else 0
+		-- the version the team picked for the floor pays its share more (S4-03c1); on your screen
+		-- it pours with the floor's own coins until it has its own pop (S4-03c2)
+		local version = event.from.version
+		local picked = if version then NextFloor.payOf(version, event.from.number) else nil
 		for _, player in event.riders do
 			if not (player.Parent and alive(player)) or Prompts.wrapped(player) then
 				continue -- wrapped (or gone): nothing for this floor
 			end
 			local mine = paid[player] or {}
 			paid[player] = mine
-			local owed = Pay.owed(mine, event.from.number, false, trapped)
+			local owed = Pay.owed(mine, event.from.number, false, trapped, picked)
 			local kept, chipped, moved = sl:keep(player)
 			-- everything that rose out of their slots, a friend's taken-up finds too
 			local shown = kept

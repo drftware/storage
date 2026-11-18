@@ -47,20 +47,22 @@ local function count(n: number): number
 end
 
 -- What a player standing aboard is paid as floor `floor`'s gate shuts with `trapped` monsters
--- shut in on it (none if not given): nothing while wrapped, or for a floor `paid` says they were
--- paid for already this climb (a ride that came back, traps and all). Marks the floor paid in
--- `paid` when it pays.
+-- shut in on it (none if not given), and `picked` coins more for the version the team picked for
+-- it on the ride up (`NextFloor.payOf`, S4-03c1; none if not given): nothing while wrapped, or for
+-- a floor `paid` says they were paid for already this climb (a ride that came back, traps and
+-- all). Marks the floor paid in `paid` when it pays.
 function Pay.owed(
 	paid: { [number]: boolean },
 	floor: number,
 	wrapped: boolean,
-	trapped: number?
+	trapped: number?,
+	picked: number?
 ): number
 	if wrapped or paid[floor] then
 		return 0
 	end
 	paid[floor] = true
-	return Pay.forFloor(floor) + Pay.Trap * count(trapped or 0)
+	return Pay.forFloor(floor) + Pay.Trap * count(trapped or 0) + count(picked or 0)
 end
 
 -- What a pay of `coins` that counted `trapped` monsters shut in looks like on your screen: the

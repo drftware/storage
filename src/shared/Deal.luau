@@ -28,6 +28,7 @@ local Grades = require("./Grades")
 local KeeperMix = require("./KeeperMix")
 local KeeperRows = require("./KeeperRows")
 local Rows = require("./Finds/Rows")
+local Waking = require("./Waking")
 
 type Floor = Floor.Floor
 type Random = Floor.Random
@@ -64,6 +65,19 @@ export type Contents = {
 -- shows, 1 to 4, in order. The note itself shows them in their slots, "_ 7 _ _" (`Deal.noteText`).
 export type Note = { slot: number, places: { number } }
 
+-- How the version the team picked on the ride up bends a floor's deal (S4-03c1; `NextFloor`'s
+-- rows carry these fields). A bend left out leaves that part as the floor rules deal it.
+export type Bend = {
+	-- times the doors the floor rules padlock: 2 is twice the padlocks
+	padlocks: number?,
+	-- times the monsters: twice the sleepers behind its doors, twice the awake ones behind a door
+	-- you lift, and twice as many loose at once (`Waking.cap`)
+	monsters: number?,
+}
+
+-- A floor nobody picked a version for.
+local NONE: Bend = table.freeze({})
+
 export type Deck = {
 	floor: Floor,
 	code: { number }, -- the four digits, 0 to 9
@@ -93,6 +107,8 @@ export type Deck = {
 	packed: { [number]: boolean },
 	-- the monsters on this floor (S4-02, `KeeperMix`): a keeper not in it is never dealt or placed
 	cast: KeeperMix.Cast,
+	-- the version the team picked for the floor, as it bends the deal (an empty one for none)
+	bend: Bend,
 	-- where the floor's one breaker box hangs (S2-02b), or nil on a floor with nowhere outside
 	-- the lobby's hall to hang it (`Breaker.spots`)
 	breaker: Breaker.Spot?,
@@ -431,6 +447,11 @@ local function shuffle(list: { any }, random: Random) -- any: shuffles any list 
 	end
 end
 
+-- A bend's times, 1 when it's left out (or isn't a sensible number).
+local function times(n: number?): number
+	return if n and n == n and n > 0 then n else 1
+end
+
 local function zoneOf(floor: Floor, index: number): string
 	return floor.cells[floor.slots[index].cell].zone
 end
@@ -496,9 +517,12 @@ end
 	`Floor.generate` used up), so the deal and the layout each repeat from their seeds. `cast` is
 	the floor's monsters (`KeeperMix.on`, S4-02); without one, every monster that has joined by its
 	floor, as before the mix. The mix draws nothing from `random`, so it moves nothing else a seed
-	lays.
+	lays. `bend` is the version the team picked on the ride up (S4-03c1): it changes how many doors
+	are padlocked and how likely a unit holds a monster, never what the seed draws, so the code and
+	every door a plain floor padlocks stay as they were.
 ]]
-function Deal.new(floor: Floor, random: Random, cast: KeeperMix.Cast?): Deck
+function Deal.new(floor: Floor, random: Random, cast: KeeperMix.Cast?, bend: Bend?): Deck
+	local bent: Bend = bend or NONE
 	local units = Deal.units(floor)
 
 	local code = {}
@@ -526,8 +550,9 @@ function Deal.new(floor: Floor, random: Random, cast: KeeperMix.Cast?): Deck
 	local lockPool = table.clone(outside)
 	shuffle(lockPool, random)
 	local padlocked: { [number]: boolean } = {}
-	local locks =
-		math.min(#lockPool, math.max(1, math.round(#units * FloorRules.at(floor.number).padlocks)))
+	-- a version's padlocks are a plain floor's count times its bend, so twice is exactly twice
+	local plainLocks = math.max(1, math.round(#units * FloorRules.at(floor.number).padlocks))
+	local locks = math.min(#lockPool, math.round(plainLocks * times(bent.padlocks)))
 	for k = 1, locks do
 		padlocked[lockPool[k]] = true
 	end
@@ -621,6 +646,7 @@ function Deal.new(floor: Floor, random: Random, cast: KeeperMix.Cast?): Deck
 		piles = {},
 		packed = {},
 		cast = cast or KeeperMix.all(floor.number),
+		bend = bent,
 		random = random,
 	}
 	--[[
@@ -746,8 +772,8 @@ function Deal.sleeperShare(deck: Deck, index: number): number
 	elseif FloorRules.at(deck.floor.number).teaching and deck.firstHall[index] then
 		return 0
 	end
-	local share = Deal.Asleep / 100
-	return if deck.padlocked[index] then share * Deal.PadlockedKeeper else share
+	local share = Deal.Asleep / 100 * times(deck.bend.monsters)
+	return math.min(1, if deck.padlocked[index] then share * Deal.PadlockedKeeper else share)
 end
 
 -- The next tool out of the bag, a fresh shuffled bag when it's empty.
@@ -769,11 +795,11 @@ end
 local function limit(odds: { [string]: number }, deck: Deck, index: number, situation: Situation)
 	local guard = deck.guarded
 	local awake = situation.awake + (if guard and not deck.dealt[guard] then 1 else 0)
-	local rules = FloorRules.at(deck.floor.number)
-	if rules.teaching and deck.firstHall[index] then
+	local number = deck.floor.number
+	if FloorRules.at(number).teaching and deck.firstHall[index] then
 		move(odds, "Asleep", "Nothing")
 		move(odds, "Awake", "Nothing")
-	elseif awake >= rules.awake then
+	elseif awake >= Waking.cap(number, deck.bend.monsters) then
 		move(odds, "Awake", "Asleep")
 	end
 end
@@ -807,6 +833,10 @@ function Deal.odds(deck: Deck, index: number, situation: Situation): { [string]:
 	for _, kind in KINDS do
 		odds[kind] = base[kind] or 0
 	end
+	-- twice the monsters: twice the awake ones, out of the empty share (S4-03c1)
+	local more = math.min(odds.Nothing, odds.Awake * (times(deck.bend.monsters) - 1))
+	odds.Awake += more
+	odds.Nothing -= more
 	limit(odds, deck, index, situation)
 	return odds
 end
@@ -825,8 +855,9 @@ function Deal.besideOdds(deck: Deck, index: number, situation: Situation): { [st
 		odds.Nothing, odds.Asleep = 0, 1
 		return odds
 	end
-	odds.Awake = Deal.Odds[situation.mood].Awake * Deal.PadlockedKeeper
-	odds.Nothing = math.max(0, 100 - Deal.Asleep * Deal.PadlockedKeeper - odds.Awake)
+	local m = times(deck.bend.monsters)
+	odds.Awake = Deal.Odds[situation.mood].Awake * Deal.PadlockedKeeper * m
+	odds.Nothing = math.max(0, 100 - Deal.Asleep * Deal.PadlockedKeeper * m - odds.Awake)
 	limit(odds, deck, index, situation)
 	return odds
 end

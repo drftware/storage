@@ -61,6 +61,7 @@ local KeeperMix = require(ReplicatedStorage.Shared.KeeperMix)
 local NextFloor = require(ReplicatedStorage.Shared.NextFloor)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
 local Trip = require(ReplicatedStorage.Shared.Lobby.Trip)
+local Waking = require(ReplicatedStorage.Shared.Waking)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
 local Deals = require(script.Parent.Deals)
 local Elevators = require(script.Parent.Elevators)
@@ -321,7 +322,8 @@ function Climbs.new(): Climbs
 			Brix.Random.new({ seed = KeeperMix.seedOf(o.seed, number) }),
 			if version then version.lean else nil
 		)
-		local deck = Deal.new(floor, b.random, cast)
+		-- and bent by it: twice the padlocks, twice the monsters (S4-03c1)
+		local deck = Deal.new(floor, b.random, cast, version)
 		if STUDIO then
 			local names = {}
 			for _, name in KeeperMix.Order do
@@ -330,7 +332,20 @@ function Climbs.new(): Climbs
 				end
 			end
 			local as = if version then `, picked {version.name}` else ""
-			print(`Climbs: floor {number} of climb {o.seed} has {table.concat(names, " and ")}{as}`)
+			local locks, sleepers = 0, 0
+			for _ in deck.padlocked do
+				locks += 1
+			end
+			for _ in deck.sleepers do
+				sleepers += 1
+			end
+			print(
+				`Climbs: floor {number} of climb {o.seed} has {table.concat(names, " and ")}{as}`
+					.. ` ({locks} padlocked, {sleepers} asleep, {Waking.cap(
+						number,
+						deck.bend.monsters
+					)} loose at most)`
+			)
 		end
 		local model, laid = b.model, b.laid
 		FloorBuilder.dress(model, laid, floor, origin, deck)
@@ -365,7 +380,8 @@ function Climbs.new(): Climbs
 				origin,
 				Brix.Random.new({ seed = seed }),
 				deck.sleepers,
-				deck.packed
+				deck.packed,
+				deck.bend.monsters
 			)
 		end
 		if wraps then

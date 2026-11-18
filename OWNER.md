@@ -37,6 +37,10 @@ nowhere else.
   On the panel (S4-03b2, D-405; my defaults): no name on a card, only its picture and its coins
   (the design rule: no text that explains a rule); the cards take the bottom middle and the tool
   wheel slides away under them for the ride; they tuck away while the machine's menu is open.
+  On the floor (S4-03c1, D-406; my defaults): twice the padlocks is exactly twice a plain
+  floor's count; twice the monsters is twice the sleepers, twice the awake ones behind a door
+  and twice as many loose at once (never past five). To feel it, pick twice the monsters on the
+  ride to floor 3 or 4 and play the floor out: does it feel twice as dangerous, or unfair?
 - [ ] **Vote with a friend, on phones** (S4-03b2, D-405; seen with one player and stand-in
   presses). Two phones (or Studio's Test tab, 2 players), both in one car leaving floor 1 (any
   later floor's ride works; floor 1's from the lobby has no vote). Look for: as the car lurches

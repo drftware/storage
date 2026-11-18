@@ -91,7 +91,6 @@ local Caught = require(ReplicatedStorage.Shared.Caught)
 local Chase = require(ReplicatedStorage.Shared.Chase)
 local Climb = require(ReplicatedStorage.Shared.Climb)
 local Deal = require(ReplicatedStorage.Shared.Deal)
-local FloorRules = require(ReplicatedStorage.Shared.FloorRules)
 local Crawls = require(script.Parent.Crawls)
 local Deals = require(script.Parent.Deals)
 local Feed = require(ReplicatedStorage.Shared.Feed)
@@ -268,6 +267,8 @@ type OnFloor = {
 	-- `Waking` counts its waves from
 	here: number,
 	woken: number, -- how many of its sleepers have woken
+	-- times the monsters the floor rules let loose on it: 2 for twice the monsters (S4-03c1)
+	monsters: number,
 	-- slots dealt early to wake, standing awake and shut in: woken by a wave (S2-03b) or let out
 	-- by a wrong code (S2-04a)
 	waking: { [number]: Woken },
@@ -320,7 +321,9 @@ export type Keepers = Brix.System & {
 		origin: CFrame,
 		random: Floor.Random,
 		asleep: { [number]: string },
-		packed: { [number]: boolean }?
+		packed: { [number]: boolean }?,
+		-- times the monsters the floor rules let loose: 2 on a twice-the-monsters floor (S4-03c1)
+		monsters: number?
 	) -> (),
 	-- `riders` rode out of laid floor `model` as its gate shut (Climbs' `shut`, S2-02d4): from now
 	-- on they aren't on it for its security cameras though their car climbs level with it for a
@@ -1547,16 +1550,17 @@ function Keepers.new(): Keepers
 					ahead += 1
 				end
 			end
-			local held = not Waking.free(number, loose, ahead)
+			local held = not Waking.free(number, loose, ahead, on.monsters)
 			if held ~= k.held then
 				Keeper.hold(k, held)
 				if TRACE then
 					local unit = on.floor.slots[k.trappedIn].number
 					print(
 						if held
-							then `Keepers: the {k.row.name} in Unit {unit} is held in: floor {number} has its {FloorRules.at(
-								number
-							).awake} loose`
+							then `Keepers: the {k.row.name} in Unit {unit} is held in: floor {number} has its {Waking.cap(
+								number,
+								on.monsters
+							)} loose`
 							else `Keepers: the {k.row.name} in Unit {unit} may break out now`
 					)
 				end
@@ -1945,7 +1949,8 @@ function Keepers.new(): Keepers
 		origin: CFrame,
 		random: Floor.Random,
 		asleep: { [number]: string },
-		packed: { [number]: boolean }?
+		packed: { [number]: boolean }?,
+		monsters: number?
 	)
 		if floors[model] then
 			return
@@ -1980,6 +1985,7 @@ function Keepers.new(): Keepers
 			cut = false,
 			here = -1,
 			woken = 0,
+			monsters = monsters or 1,
 			waking = {},
 			left = {},
 			finds = { ids = {}, at = {}, count = 0 },

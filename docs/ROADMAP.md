@@ -2316,11 +2316,32 @@ Done when two climbs in a row feel different and players talk about their best f
       seen: the flare's first half second, the cards across the 13.4 s car change, the coin strip
       after it was made bigger (S4-03d).
   - [ ] **S4-03c Each version felt on its floor.** The moment: the gate opens on a pitch-dark
-    lobby, or two Mannequins at the end of the hall. The deal reads the version (twice the
-    padlocks, twice the monsters awake through `FloorRules`' cap and `KeeperMix`'s lean), the
-    lights stay off (`HallLights`, `UnitLights`), a catch sends you to the lobby (`KeptPlayers`),
-    the gate pays the version's coins (`NextFloor.payOf` through `Pay`/`GatePay`, its own pop).
-    Floor model's `FloorVersion` attribute says which.
+    lobby, or two Mannequins at the end of the hall. Floor model's `FloorVersion` attribute says
+    which. Split Nov 18 (D-406):
+    - [x] **S4-03c1 The deal reads the version, and the gate pays it.** Twice the padlocks
+      (exactly twice a plain floor's count), twice the monsters (twice the sleepers, twice the
+      awake ones behind a lifted door, twice as many loose, `Waking.cap`, never past five, the
+      Packrat brought by the lean), and the version's coins in the gate's pay (`Pay.owed`'s
+      `picked`). Done Nov 18 (D-406): `Deal.Bend`, `tests/floorversion.spec.luau`. Seen in Studio
+      Play, seed 7: floor 2 picked twice the padlocks (3 against a plain 2: it rounded the
+      doubled share then; now it doubles the count, by spec, not seen), its gate paid 18 (12 and 6); floor 3 picked twice the monsters: Mannequin and Packrat, 9 asleep, 4 loose
+      at most. The coins pour with the floor's own until c2 gives them their pop.
+    - [ ] **S4-03c2 The arrival and the version's pop.** The moment: the gate rises and you know
+      which floor you chose before you see it: the winning card leaves the screen into the
+      floor in its own colour of light with its own sound (no words), as Hades' door reward
+      flies to you as you walk through. At the gate, the version's coins burst as their own pop
+      in the card's colour after the floor's pour and the traps' (`Pay.parts` gets a third part;
+      the remote sends the version's name and coins; CoinView). Read `NextFloorView`'s exit
+      (the cards leave as the gate opens, D-405) and CoinView's trap pops (D-402).
+    - [ ] **S4-03c3 The power's out.** The gate opens on dark halls and dark units (`HallLights`,
+      `UnitLights` read the floor's `FloorVersion`). Default to log in `OWNER.md`: the floor's
+      breaker (S2-02) brings the lights back, so the team has a job (find the box in the dark,
+      throw it), as Lethal Company's breaker brings a facility's power back; the version still
+      pays. Check the Mannequin's box errand (Keepers' `cut`) doesn't fight it.
+    - [ ] **S4-03c4 Caught there goes back to the lobby.** A catch on that floor takes you out of
+      the climb to the lobby (not wrapped for friends to free), by the way a player leaves a
+      climb for the lobby today (the trip and the car's return of L-08e2); friends left on the
+      floor carry on. `KeptPlayers`' catch reads the floor's `FloorVersion`.
   - [ ] **S4-03d The whole climb in Studio.** Ride floors 1 to 5 in Play with the cards, each
     version picked once, captures; fixes. Two-player vote and phones go to `OWNER.md`. First,
     what S4-03b2 didn't see: step `DevRideHold` through one ride (4, 9.3 with a capture burst

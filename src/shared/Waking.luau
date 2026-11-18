@@ -101,8 +101,16 @@ end
 	falls quiet behind its door (`Keeper.hold`) until it bursts out. Waking stays capped by `AwakeMost` above (pounding ones stand
 	still); this caps only the ones a wave sets loose.
 ]]
-function Waking.free(floor: number, loose: number, ahead: number): boolean
-	return loose + ahead < FloorRules.at(floor).awake
+function Waking.free(floor: number, loose: number, ahead: number, monsters: number?): boolean
+	return loose + ahead < Waking.cap(floor, monsters)
+end
+
+--- The most keepers `floor` lets loose at once: the floor rules' `awake`, times `monsters` on a
+--- floor the team picked with more of them (S4-03c1: twice the monsters, 2), never past one short
+--- of `AwakeMost`, so there's always room for one more pounding behind a door.
+function Waking.cap(floor: number, monsters: number?): number
+	local times = if monsters and monsters == monsters and monsters > 0 then monsters else 1
+	return math.min(math.floor(FloorRules.at(floor).awake * times + 0.5), Waking.AwakeMost - 1)
 end
 
 --- Which of the `slots` (units with a sleeper behind a door never lifted) wake: `n` of them, each

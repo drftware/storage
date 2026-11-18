@@ -19,10 +19,10 @@ climb run's uncommitted Climbs, Keepers, GatePay, Deal, Pay, Waking are red mid-
 - Studio hooks: `ShelfTest:Invoke(player, "take", i)`, `ArrangeTest:Invoke(player, "take", id)`
   (STUDIO.md's i1c1 section). Test save: XL, everything set out, six finds in the shelf, the
   hard hat worn. Home doc: https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww
-- **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), S4-03a the vote (D-403),
-  S4-03b1 the faces (D-404), S4-03b2 the cards on screen (D-405, seen on the A16: press, heads,
-  change of mind, the winner lit). Next: S4-03c each version felt on its floor (ROADMAP's c
-  lines); S4-03d first sees the flare, the car change and the bigger coin strip.
+- **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), the next-floor cards'
+  vote, faces and screen (D-403 to D-405), S4-03c1 the deal and pay read the pick (D-406, seen in
+  Play). Next: S4-03c2 the arrival and the version's own coin pop (ROADMAP's c2 line), then c3
+  the power out, c4 caught to the lobby; S4-03d sees the flare, car change and coin strip.
 
 ## Next task: S5-03i2a2 See the take in Studio Play at Galaxy A16 size
 The moment: you walk up to the teddy in your shelf, press Take, and it hops into your hand with
