@@ -206,6 +206,16 @@ nowhere else.
   change: Small 8 by 8, Medium 12 by 12, Large 16 by 20, XL 20 by 30; a Small home holds only
   what's snug, the shelf, the job box, the mirror and the rail (the rug, the beanbag and the floor
   lamp come with Medium).
+- [ ] **Buy Medium at the counter** (S5-03h2, D-341; seen on the A16 in Studio Play: the tab,
+  the press, the answer). Walk up to the counter, press Shop, flip to Units. Look for: your size's
+  card saying Yours, the Medium card's plan opening out from your little room as it deals in, and
+  its price. You'll need 2,500 cash; to try it now, run on the Server in Studio's command bar
+  `game.ServerStorage.GrowTest:Invoke(game.Players:GetPlayers()[1], "cash", 3000)`, then flip
+  tabs to refresh. Tap the price: the cash ticks down, the steel rolls, the room you had opens
+  out, "More room!", Yours. Then walk home and tap Arrange: the grid is 12 by 12. Put it back
+  with the "size" line above ("Small") and the "cash" line (188). Say: is 2,500 right (my
+  default: ten neon moons, a run of good climbs), is the tab's name "Units" right, and is the
+  little plan on each card big enough to read on your phone?
 - [ ] **Furniture set out at home: my defaults** (S5-03g4c1, D-335, D-336, D-337, D-338). Say
   which to change:
   1. A piece set out counts against your home's limit, the same as a find (Bloxburg's budget).

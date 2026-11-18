@@ -287,6 +287,11 @@ verified: a doc page, Studio, or "untested".
 - **Clicking a ScreenGui button on the A16** (S5-03g4b): for a gui object's `AbsolutePosition`
   (gx, gy) in an `IgnoreGuiInset` ScreenGui, click at (gx + 47, gy): the touch's y is already in
   the gui's space. `user_mouse_input`'s `instance_path` missed (it landed on the shop's backdrop).
+- **Opening the shop on the A16 from a script** (S5-03h2): `ProximityPrompt:InputHoldBegin()`
+  and `InputHoldEnd()` on the counter's custom prompt, standing by it, didn't open it. Clicking the
+  top bar's Shop button did, at (its AbsolutePosition.X + width/2 + 47, AbsolutePosition.Y +
+  height/2): its Y is negative (about -30) and the click still lands. A tab's word is clicked the
+  same way. `sips --cropOffset` takes Y first, then X.
 - **When `screen_capture` times out, capture the window from macOS** (S5-03b seen, Nov 17):
   bring Studio to the front (`osascript -e 'tell application "RobloxStudio" to activate'`; it then
   drew at 60 frames a second), get its window number from a few lines of Swift run with `swift`

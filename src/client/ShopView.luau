@@ -37,6 +37,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local CutFree = require(ReplicatedStorage.Shared.CutFree)
 local FurnitureTab = require(script.Parent.FurnitureTab)
+local UnitsTab = require(script.Parent.UnitsTab)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local KeptWrap = require(ReplicatedStorage.Shared.KeptWrap.Specs)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
@@ -67,9 +68,10 @@ local ROOM_X, ROOM_Z, ROOM_Y = 60, 157, 20
 -- Seconds after a Try on's pop that the shop starts to slide away: the pop reads first.
 local TRY_SHUT = 0.12
 local CAMERA_FOV = 30
--- The shop's tabs, left to right (S5-03g4b): the wrap colours, then this week's furniture.
-type TabName = "wraps" | "furniture"
-local TABS: { TabName } = { "wraps", "furniture" }
+-- The shop's tabs, left to right (S5-03g4b): the wrap colours, this week's furniture, then your
+-- home's sizes (S5-03h2).
+type TabName = "wraps" | "furniture" | "units"
+local TABS: { TabName } = { "wraps", "furniture", "units" }
 
 -- A card on the shelf: its colour's name (empty for the plain film), its parts, and its figure.
 type Card = {
@@ -185,6 +187,7 @@ function ShopView.new(): Brix.System
 	local tabButtons: { [TabName]: TextButton } = {}
 	local underline: Frame
 	local furniture: FurnitureTab.Tab
+	local units: UnitsTab.Tab
 	local click: Sound
 	local squeal: Sound
 
@@ -613,6 +616,7 @@ function ShopView.new(): Brix.System
 			card.frame.Size = UDim2.fromOffset(math.floor(cardHeight * Shop.CardAspect), cardHeight)
 		end
 		furniture.layout(cardHeight)
+		units.layout(cardHeight)
 		-- the tabs: words at a fixed size on the header's line, the one you're on underlined
 		local tall = math.floor(height * 0.11)
 		tabBar.Position = UDim2.fromOffset(math.floor(width * 0.035), math.floor(height * 0.03))
@@ -643,6 +647,8 @@ function ShopView.new(): Brix.System
 		if onTab == "furniture" then
 			furniture.step(dt)
 			return
+		elseif onTab == "units" then
+			return -- its plans move by tweens alone
 		end
 		local spin = os.clock() * Shop.Spin * math.pi * 2
 		for i, card in cards do
@@ -678,6 +684,7 @@ function ShopView.new(): Brix.System
 		table.clear(cards)
 		table.clear(byName)
 		furniture.clear()
+		units.clear()
 	end
 
 	-- The wrap cards dealt out left to right, as the shop opens or their tab is flipped to.
@@ -718,14 +725,19 @@ function ShopView.new(): Brix.System
 	local function showTab(name: TabName)
 		onTab = name
 		row.CanvasPosition = Vector2.zero
-		if name == "furniture" then
+		furniture.hide()
+		units.hide()
+		if name == "wraps" then
+			dealWraps()
+		else
 			for _, card in cards do
 				card.frame.Visible = false
 			end
-			furniture.show()
-		else
-			furniture.hide()
-			dealWraps()
+			if name == "furniture" then
+				furniture.show()
+			else
+				units.show()
+			end
 		end
 		layout()
 		markTab(true)
@@ -789,14 +801,18 @@ function ShopView.new(): Brix.System
 		TweenService:Create(backdrop, SLIDE_IN, { BackgroundTransparency = 0.55 }):Play()
 		panel.Position = UDim2.fromScale(0.5, 1 + Shop.SlideFrom)
 		TweenService:Create(panel, SLIDE_IN, { Position = UDim2.new(0.5, 0, 1, -10) }):Play()
-		if onTab == "furniture" then
+		if onTab == "wraps" then
+			dealWraps()
+		else
 			for _, card in cards do
 				card.frame.Visible = false
 			end
-			furniture.show()
+			if onTab == "furniture" then
+				furniture.show()
+			else
+				units.show()
+			end
 			layout()
-		else
-			dealWraps()
 		end
 		task.defer(markTab, false)
 		play(Shop.OpenPitch)
@@ -919,7 +935,10 @@ function ShopView.new(): Brix.System
 			b.Size = UDim2.fromScale(0, 1)
 			b.FontFace = Font.fromEnum(Enum.Font.BuilderSansExtraBold)
 			b.TextColor3 = INK
-			b.Text = if name == "wraps" then Shop.Words.title else Shop.Words.furniture
+			b.Text = if name == "wraps"
+				then Shop.Words.title
+				elseif name == "furniture" then Shop.Words.furniture
+				else Shop.Words.units
 			b.Parent = tabBar
 			tabButtons[name :: TabName] = b
 		end
@@ -982,6 +1001,7 @@ function ShopView.new(): Brix.System
 		squeal.Parent = g
 
 		furniture = FurnitureTab.new(panel, row, { click = play })
+		units = UnitsTab.new(panel, row, { click = play, wallet = furniture.wallet })
 		for name, b in tabButtons do
 			table.insert(
 				connections,
@@ -1077,6 +1097,7 @@ function ShopView.new(): Brix.System
 		end
 		table.clear(connections)
 		clear()
+		units.destroy()
 		furniture.destroy()
 		if gui then
 			gui:Destroy()

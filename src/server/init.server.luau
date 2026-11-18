@@ -29,6 +29,7 @@ local JobBoxes = require(script.JobBoxes)
 local Arranging = require(script.Arranging)
 local Decorating = require(script.Decorating)
 local Furnishing = require(script.Furnishing)
+local Growing = require(script.Growing)
 local GatePay = require(script.GatePay)
 local Horns = require(script.Horns)
 local Keepers = require(script.Keepers)
@@ -126,6 +127,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "decorating", system = Decorating.new() },
 	-- the counter's furniture bought for cash: this week's stock, the cap, the save written first
 	{ slot = "furnishing", system = Furnishing.new() },
+	-- a bigger home bought for cash at the counter: written first, then the home laid again (after arranging)
+	{ slot = "growing", system = Growing.new() },
 	-- what each player wears standing on their home's clothes rail, and Wear and Hang up there
 	{ slot = "rails", system = Rails.new() },
 	-- a wrap colour tried on at any mirror: the film for a few seconds, free, nothing saved

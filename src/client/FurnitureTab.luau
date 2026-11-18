@@ -56,8 +56,16 @@ local FurnitureTab = {}
 export type Host = {
 	click: (pitch: number) -> (), -- the shop's press click at a pitch
 }
+-- Your cash in the header, shared with the shop's other tabs that sell for cash (UnitsTab).
+export type Wallet = {
+	show: (on: boolean) -> (),
+	set: (amount: number) -> (), -- shows `amount` at once
+	spend: (to: number) -> (), -- ticks down to `to` in a rattle of coins
+	nudge: () -> (), -- a press on a price you can't pay: the cash nudges with a dull click
+}
 export type Tab = {
 	purse: Frame, -- your cash: the host places it in the panel's header
+	wallet: Wallet,
 	show: () -> (), -- deals this week's cards (made on the first show) and asks the server
 	hide: () -> (),
 	clear: () -> (), -- the cards gone: the shop shut
@@ -652,6 +660,14 @@ function FurnitureTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 
 	local tab = {} :: Tab
 	tab.purse = purse
+	tab.wallet = {
+		show = function(on: boolean)
+			purse.Visible = on
+		end,
+		set = setPurse,
+		spend = spend,
+		nudge = nudge,
+	}
 
 	function tab.show()
 		shown = true

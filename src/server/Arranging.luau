@@ -69,7 +69,11 @@ type HomeSet = {
 
 local Arranging = {}
 
-export type ArrangingSystem = Brix.System
+export type ArrangingSystem = Brix.System & {
+	-- Sets `player`'s home up again from their save, as a rejoin does: after its size was written
+	-- (a sale at the counter, Growing; S5-03h2), so its rows are carried to the new size.
+	relay: (self: any, player: Player) -> (),
+}
 
 local FOLDER = Arrange.Folder
 
@@ -459,6 +463,11 @@ function Arranging.new(): ArrangingSystem
 
 	return {
 		name = "Arranging",
+		relay = function(_: any, player: Player)
+			clear(player)
+			lay(player)
+			sendBox(player)
+		end,
 		start = function(_: any, context: Brix.Context)
 			local registry = context.registry
 			-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)

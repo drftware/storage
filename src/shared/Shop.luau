@@ -57,6 +57,9 @@ Shop.Words = table.freeze({
 	furniture = "Furniture", -- the second tab: this week's pieces for your home (S5-03g4b)
 	owned = "Owned", -- a piece you own as many of as you may
 	inBox = "In your box", -- a piece just bought: it waits in your job box
+	units = "Units", -- the third tab: your home's sizes, yours then the bigger ones (S5-03h2)
+	yours = "Yours", -- the size your home is
+	grown = "More room!", -- the headline on a size just bought
 })
 
 -- The counter's prompt: in the lobby's own frame, just in front of the counter's face (its front
@@ -146,6 +149,30 @@ Shop.Clunk = table.freeze({
 -- screen) with a dull click, as the vending machine's price blinks for too few coins.
 Shop.ShortNudge = 0.3
 Shop.ShortPitch = 0.6
+
+-- A bigger home bought (S5-03h2, D-341). As a size's card deals in, its plan opens out from your
+-- size to its own in `GrowPreview` seconds: the card shows how much more room before a word is
+-- read. On the sale the room you have opens out to the new one in `GrowTime`, over the steel's
+-- roll (the roll-up door's own curtain, DoorSound.Roll, cut short), landing on the stop bolts'
+-- knock (DoorSound.Thump pitched up), and the headline stays `GrowFor` seconds. The walls'
+-- grind in your home itself is S5-03h6's.
+Shop.GrowPreview = 0.7
+Shop.GrowTime = 1.1
+Shop.GrowFor = 2.2
+Shop.GrowRoll = table.freeze({
+	id = "rbxassetid://9120273047",
+	from = 1.2,
+	length = 1.2,
+	volume = 0.55,
+	pitch = 1.08,
+})
+Shop.GrowKnock = table.freeze({
+	id = "rbxassetid://9120370893",
+	from = 0.07,
+	length = 0.6,
+	volume = 0.45,
+	pitch = 1.5,
+})
 
 -- The value a remote carried, as a colour's name for `WearWrap` (empty for the plain film) or
 -- `BuyWrap` (`plain` false: a colour only), or nil when it isn't one: never trusts the client.

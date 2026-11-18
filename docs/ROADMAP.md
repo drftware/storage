@@ -2755,15 +2755,20 @@ Done when players watch the results to the end and change their perks between cl
         place in the unit, wall finds ride their wall), what it doesn't hold back in the box;
         the room's own things a size doesn't hold left out of it. Done Nov 17, D-340: checked
         in Studio Play from the server at all four sizes; the grid at Small not yet looked at.
-      - [ ] **S5-03h2 Medium for cash at the counter**: the rules in a spec first (the price a
+      - [x] **S5-03h2 Medium for cash at the counter**: the rules in a spec first (the price a
         feel number in Config; no sale when you're short or already Medium or bigger; the cash
         taken and `homeSize` written in one save before anything else happens), a validated,
         rate-limited remote, then the counter's offer and its answer (sound, motion, a short
-        headline), as Bloxburg's and Adopt Me's house upgrades are bought.
+        headline), as Bloxburg's and Adopt Me's house upgrades are bought. Done Nov 17, D-341:
+        the counter's third tab, Units; seen on the A16 in Studio Play, the price the owner's.
       - [ ] **S5-03h3 Large and XL for Robux** (moved here from S5-07): developer products through
         Brix's Purchases as S3-02's are: granted only after the save, never lost on a failed save
         or a server hop (the purchase ledger), every offer switchable off in Config, prices read
-        from Roblox, never sold smaller than you have; spec first.
+        from Roblox, never sold smaller than you have; spec first. Split Nov 17:
+          - [ ] **S5-03h3a Your own home**: Large and XL cards in Units (`Grow`'s Robux rows,
+            `UnitsTab`), Roblox's prompt from the server, the grant written before it's marked.
+          - [ ] **S5-03h3b The gift versions**: a friend grows your home, the recipient picked
+            on the server, the same ledger; never sold to a home already that big.
       - [ ] **S5-03h4 The starter set laid by size**: where the shelf, the job box, the rug, the
         beanbag, the floor lamp, the mirror, the rail and the ceiling lamp stand at each size,
         from `art/home/home_spec.py` (Small holds what's "snug": the shelf, the box, the mirror

@@ -8688,3 +8688,38 @@ The moment it serves: you pay to grow your home and everything you'd set out sta
   boombox, the camp lantern, the capybara and the moon lamp went back to the box. Checked in
   Studio Play from the server (Medium, XL and back, two boomboxes kept their places); the Arrange
   grid at Small not looked at on screen.
+
+## D-341 Medium is sold for cash at the counter's third tab, written before it's yours (S5-03h2, 2026-11-17)
+
+The moment: back from a good climb you've saved up, and the counter sells you a bigger unit;
+your cash ticks down, the plan on its card opens out with the steel's roll, and your home is
+Medium. Bloxburg's and Adopt Me's house upgrades, Animal Crossing's house loan.
+- **The rules are pure** (`Home/Grow.luau`, `tests/grow.spec.luau`, failing first): Medium costs
+  250 first-floor gates, 2,500 cash (ten neon moons; the owner's to set, `OWNER.md`). Refused when
+  it isn't a size, when you're that size or bigger ("had": never sold smaller than you have, never
+  twice), when it's a Robux size (Large and XL, "robux" until S5-03h3), or when you're short. A
+  sale takes the cash and writes `homeSize` in one step; `unbuy` puts the cash back relatively
+  (cash made meanwhile kept) and the size back only if it's still the one sold (a Robux size
+  granted meanwhile is kept).
+- **The server writes before it answers** (`Growing`, after furnishing): `GrowHome` is
+  rate-limited (1 a second, a burst of 2) before its payload is read, then `Grow.ask`, one sale
+  at a time ("busy"), `Grow.buy`, the save written at once; a failed write undoes the sale whole
+  and answers "save". Only once written is the home set up again (`Arranging`'s new `relay`, the
+  "size" test verb's clear and lay, which carries the rows) and `HomeGrown` answered. Growing
+  only writes `homeSize` (D-340), so a server that stops before the relay loses nothing.
+- **The counter's third tab, Units** (`UnitsTab`): a card per size from yours up (`Grow.ladder`):
+  yours says Yours; a bigger one shows a plan from above (the slot's whole box faint, the size
+  filled in the home's warm boards, the size you have outlined inside it, the door at its foot)
+  that opens out from yours as the card deals, and its price. The purse is the furniture's, shared
+  (`FurnitureTab.Wallet`). On "" the coins tick down, the roll-up door's roll plays while your
+  outline opens out to the new size, a stop-bolt knock lands it, "More room!" pops and the button
+  says Yours in gold; then the cards deal again from the new size, the smaller card gone. A short
+  price is dimmed and its press nudges the cash. No grind yet: the walls are S5-03h5 and h6.
+- **Seen in Studio Play on the A16** (Device Simulator): from the server, short refused "cash",
+  Large "robux", Small "had"; with `DevSaveFails` a sale was undone (cash 3,000, Small); a real
+  sale answered in 0.68 s after the write, cash 500, the unit's `HomeSize` Medium; a second sale
+  "had". On screen: the tab's three words fit with room before the purse; the press held, the
+  answer ("More room!", Yours, cash 500) and the re-deal to Medium alone. Test save put back:
+  Small, cash 188. The plans are small inside the cards (the XL box frames them); judged
+  readable, the owner to say.
+
