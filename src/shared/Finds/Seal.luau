@@ -33,8 +33,17 @@ Seal.Times = 3
 -- A find deeper than this many times its width is turned a quarter round in its pack, so its
 -- long side faces the window (the kazoo, the die-cast car), the way a shop hangs them.
 Seal.TurnRatio = 1.5
+-- A find lower than this share of both its width and its depth is flat (the fairy lights' coil):
+-- it lies on its back in its blister (`tipped`), so the window shows its face, not its edge.
+Seal.FlatRatio = 2.5
 -- The model attribute every screen reads: true while the find is still in its packaging.
 Seal.Attribute = "Sealed"
+
+-- The Player attribute that says slot `i` holds a find still sealed, set before its key and
+-- cleared after it, so no screen draws it unwrapped for a moment (as a Gold's mark is).
+function Seal.slotAttribute(i: number): string
+	return `Slot{i}Sealed`
+end
 
 -- Whether a find dealt from pick `pick` (the unit's roll, 0 to 1) is still sealed.
 function Seal.sealed(pick: number): boolean
@@ -53,14 +62,37 @@ function Seal.packOf(size: string?): string?
 	return nil
 end
 
--- Whether a find of size `find` sits turned a quarter round in its pack (`TurnRatio`).
-function Seal.turned(find: { number }): boolean
-	return find[3] > Seal.TurnRatio * find[1]
+-- Whether a find of size `find` is flat (the fairy lights' coil): its height under its width and
+-- its depth over `FlatRatio`. It lies on its back in its pack, its top to the window, the way a
+-- blister card lies on a shop's counter: the pack's back faces down wherever the find lies flat.
+function Seal.tipped(find: { number }): boolean
+	return find[2] * Seal.FlatRatio < math.min(find[1], find[3])
 end
 
--- The find's size as its pack holds it: turned, its width and depth swap.
+-- Whether a find of size `find` sits turned a quarter round in its pack (`TurnRatio`). A flat one
+-- is tipped instead, never both.
+function Seal.turned(find: { number }): boolean
+	return not Seal.tipped(find) and find[3] > Seal.TurnRatio * find[1]
+end
+
+export type Way = "Upright" | "Turned" | "Tipped"
+
+-- How a find of size `find` sits in its pack: "Tipped" (`tipped`), "Turned" (`turned`) or
+-- "Upright". Packs face the way finds do (Roblox's -Z), so upright its front shows.
+function Seal.way(find: { number }): Way
+	if Seal.tipped(find) then
+		return "Tipped"
+	end
+	return if Seal.turned(find) then "Turned" else "Upright"
+end
+
+-- The find's size as its pack holds it: turned, its width and depth swap; tipped, its height and
+-- depth.
 function Seal.held(find: { number }): { number }
-	if Seal.turned(find) then
+	local way = Seal.way(find)
+	if way == "Tipped" then
+		return { find[1], find[3], find[2] }
+	elseif way == "Turned" then
 		return { find[3], find[2], find[1] }
 	end
 	return { find[1], find[2], find[3] }
@@ -87,6 +119,28 @@ end
 -- box stands loose on the unit's floor.
 function Seal.outer(pack: { number }, scale: { number }): { number }
 	return { pack[1] * scale[1], pack[2] * scale[2], pack[3] * scale[3] }
+end
+
+-- How far a sealed find's lowest point sits above its pack's lowest point, with the find lying as
+-- a loose one lies (its own up, up): the pack under it holds it that high off the floor. Packed
+-- upright or turned, the pack stands on its bottom (its pivot) under the room; tipped, it lies on
+-- its back, `back` studs behind its pivot (the pack's own depth, halved). `find` is the find's own
+-- size; the pack's `room`, `centre` (the room's middle from its pivot), `pad` and `stretch` are
+-- `Finds/PackFit`'s.
+function Seal.lift(
+	find: { number },
+	room: { number },
+	centre: { number },
+	pad: number,
+	stretch: number,
+	back: number
+): number
+	local held = Seal.held(find)
+	local s = Seal.fit(held, room, pad, stretch)
+	if Seal.tipped(find) then
+		return s[3] * (back - centre[3]) - held[3] / 2
+	end
+	return s[2] * centre[2] - held[2] / 2
 end
 
 -- What a find worth `worth` in cash is worth still sealed: three times. Unsealed, its worth. A

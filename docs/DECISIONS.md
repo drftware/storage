@@ -10020,3 +10020,33 @@ rules are `Finds/Seal`, specs in `tests/seal.spec`.
   instead (`Seal.tears`, the crack's own `Chip.hard`), so the two never stack.
 - The packs are imported (`Props.Finds.Blister`, `WindowBox`, `Carton`, two parts each, no
   Bones); the owner saves the place.
+
+## D-425 A sealed find in its pack, in the box and in your hands (S5-02b2b1, Nov 18)
+
+S5-02b2b split in two: b1 (wrapped everywhere, the press, the set-down) and b2 (the tear, the
+dev pick, seen in Studio). Context ran short for all of it in one session.
+
+- **One wrap for every screen.** `Finds/Pack.wrap` stretches the size's pack round the find as
+  the art fits it (`Seal.fit`) and welds its board and film to the find's root, weightless and
+  passing through everything, so the find still carries, lies and is taken as itself and no
+  other system needs to know. The server wraps its own model (everyone sees it on the floor and
+  in a friend's hand); the box's reveal and your hand's view wrap their own copies the same way.
+  Checked in Studio's Edit view on the cymbal monkey, fairy lights, kazoo, boombox and teddy.
+- **How it sits.** Packs face the way finds face (-Z), so an upright find shows its front; a find
+  1.5 times deeper than wide is turned to show its side (D-424); a flat one, lower than 1 in 2.5
+  of both its width and depth (`Seal.FlatRatio`; only the fairy lights today), lies on its back
+  in its blister with its top to the bubble, the way a blister lies on a counter. Lying, the
+  pack holds the find off the floor by `Seal.lift` (spec'd: always above, never past a
+  carton's floor).
+- **Carried as a flag on the find.** `Tool.sealed` in Slots, the slot's `Seal.slotAttribute`
+  set before the key and cleared after it (as a Gold's), the box's `Opening.Sealed` stamped with
+  the open, and `Deal.Contents.sealed` passed through `layBoxed` (boxed by `Pack.outer`) or the
+  loose lay. A Gold is never wrapped. If the place lacks the pack, the find is dealt plain.
+- **The press.** A sealed find's press (the lamps' Switch, the windups' Wind) crinkles the
+  plastic at your hand (`Pack.Crinkle`, the try-on film's cellophane, short and pitched up) and
+  rocks the pack in your hand for 0.3 s (`Pack.Rattle`); nothing is sent, and the server ignores
+  a sealed find's press anyway. No words: the pack on screen says why.
+- **The set-down.** A sealed find lands with a soft cardboard thud (`Pack.Thud`, the marked
+  box's flap slap, lower and softer) instead of its own clank, its window turned back toward
+  you. It never cracks while sealed (`cracks` counts it whole); the tear is b2's.
+

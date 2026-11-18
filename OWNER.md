@@ -199,7 +199,10 @@ nowhere else.
   (S5-02b2a, D-424): save the place so they stay. Also decide (my defaults, D-424): about one find
   in twenty sealed, worth three times; the boombox, television and skates sealed in the carton,
   the teddy in the window box; a sealed find too big for the marked box (the boombox, the lamps,
-  the RC car, the fairy lights) stands loose on the unit's floor in its pack.
+  the RC car, the fairy lights) stands loose on the unit's floor in its pack. And (D-425): a
+  press on a sealed find with a button (the lamps' Switch, the windups' Wind) only crinkles the
+  plastic and shakes the pack in your hand; set down, its window turns back toward you; the fairy
+  lights, being flat, lie on their back in their blister, the coil facing up through the bubble.
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

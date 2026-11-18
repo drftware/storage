@@ -2557,6 +2557,19 @@ Done when players watch the results to the end and change their perks between cl
         pack pulled off with a rip and a few scraps, the crack's way), a plain find from then. A
         dev pick (`DealFind`) that deals one sealed; seen in Studio Play and captured. A flat
         find (the fairy lights) stood up so its face shows through the window (D-424).
+        Split in two (Nov 18, D-425):
+        - [x] **S5-02b2b1 Wrapped in its pack, in the box and in your hands.** Done Nov 18
+          (D-425): wraps checked in Studio's Edit view, not yet seen in Play (b2). The pose rules
+          (pure, Lune specs first: a flat find lies on its back in a blister, a deep one turned,
+          how high the pack lifts it off the floor); `Finds/Pack` wraps the server's find and every
+          screen's copy (the box's reveal, your hand); sealed carried from the deal through the
+          box (or loose) into a slot and back to the floor; a press answered with a crinkle of
+          the plastic and a small shake of the pack in your hand (nothing sent, the server
+          ignores it too); a set-down's soft cardboard thud in place of the find's clank.
+        - [ ] **S5-02b2b2 The tear, and seen in Studio.** A hard drop tears the pack off as it
+          lands (the rip, the board and film thrown clear with a few scraps, a plain find from
+          then, never cracked in the same drop); `DealFind` deals one sealed; seen in Studio
+          Play (in the box, in your hand, the press, the set-down, the tear) and captured.
       - [ ] **S5-02b2c Sealed through the gate and into the home.** `GatePay` and the save
         (`Save.keep`'s `sealed`, its stamp), the kept glint, a trip and a friend's box
         (`Taken`), the home's shelf and placing (standing in its pack), the job box's panel

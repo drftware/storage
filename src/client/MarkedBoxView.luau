@@ -39,6 +39,7 @@ local Elevator = require(ReplicatedStorage.Shared.Elevator)
 local Grades = require(ReplicatedStorage.Shared.Grades)
 local NoteCard = require(ReplicatedStorage.Shared.Elevator.NoteCard)
 local NoteSpot = require(ReplicatedStorage.Shared.Elevator.NoteSpot)
+local Pack = require(ReplicatedStorage.Shared.Finds.Pack)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local StorageUnit = require(ReplicatedStorage.Shared.StorageUnit)
@@ -86,6 +87,7 @@ type Box = {
 	grade: string,
 	reveal: Opening.Reveal,
 	find: string?,
+	sealed: boolean?, -- its find still in its packaging (S5-02b2b1): the copy rises in its pack
 	note: string?, -- the code's note it holds, its writing (B-04a)
 	laidAt: Vector3?,
 	opener: Player?,
@@ -254,6 +256,7 @@ function MarkedBoxView.new(): Brix.System
 		b.reveal = Opening.Reveals[b.grade]
 		local find = m:GetAttribute(Opening.Find)
 		b.find = if type(find) == "string" and Tools.Catalog[find] then find else nil
+		b.sealed = m:GetAttribute(Opening.Sealed) == true
 		local note = m:GetAttribute(Opening.Note)
 		b.note = if type(note) == "string" and note ~= "" then note else nil
 		local laid = m:GetAttribute(Opening.LaidAt)
@@ -415,6 +418,11 @@ function MarkedBoxView.new(): Brix.System
 			if not made then
 				b.find = nil -- the place lacks its art: nothing to show
 				return
+			end
+			-- sealed, it rises still in its pack, its window to the opener, as the server's will be
+			local body = if b.sealed then Tools.body(made) else nil
+			if body then
+				Pack.wrap(made, body, Tools.Catalog[key].size, Tools.bounds(key))
 			end
 			b.copy = made
 			made.Parent = Workspace

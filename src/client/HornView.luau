@@ -12,7 +12,9 @@
 
 	The button is every tool's with a verb (D-087): a press with another such tool in hand goes to
 	its own view's handler (`presses`: the bubble wrap's Lay, WrapView; a find's Switch or Wind,
-	FindUseView), which answers on your screen, and is sent to the server the same way. `can` says
+	FindUseView), which answers on your screen, and is sent to the server the same way. A find
+	still sealed (S5-02b2b1) answers with its plastic's crinkle and a shake of the pack instead,
+	and nothing is sent. `can` says
 	whether such a press would do anything now: the button hides while it wouldn't (a tea light
 	burning, a jack mid-tune) and springs back when it would.
 
@@ -33,6 +35,8 @@ local Brix = require(ReplicatedStorage.Brix)
 local Horn = require(ReplicatedStorage.Shared.Tools.Horn)
 local Joints = require(script.Parent.Joints)
 local Kept = require(ReplicatedStorage.Shared.Kept)
+local Pack = require(ReplicatedStorage.Shared.Finds.Pack)
+local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local ToolView = require(script.Parent.ToolView)
 local Tools = require(ReplicatedStorage.Shared.Tools)
@@ -238,6 +242,31 @@ function HornView.new(
 		showReady(false)
 	end
 
+	-- Whether the find in your hand is still sealed (S5-02b2b1): its slot says so.
+	local function sealedInHand(): boolean
+		local slot = player:GetAttribute(Tools.HandAttribute)
+		return type(slot) == "number"
+			and player:GetAttribute(Seal.slotAttribute(math.clamp(slot, 1, Carry.Slots)))
+				== true
+	end
+
+	-- A press on a find still sealed: nothing inside can be switched or wound, so the plastic
+	-- crinkles at your hand and the pack shakes in it (ToolView's `rattle`). Nothing is sent: the
+	-- server ignores a sealed find's press too.
+	local function crinkle()
+		local character = player.Character
+		local at = character and (character:FindFirstChild("LeftHand") or character.PrimaryPart)
+		if at then
+			Tools.play(Pack.Crinkle, at, Pack.CrinkleHeard)
+		end
+		hand.rattle()
+		local s = press
+		if s then
+			s.Scale = 0.92
+			TweenService:Create(s, PRESS, { Scale = 1 }):Play()
+		end
+	end
+
 	-- A press of the button with whatever tool with a verb is in your hand.
 	local function pressed()
 		if hand.landing() then
@@ -251,6 +280,10 @@ function HornView.new(
 		end
 		if holding == Horn.Key then
 			blow()
+			return
+		end
+		if holding ~= "" and alive() and sealedInHand() then
+			crinkle()
 			return
 		end
 		local handler = presses and presses[holding]

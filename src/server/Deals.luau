@@ -38,6 +38,7 @@ local Doors = require(script.Parent.Doors)
 local BoxSpecs = require(ReplicatedStorage.Shared.Boxes.Specs)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local MarkedBoxes = require(script.Parent.MarkedBoxes)
+local Pack = require(ReplicatedStorage.Shared.Finds.Pack)
 local Packed = require(ReplicatedStorage.Shared.Packed)
 local PackedLayout = require(ReplicatedStorage.Shared.PackedLayout)
 local Saws = require(script.Parent.Saws)
@@ -301,11 +302,16 @@ function Deals.new(): Deals
 		key: string,
 		forced: boolean,
 		count: number,
-		guarded: boolean
+		guarded: boolean,
+		sealed: boolean?
 	): (CFrame?, { number }?)
 		local boxes = markedBoxes
 		local body = Tools.bounds(key).Size
-		if not (boxes and (forced or Deal.packs({ body.X, body.Y, body.Z }, BOX_SIZE))) then
+		-- sealed, it boxes by its pack's outside (`Seal.outer`): a carton too big stands loose
+		local outside = if sealed
+			then Pack.outer(Tools.Catalog[key].size, Tools.bounds(key))
+			else { body.X, body.Y, body.Z }
+		if not (boxes and (forced or Deal.packs(outside, BOX_SIZE))) then
 			return nil, nil
 		end
 		-- the catalog says loose only (the Old lamp, found lit on the unit's floor)
@@ -322,7 +328,7 @@ function Deals.new(): Deals
 			return nil, nil
 		end
 		local place = placed(unit, spot)
-		if not boxes:stand(unit, place, key, count) then
+		if not boxes:stand(unit, place, key, count, nil, sealed) then
 			return nil, nil
 		end
 		return place, DealSpot.around(spot, BOX_FOOTPRINT)
@@ -388,8 +394,16 @@ function Deals.new(): Deals
 				-- its art isn't in the place (art/finds/README.md says how to import it)
 				return nil, nil, nil, false
 			end
-			local boxed, area =
-				layBoxed(unit, deck, index, key, forced, contents.coins, contents.beside ~= nil)
+			local boxed, area = layBoxed(
+				unit,
+				deck,
+				index,
+				key,
+				forced,
+				contents.coins,
+				contents.beside ~= nil,
+				contents.sealed
+			)
 			if boxed then
 				return boxed, area, nil, true
 			end
@@ -401,7 +415,7 @@ function Deals.new(): Deals
 			end
 			local place = at(spot)
 			local _, yaw = place:ToOrientation()
-			slots:lay(key, place.Position, math.deg(yaw))
+			slots:lay(key, place.Position, math.deg(yaw), contents.sealed)
 			return place, DealSpot.around(spot, box), nil, false
 		elseif kind == "Asleep" or kind == "Awake" then
 			if contents.pile then

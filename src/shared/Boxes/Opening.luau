@@ -101,6 +101,7 @@ Opening.NoteGrade = "Note"
 Opening.Note = "Note" -- on the box, stamped with the open: the note's writing ("_ 7 _ _")
 Opening.Grade = "Grade" -- on the box, stamped with the open: the grade of what's inside
 Opening.Find = "Find" -- on the box, stamped with the open: the find's catalog key
+Opening.Sealed = "Sealed" -- on the box, stamped with the open: its find still in its pack (S5-02b)
 Opening.LaidAt = "LaidAt" -- on the box, if the opener's hands were full: where the find lands
 Opening.Coins = "Coins" -- on the box, stamped with the open: how many coins it held (B-03b)
 

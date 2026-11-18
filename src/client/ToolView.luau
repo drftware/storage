@@ -63,6 +63,8 @@ local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local FreeCursor = require(script.Parent.FreeCursor)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
+local Pack = require(ReplicatedStorage.Shared.Finds.Pack)
+local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
 local HandRoom = require(script.Parent.HandRoom)
 local InFlight = require(script.Parent.InFlight)
 local Hands = require(ReplicatedStorage.Shared.Hands)
@@ -332,6 +334,11 @@ local function goldAt(i: number): boolean
 	return player:GetAttribute(Gold.slotAttribute(i)) == true
 end
 
+-- Whether slot `i` holds a find still sealed (S5-02b2b1): drawn in its pack.
+local function sealedAt(i: number): boolean
+	return player:GetAttribute(Seal.slotAttribute(i)) == true
+end
+
 -- What slot `i`'s picture draws for `key`: a Gold's name when it holds one, so it's gilded.
 local function drawnAt(i: number, key: string): string
 	return if key ~= "" and goldAt(i) then Gold.key(key) else key
@@ -560,6 +567,9 @@ export type Hand = {
 	-- your view's copy of what's in your hand and its catalog key (nil, "" for none): a pressed
 	-- find plays its motions on it (`FindUseView`)
 	model: () -> (Model?, string),
+	-- a press on a find still sealed (S5-02b2b1): your view's copy shakes in your hand a moment,
+	-- the pack tested, not opened (`Pack.Rattle`)
+	rattle: () -> (),
 	-- moves your view's copy by `delta` from where your grip holds it, in its root's own space:
 	-- a find's root carried by its own motion (the kazoo lifted to your lips, `Finds.shift`)
 	shift: (delta: CFrame) -> (),
@@ -603,6 +613,8 @@ function ToolView.new(
 	local lastYaw: number?, lastPitch = nil, 0
 	local shownKey = ""
 	local shownGold = false -- the shown tool is a Gold of its find, gilded
+	local shownSealed = false -- the shown find is still in its pack (S5-02b2b1)
+	local rattledAt = -math.huge -- when a press last shook a sealed find in your hand (os.clock)
 	local shownModel: Model? = nil
 	local shownBody: BasePart? = nil
 	local bodyOff = CFrame.identity
@@ -671,6 +683,12 @@ function ToolView.new(
 	local function heldGold(): boolean
 		local slot, pocketed = current()
 		return not pocketed and goldAt(slot)
+	end
+
+	-- Whether what your hand holds out is still sealed (its slot says so, `sealedAt`).
+	local function heldSealed(): boolean
+		local slot, pocketed = current()
+		return not pocketed and sealedAt(slot)
 	end
 
 	local function keyboard(): boolean
@@ -1151,13 +1169,15 @@ function ToolView.new(
 		end
 	end
 
-	-- Your view's tool: `key`'s model, or none; `gold`: a Gold of it, gilded as everyone sees it.
-	local function show(key: string, gold: boolean)
+	-- Your view's tool: `key`'s model, or none; `gold`: a Gold of it, gilded as everyone sees it;
+	-- `sealed`: still in its pack, wrapped as everyone sees it (S5-02b2b1).
+	local function show(key: string, gold: boolean, sealed: boolean?)
 		if shownModel then
 			shownModel:Destroy()
 		end
 		shownModel, shownBody, shownKey = nil, nil, key
 		shownGold = gold and key ~= ""
+		shownSealed = sealed == true and key ~= ""
 		viewShift = CFrame.identity
 		if key == "" or not viewFolder then
 			return
@@ -1173,6 +1193,9 @@ function ToolView.new(
 		if not body then
 			model:Destroy()
 			return
+		end
+		if shownSealed then
+			Pack.wrap(model, body, Catalog[key].size, Tools.bounds(key))
 		end
 		for _, part in model:GetDescendants() do
 			if part:IsA("BasePart") then
@@ -1344,6 +1367,7 @@ function ToolView.new(
 			want = "" -- it broke: the slots haven't caught up yet
 		end
 		local wantGold = want ~= "" and heldGold()
+		local wantSealed = want ~= "" and heldSealed()
 		-- a tool bought at the car's machine is yours already but still on its way: your hand
 		-- stays empty until it arrives, then it's simply there, where it flew to, with its weight
 		local wasFlying = flying
@@ -1351,19 +1375,19 @@ function ToolView.new(
 		if flying then
 			want = ""
 		elseif wasFlying and want ~= "" and want ~= shownKey then
-			show(want, wantGold)
+			show(want, wantGold, wantSealed)
 			swing = 1
 			rising = true
 			landed = os.clock()
 		end
-		if want ~= shownKey or wantGold ~= shownGold then
+		if want ~= shownKey or wantGold ~= shownGold or wantSealed ~= shownSealed then
 			-- the old one drops out of view, then the new one comes up
 			rising = false
 			swing -= dt / SWING_OUT
 			if swing <= 0 or shownModel == nil then
 				swing = 0
 				rising = true
-				show(want, wantGold)
+				show(want, wantGold, wantSealed)
 			end
 		elseif swing < 1 then
 			rising = true
@@ -1445,6 +1469,15 @@ function ToolView.new(
 		local reach = HandRoom.reach(small * boxOff, boxHalf)
 		pull = Hands.follow(pull, Hands.pull(HandRoom.room(cam, reach), reach), dt)
 		local grip = cam * CFrame.new(0, -Hands.Duck * pull, pull) * small * viewShift
+		-- a sealed find pressed: it rocks in your hand a moment, dying away (`Pack.Rattle`)
+		local shook = clock - rattledAt
+		if shook < Pack.Rattle.seconds then
+			local left = 1 - shook / Pack.Rattle.seconds
+			local rock = math.sin(shook * Pack.Rattle.rate * 2 * math.pi)
+				* math.rad(Pack.Rattle.degrees)
+				* left
+			grip *= CFrame.Angles(rock * 0.4, 0, rock)
+		end
 		-- the whole model, so a second part (the ladder's fly) moves with it
 		local model = shownModel
 		if model then
@@ -1889,6 +1922,9 @@ function ToolView.new(
 		end,
 		model = function(): (Model?, string)
 			return shownModel, if shownModel then shownKey else ""
+		end,
+		rattle = function()
+			rattledAt = os.clock()
 		end,
 		shift = function(delta: CFrame)
 			-- the root at grip * bodyOff, moved by `delta` in its own space

@@ -73,14 +73,15 @@ export type MarkedBoxes = Brix.System & {
 	-- Stands a shut marked box at `place` (the middle of its bottom on the floor, its printed side
 	-- facing the place's LookVector) in unit `unit`, into the unit's hall piece, holding find or
 	-- tool `find` (a catalog key) and `coins` coins (B-03b), or the code's note `note` (B-04a). Nil
-	-- when the place lacks the template.
+	-- when the place lacks the template. `sealed`: its find still in its packaging (S5-02b2b1).
 	stand: (
 		self: any,
 		unit: Model,
 		place: CFrame,
 		find: string?,
 		coins: number?,
-		note: Note?
+		note: Note?,
+		sealed: boolean?
 	) -> Model?,
 }
 
@@ -92,6 +93,7 @@ type Standing = {
 	find: string?,
 	coins: number,
 	note: Note?,
+	sealed: boolean,
 }
 
 -- Studs from the box's middle to where a find lands beside it (toward the opener): clear of the
@@ -147,16 +149,17 @@ function MarkedBoxes.new(): MarkedBoxes
 		laid: boolean,
 		at: Vector3,
 		yaw: number,
-		since: number
+		since: number,
+		sealed: boolean
 	)
 		local s = slots
 		if stopped or not s then
 			return
 		end
-		if not laid and player.Parent and s:give(player, key, nil, since) then
+		if not laid and player.Parent and s:give(player, key, nil, since, sealed) then
 			return
 		end
-		s:lay(key, at, yaw)
+		s:lay(key, at, yaw, sealed)
 	end
 
 	local function open(s: Standing, player: Player)
@@ -207,6 +210,9 @@ function MarkedBoxes.new(): MarkedBoxes
 		local spot, yaw = besideBox(s.box, at)
 		if key then
 			s.box:SetAttribute(Opening.Find, key)
+			if s.sealed then
+				s.box:SetAttribute(Opening.Sealed, true) -- the reveal lifts it out in its pack
+			end
 		end
 		s.box:SetAttribute(Opening.Grade, grade)
 		if laid then
@@ -250,7 +256,8 @@ function MarkedBoxes.new(): MarkedBoxes
 				laid,
 				spot,
 				yaw,
-				os.clock()
+				os.clock(),
+				s.sealed
 			)
 		end
 		opened:fire({
@@ -271,7 +278,8 @@ function MarkedBoxes.new(): MarkedBoxes
 		place: CFrame,
 		find: string?,
 		coins: number?,
-		note: Note?
+		note: Note?,
+		sealed: boolean?
 	): Model?
 		-- set up out of the world, then parented once into the hall piece
 		local box = Boxes.cloneMarked(place)
@@ -307,6 +315,7 @@ function MarkedBoxes.new(): MarkedBoxes
 			find = find,
 			coins = math.clamp(math.floor(coins or 0), 0, 3),
 			note = note,
+			sealed = sealed == true and find ~= nil,
 		}
 		standing[box] = s
 		prompt.Triggered:Connect(function(player: Player)

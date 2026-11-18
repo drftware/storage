@@ -80,6 +80,8 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Chip = require(ReplicatedStorage.Shared.Finds.Chip)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
+local Pack = require(ReplicatedStorage.Shared.Finds.Pack)
+local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
 local Head = require(ReplicatedStorage.Shared.Finds.Head)
 local Headlamp = require(ReplicatedStorage.Shared.Finds.Headlamp)
 local Kept = require(ReplicatedStorage.Shared.Kept)
@@ -215,8 +217,9 @@ export type Slots = Brix.System & {
 	-- screens show it in the hands, S2-06b2b), or from where the server holds it.
 	putDown: (self: any, n: number, at: Vector3, yaw: number, from: CFrame?) -> (),
 	-- Lays a new tool of catalog key `key` on the floor at `at` (a floor point), turned `yaw`
-	-- degrees. Returns its id, or nil if the place has no template.
-	lay: (self: any, key: string, at: Vector3, yaw: number) -> string?,
+	-- degrees. Returns its id, or nil if the place has no template. `sealed`: a find still in its
+	-- packaging (S5-02b2b1), standing in its pack.
+	lay: (self: any, key: string, at: Vector3, yaw: number, sealed: boolean?) -> string?,
 	-- Takes away every tool lying on a floor where `inside` says (a floor being cleared, L-08b);
 	-- carried and placed ones stay. Returns how many went.
 	clear: (self: any, inside: (at: Vector3) -> boolean) -> number,
@@ -242,8 +245,16 @@ export type Slots = Brix.System & {
 	-- at the car's machine, S1-10c2), with its pick-up sound. False, and nothing made, if they have
 	-- no room, a big tool in their hands, no living character, or the place lacks its art.
 	-- `since`: when the player reached for it (a box opened, its find landing as the reveal
-	-- ends): a switch or a put-away since then keeps their hand where they put it (F-G1e6q2)
-	give: (self: any, player: Player, key: string, quiet: boolean?, since: number?) -> boolean,
+	-- ends): a switch or a put-away since then keeps their hand where they put it (F-G1e6q2).
+	-- `sealed`: a find still in its packaging (S5-02b2b1), in its pack in their hand.
+	give: (
+		self: any,
+		player: Player,
+		key: string,
+		quiet: boolean?,
+		since: number?,
+		sealed: boolean?
+	) -> boolean,
 	-- A find `key` out of `player`'s job box (S5-03c2b2, D-293; a Gold's gilded) into a free slot,
 	-- as `give` with `quiet` (their screen plays the pick-up as the picture lands), marked as
 	-- from their box. The slot it went into, or nil when it can't (as `give`).
@@ -345,6 +356,9 @@ type Tool = {
 	-- are the find's; its model is gilded for everyone, its slot says so (Gold.slotAttribute),
 	-- and it's counted and kept by its Gold's name (`named`). Solid gold: it never cracks.
 	gold: boolean?,
+	-- still in its packaging (S5-02b, D-424): its model wrapped in its pack for everyone
+	-- (`Finds/Pack`), its slot marked (`Seal.slotAttribute`); it takes no press and never cracks
+	sealed: boolean?,
 }
 
 -- The name `t` goes by in a save: "Teddy", or its Gold's "Teddy:Gold".
@@ -364,9 +378,12 @@ type Hand = {
 -- The tool's pivot for lying flat on a floor with its middle at `at`, turned `yaw` degrees: its
 -- lowest point on the floor. By its middle, not its grip, so a long tool dropped by a wall lies
 -- along it rather than through it.
-local function resting(key: string, at: Vector3, yaw: number): CFrame
+local function resting(key: string, at: Vector3, yaw: number, sealed: boolean?): CFrame
 	local body = Tools.bounds(key)
 	local lift = body.Size.Y / 2 - body.Centre.Y
+	if sealed then
+		lift += Pack.lift(Catalog[key].size, body) -- standing in its pack, its bottom on the floor
+	end
 	return CFrame.new(at + Vector3.new(0, lift, 0))
 		* CFrame.Angles(0, math.rad(yaw), 0)
 		* CFrame.new(-body.Centre.X, 0, -body.Centre.Z)
@@ -559,11 +576,20 @@ function Slots.new(): Slots
 			if goldChanged and gold then
 				player:SetAttribute(Gold.slotAttribute(i), gold)
 			end
+			-- a sealed find's mark the same way (S5-02b2b1): never drawn out of its pack a moment
+			local sealed = if t and t.sealed then true else nil
+			local sealChanged = player:GetAttribute(Seal.slotAttribute(i)) ~= sealed
+			if sealChanged and sealed then
+				player:SetAttribute(Seal.slotAttribute(i), sealed)
+			end
 			if player:GetAttribute(Tools.slotAttribute(i)) ~= key then
 				player:SetAttribute(Tools.slotAttribute(i), key)
 			end
 			if goldChanged and not gold then
 				player:SetAttribute(Gold.slotAttribute(i), nil)
+			end
+			if sealChanged and not sealed then
+				player:SetAttribute(Seal.slotAttribute(i), nil)
 			end
 			local uses = if t and t.uses then t.uses else 0
 			if player:GetAttribute(Wear.slotAttribute(i)) ~= uses then
@@ -779,7 +805,9 @@ function Slots.new(): Slots
 	-- Whether `t`, let go by someone moving `speed` studs a second, falling `fall` studs from
 	-- their hand to the floor, cracks as it lands (`Chip.cracks`).
 	local function cracks(t: Tool, speed: number, fall: number): boolean
-		return Chip.cracks(Catalog[t.key].fragile, t.chipped == true or t.gold == true, speed, fall)
+		-- sealed, its pack takes the fall instead (`Seal.tears`, S5-02b2b2): the glass never cracks
+		local whole = t.chipped == true or t.gold == true or t.sealed == true
+		return Chip.cracks(Catalog[t.key].fragile, whole, speed, fall)
 	end
 
 	-- `hard`: it was let go hard enough to crack its glass as it lands (`cracks`).
@@ -803,7 +831,9 @@ function Slots.new(): Slots
 			local tween = TweenService:Create(t.body, FALL, { CFrame = goal })
 			tween.Completed:Once(function()
 				if t.owner == nil and t.model.Parent == lying then
-					Tools.play(Catalog[t.key].drop, t.body, Carry.DropHeard)
+					-- sealed, its pack lands: a soft cardboard thud, not the find's own clank
+					local sound = if t.sealed then Pack.Thud else Catalog[t.key].drop
+					Tools.play(sound, t.body, Carry.DropHeard)
 					if hard then
 						crack(t)
 					end
@@ -866,7 +896,12 @@ function Slots.new(): Slots
 					and cracks(t, root.AssemblyLinearVelocity.Magnitude, root.Position.Y - at.Y)
 				layDown(
 					t,
-					resting(t.key, at + Vector3.new(0.4 * (k - 1), 0, 0), math.random(0, 359)),
+					resting(
+						t.key,
+						at + Vector3.new(0.4 * (k - 1), 0, 0),
+						math.random(0, 359),
+						t.sealed
+					),
 					fromCF,
 					hard
 				)
@@ -1275,6 +1310,9 @@ function Slots.new(): Slots
 		if not (t and row and row.verb and Wear.usable(t.uses)) then
 			return
 		end
+		if t.sealed then
+			return -- still in its packaging: your screen crinkles the pack and shakes it (HornView)
+		end
 		local at = now()
 		local may, left = Carry.allow(h.usedLast, h.usedBurst, at)
 		if not may then
@@ -1306,12 +1344,15 @@ function Slots.new(): Slots
 		end
 		local from = t.body.CFrame * t.body.PivotOffset
 		local _, facing = root.CFrame:ToOrientation()
-		-- crosswise in front of you, as a dropped tool lands, a little askew
-		local yaw = math.deg(facing) + 90 + math.random(-25, 25)
+		-- crosswise in front of you, as a dropped tool lands, a little askew; sealed, its pack's
+		-- window turned back to you, as you'd set a boxed thing down
+		local yaw = if t.sealed
+			then math.deg(facing) + 180 + math.random(-12, 12)
+			else math.deg(facing) + 90 + math.random(-25, 25)
 		local at = dropPoint(root)
 		-- let go at a run, mid-fall or from high up, a fragile find cracks as it lands (F-G1e5e)
 		local hard = cracks(t, root.AssemblyLinearVelocity.Magnitude, from.Position.Y - at.Y)
-		layDown(t, resting(t.key, at, yaw), from, hard)
+		layDown(t, resting(t.key, at, yaw, t.sealed), from, hard)
 		changed:fire({ player = player, kind = "Drop" })
 	end
 
@@ -1513,8 +1554,8 @@ function Slots.new(): Slots
 		taken:disconnectAll()
 	end
 
-	function system.lay(_: any, key: string, at: Vector3, yaw: number): string?
-		local pose = resting(key, at, yaw)
+	function system.lay(_: any, key: string, at: Vector3, yaw: number, sealed: boolean?): string?
+		local pose = resting(key, at, yaw, sealed)
 		local model = Tools.clone(key, pose)
 		if not model then
 			return nil
@@ -1523,6 +1564,13 @@ function Slots.new(): Slots
 		if not body then
 			model:Destroy()
 			return nil
+		end
+		-- on the server's model, so every screen sees it in its pack wherever it goes
+		local wrapped = sealed == true
+			and Pack.wrap(model, body, Catalog[key].size, Tools.bounds(key))
+		if sealed and not wrapped then
+			pose = resting(key, at, yaw) -- no pack in the place: it lies as a loose find
+			model:PivotTo(pose)
 		end
 		nextId += 1
 		local id = `{key}{nextId}`
@@ -1534,6 +1582,7 @@ function Slots.new(): Slots
 			body = body,
 			owner = nil,
 			uses = Wear.full(key),
+			sealed = if wrapped then true else nil,
 		}
 		tools[id] = t
 		layDown(t, pose, nil)
@@ -1687,7 +1736,7 @@ function Slots.new(): Slots
 		local from = if held
 			then held * CFrame.new(Tools.bounds(t.key).Centre):Inverse()
 			else t.body.CFrame * t.body.PivotOffset
-		local pose = resting(t.key, at, yaw)
+		local pose = resting(t.key, at, yaw, t.sealed)
 		t.weld:Destroy()
 		t.weld = nil
 		t.body.Anchored = true
@@ -2143,7 +2192,8 @@ function Slots.new(): Slots
 		quiet: boolean?,
 		home: number?,
 		gold: boolean?,
-		since: number?
+		since: number?,
+		sealed: boolean?
 	): (number?, Tool?)
 		local root = rootOf(player)
 		local h = handOfPlayer(player)
@@ -2161,6 +2211,10 @@ function Slots.new(): Slots
 		if gold then
 			Gold.gild(model) -- on the server's model, so every screen sees it gold wherever it goes
 		end
+		-- sealed (S5-02b2b1), wrapped on the server's model the same way; never a Gold
+		local wrapped = sealed == true
+			and not gold
+			and Pack.wrap(model, body, Catalog[key].size, Tools.bounds(key))
 		nextId += 1
 		local t: Tool = {
 			id = `{key}{nextId}`,
@@ -2172,6 +2226,7 @@ function Slots.new(): Slots
 			uses = Wear.full(key),
 			home = home,
 			gold = gold,
+			sealed = if wrapped then true else nil,
 		}
 		tools[t.id] = t
 		local slot = Carry.take(h.carry, t.id, since ~= nil and h.moved > since)
@@ -2191,9 +2246,10 @@ function Slots.new(): Slots
 		player: Player,
 		key: string,
 		quiet: boolean?,
-		since: number?
+		since: number?,
+		sealed: boolean?
 	): boolean
-		return make(player, key, quiet, nil, nil, since) ~= nil
+		return make(player, key, quiet, nil, nil, since, sealed) ~= nil
 	end
 
 	function system.unbox(_: any, player: Player, key: string): number?
@@ -2334,7 +2390,7 @@ function Slots.new(): Slots
 		t.placed = nil
 		layDown(
 			t,
-			resting(t.key, at, yaw),
+			resting(t.key, at, yaw, t.sealed),
 			if still then nil else t.body.CFrame * t.body.PivotOffset
 		)
 	end

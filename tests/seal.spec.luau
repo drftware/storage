@@ -222,8 +222,69 @@ do
 	ok(Seal.packOf("Big") == nil and Seal.packOf(nil) == nil, "a big find or a tool: never sealed")
 end
 
+-- 7. How a find lies in its pack (S5-02b2b1): a flat one (the fairy lights' coil) on its back in
+-- the blister, its top to the window; a deep one turned; the rest upright. And how high its pack
+-- holds it off the floor: always above, never past a carton's floor.
+local tipped: { string } = {}
+do
+	ok(Seal.tipped({ 0.98, 0.11, 0.57 }), "the fairy lights' coil lies flat: tipped")
+	ok(not Seal.turned({ 0.98, 0.11, 0.57 }), "tipped, never turned too")
+	local held = Seal.held({ 0.98, 0.11, 0.57 })
+	ok(held[1] == 0.98 and held[2] == 0.57 and held[3] == 0.11, "tipped: its height and depth swap")
+	ok(Seal.way({ 0.98, 0.11, 0.57 }) == "Tipped", "the fairy lights' way: tipped")
+	ok(not Seal.tipped({ 0.5, 0.3, 0.6 }), "a squat find isn't flat")
+	ok(Seal.way({ 0.5, 0.3, 0.6 }) == "Upright", "a squat find stands upright")
+	ok(Seal.turned({ 0.2, 0.3, 0.6 }), "a long thin find is still turned, not tipped")
+	ok(Seal.way({ 0.2, 0.3, 0.6 }) == "Turned", "a long thin find's way: turned")
+	-- worked by hand: the monkey upright in its window box sits 0.8361 * 0.68 - 1.057 / 2 up
+	local box = PackFit.Medium
+	local lift = Seal.lift(
+		{ 0.686, 1.057, 0.745 },
+		three(box.room),
+		three(box.roomCentre),
+		box.pad,
+		box.stretch,
+		0.43
+	)
+	ok(near(lift, (1.117 / 1.336) * 0.68 - 1.057 / 2, 1e-4), "the monkey's lift in its window box")
+	for key, row in Catalog do
+		local size = if row.find then Seal.packOf(row.size) else nil
+		local art = Fixture.boxes[key]
+		if not (size and art) then
+			continue
+		end
+		local pack = PackFit[size]
+		local packArt = Fixture.boxes[pack.template]
+		if not packArt then
+			continue
+		end
+		local find = three(art.Size)
+		if Seal.tipped(find) then
+			table.insert(tipped, key)
+		end
+		local up = Seal.lift(
+			find,
+			three(pack.room),
+			three(pack.roomCentre),
+			pack.pad,
+			pack.stretch,
+			packArt.Size.Z / 2
+		)
+		ok(up > 0, `{key}: its pack holds it off the floor ({up})`)
+		ok(up < 0.8, `{key}: no higher than a carton's floor ({up})`)
+	end
+	table.sort(tipped)
+	ok(table.find(tipped, "FairyLights") ~= nil, "the fairy lights are tipped")
+	ok(#tipped <= 6, `only flat finds are tipped ({#tipped})`)
+end
+
 if failures > 0 then
 	print(`seal: {failures} of {checks} checks failed`)
 	error("seal spec failed")
 end
-print(`seal: {checks} checks passed (sealed, standing loose: {table.concat(loose, ", ")})`)
+print(
+	`seal: {checks} checks passed (standing loose: {table.concat(loose, ", ")}; tipped: {table.concat(
+		tipped,
+		", "
+	)})`
+)
