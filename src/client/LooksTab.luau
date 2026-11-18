@@ -125,6 +125,82 @@ local function tint(chosen: Looks.Chosen, kind: Looks.Kind, id: string): Color3
 	return colour(if kind == "paper" then walls.colour else floor.colour)
 end
 
+-- A card style's plate drawn into `b`, a frame `LooksTab.Plate` in size: the style's paint (its
+-- map over it, as the plate's Overlay shows the paint), your name in its font and ink, the neon's
+-- glowing; the slate's oak frame; the steel's bolts and the board's screws as dots at its ends.
+-- The paint tab's chips and the counter's style cards (StyleCards) both wear it.
+LooksTab.Plate = PLATE
+function LooksTab.plateFace(b: GuiObject, style: Specs.CardStyle, template: Model)
+	b.BackgroundColor3 = if style.Paint then Color3.fromHex(style.Paint) else Color3.new(1, 1, 1)
+	b.BorderSizePixel = 0
+	local radius = UDim.new(0, 6)
+	corner(b, radius)
+	local first = template:FindFirstChild(style.Parts[1], true)
+	local look = if first then first:FindFirstChildOfClass("SurfaceAppearance") else nil
+	-- any: ColorMapContent (a Content) isn't in every type definition yet
+	local content = if look then (look :: any).ColorMapContent else nil
+	local uri = if content then content.Uri else nil
+	if type(uri) == "string" and uri ~= "" then
+		local image = Instance.new("ImageLabel")
+		image.BackgroundTransparency = 1
+		image.Size = UDim2.fromScale(1, 1)
+		image.Image = uri
+		image.ScaleType = Enum.ScaleType.Crop
+		image.ZIndex = 1
+		corner(image, radius)
+		image.Parent = b
+	end
+	if style.Parts[2] == "CardChalkFrame" then -- the slate's oak frame, inside the ring
+		local frame = Instance.new("Frame")
+		frame.AnchorPoint = Vector2.new(0.5, 0.5)
+		frame.Position = UDim2.fromScale(0.5, 0.5)
+		frame.Size = UDim2.new(1, -6, 1, -6)
+		frame.BackgroundTransparency = 1
+		frame.ZIndex = 2
+		corner(frame, UDim.new(0, 4))
+		local edge = Instance.new("UIStroke")
+		edge.Color = OAK
+		edge.Thickness = 3
+		edge.Parent = frame
+		frame.Parent = b
+	end
+	local fixing = CardPlate.Plain[style.Parts[2] or ""]
+	if fixing and fixing.colour:sub(1, 1) == "#" then -- the bolts or screws at its ends
+		for _, x in { 0, 1 } do
+			local dot = Instance.new("Frame")
+			dot.AnchorPoint = Vector2.new(x, 0.5)
+			dot.Position = UDim2.new(x, if x == 0 then 5 else -5, 0.5, 0)
+			dot.Size = UDim2.fromOffset(4, 4)
+			dot.BackgroundColor3 = Color3.fromHex(fixing.colour)
+			dot.BorderSizePixel = 0
+			dot.ZIndex = 2
+			corner(dot, UDim.new(0.5, 0))
+			dot.Parent = b
+		end
+	end
+	local name = Instance.new("TextLabel")
+	name.Name = "Name"
+	name.AnchorPoint = Vector2.new(0.5, 0.5)
+	name.Position = UDim2.fromScale(0.5, 0.5)
+	name.Size = UDim2.new(1, -20, 1, -14)
+	name.BackgroundTransparency = 1
+	name.Text = Home.Holding.words(Players.LocalPlayer.DisplayName)
+	name.TextScaled = true
+	name.FontFace = Font.fromName(style.Font, CardPlate.weight(style.Weight))
+	name.TextColor3 = Color3.fromHex(style.Ink)
+	name.ZIndex = 3
+	if style.Glow then
+		local glow = Instance.new("UIStroke")
+		glow.Name = "Glow"
+		glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+		glow.Color = Color3.fromHex(style.Glow)
+		glow.Thickness = 1.5
+		glow.Transparency = CardPlate.Neon.Haze
+		glow.Parent = name
+	end
+	name.Parent = b
+end
+
 -- The tab's icon, into a 36 by 32 frame: a fan of three paint chips from one corner, a decorator's
 -- colour card, edged in `edge` so they read apart.
 function LooksTab.icon(into: GuiObject, edge: Color3)
@@ -350,9 +426,8 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 		return c
 	end
 
-	-- A card style's chip: a little plate in the style's paint (its map over it, as the plate's
-	-- Overlay shows the paint), your name in its font and ink, the neon's glowing; the steel's
-	-- bolts and the board's screws as dots at its ends; a coin or the Robux mark while locked.
+	-- A card style's chip: the plate (`LooksTab.plateFace`) with a coin or the Robux mark while
+	-- it's locked.
 	local function plate(
 		into: Instance,
 		order: number,
@@ -365,74 +440,8 @@ function LooksTab.new(tray: Frame, host: Host, page: Page): Tab
 		b.AutoButtonColor = false
 		b.LayoutOrder = order
 		b.Size = UDim2.fromOffset(PLATE.X, PLATE.Y)
-		b.BackgroundColor3 = if style.Paint
-			then Color3.fromHex(style.Paint)
-			else Color3.new(1, 1, 1)
-		b.BorderSizePixel = 0
 		local radius = UDim.new(0, 6)
-		corner(b, radius)
-		local first = template:FindFirstChild(style.Parts[1], true)
-		local look = if first then first:FindFirstChildOfClass("SurfaceAppearance") else nil
-		-- any: ColorMapContent (a Content) isn't in every type definition yet
-		local content = if look then (look :: any).ColorMapContent else nil
-		local uri = if content then content.Uri else nil
-		if type(uri) == "string" and uri ~= "" then
-			local image = Instance.new("ImageLabel")
-			image.BackgroundTransparency = 1
-			image.Size = UDim2.fromScale(1, 1)
-			image.Image = uri
-			image.ScaleType = Enum.ScaleType.Crop
-			image.ZIndex = 1
-			corner(image, radius)
-			image.Parent = b
-		end
-		if style.Parts[2] == "CardChalkFrame" then -- the slate's oak frame, inside the ring
-			local frame = Instance.new("Frame")
-			frame.AnchorPoint = Vector2.new(0.5, 0.5)
-			frame.Position = UDim2.fromScale(0.5, 0.5)
-			frame.Size = UDim2.new(1, -6, 1, -6)
-			frame.BackgroundTransparency = 1
-			frame.ZIndex = 2
-			corner(frame, UDim.new(0, 4))
-			local edge = Instance.new("UIStroke")
-			edge.Color = OAK
-			edge.Thickness = 3
-			edge.Parent = frame
-			frame.Parent = b
-		end
-		local fixing = CardPlate.Plain[style.Parts[2] or ""]
-		if fixing and fixing.colour:sub(1, 1) == "#" then -- the bolts or screws at its ends
-			for _, x in { 0, 1 } do
-				local dot = Instance.new("Frame")
-				dot.AnchorPoint = Vector2.new(x, 0.5)
-				dot.Position = UDim2.new(x, if x == 0 then 5 else -5, 0.5, 0)
-				dot.Size = UDim2.fromOffset(4, 4)
-				dot.BackgroundColor3 = Color3.fromHex(fixing.colour)
-				dot.BorderSizePixel = 0
-				dot.ZIndex = 2
-				corner(dot, UDim.new(0.5, 0))
-				dot.Parent = b
-			end
-		end
-		local name = Instance.new("TextLabel")
-		name.AnchorPoint = Vector2.new(0.5, 0.5)
-		name.Position = UDim2.fromScale(0.5, 0.5)
-		name.Size = UDim2.new(1, -20, 1, -14)
-		name.BackgroundTransparency = 1
-		name.Text = Home.Holding.words(Players.LocalPlayer.DisplayName)
-		name.TextScaled = true
-		name.FontFace = Font.fromName(style.Font, CardPlate.weight(style.Weight))
-		name.TextColor3 = Color3.fromHex(style.Ink)
-		name.ZIndex = 3
-		if style.Glow then
-			local glow = Instance.new("UIStroke")
-			glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
-			glow.Color = Color3.fromHex(style.Glow)
-			glow.Thickness = 1.5
-			glow.Transparency = CardPlate.Neon.Haze
-			glow.Parent = name
-		end
-		name.Parent = b
+		LooksTab.plateFace(b, style, template)
 		local lock = Looks.cardLock(style.Id)
 		local mark: Frame? = nil
 		local shade: Frame? = nil

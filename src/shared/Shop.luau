@@ -151,6 +151,18 @@ Shop.Clunk = table.freeze({
 Shop.ShortNudge = 0.3
 Shop.ShortPitch = 0.6
 
+-- The name card's styles on the furniture tab (S5-03g3d2, StyleCards). The moment: past this
+-- week's pieces, there's your own name on a neon plate; Buy, and it swings down in its card with
+-- the hall's clack (`Holding.Card.Swing`), as it will over your door. Degrees a plate sways
+-- either side about its top edge, hung on the counter's rail (the pieces' turn, flat); how much
+-- of its height it shows at the top of the swing (seen face on, a plate swung out 75 degrees
+-- is a quarter as tall); and the neon's glow breathing between its haze and this much clearer.
+-- Sways a second: slow, a sign settling on its hook, not one blowing in a draught.
+Shop.PlateSwayRate = 0.3
+Shop.PlateSway = 2.5
+Shop.PlateSwingFrom = 0.26
+Shop.PlateBreathe = 0.25
+
 -- A bigger home bought (S5-03h2, D-341). As a size's card deals in, its plan opens out from your
 -- size to its own in `GrowPreview` seconds: the card shows how much more room before a word is
 -- read. On the sale the room you have opens out to the new one in `GrowTime`, over the steel's

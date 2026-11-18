@@ -3207,6 +3207,13 @@ verified: a doc page, Studio, or "untested".
   cash style as `BuyCard` does (saved; "cash" when short, "had" when owned), owns the neon with no
   purchase, and `(player, id, false)` takes a style away. `GrowTest:Invoke(player, "cash", n)`
   sets cash; `FurnitureTest:Invoke(player)` reads it back second.
+- **Timing a quick screen motion from the client** (S5-03g3d2): a burst of window captures can
+  miss it (the save's answer came in under a second once, after two the time before, and the
+  burst's own start lags). Instead spawn a loop on the Client (`task.spawn`, `task.wait()` each
+  frame, for a few seconds) that logs only changes (a button's Text, a frame's Size, the purse's
+  text) with the time, store the log in an attribute, fire the click, then read the attribute:
+  it shows the order things happened in, frame by frame. Start a burst with only a short sleep
+  (0.8 s) when a picture is wanted too.
 - **A burst of `screencapture -l` jpgs runs about 10 a second**: 40 to 50 in a background loop
   started just before a `user_mouse_input` tap catch a 0.5 to 0.7 second swing or roll; `md5` of
   the crops shows which frames moved. There's no PIL or ImageMagick here; `sips` crops and scales.

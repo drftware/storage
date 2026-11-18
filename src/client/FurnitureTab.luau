@@ -19,6 +19,9 @@
 	in a ViewportFrame, framed from its parts' boxes in `Specs.Parts`. Floor pieces turn; wall and
 	ceiling pieces (bare behind) sway either side of facing you. ShopView hosts it: the panel, the
 	tabs, opening and closing; every feel number is `Shop`'s.
+
+	After the pieces come the name card's styles for sale (StyleCards, S5-03g3d2), which share
+	this purse: a style bought ticks it down, and a piece bought restates the styles' prices.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -32,6 +35,7 @@ local Home = require(ReplicatedStorage.Shared.Home)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local Shop = require(ReplicatedStorage.Shared.Shop)
 local Specs = require(ReplicatedStorage.Shared.Home.Specs)
+local StyleCards = require(script.Parent.StyleCards)
 
 local INK = Lobby.Ink
 local FILL_WARM = Color3.fromRGB(CutFree.Fill.r, CutFree.Fill.g, CutFree.Fill.b)
@@ -190,6 +194,7 @@ function FurnitureTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 	local bought: RBXScriptConnection? = nil
 	local spending: Tween? = nil
 	local spendFrom, spendTo, lastTick, tickTurn = 0, 0, -math.huge, 1
+	local styles: StyleCards.Shelf -- the name card's styles after the pieces (made below)
 
 	local purse = Instance.new("Frame")
 	purse.Name = "Cash"
@@ -280,6 +285,7 @@ function FurnitureTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 			card.state = if known then Furniture.card(card.piece.id, cash, card.owned) else nil
 			paint(card)
 		end
+		styles.restate(cash)
 	end
 
 	local function setPurse(amount: number)
@@ -658,6 +664,20 @@ function FurnitureTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 		end)
 	end
 
+	styles = StyleCards.new(row, {
+		click = host.click,
+		nudge = nudge,
+		cash = function(amount: number, spent: boolean)
+			cash = amount
+			if spent then
+				spend(amount)
+			elseif spending == nil then
+				setPurse(amount)
+			end
+			restate()
+		end,
+	})
+
 	local tab = {} :: Tab
 	tab.purse = purse
 	tab.wallet = {
@@ -681,6 +701,7 @@ function FurnitureTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 		end
 		deal()
 		ask()
+		styles.show(#cards)
 	end
 
 	function tab.hide()
@@ -689,17 +710,20 @@ function FurnitureTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 		for _, card in cards do
 			card.frame.Visible = false
 		end
+		styles.hide()
 	end
 
 	function tab.clear()
 		tab.hide()
 		clear()
+		styles.clear()
 	end
 
 	function tab.layout(cardHeight: number)
 		for _, card in cards do
 			card.frame.Size = UDim2.fromOffset(math.floor(cardHeight * Shop.CardAspect), cardHeight)
 		end
+		styles.layout(cardHeight)
 	end
 
 	function tab.step(_: number)
@@ -713,6 +737,7 @@ function FurnitureTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 				+ (dir * math.cos(tilt) + Vector3.yAxis * math.sin(tilt)) * card.dist
 			card.camera.CFrame = CFrame.lookAt(eye, card.centre)
 		end
+		styles.step()
 	end
 
 	function tab.destroy()
@@ -725,6 +750,7 @@ function FurnitureTab.new(panel: Frame, row: ScrollingFrame, host: Host): Tab
 			bought:Disconnect()
 			bought = nil
 		end
+		styles.destroy()
 		purse:Destroy()
 	end
 

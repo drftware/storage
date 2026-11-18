@@ -235,11 +235,17 @@ nowhere else.
   the picture. My defaults: the plates dim a shade while locked; the camera stands 11 studs out.
 - [ ] **Name card styles for sale: prices and the neon's product** (S5-03g3d1, D-360). The
   painted board and the chalk now sell for cash and the neon for Robux, saved before they're
-  yours; their cards at the counter come next (S5-03g3d2), so for now only a script buys them.
+  yours, on cards at the counter after the furniture (S5-03g3d2, D-361; seen in Studio Play on
+  the A16, the neon only through Studio's made-up receipt).
   1. **Decide (defaults in):** the board 120 cash and the chalk 200 (the camp bed is 150, the
      neon moon 250); the neon's Robux price, my guess 99.
   2. Creator Hub > Developer Products: make one named exactly `Neon Name Card` at your price. Its
      off switch in the experience's configs is `sellNeonCard`.
+  3. **On your phone:** open the shop at the counter, flip to Furniture and swipe past the
+     pieces: your name on three plates. Buy the board: the coins tick, the plate swings down with
+     a clack, Owned. Then the neon at your Robux price through Roblox's real prompt; shut the
+     prompt once first (the button lets go), then buy it. Open Arrange's door tab: both chips
+     unmarked and they pick. Say if the plates' sway or the neon's breathing is too much.
 - [ ] **Your home's walls by size and Small's doorway** (S5-03h5a and h5b, D-354, D-355; seen in
   Studio Play at all four sizes). Play and walk into your Small home: the walls close round you,
   the lamp over the middle, and from the hall the doorway is plainly narrower than a Medium's.

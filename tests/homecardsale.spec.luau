@@ -25,6 +25,14 @@ ok(
 	"the chalk costs more"
 )
 ok(CardSale.price("Neon") == nil and CardSale.price("Stencil") == nil, "no cash price for the rest")
+do -- every style at the counter has its card's name (S5-03g3d2), short enough for a phone card
+	local named = true
+	for _, id in CardSale.Sold do
+		local name = CardSale.Names[id]
+		named = named and name ~= nil and #name > 0 and #name <= 14
+	end
+	ok(named, "every style sold has a short name for its card")
+end
 ok(CardSale.offer("Neon") == "neonCard" and CardSale.offer("Chalk") == nil, "the neon's offer")
 ok(
 	CardSale.styleFor("neonCard") == "Neon" and CardSale.styleFor("cutFree") == nil,

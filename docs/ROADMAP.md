@@ -2768,7 +2768,8 @@ Done when players watch the results to the end and change their perks between cl
         studs to one side the cards carry no Try on. Seen in Play on the A16
         (`docs/art/S5-03f4b3-*`). The dark glass came once, on the session's first look; the
         polish section has it.
-  - [ ] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20), art first:
+  - [x] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20), art first
+    (every piece done Nov 18; the three Polish lines under S5-03g2b stay open):
     - [x] **S5-03g1 The art**, the unit's way (`art/home/`), calm and warm (D-263), in three. The
       plan doc's ideas: paint or paper the partitions; lay a floor of boards, carpet, checkerboard
       tiles or rubber matting; colour your roll-up door, which is what the hall sees while it's
@@ -2838,7 +2839,7 @@ Done when players watch the results to the end and change their perks between cl
           - [ ] **Polish: the floor's wipe half under the tray.** The looks tray (120 of the A16's
             280 points) hides the near half of the floor as it unrolls; let the tray dip to its
             tabs while a floor rolls, or lift the camera a touch on this tab.
-    - [ ] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby, in
+    - [x] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby, in
       three:
       - [x] **S5-03g3a The door's colour**, in two:
         - [x] **S5-03g3a1 The door's colour saved, painted and rolled** (D-329): `looks.door` (save
@@ -2876,7 +2877,7 @@ Done when players watch the results to the end and change their perks between cl
         a tap on one you don't own does nothing until the counter sells it (the store's rules).
         Done Nov 18, D-357 (passes checks, untested in Studio; steps in `OWNER.md`): a second
         row on the front tab, the camera dipping out to the hall, the new plate swinging down.
-      - [ ] **S5-03g3d The other card styles sold at the counter**: the painted board and the
+      - [x] **S5-03g3d The other card styles sold at the counter**: the painted board and the
         chalk for cash, the neon for Robux, as the furniture is. Split Nov 18 (D-360):
         - [x] **S5-03g3d1 Owned, saved and picked** (done Nov 18, D-360; seen in Studio Play at
           Galaxy A16 size): `Home.CardSale` (the board 120 cash, the chalk 200, the neon as the
@@ -2884,11 +2885,14 @@ Done when players watch the results to the end and change their perks between cl
           it answers; the neon through Roblox's prompt, granted in the save first), `Looks.cardLock`
           and the server's pick reading what you own, the paint tab's mark popping away. Prices
           wait on `OWNER.md`.
-        - [ ] **S5-03g3d2 The styles' cards at the counter**: the painted board, the chalk and the
-          neon as cards on the Furniture tab after this week's pieces (`CardSale.ShelfRemote`),
-          each its plate in a viewport with your name on it; Buy held till `CardBought` answers,
-          the coins' tick and the job box lid's clunk, then Owned; the neon at Roblox's price with
-          the Robux mark and the real prompt.
+        - [x] **S5-03g3d2 The styles' cards at the counter** (done Nov 18, D-361; seen in Studio
+          Play at Galaxy A16 size): the painted board, the chalk and the neon as cards on the
+          Furniture tab after this week's pieces (StyleCards), each its plate drawn flat with your
+          name (`LooksTab.plateFace`: a viewport can't draw the lettering), swaying a little, the
+          neon's letters breathing; Buy held till `CardBought` answers; the plate swings out and
+          falls back with the hall's clack, the coins tick off the shared purse, Owned as it
+          lands; the neon at Roblox's price with the Robux mark through the prompt. Pictures
+          `docs/art/S5-03g3d2-*.jpg`.
     - [x] **S5-03g4 Furniture at the counter in a weekly stock** (idea 19; Animal Crossing's
       Nook's Cranny and Fortnite's item shop for the stock that changes, Lethal Company's ship
       store for buying furniture with what the run earned). The moment: back from a climb with

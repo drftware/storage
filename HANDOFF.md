@@ -2,15 +2,16 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-18, S5-03g3d1 (D-360) · **Checks:** green · **Git:** `main`, not pushed; Brix `7f25310`.
+**Updated:** 2026-11-18, S5-03g3d2 (D-361) · **Checks:** green · **Git:** `main`, not pushed; Brix `7f25310`.
 
 ## State
-- **The home (S5-03) is built** apart from S5-03g3d2 (the card styles' cards at the counter) and
-  its polish lines. Every other S5-03 parent is ticked in ROADMAP.
-- S5-03g3d1 is done (D-360), seen in Studio Play at A16 size from the server and the real
-  remotes: save v15 `cards`, `Home.CardSale` (board 120, chalk 200, the neon as "Neon Name
-  Card"), `CardSales` on the server, the paint tab's marks reading `CardStyles` on your Player.
-  Only a script buys a style so far (`CardTest`, STUDIO.md). Prices and the product: OWNER.md.
+- **The home (S5-03) is done** apart from the three "Polish:" lines under S5-03g2b (and the
+  hard hat's beam, F-G1b4a2, which the climb chain owns). S5-03g, g3 and g3d are ticked.
+- S5-03g3d2 is done (D-361), seen in Studio Play at A16 size through the screen's own buttons:
+  the painted board, the chalk and the neon as cards after this week's pieces on the Furniture
+  tab (`StyleCards`, hosted by FurnitureTab), your name on each plate (`LooksTab.plateFace`);
+  bought, the plate swings down with the hall's clack and Owned lands with it. The neon was
+  bought only through Studio's made-up receipt; the real prompt and prices: OWNER.md.
 - Arrange's own button still won't open from the MCP's clicks; build the real LooksTab in a test
   screen instead (STUDIO.md). S5-03g3c's dip and swing and h6's other grows: OWNER.md.
 - Studio hooks: `CardTest`; `ShelfTest` "take"; `ArrangeTest` "take", "own", "place", "rows",
@@ -22,29 +23,27 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   code rolls up a unit with it inside), S4-05b2a its haul (D-416: held low, walk 9, a thud a
   step). Next: S4-05b2b its mark on the corner map (MinimapView's bang ring; follows the find).
 
-## Next task: S5-03g3d2 The styles' cards at the counter
-The last open piece of S5-03 before its polish.
-The moment: you see a friend's neon card glowing over their door, walk to the counter, flip to
-Furniture, and past this week's pieces there's your own name on a neon plate; you buy it, and
-the next time you open Arrange its chip is yours.
-1. On FurnitureTab, after this week's pieces, a card per `CardSale.Sold` style: its plate with
-   your name (LooksTab's `plate` draws one; or the plate's art in a viewport, as the pieces are),
-   the cash price, or the neon's Roblox price with the Robux mark (`CardShelf`'s `robux`).
-2. Owned states from `CardShelf` each time the tab shows; Owned on a style you have.
-3. Buy fires `BuyCard` and holds pressed until `CardBought` answers: "" spends the shared purse
-   (`Wallet`) with the coins' falling tick and a plate's clack, then Owned; "cash" nudges the
-   purse; "closed", "off" and "had" settle; no answer in 8 s settles and asks again.
-4. Seen in Studio Play at A16 size: open the shop from a script (STUDIO.md), give cash with
-   `GrowTest`, buy the board through the screen, then the neon (Studio's made-up receipt).
-**Acceptance:** a cash style bought on the screen saves, survives a rejoin and picks; the neon's
-press runs the prompt path; a new decision (D-361, below D-400); check green.
-**Read first:** ROADMAP S5-03g3d2; D-360; D-334; `src/shared/Home/CardSale.luau`;
-`src/client/FurnitureTab.luau`; `src/client/LooksTab.luau` (`plate`).
+## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
+The home's look settling without a seam. One line a session if they won't fit together; split
+them in ROADMAP (S5-03p1, p2, p3) before starting.
+1. **The hand-over's shade** (D-326, D-327): the sheet that wipes a new look round the room (a
+   Texture on plain plastic) reads a shade darker than the panel's SurfaceAppearance under the
+   bulb. Match its material and colour so the hand-over is invisible; judge it lit, at A16 size.
+2. **The mirror keeps the old look** (MirrorView): its copy of the room keeps the floor and
+   paper it had when you came in. Re-copy the panels when `LookWorn` changes (cheaply: only the
+   wall and floor panels, only while the mirror is near).
+3. **The floor's wipe half under the tray** (D-328): the looks tray (120 of the A16's 280
+   points) hides the near half of the floor as it unrolls. Let the tray dip to its tabs while a
+   floor rolls, or lift the camera a touch on this tab.
+**Acceptance:** each seen in Studio Play at A16 size and captured (a paint picked from a test
+screen built from the real LooksTab, STUDIO.md); ROADMAP's lines ticked; a decision each from
+D-362 (below D-400); check green.
+**Read first:** ROADMAP S5-03g2b's three Polish lines; D-326; D-327; D-328;
+`src/client/LooksView.luau`; `src/client/MirrorView.luau`.
 
 ## Queue (next sessions, the owner's ticket order)
-0. After S5-03g3d2, the home's polish, one ticket a session: ROADMAP's three "Polish:" lines
-   under S5-03g2b (the hand-over's shade, the mirror keeping the old look, the floor's wipe
-   under the tray), then g3b's plate swapping in instead of snapping.
+0. After the three, g3b's plate swapping in plays (the old one down, the new one up, a clunk)
+   instead of snapping (ROADMAP's "Polish (g3b)" line).
 1. Small's doorway's inside boards are oak, not the
    picked paint (D-355, my call). Sitting's leftovers (D-353): cross-legged on the blanket needs
    an animation of our own; lying on the bed.
@@ -57,7 +56,7 @@ press runs the prompt path; a new decision (D-361, below D-400); check green.
 3. The home's warm fill (D-290): faces turned from the bulb go near black. Brix (in
    `../engine`): ENG-25b's two-client run; Driving's stick read (D-254); a PlayerSaves hook
    before a leaving save's last write.
-4. The item catalog and design docs' finds need D-250, D-251, D-259, D-277, D-297, D-299 to 358.
+4. The item catalog and design docs' finds need D-250, D-251, D-259, D-277, D-297, D-299 to 361.
 5. Once the owner's real purchase passes, mark Brix's ENG-23e done. A spare home unpadlocked
    (D-275); the hat's first-Wear dark screen; the body after a respawn (D-282); late arrivals
    off `ClimbEnd.spot`; the driving torch (D-257); asset 203785492's type error. Counter and job

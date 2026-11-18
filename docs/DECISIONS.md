@@ -9673,6 +9673,39 @@ Robux bought once and kept, as this game's wraps are (S3-04a).
   (`CardShelf`), ran Studio's made-up receipt, was answered "" only after the grant, and picked.
   Arrange's own button still didn't open from the MCP (STUDIO.md). The test save was put back.
 
+## D-361 The card styles' cards at the counter: the plate drawn flat, swinging down as it's yours (S5-03g3d2, 2026-11-18)
+
+The moment: you see a friend's neon card glowing over their door, walk to the counter, flip to
+Furniture, and past this week's pieces there's your own name on a neon plate; you buy it, it
+swings down in its card with the clack it makes over a door, and the next time you open Arrange
+its chip is yours. Nook's Cranny sells wallpaper beside the furniture (D-360).
+- **The plate drawn flat, not in a viewport.** A SurfaceGui never draws in a ViewportFrame, so
+  the plate's art there would carry no name; the paint tab's chip already draws the plate with
+  your name in the style's font, ink and glow, so that drawing became one shared function
+  (`LooksTab.plateFace`) and the counter's card wears it, larger (a UIScale to the card). It is
+  also far cheaper on a phone than three more viewports.
+- **Alive like the pieces, as a plate would be.** The pieces turn; a flat plate can't, so it
+  sways a little about its top edge (`Shop.PlateSway`, 2.5 degrees, about three seconds a
+  sway), as if hung on the counter's rail, with a soft shadow under it, and the neon's letters
+  breathe (`Shop.PlateBreathe`).
+- **The buy lands as it does over a door.** The plate swings out toward you (seen face on, a
+  quarter of its height, `Shop.PlateSwingFrom`) and falls back with Bounce, the hall's own clack
+  (`Holding.Card.Swing`, the job box lid's metal flap) on its first touch, the rim glinting and
+  Owned popping in as it lands, never before; a cash style's price ticks off the shared purse in
+  the coins' falling ticks. Rather than the furniture's drop into the box: a plate goes on your
+  door, not in your box.
+- **The answers are the furniture's.** Buy holds pressed until `CardBought`; "cash" nudges the
+  purse, "had" says Owned, "off" asks again (a style off sale isn't dealt), the rest settle
+  silent; 8 seconds unanswered settles and asks again. A piece bought restates the styles'
+  prices and a style bought the pieces' (one purse). Names: Painted board, Chalk slate, Neon
+  sign (`CardSale.Names`).
+- **Seen in Studio Play at A16 size** (685x338), through the screen's own buttons: the three
+  cards after the five pieces, $120, $200 and Buy (Studio's made-up price); the board bought
+  ($300 to $180, Owned), the chalk then dimmed and its press nudged the purse; the neon through
+  Studio's made-up receipt, Owned, cash kept; a true Stop and Play kept both and the board picked
+  while the unbought chalk was refused; the chalk bought (a per-frame log: price held while the
+  plate fell, Owned at its first touch, cash $300 to $100). The test save was put back.
+
 ## D-414 · 2026-11-18 · The big find split, and the jukebox first (S4-05a)
 
 S4-05 is split in three (ROADMAP): **a** the first big find's art, **b** the big find on the

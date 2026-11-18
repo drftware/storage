@@ -43,6 +43,14 @@ CardSale.Floors = table.freeze({
 	Chalk = 20,
 }) :: { [string]: number }
 
+-- The styles' names on their counter cards (S5-03g3d2), as the furniture's are: what you'd call
+-- the plate.
+CardSale.Names = table.freeze({
+	Painted = "Painted board",
+	Chalk = "Chalk slate",
+	Neon = "Neon sign",
+}) :: { [string]: string }
+
 -- The Robux styles' offers (`Products`), by style id: "Neon Name Card" on the Creator Dashboard.
 CardSale.Offers = table.freeze({
 	Neon = "neonCard",
