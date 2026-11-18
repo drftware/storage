@@ -3328,6 +3328,13 @@ verified: a doc page, Studio, or "untested".
 
 ## A catch on the back-to-the-lobby floor, from the MCP (S4-03c4b, Nov 18)
 
+- **Seeing the car wait** (S4-03c4c): after the recipe below, a Server loop every 5 s over the
+  lobby cars (models with `LobbyCar`) reading their attributes showed car 1 with only `Keypad`
+  "2;Rest;;;", `Gate` 0 and `ClimbFloor` 3 (no group attribute at all) for 25 s. On the Client
+  the hum is `Workspace.ToLobbyHum`. Destroying the stand-in ends the climb about 12 s later and
+  the cover clears the mark 1.3 s after that. `get_console_output` returns the whole session's
+  Output (thousands of lines): return values from `execute_luau` instead.
+
 - Edit `DevFloorNumber` 3 (put it back to 1 after), Play, then from the Server set
   `DevCorridor.Floor3`'s `FloorVersion` to "CaughtToLobby" and clone a stand-in friend (the
   left-behind recipe) so the catch doesn't end the climb. `StandMannequin` true, then

@@ -9,6 +9,8 @@
 	It cuts to black on the gate's slam, pitched heavy, with a jolt: you've landed on the car. Once
 	the server has stood you in the lobby car (`ToLobby.StoodAttribute`) the black lifts over
 	`ToLobby.LiftIn` with the car's ding, your view turned out of its gate to the lobby. No words.
+	Then the car hums low from its ceiling while you wait in it for your team (S4-03c4c, D-411),
+	until the climb's end clears your mark.
 
 	Over the catch's screen (DisplayOrder 45: CaughtView's is 30) and under the end's (50): if
 	you were the last friend caught, the end comes down over the fall and takes you from there.
@@ -17,6 +19,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
+local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
@@ -47,6 +50,7 @@ function ToLobbyView.new(kick: (amount: number) -> ()): Brix.System
 	local at: number? = nil -- the catch's server time, while a fall is on the screen
 	local cut, landed = false, false
 	local stoodAt: number? = nil -- os.clock() the black began to lift
+	local hum: BasePart? = nil -- the car's hum while you wait in it, from its ceiling
 
 	local function play(id: string, from: number, length: number, volume: number, pitch: number)
 		local s = Instance.new("Sound")
@@ -61,6 +65,51 @@ function ToLobbyView.new(kick: (amount: number) -> ()): Brix.System
 		end)
 	end
 
+	-- The car's hum dies away: the wait is over.
+	local function hush()
+		local h = hum
+		hum = nil
+		if not h then
+			return
+		end
+		local sound = h:FindFirstChildOfClass("Sound")
+		if sound then
+			TweenService:Create(sound, TweenInfo.new(ToLobby.HumOut), { Volume = 0 }):Play()
+		end
+		task.delay(ToLobby.HumOut + 0.1, function()
+			h:Destroy()
+		end)
+	end
+
+	-- The car you were stood in starts to hum (`stood`, where you were stood in it), coming up
+	-- from nothing under the lift, from its ceiling: it's waiting, and so are you.
+	local function hold(stood: CFrame)
+		hush()
+		local h = Instance.new("Part")
+		h.Name = "ToLobbyHum"
+		h.Anchored = true
+		h.CanCollide = false
+		h.CanQuery = false
+		h.CanTouch = false
+		h.Transparency = 1
+		h.Size = Vector3.one
+		h.CFrame = CFrame.new(stood.Position + Vector3.yAxis * ToLobby.HumUp)
+		local sound = Instance.new("Sound")
+		sound.SoundId = ToLobby.Hum
+		sound.Looped = true
+		sound.Volume = 0
+		sound.PlaybackSpeed = ToLobby.HumPitch
+		sound.RollOffMode = Enum.RollOffMode.InverseTapered
+		sound.RollOffMinDistance = ToLobby.HumNear
+		sound.RollOffMaxDistance = ToLobby.HumFar
+		sound.Parent = h
+		h.Parent = Workspace
+		hum = h
+		sound:Play()
+		TweenService:Create(sound, TweenInfo.new(ToLobby.HumIn), { Volume = ToLobby.HumVolume })
+			:Play()
+	end
+
 	local function stop()
 		at, stoodAt = nil, nil
 		local g = gui
@@ -73,6 +122,7 @@ function ToLobbyView.new(kick: (amount: number) -> ()): Brix.System
 		local value = player:GetAttribute(ToLobby.Attribute)
 		if type(value) ~= "number" then
 			stop()
+			hush()
 			return
 		end
 		if at == value or not ToLobby.fresh(Workspace:GetServerTimeNow() - value) then
@@ -95,6 +145,9 @@ function ToLobbyView.new(kick: (amount: number) -> ()): Brix.System
 		if camera and typeof(stood) == "CFrame" then
 			local from = camera.CFrame.Position
 			camera.CFrame = CFrame.lookAt(from, from + stood.LookVector)
+		end
+		if typeof(stood) == "CFrame" then
+			hold(stood)
 		end
 	end
 
@@ -125,7 +178,7 @@ function ToLobbyView.new(kick: (amount: number) -> ()): Brix.System
 			p.Parent = g
 			g.Parent = player:WaitForChild("PlayerGui")
 			gui, black, picture = g, b, p
-			local ids = { version.face, FOLD.Id, DING.Id }
+			local ids = { version.face, FOLD.Id, DING.Id, ToLobby.Hum }
 			for _, h in version.sound do
 				table.insert(ids, h.id)
 			end
@@ -177,6 +230,7 @@ function ToLobbyView.new(kick: (amount: number) -> ()): Brix.System
 			end
 			table.clear(connections)
 			stop()
+			hush()
 		end,
 	} :: Brix.System
 end

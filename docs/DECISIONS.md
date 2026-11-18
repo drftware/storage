@@ -9385,3 +9385,30 @@ size out of one floor with movable steel walls).
   stood, unless the server has moved it meanwhile.
 - **Studio:** `DevCatchHold` holds the drag on one frame, and a stand-in friend given the mark on
   its model is dragged, so one player can see it.
+
+## D-411 Sent down the shaft, you wait in the car for your team (S4-03c4c, Nov 18)
+
+- **What happens.** You land in the lobby car the climb left from (D-409) and it stays as it is:
+  its gate up, its keypad's readout at rest, no count, no chime. It hums low from its ceiling,
+  coming up from nothing under the ding as the black lifts (the vending machine's "Transformer
+  Hum 1" pitched down to 0.8, heard in the car, gone a few steps out into the lobby). The dial
+  over its gate shows the floor your team is on and turns over as they climb on without you.
+  You can walk the lobby meanwhile; nothing calls you back. When the team's climb ends (the last
+  of them caught, or the top), the end's black and results come to you as to them, and Again
+  stands the whole team in that car together. No words. The precedent: a caught Piggy player
+  sits the round out until the team starts the next one together; the dial is the lobby car's
+  own "Floor N" (L-08e3, D-124), which already shows a group's floor to the lobby.
+- **Why it counted before.** Only in Studio's test hall (a `DevFloorNumber` climb no lobby car
+  took up): there the lobby's cars aren't held, so stepping into one started its 20 seconds and
+  carried you up alone into a new climb on the same server. On a group's own server (every live
+  climb, Trips) its cars don't take anyone until the group comes home, and on a lobby riding a
+  climb here other counts are held while it's on; neither counted, but a sent-down player could
+  still join the car's group there.
+- **How.** LobbyCars never takes a player marked sent down (`ToLobby.Attribute`) into a car's
+  group, wherever they stand; with no group a car never counts, so its gate stays up. Its
+  `teamCar` names the car the climb on now left from (the ridden car on a lobby riding here, the
+  trip's bay on a group's own server, else the first: the test hall) and its dial shows the
+  climb's floor while it's on, cleared once it isn't; ToLobby stands the sent down in that car
+  (one place decides it). ToLobbyView hums from 6 studs over where you were stood until your
+  mark clears at the end's cover.
+- **My default (`OWNER.md`):** you sit it out; nothing brings you back into the same climb.

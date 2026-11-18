@@ -2367,12 +2367,18 @@ Done when two climbs in a row feel different and players talk about their best f
         and a real Mannequin's catch through `CatchTest`: the fall, Output's "back in the lobby
         car", the black lifting in the car (captures `docs/art/S4-03c4b-*`). Two players:
         `OWNER.md`. Polish: a falling rush under the fall (no wind sound in the project yet).
-      - [ ] **S4-03c4c The car waits for your team.** Seen in Studio (c4b): the lobby car you
-        land in counts down (20, 19 ...) and carries you up into a new climb alone while your
-        team is still on theirs, your sent-down mark still on. Default: hold that car's gate
-        open with no countdown while you're sent down and your team's climb is on; its end
-        (Again) brings everyone back to it. Check what the trip's own car does on a group's
-        server first (`Boarding`, Departure); an `OWNER.md` line for the default.
+      - [x] **S4-03c4c The car waits for your team.** Done Nov 18 (D-411): the car you land in
+        stands open and never counts down while your team climbs on (LobbyCars never takes a
+        sent-down player into a car's group); it hums low from its ceiling, coming up under the
+        ding (`ToLobby.Hum`, spec in `tests/tolobby.spec`); the dial over its gate shows the
+        team's floor (LobbyCars' `teamCar`, every server; ToLobby stands you in that car). The
+        count was only Studio's test hall: a group's own server never counted. Seen in Studio
+        Play at A16 size on floor 3 set to the card: a real catch, 25 s in car 1 with no group
+        and the keypad at rest, the dial reading "Floor 3", the hum at 0.35, then the end
+        clearing the mark, the dial and the hum (captures `docs/art/S4-03c4c-*`). Not seen:
+        Again standing the team back in a trip's own car (test hall: a fresh floor 1); two
+        players: `OWNER.md`. Polish: the team's faces in the dial's seats while they climb, and
+        the floor on the car's inside readout too, so you see it without stepping out.
   - [ ] **S4-03d The whole climb in Studio.** Ride floors 1 to 5 in Play with the cards, each
     version picked once, captures; fixes. Two-player vote and phones go to `OWNER.md`. First,
     what S4-03b2 didn't see: step `DevRideHold` through one ride (4, 9.3 with a capture burst

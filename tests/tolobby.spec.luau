@@ -111,6 +111,12 @@ ok(ToLobby.Land < ToLobby.Swap, "under before the server swaps the body")
 sink, glow = ToLobby.drag(ToLobby.Land + ToLobby.DragFade)
 ok(sink == ToLobby.DragDepth and glow == 0, "the red gone after, the body still under")
 
+-- waiting in the car (S4-03c4c): the hum comes up after the ding and stays in the car
+ok(ToLobby.HumIn > ToLobby.LiftIn, "the hum is still coming up as the black has gone")
+ok(ToLobby.HumNear < ToLobby.HumFar and ToLobby.HumFar <= 30, "heard in the car, not the lobby")
+ok(ToLobby.HumVolume > 0 and ToLobby.HumVolume < 0.6, "quieter than the vending machine's hum")
+ok(ToLobby.HumPitch < 1, "pitched under the machine's, the car's own sound")
+
 print(`tolobby.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

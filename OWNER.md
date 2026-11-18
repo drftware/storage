@@ -80,8 +80,12 @@ nowhere else.
   results come as for any wipe, then Again puts you both in the car. My default, yours to change:
   sent down you keep what a caught friend keeps (your coins this climb turn to cash with the
   team's at the end; what you carried drops; no pay from gates you miss). Say if the red is too
-  much (it floods the hall) or the drag too quick to read on your phone. Known (S4-03c4c): in
-  Studio the car you land in counts down and carries you up into a new climb alone.
+  much (it floods the hall) or the drag too quick to read on your phone. Then (S4-03c4c,
+  D-411) the one sent down waits: the car's gate stays up, no count, a low hum in the car, and
+  stepping out and turning round, the dial over it shows the floor the other is on, changing as
+  they ride up. When the other's climb ends, Again stands you both back in that car together.
+  My default, yours to change: sent down, you sit the rest of the climb out; nothing brings you
+  back into it.
 - [ ] **Your home, with a friend** (S5-03a3b, D-275; seen with one player only). Studio's Test
   tab, Clients and Servers, 2 players. Look for: each player gets a home by the front door (1 then
   7), their name sprays onto its card with a soft hiss and the door rolls up. Player 1 pulls their

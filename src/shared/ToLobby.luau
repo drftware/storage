@@ -69,6 +69,27 @@ ToLobby.DragHole = 4.4
 ToLobby.DragKick = 0.35
 ToLobby.DragReach = 24
 
+-- Waiting in the car (S4-03c4c, D-411, ToLobbyView): you sit the rest of the climb out, as a
+-- caught Piggy player sits out the round until the team starts the next one together. The car
+-- you land in stands open and never counts down (LobbyCars) while its dial shows the floor your
+-- team is on; the one other thing it does is hum low, its ballast left on: "Transformer Hum 1",
+-- the asset the climb's vending machine hums with (`Machine.Hum`), pitched down for a bigger
+-- motor at rest. Heard in the car, fading as you walk out into the lobby.
+ToLobby.Hum = "rbxassetid://9112889082"
+-- Its loudness once up, and the seconds it takes to come up from the ding: under the lift, so
+-- the ding is heard first and the hum is what's left when it's gone.
+ToLobby.HumVolume = 0.35
+ToLobby.HumIn = 2.5
+-- Its pitch: lower than the machine's, so it's the car's own sound.
+ToLobby.HumPitch = 0.8
+-- Studs from the car's ceiling it's heard whole, and where it's gone: the car, not the lobby.
+ToLobby.HumNear = 8
+ToLobby.HumFar = 28
+-- Studs over where you were stood that it hums from: the car's ceiling.
+ToLobby.HumUp = 6
+-- Seconds it takes to die away when the wait is over (the climb's end, under its black).
+ToLobby.HumOut = 0.4
+
 -- Whether a catch on a floor of version `name` (the floor model's `FloorVersion`) sends the
 -- caught player down to the lobby.
 function ToLobby.sends(name: unknown): boolean

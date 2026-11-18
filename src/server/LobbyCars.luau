@@ -69,6 +69,7 @@ local Boarding = require(ReplicatedStorage.Shared.Lobby.Boarding)
 local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
+local ToLobby = require(ReplicatedStorage.Shared.ToLobby)
 local Trip = require(ReplicatedStorage.Shared.Lobby.Trip)
 local Climbs = require(script.Parent.Climbs)
 local Elevators = require(script.Parent.Elevators)
@@ -111,6 +112,11 @@ export type LobbyCars = Brix.System & {
 	-- Everyone's stood back in: the results go on the held car's back wall (ClimbEnd's
 	-- `encodeResults`) and its full count runs. Nothing if no car is held.
 	welcome: (self: any, results: string) -> (),
+	-- The car the climb on now left from, where anyone sent down the shaft waits for their team
+	-- (ToLobby, S4-03c4c): on a lobby riding here the car that took the group up, on a group's
+	-- own server the car their trip names, else (Studio's test hall) the first. Nil with no climb
+	-- on or no lobby laid.
+	teamCar: (self: any) -> Model?,
 }
 
 local FREE = Brix.Pathing.free()
@@ -157,6 +163,7 @@ function LobbyCars.new(): LobbyCars
 	local ridden: Ridden? = nil -- the group the latest climb from a car took up, until it's home
 	local holding: Car? = nil -- the car a climb's group is being stood back in
 	local homed = false -- a group's own server: its group is back in the lobby (its cars open)
+	local showing: Car? = nil -- the car whose dial shows the floor a climbing team is on
 	local remote: RemoteEvent? = nil
 	local lastChoice: { [Player]: number } = {} -- os.clock() of each host's last choice taken
 	local lastTold: { [number]: number } = {} -- UserId → server time they were last told why
@@ -305,6 +312,28 @@ function LobbyCars.new(): LobbyCars
 	local function waitingForHome(): boolean
 		local t = trips
 		return t ~= nil and t:own() and not homed
+	end
+
+	-- The car the climb on now left from (the type's `teamCar`).
+	local function teamCar(): Car?
+		local c = climbs
+		if #cars == 0 or not (c and c:current()) then
+			return nil
+		end
+		local r = ridden
+		if r then
+			return r.car
+		end
+		local t = trips
+		local d = if t and waitingForHome() then t:data() else nil
+		if d then
+			for _, each in cars do
+				if each.model:GetAttribute(Boarding.CarAttribute) == d.bay then
+					return each
+				end
+			end
+		end
+		return cars[1]
 	end
 
 	-- Stands `car` open in its bay again, empty.
@@ -862,17 +891,28 @@ function LobbyCars.new(): LobbyCars
 			end
 		end,
 		step = function(_: any, _dt: number)
-			if #cars == 0 or waitingForHome() then
+			if #cars == 0 then
+				return
+			end
+			local c = climbs
+			-- the floor a climbing team is on, on the dial of the car they left from: anyone sent
+			-- down the shaft waits there and watches it climb without them (S4-03c4c)
+			local team = teamCar()
+			local was = showing
+			if was and was ~= team then
+				showFloor(was, nil)
+			end
+			showing = team
+			local on = c and c:current()
+			if team and on then
+				showFloor(team, on.number)
+			end
+			if waitingForHome() then
 				return
 			end
 			local t = now()
-			local c = climbs
 			-- the climb a car started is over (its end has cleared it): the held counts start again
 			local r = ridden
-			if climbing and r and c then
-				local on = c:current()
-				showFloor(r.car, if on then on.number else nil)
-			end
 			if climbing and c and not c:current() and t > boardedAt + Boarding.Back then
 				climbing = false
 				if r then
@@ -905,8 +945,11 @@ function LobbyCars.new(): LobbyCars
 				local changed = false
 				for _, player in players do
 					local root = rootOf(player)
+					-- someone sent down the shaft waits in the car for their team, never joining it:
+					-- no group, so no count, and its gate stays up (S4-03c4c)
 					local inside = root ~= nil
 						and car.zone:contains((root.Position :: any) :: vector)
+						and player:GetAttribute(ToLobby.Attribute) == nil
 					if see(car, player, inside, t) then
 						changed = true
 					end
@@ -956,6 +999,10 @@ function LobbyCars.new(): LobbyCars
 		end,
 		welcome = function(_: any, results: string)
 			welcome(results)
+		end,
+		teamCar = function(_: any): Model?
+			local car = teamCar()
+			return if car then car.model else nil
 		end,
 	}
 	return system

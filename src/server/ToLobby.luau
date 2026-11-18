@@ -10,11 +10,15 @@
 	has marked them kept already, so no keeper sees them and no prompt answers them.
 
 	At `ToLobby.Swap`, under the landing's black: a new character stood in the lobby car the climb
-	started from, facing out of its gate (on a group's own server the car its trip names, on a
-	lobby riding here the car carrying the floor's number, else the first car: the test hall's
-	climb in Studio), the world streamed round them, `ToLobby.StoodAttribute` set so their screen
-	lifts, and the kept mark off. Trips never stands them back in the climb (`mayStand`). Each one
-	sent down takes the next of the car's standing spots.
+	started from, facing out of its gate (LobbyCars' `teamCar`: on a group's own server the car its
+	trip names, on a lobby riding here the car that took the group up, else the first car: the
+	test hall's climb in Studio), the world streamed round them, `ToLobby.StoodAttribute` set so
+	their screen lifts, and the kept mark off. Trips never stands them back in the climb
+	(`mayStand`). Each one sent down takes the next of the car's standing spots.
+
+	Waiting there (S4-03c4c, D-411): LobbyCars never takes them into a car's group, so the car
+	never counts down and its gate stays up; its dial shows the floor the team is on. Again, at
+	the climb's end, stands the whole team back in that car.
 
 	Not swapped: once the climb's end is on (the last friend caught: the end takes everyone, Again
 	brings the team back to the car), or they left. The end clears both attributes as it covers.
@@ -33,8 +37,8 @@ local NextFloor = require(ReplicatedStorage.Shared.NextFloor)
 local ToLobbyRules = require(ReplicatedStorage.Shared.ToLobby)
 local FrontOffice = require(script.Parent.FrontOffice)
 local Keepers = require(script.Parent.Keepers)
+local LobbyCars = require(script.Parent.LobbyCars)
 local Slots = require(script.Parent.Slots)
-local Trips = require(script.Parent.Trips)
 
 local ToLobby = {}
 
@@ -47,33 +51,24 @@ function ToLobby.new(): Brix.System
 	local slots: Slots.Slots? = nil
 	local sent: { [Player]: number } = {} -- each one sent down, by their catch's server time
 
-	-- any: the registry hands back plain Systems; FrontOffice and Trips start after this one,
+	-- any: the registry hands back plain Systems; FrontOffice and LobbyCars start after this one,
 	-- so they're looked up as they're needed
 	local function get(slot: string): any
 		local c = context
 		return if c then c.registry:get(slot) else nil
 	end
 
-	-- Where the `n`th one sent down this climb stands: in the lobby car the climb started from,
-	-- facing out of its gate (+Z is into the car, in its own frame). Nil with no lobby laid.
+	-- Where the `n`th one sent down this climb stands: in the lobby car the climb started from
+	-- (LobbyCars' `teamCar`, whose dial shows the team's floor), facing out of its gate (+Z is
+	-- into the car, in its own frame). Nil with no lobby laid.
 	local function spot(n: number): CFrame?
 		local office = get("frontOffice") :: FrontOffice.FrontOffice?
 		local laid = office and office:laid()
 		if not (laid and #laid.cars > 0) then
 			return nil
 		end
-		local trips = get("trips") :: Trips.Trips?
-		local data = if trips and trips:own() then trips:data() else nil
-		local car: Model? = nil
-		for _, model in laid.cars do
-			local ours = if data
-				then model:GetAttribute(Boarding.CarAttribute) == data.bay
-				else model:GetAttribute(Boarding.FloorAttribute) ~= nil
-			if ours then
-				car = model
-			end
-		end
-		local into = car or laid.cars[1]
+		local cars = get("lobbyCars") :: LobbyCars.LobbyCars?
+		local into = (cars and cars:teamCar()) or laid.cars[1]
 		local x, z = Boarding.backSpot(n)
 		local at = Vector3.new(x, 3, z)
 		return into:GetPivot() * CFrame.lookAt(at, at - Vector3.zAxis)
