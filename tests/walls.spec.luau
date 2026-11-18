@@ -79,6 +79,69 @@ do
 	)
 end
 
+-- The walls grinding back (S5-03h6, D-356): part way between two sizes they stand part way
+-- between, each wall only ever moving outward as the slide goes on
+do
+	for i = 1, #Sizes.List - 1 do
+		for j = i + 1, #Sizes.List do
+			local a, b = Sizes.List[i].name, Sizes.List[j].name
+			local sa, ba = Sizes.inset(a)
+			local sb, bb = Sizes.inset(b)
+			local s0, b0, d0 = Sizes.between(a, b, 0)
+			local s1, b1, d1 = Sizes.between(a, b, 1)
+			ok(near(s0, sa) and near(b0, ba), `{a} to {b}: the slide starts at {a}'s walls`)
+			ok(near(s1, sb) and near(b1, bb), `{a} to {b}: the slide ends at {b}'s walls`)
+			ok(
+				near(d0, Sizes.doorIn(a)) and near(d1, Sizes.doorIn(b)),
+				`{a} to {b}: the doorway too`
+			)
+			local sh, bh = Sizes.between(a, b, 0.5)
+			ok(near(sh, (sa + sb) / 2) and near(bh, (ba + bb) / 2), `{a} to {b}: halfway, halfway`)
+			local lastSide, lastBack, lastDoor = math.huge, math.huge, math.huge
+			local outward = true
+			for n = 0, 20 do
+				local s, bk, d = Sizes.between(a, b, Sizes.slide(n / 20))
+				outward = outward and s <= lastSide + 1e-9 and bk <= lastBack + 1e-9
+				outward = outward and d <= lastDoor + 1e-9
+				lastSide, lastBack, lastDoor = s, bk, d
+			end
+			ok(outward, `{a} to {b}: the walls and the doorway only ever open outward`)
+		end
+	end
+	local s, b = Sizes.between("Small", "Medium", 2)
+	local sm, bm = Sizes.inset("Medium")
+	ok(near(s, sm) and near(b, bm), "past the end of the slide the walls stand at the new size")
+	-- a wall part way: the partition's place is the blend's, the floor still never moves
+	local side, back = Sizes.between("Small", "Large", 0.25)
+	local l = Sizes.onInset(side, back, "Left", { LEFT, 5, 15 })
+	ok(near(l[1], LEFT - side) and near(l[3], 15), "a partition part way stands at the blend")
+	local f = Sizes.onInset(side, back, "Floor", { 1, 0, 2 })
+	ok(f[1] == 1 and f[3] == 2, "the floor never moves part way either")
+	for _, size in Sizes.List do
+		local si, bi = Sizes.inset(size.name)
+		local w = Sizes.onWall(size.name, "Back", { 0, 5, BACK })
+		ok(
+			near(w[3], Sizes.onInset(si, bi, "Back", { 0, 5, BACK })[3]),
+			`{size.name}: onWall is onInset`
+		)
+	end
+end
+
+-- The slide: still at both ends, fastest halfway, always moving on
+do
+	ok(Sizes.slide(0) == 0 and Sizes.slide(1) == 1, "the slide runs from none to all")
+	ok(near(Sizes.slide(0.5), 0.5), "halfway in time is halfway along")
+	ok(Sizes.slide(-1) == 0 and Sizes.slide(2) == 1, "the slide never runs past either end")
+	local rising = true
+	for n = 1, 40 do
+		rising = rising and Sizes.slide(n / 40) >= Sizes.slide((n - 1) / 40)
+	end
+	ok(rising, "the slide never runs backward")
+	ok(Sizes.slideSpeed(0) == 0 and near(Sizes.slideSpeed(1), 0), "standing at both ends")
+	ok(near(Sizes.slideSpeed(0.5), 1), "fastest halfway")
+	ok(Sizes.slideSpeed(0.25) < 1 and Sizes.slideSpeed(0.25) > 0, "getting going a quarter in")
+end
+
 print(`walls: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

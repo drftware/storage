@@ -3380,3 +3380,19 @@ verified: a doc page, Studio, or "untested".
 - **The doorway's slid parts are measured in the unit's frame** (`Walls` folder's `Frame`
   attribute): at Small `CasingLeft` stands at x 3.76 (4.76 at the M's place), `CasingHead` is 7.24
   long (9.24); a spare home stands Small, so its doorway is Small's too.
+
+## Watching a home grow (S5-03h6, Nov 18)
+
+- **The Studio hook's "size" grows a home the counter's way** (Arranging's `regrow`): a bigger
+  size grinds back on a client standing inside; going smaller just snaps. Set Small, stand the
+  character inside, then `task.delay(4, ...)` the bigger size from the Server and return at once.
+- **Measure the slide from the Client, not the pictures**: wait for `HomeSize` to change, then
+  read `Walls.Back:GetPivot()` in the walls folder's `Frame` every 0.2 s (Small to Medium: 7.87
+  to 11.86 in about 2.6 s). Pieces that moved carry `GrewFrom`.
+- **Framing a home from inside at A16**: a ShotCam at y 8.6 just outside the door line sits in the
+  doorway's oak head (the frame fills with wood); at `Frame * (0, 5.4, 1.7)` looking at
+  `(0, 2.6, 10)`, with the character at `(0, 3, 0.9)` behind it, the back wall and both
+  partitions show. A re-lay re-equips the held flashlight; unequip after it, not before.
+- **A burst of `screencapture -l` with `sleep 0.1` runs about 0.33 s a frame**; crop the A16 phone
+  with `crop=664:308:360:364` on the 1386-wide window capture.
+

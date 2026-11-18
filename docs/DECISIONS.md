@@ -9360,6 +9360,44 @@ the door is plainly wider (Animal Crossing's house rooms by size).
 - **Phone cost:** 372 triangles more per home (five parts); the Casing split takes nothing away.
 - **Seen in Studio Play at A16 size** with h5a: all four sizes' walls, corners and lamp, the door
   counting you in by Small's room, Small's doorway from the hall, close and inside, Medium's.
+## D-356 A home that grows grinds its walls back, and its holder sees it when they're next in (S5-03h6, 2026-11-18)
+
+The moment (the home doc's idea 31; Animal Crossing, where you come home to find your house
+bigger): you walk in to the room you know, and a beat later the steel lurches free, the
+partitions grind out, the back wall rolls away, Small's doorway widens, dust sifts off the wall
+tops, and the walls clunk home with everything you set out where it was.
+
+- **The server still snaps; the slide is each screen's.** `Walls.size` stands the new size at
+  once, as before. A grow (Growing's sale or gift, the Studio hook's "size") now goes through
+  Arranging's `regrow`: the home's size stands through the re-lay (`clear(player, true)`: no
+  pass through nil, so the walls go straight from the old size to the new), each drawn piece
+  that lands elsewhere carries `GrewFrom` (its pivot before), and the unit gets `GrewFrom` (the
+  old size) and `GrewAt` (server time), cleared when the home is let go.
+- **Who sees it** (`HomeGrowView`): anyone within 36 studs while it's news (4 s) sees it at once;
+  the holder, if it grew while they were out (at the counter, where you buy it), sees their
+  home as it was until they next stand inside it, and half a second later it grows round them.
+  Everyone else sees it as it is. My call: buying at the counter means you're never home when it
+  happens, and the moment is the one you paid for (`OWNER.md`).
+- **Each frame of the 2.6 s slide** stands the walls, the doorway, the lamp and the picked paint
+  part way (`Walls.place` with `Sizes.between`, eased by `Sizes.slide`), and each moved piece
+  part way by its parts' server places shifted, so a find on its top or in its cubbies rides
+  with it. At the end everything is exactly as the server has it. While the holder's view holds
+  the old size, the back wall's place is watched: when the server's new place replicates or
+  streams in, the hold is stood again.
+- **Sound, shake, dust, no words:** the grind is the roll-up curtain's rumble (DoorSound "Roll")
+  pitched down to 0.5 to 0.78, its pitch and loudness riding the slide's speed
+  (`Sizes.slideSpeed`); the lurch and the clunk are the door's thump pitched down, the clunk with
+  the curtain's clatter; small camera kicks at both (0.14, 0.32) for someone inside; one dust
+  emitter (the engine's smoke texture, plaster-coloured) along each moving wall's top, a burst
+  of 10 at the lurch and the clunk and 4 a second between. Feel numbers in `Walls.Grind`.
+- **Arrange open when it grows** (a friend's gift) closes as on a walk away, a lifted piece
+  sliding back: the room it judged was laid again bigger.
+- **Seen in Studio Play at A16 size**: Small to Medium, standing inside: the back wall eased from
+  7.9 to 11.9 studs in 2.6 s, the shelf, job box and mirror riding out with it (captures
+  `docs/art/S5-03h6-small.jpg`, `-mid-grind.jpg`, `-medium.jpg`). Not yet seen: Medium to Large,
+  Large to XL (the walls hidden at the end), the hold until you walk in, the dust at phone size;
+  not heard by ear.
+
 ## D-409 Caught on the back-to-the-lobby floor: down the shaft to the lobby car (S4-03c4a, Nov 18)
 
 - **What happens.** On the floor the team picked with the "back to the lobby" card, a catch plays

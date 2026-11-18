@@ -185,12 +185,22 @@ nowhere else.
   walking into a seat; the bed is sat on, not lain on (lying down needs a sleeping animation:
   an untested bet, say if you want it); on the blanket you sit Roblox's way for now, cross-legged
   needs an animation we make and upload (say if you want it).
+- [ ] **Watch your home grow** (S5-03h6, D-356; Small to Medium seen in Studio Play, not heard).
+  Play, stand in your Small home, and on the Server in Studio's command bar run
+  `game.ServerStorage.ArrangeTest:Invoke(game.Players:GetPlayers()[1], "size", "Medium")`: the
+  walls lurch, grind out over about 2.6 s and clunk, Small's doorway widens, dust falls off the
+  wall tops, the shelf and box ride out on their walls. Then "Large", then "XL" (the walls slide
+  out to the slot's own and vanish). Then set "Small", walk out to the hall, run "Medium", and
+  walk back in: your home should still look Small until you're inside, then grow round you. Listen
+  on a phone: is the grind (the roll-up curtain's rumble pitched down) heavy enough, the clunk
+  solid, the shake too much? My defaults, say which to change: the holder sees it only when next
+  inside (bought at the counter, you're never home when it happens); others see it only if near.
 - [ ] **Your home's walls by size and Small's doorway** (S5-03h5a and h5b, D-354, D-355; seen in
   Studio Play at all four sizes). Play and walk into your Small home: the walls close round you,
   the lamp over the middle, and from the hall the doorway is plainly narrower than a Medium's.
   On the Server in Studio's command bar run
   `game.ServerStorage.ArrangeTest:Invoke(game.Players:GetPlayers()[1], "size", "Medium")`, then
-  "Large", then "XL": the walls and the doorway jump out each time (h6 makes them grind). At each
+  "Large", then "XL": the walls and the doorway grind out each time (h6). At each
   size shut the door with you inside, switch the light, tap Arrange, pick a paper. Look for a gap
   or flicker at a corner or round the doorway. My defaults, say which to change: inside, Small's
   doorway is trimmed in oak boards either side (they never clash with a paint you pick); at Medium

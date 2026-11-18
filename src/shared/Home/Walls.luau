@@ -42,6 +42,27 @@ Walls.Head = "CasingHead"
 Walls.WideAttribute = "Wide"
 Walls.WideSizeAttribute = "WideSize"
 
+-- A home that grew (S5-03h6, D-356): the size it grew from and the server time it grew, on the
+-- unit, so everyone near sees the walls grind back and its holder sees it when they're next in.
+-- Each piece of the home's that stood elsewhere before carries where (`GrewFromAttribute`).
+Walls.GrewFromAttribute = "GrewFrom"
+Walls.GrewAtAttribute = "GrewAt"
+
+-- The grind's feel (S5-03h6): each number is what a player sees or hears as the walls slide out.
+Walls.Grind = table.freeze({
+	Seconds = 2.6, -- the slide, end to end: long enough to watch, short enough not to wait on
+	Wait = 0.5, -- after you walk in to a home that grew while you were out, before it starts
+	Fresh = 4, -- seconds a grow stays news to someone near who isn't its holder
+	Watch = 36, -- how near (studs) someone else stands to a friend's home to see it grow
+	PitchLow = 0.5, -- the steel's grind standing (the roll-up curtain's rumble, pitched down)
+	PitchHigh = 0.78, -- ... and at its fastest
+	Volume = 1.3, -- the grind at its fastest; it swells and dies with the slide's speed
+	Lurch = 0.14, -- the camera's jolt as the walls break free (Shake trauma)
+	Clunk = 0.32, -- ... and as they clunk home
+	Dust = 10, -- dust puffs from each moving wall's top at the lurch, and again at the clunk
+	DustRun = 4, -- puffs a second from each while it runs
+})
+
 -- Each movable wall: its name in the folder, the panel it wears, the wall it rides.
 Walls.List = table.freeze({
 	table.freeze({ name = "Left", part = "PanelLeft" }),
@@ -65,7 +86,13 @@ end
 
 -- Where panel `spec` stands in the unit (frame `frame`) at size `size`.
 function Walls.panelFrame(spec: Specs.Panel, frame: CFrame, size: string): CFrame
-	local at = Sizes.onWall(size, Walls.wallOf(spec.Part), spec.At)
+	local side, back = Sizes.inset(size)
+	return Walls.panelFrameAt(spec, frame, side, back)
+end
+
+-- `panelFrame` with the walls stood `side` and `back` in (`Sizes.between`, part way as it grows).
+function Walls.panelFrameAt(spec: Specs.Panel, frame: CFrame, side: number, back: number): CFrame
+	local at = Sizes.onInset(side, back, Walls.wallOf(spec.Part), spec.At)
 	return frame * CFrame.new(vec(at)) * CFrame.Angles(0, math.rad(spec.Turn), 0)
 end
 
@@ -210,52 +237,101 @@ end
 -- Where wall model `model` (a child of the folder) stands at size `size` in a unit at `frame`:
 -- its pivot, the panel's own place (`panelFrame`).
 function Walls.at(model: Model, frame: CFrame, size: string): CFrame?
+	local side, back = Sizes.inset(size)
+	return Walls.atInset(model, frame, side, back)
+end
+
+-- `at` with the walls stood `side` and `back` in.
+function Walls.atInset(model: Model, frame: CFrame, side: number, back: number): CFrame?
 	local part = model:GetAttribute("Part")
 	local spec = if type(part) == "string" then specOf(part) else nil
-	return if spec then Walls.panelFrame(spec, frame, size) else nil
+	return if spec then Walls.panelFrameAt(spec, frame, side, back) else nil
 end
 
 -- The unit's ceiling lamp's frame at size `size`, from its XL frame `xl` in a unit at `frame`.
 function Walls.lampAt(xl: CFrame, frame: CFrame, size: string): CFrame
+	local _, back = Sizes.inset(size)
+	return Walls.lampAtInset(xl, frame, back)
+end
+
+-- `lampAt` with the back wall stood `back` in.
+function Walls.lampAtInset(xl: CFrame, frame: CFrame, back: number): CFrame
 	local here = frame:ToObjectSpace(xl)
 	local p = here.Position
-	local at = Sizes.onWall(size, "Middle", { p.X, p.Y, p.Z })
+	local at = Sizes.onInset(0, back, "Middle", { p.X, p.Y, p.Z })
 	return frame * (CFrame.new(vec(at)) * here.Rotation)
+end
+
+-- The unit's frame its walls are laid in, or nil for a unit with none (not a home).
+function Walls.frameOf(unit: Model): CFrame?
+	local folder = unit:FindFirstChild(Walls.Folder)
+	local frame = if folder then folder:GetAttribute("Frame") else nil
+	return if typeof(frame) == "CFrame" then frame else nil
+end
+
+-- Stands home `unit`'s movable walls, doorway, lamp and the picked paint on its walls (Looks'
+-- folder) with the walls `side` and `back` in and the doorway's sides `door` in: a size's
+-- (`size`), or part way between two as the walls grind back (S5-03h6, `Sizes.between`).
+function Walls.place(unit: Model, side: number, back: number, door: number)
+	local folder = unit:FindFirstChild(Walls.Folder)
+	local frame = Walls.frameOf(unit)
+	if not (folder and frame) then
+		return
+	end
+	for _, model in folder:GetChildren() do
+		local at = if model:IsA("Model") then Walls.atInset(model, frame, side, back) else nil
+		if at and model:IsA("Model") and model.PrimaryPart then
+			model:PivotTo(at)
+		end
+	end
+	Walls.doorway(unit, frame, door)
+	local lamp, xlLamp = unit:FindFirstChild("Lamp"), folder:GetAttribute("Lamp")
+	if lamp and lamp:IsA("BasePart") and typeof(xlLamp) == "CFrame" then
+		lamp.CFrame = Walls.lampAtInset(xlLamp, frame, back)
+	end
+	local looks = unit:FindFirstChild(Looks.Folder)
+	if looks then
+		for _, p in looks:GetChildren() do
+			local spec = if p:IsA("BasePart") and Walls.wallOf(p.Name) ~= ""
+				then specOf(p.Name)
+				else nil
+			if spec and p:IsA("BasePart") then
+				p.CFrame = Walls.panelFrameAt(spec, frame, side, back)
+			end
+		end
+	end
+end
+
+-- Shows home `unit`'s movable walls (`shown`), solid steel behind them, or puts them away as XL's
+-- are (the slot's own walls stand). The grind shows them sliding all the way out to XL's.
+function Walls.show(unit: Model, shown: boolean)
+	local folder = unit:FindFirstChild(Walls.Folder)
+	if not folder then
+		return
+	end
+	for _, model in folder:GetChildren() do
+		for _, p in model:GetChildren() do
+			if p:IsA("BasePart") and (p.Name == "Face" or p.Name == "Steel") then
+				p.Transparency = if shown then 0 else 1
+				p.CanCollide = shown and p.Name == "Steel"
+				p.CanQuery = shown and p.Name == "Steel"
+			end
+		end
+	end
 end
 
 -- Stands home `unit`'s movable walls and its lamp for size `size` at once (no walls at XL: the
 -- slot's own stand), and tells the door how wide and deep the room it counts you in is.
 function Walls.size(unit: Model, size: string)
 	local folder = unit:FindFirstChild(Walls.Folder)
-	local frame = if folder then folder:GetAttribute("Frame") else nil
-	if not (folder and typeof(frame) == "CFrame") then
+	if not (folder and Walls.frameOf(unit)) then
 		return
 	end
-	local xl = Sizes.of(size).name == Sizes.Biggest
-	for _, model in folder:GetChildren() do
-		if not model:IsA("Model") then
-			continue
-		end
-		local at = Walls.at(model, frame, size)
-		if at and model.PrimaryPart then
-			model:PivotTo(at)
-		end
-		for _, p in model:GetChildren() do
-			if p:IsA("BasePart") then
-				p.Transparency = if xl then 1 else 0
-				p.CanCollide = not xl and p.Name == "Steel"
-				p.CanQuery = not xl and p.Name == "Steel"
-			end
-		end
-	end
-	Walls.doorway(unit, frame, Sizes.doorIn(size))
-	local lamp, xlLamp = unit:FindFirstChild("Lamp"), folder:GetAttribute("Lamp")
-	if lamp and lamp:IsA("BasePart") and typeof(xlLamp) == "CFrame" then
-		lamp.CFrame = Walls.lampAt(xlLamp, frame, size)
-	end
+	local side, back = Sizes.inset(size)
+	Walls.place(unit, side, back, Sizes.doorIn(size))
+	Walls.show(unit, Sizes.of(size).name ~= Sizes.Biggest)
 	local width, depth = folder:GetAttribute("Width"), folder:GetAttribute("Depth")
 	if type(width) == "number" and type(depth) == "number" then
-		local side, back = Sizes.inset(size)
 		unit:SetAttribute(RollUpDoor.RoomWidth, width - 2 * side)
 		unit:SetAttribute(RollUpDoor.RoomDepth, depth - back)
 	end

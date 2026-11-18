@@ -2932,12 +2932,15 @@ Done when players watch the results to the end and change their perks between cl
             (`art/home/front.py`), rebuilt, uploaded and seen at phone size. Done Nov 18, D-355:
             the doorway's sides, plaster and head slide (`Walls.doorway`); h5a and h5b seen in
             Studio Play at A16 size.
-      - [ ] **S5-03h6 The walls grind back** (idea 31): when it grows, you're there to watch: the
+      - [x] **S5-03h6 The walls grind back** (idea 31): when it grows, you're there to watch: the
         partitions slide along their rails, the back wall rolls away, the door frame widens, dust
         drifts down, with the steel's grind (Animal Crossing's house growing). Built to slide:
         `Walls.doorway(unit, frame, inset)` takes any inset between a stud and none, and the walls
         need the same (a blend of two sizes' `Sizes.onWall`). The pieces that ride a wall (the
-        shelf on the back wall) glide with it; what you set out mid-room stays put.
+        shelf on the back wall) glide with it; what you set out mid-room stays put. Done Nov 18,
+        D-356: `HomeGrowView` slides it over the server's snap, held for the holder until they're
+        next inside; Small to Medium seen in Studio Play. Seeing Medium to Large, Large to XL and
+        the hold is step 1 of S5-03g3c's session.
   - [x] **S5-03i Everything in the room moves, lifts and works** (the owner, Nov 18, D-345;
     Animal Crossing's house, Bloxburg's build mode). Next, ahead of S5-03h5 and h6. The moment:
     you buy an end table, set it by the bed, stand your lamp on it, walk up and press Switch, and

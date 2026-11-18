@@ -70,6 +70,7 @@ local HomeSpecs = require(ReplicatedStorage.Shared.Home.Specs)
 local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
+local Walls = require(ReplicatedStorage.Shared.Home.Walls)
 local FindUses = require(script.Parent.FindUses)
 local FrontOffice = require(script.Parent.FrontOffice)
 local HomeUses = require(script.Parent.HomeUses)
@@ -349,12 +350,18 @@ function Arranging.new(): ArrangingSystem
 		data.starterLaid = true -- its own pieces are rows now (D-346)
 	end
 
-	local function clear(player: Player)
+	-- Lets `player`'s home go. `growing`: it's laid again at once at a new size (`relay`), so its
+	-- size stands until then and the walls go straight from the old size to the new.
+	local function clear(player: Player, growing: boolean?)
 		local home = homes[player]
 		if home then
 			homes[player] = nil
 			home.folder:Destroy()
-			home.unit:SetAttribute(Spots.SizeAttribute, nil)
+			if not growing then
+				home.unit:SetAttribute(Spots.SizeAttribute, nil)
+				home.unit:SetAttribute(Walls.GrewFromAttribute, nil)
+				home.unit:SetAttribute(Walls.GrewAtAttribute, nil)
+			end
 			if home.spare and home.unit.Parent then
 				home.spare.Parent = home.unit -- a spare again: its set back as Lobby.front laid it
 			end
@@ -664,6 +671,35 @@ function Arranging.new(): ArrangingSystem
 		end
 	end
 
+	-- Sets `player`'s home up again from their save after its size was written (Growing's sale or
+	-- gift, the Studio hook's "size"): a home that grew (S5-03h6, D-356) gets each piece's place
+	-- before and the size it grew from, so those near see the walls grind back and the pieces on
+	-- them glide out (HomeGrowView).
+	local function regrow(player: Player)
+		local had = homes[player]
+		local from = if had then had.room.sizeName else nil
+		local was: { [string]: CFrame } = {}
+		if had then
+			for id, d in had.drawn do
+				was[id] = d.model:GetPivot()
+			end
+		end
+		clear(player, true)
+		lay(player)
+		local home = homes[player]
+		if home and from and Sizes.rank(home.room.sizeName) > Sizes.rank(from) then
+			for id, d in home.drawn do
+				local before = was[id]
+				if before and before ~= d.model:GetPivot() then
+					d.model:SetAttribute(Walls.GrewFromAttribute, before)
+				end
+			end
+			home.unit:SetAttribute(Walls.GrewFromAttribute, from)
+			home.unit:SetAttribute(Walls.GrewAtAttribute, Workspace:GetServerTimeNow())
+		end
+		sendBox(player)
+	end
+
 	local function watch(player: Player)
 		plotWatch[player] = player:GetAttributeChangedSignal("Plot"):Connect(function()
 			lay(player)
@@ -680,9 +716,7 @@ function Arranging.new(): ArrangingSystem
 			return if drawn then drawn.model else nil
 		end,
 		relay = function(_: any, player: Player)
-			clear(player)
-			lay(player)
-			sendBox(player)
+			regrow(player)
 		end,
 		start = function(_: any, context: Brix.Context)
 			local registry = context.registry
@@ -794,9 +828,7 @@ function Arranging.new(): ArrangingSystem
 							return false
 						end
 						data.homeSize = a
-						clear(player)
-						lay(player)
-						sendBox(player)
+						regrow(player) -- as the counter's sale: a bigger home grinds back
 						return homes[player] ~= nil
 					end
 					return nil

@@ -101,6 +101,12 @@ end
 -- floor, the front wall) stays put. A new table.
 function Sizes.onWall(name: string, wall: string, at: Vec): Vec
 	local side, back = Sizes.inset(name)
+	return Sizes.onInset(side, back, wall, at)
+end
+
+-- `onWall` with the walls stood `side` studs in across and `back` toward the door (`inset`'s,
+-- or a blend of two sizes' as the walls grind back, `between`). A new table.
+function Sizes.onInset(side: number, back: number, wall: string, at: Vec): Vec
 	local x, y, z = at[1], at[2], at[3]
 	if wall == "Left" then
 		x -= side
@@ -112,6 +118,31 @@ function Sizes.onWall(name: string, wall: string, at: Vec): Vec
 		z -= back / 2
 	end
 	return { x, y, z }
+end
+
+-- The walls part way from size `from` to size `to` as a home grows (S5-03h6, D-356): with the
+-- slide `k` along (0 at `from`, 1 at `to`, clamped), each partition's inset across, the back
+-- wall's toward the door, and the doorway's sides' in from the M's.
+function Sizes.between(from: string, to: string, k: number): (number, number, number)
+	local t = math.clamp(k, 0, 1)
+	local sa, ba = Sizes.inset(from)
+	local sb, bb = Sizes.inset(to)
+	local da, db = Sizes.doorIn(from), Sizes.doorIn(to)
+	return sa + (sb - sa) * t, ba + (bb - ba) * t, da + (db - da) * t
+end
+
+-- How far along the slide is at `t` of its time (0 to 1): steel on rails, slow to get going,
+-- slow to settle (an ease in and out), so the walls lurch free, run, and grind home.
+function Sizes.slide(t: number): number
+	local x = math.clamp(t, 0, 1)
+	return if x < 0.5 then 4 * x * x * x else 1 - (2 - 2 * x) ^ 3 / 2
+end
+
+-- How fast the slide runs at `t`, 0 standing to 1 at its fastest (halfway): the grind's pitch
+-- and loudness follow it.
+function Sizes.slideSpeed(t: number): number
+	local x = math.clamp(t, 0, 1)
+	return (if x < 0.5 then 12 * x * x else 3 * (2 - 2 * x) ^ 2) / 3
 end
 
 return table.freeze(Sizes)

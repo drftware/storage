@@ -2178,7 +2178,13 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 		measure()
 		if mine then
-			homeSized = mine:GetAttributeChangedSignal(Spots.SizeAttribute):Connect(measure)
+			homeSized = mine:GetAttributeChangedSignal(Spots.SizeAttribute):Connect(function()
+				measure()
+				-- it grew while you arranged (a friend's gift; S5-03h6, D-356): the room you were
+				-- judging is laid again bigger, so the screen closes as it does on a walk away,
+				-- a lifted piece sliding back, and the walls grind back round you
+				closeNow()
+			end)
 		end
 	end
 
