@@ -2419,7 +2419,29 @@ Done when two climbs in a row feel different and players talk about their best f
   turn, "+10" to "+25" (fired by hand; a real trap and ride waits on `OWNER.md`).
 - [ ] **S4-05 The big find.** From floor 2, one a floor, shown only once the code is in: a unit
   rolls up by itself and its place shows on the corner map. Carried in both hands, slower than
-  any monster, no tools; it counts only if it's in the car as the gate shuts. Its art first.
+  any monster, no tools; it counts only if it's in the car as the gate shuts (Lethal Company's
+  heavy scrap and the apparatus). Its art first. Split (D-414):
+  - [ ] **S4-05a The jukebox's art.** The moment: the door rolls up on its own and there it
+    stands in the dark, taller than you, its arch of coloured plastic and chrome grille plain
+    from the far end of the hall on a phone. The first of F-12's eight, the one the design doc
+    names: a new finds set, `art/finds/big/`, made the finds' way (`PIPELINE.md`, `CRAFT.md`),
+    its glow off as found and on when played, its record on its own turntable. Its game row is
+    written but not ticked built: a ticked find joins every unit's deal, and a big find is dealt
+    only by a floor's big-find place (piece b).
+  - [ ] **S4-05b The big find on the climb.** Waits for the home chain to free `Climbs`,
+    `GatePay`, `Slots`. The moment: the code goes in, a unit down the hall rolls up by itself
+    with its own loud rattle, its place lights on the corner map, and one friend hauls the
+    jukebox out in both hands, slower than any monster, no tools, while the others keep the
+    monsters off; it pays only if it's in the car as the gate shuts. Parts: the place on each
+    floor from 2 (a unit picked per floor, its door opened by the server once the code is in);
+    the deal (grade rolled as the catalog says: Epic 75%, Legendary 22%, Secret 3%, falling back
+    to the jukebox while it's the only one built); its own `size` "Big" and how it sits in your
+    arms (hugged low so you see over it); the walk speed under every monster's; tools and the
+    other slots locked while you hold it; dropped where you're caught; banked only by the gate
+    shutting with it inside; tick the jukebox built in `WAVES.md`.
+  - [ ] **S4-05c The big find seen in Studio.** The moment: from floor 2's keypad, see the unit
+    roll up, its mark on the corner map, carry the jukebox to the car, and watch the gate pay
+    it. Captures to `docs/art/`; the two-player run (one hauls, one guards) in OWNER.md.
 - [ ] **S4-06 The marker.** Sold in the machine. Face a door and tap Mark: a bright mark the
   team sees down the hall and on the corner map. Five marks. Its art first.
 - [ ] **S4-07 On sale.** A starting tool for cash during the car's countdown, flashlight beam
@@ -3545,6 +3567,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
 
 ## Polish waiting for a slot
 
+- **The jukebox's window and photo pass** (S4-05a, D-414): its bay window is a flat leaning
+  pane, so up close it still reads a little like a screen; the arch-tops had a curved glass dome
+  over the record. Do a photo pass (three or more arch-tops, `CRAFT.md`), then curve the glass
+  and the bay's lid, and add fluted ribs across the plastics, before it's ticked built (S4-05b).
 - **The padlock with its shackle shut** (S4-03b2): `art/padlock` builds the padlock as one mesh
   with its shackle lifted and swung open (`LIFT`, `SWING`), so the doors' padlocks and the
   TwicePadlocks card face both read as unlocked. Build it shut (the click's moment), rebuild with

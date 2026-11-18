@@ -67,6 +67,13 @@ nowhere else.
   since (S4-03d2, D-413): a red wash over your view for a moment, then the hall past the gate
   glows the card's colour for about a second and a half while the car keeps its own (open
   `docs/art/S4-03d2-arrival.jpg`); say if it's still too much or now too little.
+- [ ] **The first big find is the jukebox** (S4-05a, D-414; my defaults): of F-12's eight I
+  built the jukebox first, because the design doc names it. Open `art/sheets/jukebox-unit.png`
+  (a unit's doorway on a phone, off above, on below) and `jukebox-lineup.png` (beside a person):
+  do you know it's a jukebox in one glance? Is the lit arch too strong or too pink? Two choices
+  that are yours: it's Legendary in the catalog while big finds roll Epic three times in four,
+  so until more are built every floor's big find would be this one Legendary; and it stands
+  about 6 studs tall, a head over you, which is real size but a lot to carry in your arms.
 - [ ] **Vote with a friend, on phones** (S4-03b2, D-405; seen with one player and stand-in
   presses). Two phones (or Studio's Test tab, 2 players), both in one car leaving floor 1 (any
   later floor's ride works; floor 1's from the lobby has no vote). Look for: as the car lurches

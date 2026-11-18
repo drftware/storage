@@ -26,7 +26,7 @@ WAVES = os.path.join(HERE, "WAVES.md")
 
 # The kit's sets in the order they were built, which is the deal's order (Deal.findFrom picks
 # by place within a grade, so a new set goes on the end).
-SETS = ["lights", "figures", "windups", "squishies"]
+SETS = ["lights", "figures", "windups", "squishies", "big"]
 
 GRADES = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Secret"]  # Grades.Names
 SIZES = ["Small", "Medium", "Large"]

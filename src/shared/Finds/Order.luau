@@ -47,6 +47,7 @@ return {
 	OilLamp = { "Light", "Burn", "RunDown" },
 	RCCar = { "Launch", "Drive", "Stop" },
 	Spotlight = { "SwitchOn", "SwitchOff", "Aim" },
+	Jukebox = { "Play" },
 	StainedGlassLamp = { "SwitchOn", "SwitchOff" },
 	TeaLight = { "Light", "Flicker", "GoOut", "Lift" },
 	UnpluggedLamp = { "Switch" },

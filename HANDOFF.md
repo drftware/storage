@@ -18,10 +18,10 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   "shelfAway", "size"; Trips' `DevTripFinds`. Home doc:
   https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww. Test save: Medium, card Stencil (Unit1),
   Boombox 10, Skates 1.
-- **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), and S4-03 the
-  next-floor cards, all four versions picked on rides and seen in Play (D-403 to D-413). Next:
-  S4-05 The big find (not yet planned: split it in ROADMAP first, its art the finds' way, then
-  the climb; Lethal Company's heavy scrap).
+- **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403
+  to D-413), S4-05 split and its a, the jukebox's art (D-414: sheets, row unticked, not yet
+  imported). Next: F-G1b4a the hard hat's beam; S4-05b (the big find on the climb, imports the
+  jukebox) once the home chain frees `Climbs`, `GatePay`, `Slots`.
 
 ## Next task: S5-03a2d The cars' hidden triangles
 **The conductor clears this with the climb chain before it starts: the six lobby cars are the

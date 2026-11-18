@@ -9595,3 +9595,20 @@ holds every find out of a box, so a crash, a failed teleport or a server hop cos
 - **Known edge, safe side:** a rider who drops a going find during the black ride leaves it on the
   lobby floor, where its owner's leave recalls it (its crack written there) and the group's
   server deals it too, so the crack could count twice; never the find.
+
+## D-414 · 2026-11-18 · The big find split, and the jukebox first (S4-05a)
+
+S4-05 is split in three (ROADMAP): **a** the first big find's art, **b** the big find on the
+climb (waits for the home chain to free `Climbs`, `GatePay`, `Slots`), **c** seen in Studio.
+- **The jukebox first.** Of F-12's eight wave 1 big finds, the design doc names the jukebox, so
+  it is built first: a 1940s arch-top of our own design, real size (5.95 by 3.25 studs), in a new
+  finds set `art/finds/big/` (README). Its plastics glow and its record spins when played
+  (`Play`), found dark and still; its press is at home, so the climb only carries it.
+- **Its row is written, not ticked.** `GAME` in `art/finds/big/spec.py` (Legendary, 800, floor
+  2 up, heft 1) and `rows.py` takes the set, so `Rows.luau` has it with `judged = false`. A ticked
+  find joins every unit's deal; a big find is dealt only by a floor's big-find place, so S4-05b
+  ticks it when that place exists, and adds the "Big" size for how it sits in your arms.
+- **Not imported yet.** Its upload and Studio import (PIPELINE steps 6 and 7) go with S4-05b,
+  whose session needs it in the place anyway; this session ran out of room after the sheets.
+- **Left to the owner** (OWNER.md): the pick, its grade against the big finds' Epic-heavy roll,
+  and its height in your arms.

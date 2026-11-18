@@ -2338,6 +2338,32 @@ local Rows: { Game.Row } = {
 			toy = true,
 		},
 	},
+	{
+		key = "Jukebox",
+		set = "Big",
+		judged = false,
+		name = "Jukebox",
+		grade = "Legendary",
+		worth = 800,
+		from = 2,
+		grip = { 0, 2.3, 0 },
+		heft = 1.0,
+		size = "Large",
+		pickUp = {
+			id = "rbxassetid://9114008989",
+			from = 0,
+			length = 1.4,
+			volume = 0.65,
+			pitch = 0.6,
+		},
+		drop = {
+			id = "rbxassetid://9114008989",
+			from = 0,
+			length = 1.4,
+			volume = 0.65,
+			pitch = 0.5,
+		},
+	},
 }
 
 return Rows
