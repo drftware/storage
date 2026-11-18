@@ -9242,3 +9242,27 @@ You must know which floor you chose before you see it, and its coins must read a
 
 Not chosen: words or a name on the pop (D-405); the version's coins pouring with the floor's
 (c1's stopgap: you couldn't tell what the pick earned).
+
+## D-408 The power's out: the floor opens black, and its breaker brings it back (S4-03c3, Nov 18)
+
+The dead-bulb card has to be felt the moment the gate rises: black halls, black units, the car's
+light the only one, and somewhere out there the box. The team's job is to find it and throw it,
+as Lethal Company's breaker brings a facility's power back. My default (OWNER.md).
+- **The box is hung thrown** (FloorBuilder's `hangBreaker` with `deck.bend.dark`; `Deal.Bend`
+  carries `dark`, the deal itself unchanged). Breakers finds it off and cuts the floor's power
+  zones as a Mannequin's throw does, so the existing breaker does everything else: the hold
+  brings the halls back, BreakerView's red lamp pulses in the dark (the one glow out there).
+- **The units' bulbs are on that breaker on that floor only.** Breakers mirrors each box's power
+  on the floor it hangs on (`Breaker.FloorAttribute`, so a screen needn't have the box streamed
+  in); `NextFloor.dark(version, power)` says a floor is dark, and UnitLights reads it: a lifting
+  door's switch clicks and the bulb stays dead; back on, each open unit's bulb stutters on up to
+  `UnitLight.BackRagged` late, no click. A Mannequin's cut on any other floor leaves units lit, as
+  before (S2-02); on this one a re-throw kills them again.
+- **The Mannequin doesn't fight it.** The dark start counts as the floor's first cut (Keepers'
+  `cut`, `add`'s `dark`), so after the team's switch-on its Mannequins wait the usual 45 s and go
+  at the floor's own odds, not D-158's eager first-cut ones. A Mannequin already walking to a box
+  that goes off is called off by the zero chance (`Keeper.offer`, unchanged).
+- Every floor the card is dealt for has a box (`tests/powerout.spec`, floors 2 to 60).
+
+Not chosen: no breaker on that floor (the dark would last the whole floor with nothing to do
+about it but the torch's battery); unit bulbs on every floor's breaker (changes S2-02's floors).

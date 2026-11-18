@@ -280,6 +280,19 @@ function NextFloor.payOf(version: Version, floor: number): number
 	return math.max(1, math.floor(Pay.forFloor(floor) * version.pay + 0.5))
 end
 
+-- Whether a laid floor is in the dark now (S4-03c3, D-408): dealt as a version whose power's
+-- out (`version`, its model's `Attribute`) with its breaker off (`power`, its model's
+-- `Breaker.FloorAttribute`, false while thrown). Its units' bulbs then stay dead as their doors
+-- lift, as its halls' are; once the breaker's back on they work again. On any other floor a cut
+-- breaker leaves the units lit, as it always has. Takes raw attribute values: anything else is lit.
+function NextFloor.dark(version: unknown, power: unknown): boolean
+	if type(version) ~= "string" or power ~= false then
+		return false
+	end
+	local row = NextFloor.find(version)
+	return row ~= nil and row.dark == true
+end
+
 -- The versions lit on a panel, for the car's attribute.
 function NextFloor.encodeOffer(offered: { string }): string
 	return table.concat(offered, ",")

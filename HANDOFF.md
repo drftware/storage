@@ -15,9 +15,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Studio hooks: `ShelfTest` "take"; `ArrangeTest` "take", "own", "place", "rows", "fromShelf",
   "shelfAway" (STUDIO.md). Home doc: https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww
 - **Climb run:** done: the fix pass (D-400), S4-02 (D-401), S4-04 (D-402), the cards' vote,
-  faces and screen (D-403 to D-405), c1 the deal and pay (D-406), c2 the card flies into its
-  floor and pops its coins at the gate (D-407, seen in Play). Next: S4-03c3 the power out
-  (`HallLight`, `UnitLight` read `FloorVersion`; the breaker brings it back), then c4, d.
+  faces and screen (D-403 to D-405), c1 the deal and pay (D-406), c2 the arrival and pop (D-407),
+  c3 the power's out (D-408, seen in Play). Next: S4-03c4 caught there goes back to the lobby
+  (`KeptPlayers`' catch reads `FloorVersion`; the lobby trip of L-08e2), then S4-03d.
 
 ## Next task: S5-03i4 Sit on the furniture
 The moment: you walk up to the milk crate in your home and sit on it, the beanbag sinks you in,

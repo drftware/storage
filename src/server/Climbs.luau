@@ -381,7 +381,8 @@ function Climbs.new(): Climbs
 				Brix.Random.new({ seed = seed }),
 				deck.sleepers,
 				deck.packed,
-				deck.bend.monsters
+				deck.bend.monsters,
+				deck.bend.dark
 			)
 		end
 		if wraps then

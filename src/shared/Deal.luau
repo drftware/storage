@@ -73,6 +73,8 @@ export type Bend = {
 	-- times the monsters: twice the sleepers behind its doors, twice the awake ones behind a door
 	-- you lift, and twice as many loose at once (`Waking.cap`)
 	monsters: number?,
+	-- the power's out (S4-03c3): the deal is the same; its breaker is hung thrown (FloorBuilder)
+	dark: boolean?,
 }
 
 -- A floor nobody picked a version for.

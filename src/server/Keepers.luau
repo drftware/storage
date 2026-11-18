@@ -262,7 +262,9 @@ type OnFloor = {
 	boxAt: vector, -- the box on the wall, the floor's coordinates: a Mannequin faces it there
 	boxStand: vector, -- where a Mannequin stands to throw it (`Breaker.stand`)
 	boxLooked: number, -- when it last looked for the box, the server's clock
-	cut: boolean, -- a Mannequin has thrown the box on this floor (Breaker.ErrandFirst until then)
+	-- the power has been cut on this floor, by a Mannequin or the power-out card (S4-03c3):
+	-- Breaker.ErrandFirst until then
+	cut: boolean,
 	-- seconds since the first player stood on the floor (S2-03b), -1 until anyone has: what
 	-- `Waking` counts its waves from
 	here: number,
@@ -323,7 +325,10 @@ export type Keepers = Brix.System & {
 		asleep: { [number]: string },
 		packed: { [number]: boolean }?,
 		-- times the monsters the floor rules let loose: 2 on a twice-the-monsters floor (S4-03c1)
-		monsters: number?
+		monsters: number?,
+		-- the power's out as its gate opens (S4-03c3): that counts as the floor's first cut, so
+		-- once the team throws the breaker back on its Mannequins go at the floor's own odds
+		dark: boolean?
 	) -> (),
 	-- `riders` rode out of laid floor `model` as its gate shut (Climbs' `shut`, S2-02d4): from now
 	-- on they aren't on it for its security cameras though their car climbs level with it for a
@@ -1950,7 +1955,8 @@ function Keepers.new(): Keepers
 		random: Floor.Random,
 		asleep: { [number]: string },
 		packed: { [number]: boolean }?,
-		monsters: number?
+		monsters: number?,
+		dark: boolean?
 	)
 		if floors[model] then
 			return
@@ -1982,7 +1988,7 @@ function Keepers.new(): Keepers
 			boxAt = vector.zero,
 			boxStand = vector.zero,
 			boxLooked = -math.huge,
-			cut = false,
+			cut = dark == true,
 			here = -1,
 			woken = 0,
 			monsters = monsters or 1,

@@ -67,6 +67,10 @@ UnitLight.NearMargin = 4
 UnitLight.NearLead = 6
 -- How often each screen re-picks its nearest bulbs, in seconds.
 UnitLight.NearSeconds = 0.25
+-- The power coming back on the power-out floor (S4-03c3): each open unit's bulb starts its stutter
+-- up to this many seconds after the breaker's thrown, so the floor's units catch one by one
+-- around you, not as one switch.
+UnitLight.BackRagged = 0.5
 
 -- The switch catching as the door lifts it: a sharp toggle click (Pro Sound Effects, "Moviola
 -- Toggle Switch Single Clicks Sharp 8"), its faint release a quarter second later. Quieter than

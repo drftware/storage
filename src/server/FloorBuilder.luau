@@ -497,10 +497,11 @@ end
 
 --[[
 	The floor's breaker box (S2-02b) at `face` (a wall's face, looking into the hall): a copy of
-	`ReplicatedStorage.Props.Breaker`, the power on, tagged for the server's Breakers with the
-	floor's power zones to cut. Warns and hangs none if the place lacks the template.
+	`ReplicatedStorage.Props.Breaker`, tagged for the server's Breakers with the floor's power zones
+	to cut, its power `on`; hung off (the power's out, S4-03c3), Breakers cuts the zones as it
+	finds it, so the floor arrives dark. Warns and hangs none if the place lacks the template.
 ]]
-local function hangBreaker(floor: Floor.Floor, face: CFrame, parent: Instance)
+local function hangBreaker(floor: Floor.Floor, face: CFrame, parent: Instance, on: boolean)
 	local props = ReplicatedStorage:FindFirstChild("Props")
 	local template = props and props:FindFirstChild("Breaker")
 	if not (template and template:IsA("Model")) then
@@ -514,7 +515,7 @@ local function hangBreaker(floor: Floor.Floor, face: CFrame, parent: Instance)
 		table.insert(zones, FloorBuilder.powerZone(floor.number, zone))
 	end
 	box:SetAttribute(Breaker.ZonesAttribute, table.concat(zones, ","))
-	box:SetAttribute(Breaker.OnAttribute, true)
+	box:SetAttribute(Breaker.OnAttribute, on)
 	box:AddTag(Breaker.Tag)
 	box.Parent = parent
 end
@@ -703,7 +704,8 @@ end
 --[[
 	Puts floor `floor`'s deal `deck` (Deal.new) on its model `model`, laid at `origin` with `laid`
 	(`lay`): the doors it padlocked are padlocked, the floor's mark is stamped on its unit's jamb
-	and its breaker hung. Doesn't yield. Done once, before anyone's on the floor.
+	and its breaker hung, thrown if the team picked the power's out (`deck.bend.dark`, S4-03c3).
+	Doesn't yield. Done once, before anyone's on the floor.
 ]]
 function FloorBuilder.dress(
 	model: Model,
@@ -730,7 +732,12 @@ function FloorBuilder.dress(
 	end
 	local spot = deck.breaker
 	if spot then
-		hangBreaker(floor, origin * faceOf(spot.x, spot.z, spot.facing), model)
+		hangBreaker(
+			floor,
+			origin * faceOf(spot.x, spot.z, spot.facing),
+			model,
+			deck.bend.dark ~= true
+		)
 	end
 end
 

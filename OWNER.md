@@ -47,6 +47,15 @@ nowhere else.
   the lobby the low hit of being caught. At that floor's gate its card pops over your pay and
   bursts into its coins. Ride floor 1 to 2 looking at the gate: do you know the floor before you
   see it? Does each sound say its card? Is the little card's picture readable on your phone?
+  The power's out (S4-03c3, D-408; my defaults): its floor opens black, hall lights and unit
+  bulbs dead, the car's light the only one, and its breaker hangs thrown, its red lamp the one
+  glow out there. Throwing it back on brings every light back (a door you lift there clicks and
+  stays dark until then), as Lethal Company's breaker does; a Mannequin goes for it again only
+  at the floor's usual odds, not the eager first-cut ones. Pick it riding 1 to 2 (Play, seed 7)
+  and look for: the gate rising on black, finding the box by its glow with the torch, the floor
+  coming back on as you throw it. Seen in Studio: the dark, the glow, the bulb coming back; not
+  seen: the hall lights' flash as it comes back (they read powered and dark 3 s after). Is it
+  too dark on your phone without the torch? Should the version be harder (no breaker)?
 - [ ] **Vote with a friend, on phones** (S4-03b2, D-405; seen with one player and stand-in
   presses). Two phones (or Studio's Test tab, 2 players), both in one car leaving floor 1 (any
   later floor's ride works; floor 1's from the lobby has no vote). Look for: as the car lurches

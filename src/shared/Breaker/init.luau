@@ -26,6 +26,9 @@ export type Spot = { x: number, z: number, facing: number, cell: number }
 Breaker.Tag = "Breaker"
 Breaker.OnAttribute = "PowerOn" -- true while the power is on, false thrown
 Breaker.StrainAttribute = "Straining" -- true while someone holds the lever
+-- On the floor the box hangs on (its parent): its power, false while the box is thrown, so a
+-- screen reads it without the box streamed in (S4-03c3: the power-out floor's unit bulbs).
+Breaker.FloorAttribute = "FloorPower"
 -- The power zones the box cuts, comma-separated (MotionLights' names, `FloorBuilder.powerZone`).
 Breaker.ZonesAttribute = "PowerZones"
 

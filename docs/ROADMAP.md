@@ -2337,11 +2337,14 @@ Done when two climbs in a row feel different and players talk about their best f
       in the card's colour after the floor's pour and the traps' (`Pay.parts` gets a third part;
       the remote sends the version's name and coins; CoinView). Read `NextFloorView`'s exit
       (the cards leave as the gate opens, D-405) and CoinView's trap pops (D-402).
-    - [ ] **S4-03c3 The power's out.** The gate opens on dark halls and dark units (`HallLights`,
-      `UnitLights` read the floor's `FloorVersion`). Default to log in `OWNER.md`: the floor's
-      breaker (S2-02) brings the lights back, so the team has a job (find the box in the dark,
-      throw it), as Lethal Company's breaker brings a facility's power back; the version still
-      pays. Check the Mannequin's box errand (Keepers' `cut`) doesn't fight it.
+    - [x] **S4-03c3 The power's out.** The gate opens on dark halls and dark units; the floor's
+      breaker (S2-02) brings the lights back, as Lethal Company's breaker brings a facility's
+      power back; the version still pays. Done Nov 18 (D-408): the box hung thrown, the floor's
+      `FloorPower`, `NextFloor.dark`, UnitLights' power, Keepers' `cut`; `tests/powerout.spec`.
+      Seen in Studio Play (seed 7, floor 1 to 2): 17 hall lights cut, the lobby black, the box's
+      red glow, a lifted door's bulb dead, the real hold bringing it back (captures
+      `docs/art/S4-03c3-*`). Polish: catch the halls' flash as the power returns (they read
+      powered and dark 3 s after, S4-03d); the gate rising on black, frame by frame (S4-03d).
     - [ ] **S4-03c4 Caught there goes back to the lobby.** A catch on that floor takes you out of
       the climb to the lobby (not wrapped for friends to free), by the way a player leaves a
       climb for the lobby today (the trip and the car's return of L-08e2); friends left on the

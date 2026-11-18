@@ -11,7 +11,10 @@
 
 	Only doors in motion are sampled each frame. Only the lit bulbs nearest a point ahead of the
 	camera throw real light and hum (UnitLight.NearBulbs); the rest glow. A home's bulb (the ground
-	floor's units, UnitLight.Home) throws light whenever it's lit. A unit that streams in
+	floor's units, UnitLight.Home) throws light whenever it's lit. On the floor the team picked
+	with the power out (S4-03c3, `NextFloor.dark`: its version, and its breaker's word on the
+	floor's model) a lifting door's switch clicks and the bulb stays dead; when the breaker's
+	thrown back on, every open unit's bulb stutters on, each a moment apart. A unit that streams in
 	with its door already up just shows lit. Lights are set only through UnitLight, so they carry
 	HallLight's tag and BehindDoors dims them for whoever is shut in another unit; this runs before
 	BehindDoors each frame, so that dimming lands on a stuttering bulb too.
@@ -20,11 +23,14 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local Breaker = require(ReplicatedStorage.Shared.Breaker)
 local Brix = require(ReplicatedStorage.Brix)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
+local NextFloor = require(ReplicatedStorage.Shared.NextFloor)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local ShutIn = require(ReplicatedStorage.Shared.StorageUnit.ShutIn)
 local SoundPrimer = require(script.Parent.SoundPrimer)
+local Tops = require(ReplicatedStorage.Shared.Tops)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 local UnitLight = require(ReplicatedStorage.Shared.UnitLight)
 
@@ -43,6 +49,15 @@ type Shown = {
 	flicker: number?, -- the next step of its stutter, nil once steady
 	since: number, -- seconds since it tripped
 	changed: RBXScriptConnection,
+	power: Power?, -- its laid floor's power (none for a home or the test hall's)
+}
+
+-- A laid floor's power, as its units' bulbs see it (S4-03c3): shared by its units on this screen.
+type Power = {
+	model: Instance, -- the floor's model (it carries the tops map, `Tops.Tag`)
+	dead: boolean, -- `NextFloor.dark`: the power's out and its breaker is off
+	units: { [Shown]: true },
+	conns: { RBXScriptConnection },
 }
 
 local function now(): number
@@ -60,6 +75,13 @@ function UnitLights.new(): Brix.System
 	local connections: { RBXScriptConnection } = {}
 	local random = Random.new()
 	local untilPick = 0
+	local powers: { [Instance]: Power } = {}
+
+	-- Whether a bulb shows lit: its switch on, and power to it.
+	local function lit(s: Shown): boolean
+		local p = s.power
+		return s.on and not (p and p.dead)
+	end
 
 	local function byNearness(a: Shown, b: Shown): boolean
 		return nearness[a] < nearness[b]
@@ -71,9 +93,9 @@ function UnitLights.new(): Brix.System
 		end
 		s.real = real
 		if not s.flicker then
-			UnitLight.light(s.glass, if s.on then 1 else 0, real)
+			UnitLight.light(s.glass, if lit(s) then 1 else 0, real)
 		end
-		if real and s.on and not s.flicker then
+		if real and lit(s) and not s.flicker then
 			-- a random place in the loop, so two humming units never pulse together
 			s.hum.TimePosition = random:NextNumber(0, math.max(s.hum.TimeLength - 1, 0))
 			s.hum:Play()
@@ -93,9 +115,9 @@ function UnitLights.new(): Brix.System
 			+ (if look.Magnitude > 1e-3 then look.Unit * UnitLight.NearLead else Vector3.zero)
 		table.clear(ranked)
 		for _, s in shown do
-			if s.on and UnitLight.isHome(s.glass) then
+			if lit(s) and UnitLight.isHome(s.glass) then
 				setReal(s, true) -- a home's bulb throws its light whenever it's lit
-			elseif s.on then
+			elseif lit(s) then
 				-- one already lit keeps its light until another is clearly nearer
 				nearness[s] = (s.glass.Position - from).Magnitude
 					- (if s.real then UnitLight.NearMargin else 0)
@@ -117,6 +139,9 @@ function UnitLights.new(): Brix.System
 			s.click.PlaybackSpeed = random:NextNumber(pitch.Min, pitch.Max)
 			s.click.TimePosition = 0
 			s.click:Play()
+			if not lit(s) then
+				return -- the power's out: the switch clicks and nothing comes on
+			end
 			s.flicker, s.since = 1, 0
 			flickering[s] = true
 			-- pick now, so a bulb coming on beside you throws real light from its first flash
@@ -142,7 +167,7 @@ function UnitLights.new(): Brix.System
 		local on = ShutIn.bulb(to, RollUpDoor.rise(s.unit, now()), was)
 		if first then
 			s.on = on
-			UnitLight.light(s.glass, if on then 1 else 0, false)
+			UnitLight.light(s.glass, if lit(s) then 1 else 0, false)
 			untilPick = 0
 		elseif on ~= s.on then
 			switch(s, on)
@@ -151,6 +176,82 @@ function UnitLights.new(): Brix.System
 			moving[s] = true
 		else
 			moving[s] = nil
+		end
+	end
+
+	-- The floor's power changed (its version or its breaker): cut, every lit bulb on it dies at
+	-- once with no click, as the halls' tubes do; back, each open unit's bulb stutters on, each
+	-- up to `UnitLight.BackRagged` late, with no click (its switch never moved).
+	local function repower(p: Power)
+		local dead = NextFloor.dark(
+			p.model:GetAttribute(NextFloor.Attribute),
+			p.model:GetAttribute(Breaker.FloorAttribute)
+		)
+		if dead == p.dead then
+			return
+		end
+		p.dead = dead
+		for s in p.units do
+			if not s.on then
+				continue
+			elseif dead then
+				s.flicker = nil
+				flickering[s] = nil
+				s.real = false
+				s.hum:Stop()
+				UnitLight.light(s.glass, 0)
+			else
+				s.flicker, s.since = 1, -random:NextNumber(0, UnitLight.BackRagged)
+				flickering[s] = true
+				untilPick = 0
+			end
+		end
+	end
+
+	-- Joins `s` to its laid floor's power (the nearest ancestor carrying the floor's tops map).
+	local function join(s: Shown)
+		local at = s.unit.Parent
+		while at and at ~= Workspace and not at:HasTag(Tops.Tag) do
+			at = at.Parent
+		end
+		if not at or at == Workspace then
+			return
+		end
+		local floor: Instance = at
+		local p = powers[floor]
+		if not p then
+			local made: Power = { model = floor, dead = false, units = {}, conns = {} }
+			for _, name in { NextFloor.Attribute, Breaker.FloorAttribute } do
+				table.insert(
+					made.conns,
+					floor:GetAttributeChangedSignal(name):Connect(function()
+						repower(made)
+					end)
+				)
+			end
+			made.dead = NextFloor.dark(
+				floor:GetAttribute(NextFloor.Attribute),
+				floor:GetAttribute(Breaker.FloorAttribute)
+			)
+			powers[floor] = made
+			p = made
+		end
+		p.units[s] = true
+		s.power = p
+	end
+
+	local function leave(s: Shown)
+		local p = s.power
+		if not p then
+			return
+		end
+		s.power = nil
+		p.units[s] = nil
+		if next(p.units) == nil then
+			for _, c in p.conns do
+				c:Disconnect()
+			end
+			powers[p.model] = nil
 		end
 	end
 
@@ -198,6 +299,7 @@ function UnitLights.new(): Brix.System
 			end),
 		}
 		shown[inst] = s
+		join(s)
 		follow(s, true)
 	end
 
@@ -205,6 +307,7 @@ function UnitLights.new(): Brix.System
 		local s = shown[inst :: any] -- any: the removed signal hands back an Instance
 		if s then
 			s.changed:Disconnect()
+			leave(s)
 			s.click:Destroy()
 			s.hum:Destroy()
 			moving[s] = nil

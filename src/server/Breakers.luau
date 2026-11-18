@@ -70,6 +70,12 @@ function Breakers.new(): Breakers
 			b.since = os.clock()
 		end
 		b.model:SetAttribute(Breaker.OnAttribute, on)
+		local floor = b.model.Parent
+		if floor then
+			-- the floor's own word, for screens without the box streamed in (the power-out
+			-- floor's unit bulbs read it, S4-03c3)
+			floor:SetAttribute(Breaker.FloorAttribute, on)
+		end
 		b.prompt.Enabled = not on
 		local l = lights
 		if l then
