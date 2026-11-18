@@ -10188,3 +10188,36 @@ phone budget; the drop is quick enough to read as the card turning over); the ha
 photos (538 by 291 px holds one or the other at a size a phone reads); hiding the grade's name
 (every card game names its rarity, and a colour alone fails the colour-blind).
 
+
+## D-430: Each friend's line after the haul (S5-01c, Nov 18)
+
+The moment: the haul's total has landed on the car's board and stands a moment (`Tally.LinesAfter`,
+1 s; a tap moves on now). The page turns again, the total held in gold at the top, and a line
+for each friend slides in from the board's left edge with a soft knock (the vend flap's hollow
+knock pitched low, a touch higher each line), the smallest haul first. The lines fill from the
+bottom, so the top place waits empty and the best haul lands last into it, under the total: a
+glint passes across its line, a gold edge comes up round it, the line and its worth swell, a
+coin's bright chink over the jingle. Lethal Company's end-of-day report on how each player did;
+the bottom-up fill is the race games' results reveal, last place first.
+
+- **A line:** the friend's photo (a lost friend's greyed, as on the team page), their name, a
+  chip in its grade's colour for each find they brought home (cheapest first), their Secret or
+  the floor's big find called out by name on its own wider chip (the dearer if both), and what
+  their finds are worth at the chest (yours bright gold, a friend's softer, none a dim $0).
+- **Who gets one:** everyone in the car's rows, in their order, even with nothing carried, and
+  anyone else a card belongs to; a tie keeps the rows' order (`Tally.lines`). No ranking words:
+  the order and the glint say it.
+- **Sizes:** lines up to 52 px tall, six still fit at 26 (`Tally.lineSize`); about 3.5 s for six
+  (`Tally.lineTimes`). A tap pops the rest in at once with one knock, the flourish just after.
+- **The round button:** stood in the car, a phone's round action button sits over the board's
+  foot in the middle of the screen (the conductor's look at `S5-01b-haul-secret.jpg`). Every page
+  now ends above `CLEAR` (244 of 291 px): the team page's title, photos and cash a little smaller
+  and higher, the haul's stage card shorter, its chip row moved up under it.
+- **The haul page is hidden once it has turned:** its stage picture stops drawing (one picture).
+
+Not chosen: the proposal's deeds (who freed the most friends, opened the most doors, shut a
+friend in a unit) as the line: nothing counts them per player yet, and as "most" they read as a
+ranking the brief rules out (left to the owner, `OWNER.md`); a small 3D picture on each callout
+(six viewports on a phone; a polish line); each line's worth counting up (six ticking figures
+after the total's count is noise); the haul's chips flying from the row into their owner's line
+(the lines would cover chips still waiting in the row).

@@ -97,6 +97,24 @@ Tally.FlashFrom = 0.4
 Tally.ChipMost = 44
 Tally.ChipGap = 4
 
+-- Each player's line (S5-01c, CarResults): once the total has landed, this many seconds of it
+-- standing alone before the page turns to the team's lines: long enough to take in the figure.
+Tally.LinesAfter = 1.0
+-- Seconds between one friend's line sliding in and the next: a soft knock each, quick enough
+-- that six fit, slow enough to see whose face it is.
+Tally.LineBeat = 0.42
+-- A breath more before the best haul's line, the last: the top slot waits empty a moment.
+Tally.LineHold = 0.38
+-- Seconds a line takes to slide into its place.
+Tally.LineIn = 0.3
+-- Seconds from the best line in to its flourish (a glint across it, its worth swelling), and the
+-- flourish's own length: the end of the board's show.
+Tally.FlourishAfter = 0.06
+Tally.Flourish = 0.7
+-- The tallest a line gets (px on the board's canvas), and the gap between two; six still fit.
+Tally.LineMost = 52
+Tally.LineGap = 6
+
 -- The board's few words: the haul's total, and a cracked find's mark beside its grade.
 Tally.Copy = table.freeze({ Total = "Total", Cracked = "Cracked" })
 
@@ -121,6 +139,27 @@ Tally.Hit = table.freeze({
 	length = 0.75,
 	volume = 0.8,
 	pitch = 0.68,
+}) :: Sound
+
+-- A friend's line landing on the board (S5-01c): a soft knock, the vend flap's hollow plastic
+-- knock ("Machine 17", Buy.Knock, a snap gone by 0.1 s) pitched low and played quiet, a touch
+-- higher for each line so they climb towards the best.
+Tally.Knock = table.freeze({
+	id = "rbxassetid://9120089728",
+	from = 0,
+	length = 0.3,
+	volume = 0.4,
+	pitch = 0.58,
+}) :: Sound
+Tally.KnockRise = 0.035
+-- The best line's flourish: a coin's bright chink pitched up (Pay.KeepChink's sparkle), over the
+-- cash's jingle; lighter than the total's own landing.
+Tally.Shine = table.freeze({
+	id = "rbxassetid://9113849162",
+	from = 1.08,
+	length = 0.4,
+	volume = 0.5,
+	pitch = 1.35,
 }) :: Sound
 
 -- The row under the stage: how wide each of `n` chips is, and the gap between two, to fit `width`
@@ -275,6 +314,88 @@ function Tally.skip(cards: { Card }, starts: { number }, ends: number, t: number
 		end
 	end
 	return math.max(ends, t)
+end
+
+-- One friend's line after the haul: who, what their finds are worth together, their cards in the
+-- haul's order, and the one called out on its own chip (their dearest Secret or big find) with
+-- the rest as plain chips.
+export type Line = {
+	userId: number,
+	worth: number,
+	cards: { Card },
+	chips: { Card },
+	callout: Card?,
+}
+
+-- Each friend's line: one for everyone on the team (`team`, the car's rows in order), even with
+-- nothing carried, and one for any other owner of a card; cheapest haul first and the best last,
+-- a tie in the team's order.
+function Tally.lines(cards: { Card }, team: { number }): { Line }
+	local lines: { Line } = {}
+	local byUser: { [number]: Line } = {}
+	local order: { [number]: number } = {}
+	local function lineFor(userId: number): Line
+		local known = byUser[userId]
+		if known then
+			return known
+		end
+		local line: Line = { userId = userId, worth = 0, cards = {}, chips = {}, callout = nil }
+		byUser[userId] = line
+		table.insert(lines, line)
+		order[userId] = #lines
+		return line
+	end
+	for _, userId in team do
+		lineFor(userId)
+	end
+	for _, card in cards do
+		local line = lineFor(card.userId)
+		line.worth += card.worth
+		table.insert(line.cards, card)
+		-- cards come cheapest first, so a later Secret or big find is the dearer one
+		if card.sting == "Secret" or card.sting == "Big" then
+			line.callout = card
+		end
+	end
+	for _, line in lines do
+		for _, card in line.cards do
+			if card ~= line.callout then
+				table.insert(line.chips, card)
+			end
+		end
+	end
+	table.sort(lines, function(a: Line, b: Line): boolean
+		if a.worth ~= b.worth then
+			return a.worth < b.worth
+		end
+		return order[a.userId] < order[b.userId]
+	end)
+	return lines
+end
+
+-- How tall each of `n` lines is, and the gap between two, to fit `height` (px).
+function Tally.lineSize(n: number, height: number): (number, number)
+	if n <= 0 then
+		return 0, 0
+	end
+	local gap = Tally.LineGap
+	return math.min((height - (n - 1) * gap) / n, Tally.LineMost), gap
+end
+
+-- When each of `n` lines slides in, in seconds from the first; when the best's flourish plays;
+-- and when the show is over.
+function Tally.lineTimes(n: number): ({ number }, number, number)
+	local starts: { number } = table.create(n)
+	local t = 0
+	for i = 1, n do
+		if i == n and n >= 2 then
+			t += Tally.LineHold
+		end
+		starts[i] = t
+		t += Tally.LineBeat
+	end
+	local flourish = (starts[n] or 0) + Tally.LineIn + Tally.FlourishAfter
+	return starts, flourish, flourish + Tally.Flourish
 end
 
 -- The haul as it rides in the car's results: "<userId>=<key>" each, "!" after a cracked one,

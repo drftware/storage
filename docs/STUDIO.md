@@ -3541,3 +3541,8 @@ verified: a doc page, Studio, or "untested".
   front row ((0, 4.6, 6.4) in the car's frame, looking at (0, 5.5, 11.9)), set the car's
   `Results` from the Server (`ClimbEnd.encodeResults` with `Tally.encode`), and take timed macOS
   window captures (`screen_capture` timed out three times here).
+- **The board recipe again (S5-01c):** setting the car's `Results` to nil, then the same value
+  0.2 s later replays the board from the top. The phone sits at (345, 362), 690 by 320, in the
+  1386 by 972 Studio window's `screencapture -l`; each capture takes about 1.4 s in a loop. A
+  yellow torch pokes up into the bound camera's view from the bottom right: the test rig's, not
+  the board's.

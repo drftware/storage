@@ -235,7 +235,11 @@ nowhere else.
   6. only the finds of friends standing in the car count (a friend who left took theirs);
   7. the board shows the team's photos and cash first, then its page turns over to the haul;
   8. the card says the grade's name in its colour ("Legendary"), a cracked one "Rare · Cracked",
-  and the total is headed "Total" in dollars.
+  and the total is headed "Total" in dollars; 9. then a line for each friend (S5-01c, D-430):
+  photo, name, a chip for each find they brought home, a Secret or the big find named, what it's
+  worth, the best haul last at the top with a glint, no ranking words. The proposal's deeds (who
+  freed the most friends, opened the most doors, shut a friend in) are left out: they'd need
+  counting on the server and read as a ranking. Say if you want them as a line under each face.
 - [ ] **Watch and listen to the haul come up** (S5-01b, D-429; seen in Studio Play, not heard).
   On a phone (or Studio's Galaxy A16 device), climb with a few finds, at least one sealed (the
   dev command `DealFind "Teddy sealed"` on floor 2) and one Rare or better, and ride back to the
@@ -243,8 +247,11 @@ nowhere else.
   flipping open with a paper flap and its 3D picture, then dropping into the row; the total
   ticking higher as it climbs; a sealed find, a Legendary or a Secret hitting the board with a
   bang, a flash of its colour and a pause; the best card left face up as the total swells with
-  a jingle. Tap the screen mid-haul: it jumps to the next big card. Say if any sound is too loud,
-  too quiet or wrong, and whether it all fits before the car leaves.
+  a jingle. Tap the screen mid-haul: it jumps to the next big card. Then (S5-01c, D-430) the
+  page turns to each friend's line, sliding in from the left with a soft knock, the best last at
+  the top with a glint and a chink. Play it with two players (two devices, or Studio's 2-player
+  test) who both carried finds: each sees both faces, their own worth brighter. Say if any sound
+  is too loud, too quiet or wrong, and whether it all fits before the car leaves.
 - [ ] **The mirror test** (S5-03b, D-280; seen in Studio Play Nov 17 and fixed, as it was blank;
   pictures in `docs/art/S5-03b-*.jpg`). Play with one player; walk into your home and turn left
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round

@@ -2515,10 +2515,17 @@ Done when players watch the results to the end and change their perks between cl
     sealed, the jukebox) lands with a hit, a flash in its grade's colour and a beat of quiet. A
     tap anywhere skips ahead (the cards between land at once). One picture drawn at a time
     (phone budget). Its sounds named and measured.
-  - [ ] **S5-01c Each player's line.** After the total: each friend's photo with what they
-    carried (how many, their worth, their best find's small picture), and the proposal's lines
-    (idea 25: who freed the most friends, opened the most doors, shut a friend in a unit), each
-    landing with a tick; Again's count still running.
+  - [x] **S5-01c Each player's line.** Done Nov 18 (D-430; `Tally.lines`, CarResults'
+    `teamLines`, `docs/art/S5-01c-*.jpg`): seen in Studio Play at A16 size with four stand-in
+    friends (a Secret, the jukebox, a $0 line); not with two real players nor heard by ear.
+    After the total: the page turns, the total held at the top, and each friend's line slides in
+    with a soft knock (their photo, name, a chip a find, a Secret or the big find called out by
+    name, their worth), filling from the bottom so the best lands last on top with a glint and a
+    gold edge; a tap brings the rest in. Every page now ends above the phone's round button.
+    Not built: the proposal's deeds (who freed the most friends, opened the most doors, shut a
+    friend in a unit): they need counting on the server and read as ranking (`OWNER.md`).
+    Polish: the called-out find's small 3D picture (six viewports on a phone, a budget check);
+    the stage card flying into its owner's line instead of the page turning.
   - [ ] **S5-01d Seen in Studio.** Play a climb with a few finds banked (one sealed, one high
     grade), ride back to the car, watch the board to the end; captures to `docs/art/`; the
     two-player run and a phone's look in `OWNER.md`.

@@ -20,8 +20,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   OWNER, CODEMAP and DECISIONS are the climb run's work in progress; the home leaves them alone.
 - **Climb run:** done: the fix pass (D-400), S4-02, S4-04, S4-03 the next-floor cards (D-403
   to D-413), S4-05 the big find (D-414 to D-419), the hard hat (D-420, D-421), S5-02 rarer and
-  sealed finds (D-422 to D-427), S5-01a the haul's order (D-428), S5-01b the haul's cards on the
-  car's board (D-429, seen in Studio). Next: S5-01c each player's line (`CarResults`); S5-01d.
+  sealed finds (D-422 to D-427), S5-01a, b and c the haul and each friend's line on the car's
+  board (D-428 to D-430, seen in Studio). Next: S5-01d (a real climb back to the car, watched to
+  the end, a tap; `docs/art/S5-01c-*.jpg`), then S6-01 best floor.
 
 ## Next task: S5-03 polish, the three "Polish:" lines under S5-03g2b
 The home's look settling without a seam. One line a session if they won't fit together; split

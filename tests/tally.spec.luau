@@ -272,6 +272,114 @@ do
 	ok(g60 == 1 and w60 >= 6, "sixty crowd to slivers with a hairline gap, each still seen")
 end
 
+-- Each player's line (S5-01c): every friend on the team gets one, even with nothing carried; a
+-- line is worth what its cards are, the lines add up to the haul, the best comes last, and a
+-- Secret or the big find of theirs is called out on its own chip.
+do
+	local function find(userId: number, key: string): Tally.Find
+		return { userId = userId, key = key }
+	end
+	local cards = Tally.cards({
+		find(10, COMMON),
+		find(20, RARE),
+		find(20, SECRET),
+		find(10, COMMON),
+		find(20, COMMON),
+		find(30, LEGENDARY),
+		find(40, "Jukebox"),
+		find(99, RARE), -- a card of someone not on the team's rows still gets a line
+	})
+	local lines = Tally.lines(cards, { 10, 20, 30, 40, 50 })
+	ok(#lines == 6, "a line for each of the team and one for the stray card's owner")
+	local byUser: { [number]: Tally.Line } = {}
+	local sum, whole = 0, 0
+	for _, card in cards do
+		whole += card.worth
+	end
+	for i, line in lines do
+		byUser[line.userId] = line
+		sum += line.worth
+		local own = 0
+		for _, card in line.cards do
+			own += card.worth
+			ok(card.userId == line.userId, `line {i}: only its own cards`)
+		end
+		ok(own == line.worth, `line {i}: worth its cards`)
+		if i > 1 then
+			ok(lines[i - 1].worth <= line.worth, `line {i}: no cheaper than the one before`)
+		end
+		local chips = #line.chips + (if line.callout then 1 else 0)
+		ok(chips == #line.cards, `line {i}: every card a chip, the callout its own`)
+	end
+	ok(sum == whole, "the lines add up to the haul")
+	local nobody = byUser[50]
+	ok(nobody ~= nil and nobody.worth == 0 and #nobody.cards == 0, "nothing carried: $0, a line")
+	ok(lines[1].userId == 50, "nothing carried comes first")
+	local twenty = byUser[20]
+	ok(
+		twenty ~= nil and twenty.callout ~= nil and twenty.callout.sting == "Secret",
+		"a Secret is called out"
+	)
+	ok(twenty ~= nil and #twenty.chips == 2, "the Secret leaves the other two as chips")
+	local forty = byUser[40]
+	ok(
+		forty ~= nil and forty.callout ~= nil and forty.callout.find == "Jukebox",
+		"the big find too"
+	)
+	local thirty = byUser[30]
+	ok(thirty ~= nil and thirty.callout == nil, "a Legendary alone isn't called out")
+	ok(lines[#lines].userId == 40 or lines[#lines].userId == 20, "the best haul comes last")
+	local best = lines[#lines]
+	for _, line in lines do
+		ok(line.worth <= best.worth, "no line beats the last")
+	end
+	-- each line's cards keep the haul's order, cheapest first
+	if twenty then
+		for i = 2, #twenty.cards do
+			ok(twenty.cards[i - 1].worth <= twenty.cards[i].worth, "a line's cards cheapest first")
+		end
+	end
+	-- a tie keeps the team's order
+	local tied = Tally.lines(Tally.cards({ find(7, RARE), find(8, RARE) }), { 8, 7 })
+	ok(#tied == 2 and tied[1].userId == 8 and tied[2].userId == 7, "a tie keeps the team's order")
+	-- with both a Secret and the big find, the dearer is called out
+	local both = Tally.lines(Tally.cards({ find(5, SECRET), find(5, "Jukebox") }), { 5 })
+	local dear = both[1]
+	local secretWorth = Tally.card(find(5, SECRET))
+	local jukeWorth = Tally.card(find(5, "Jukebox"))
+	if dear and dear.callout and secretWorth and jukeWorth then
+		local want = if secretWorth.worth >= jukeWorth.worth then SECRET else "Jukebox"
+		ok(dear.callout.find == want, "the dearer of a Secret and the big find is called out")
+	else
+		ok(false, "both: a callout")
+	end
+	ok(#Tally.lines({}, { 1, 2 }) == 2, "an empty haul still names the team")
+
+	-- the lines fit the board's room, one to six of them, never taller than the most
+	for n = 1, 6 do
+		local h, gap = Tally.lineSize(n, 186)
+		ok(h > 0 and n * h + (n - 1) * gap <= 186 + 1e-6, `{n} lines fit`)
+		ok(h <= Tally.LineMost, `{n} lines no taller than the most`)
+	end
+	local six = Tally.lineSize(6, 186)
+	ok(six >= 24, "six lines still each tall enough for a face")
+
+	-- the lines come one after another, a breath before the best, its flourish once it's in
+	for n = 1, 6 do
+		local starts, flourish, ends = Tally.lineTimes(n)
+		ok(#starts == n and starts[1] == 0, `{n} lines: the first at once`)
+		for i = 2, n do
+			ok(starts[i] > starts[i - 1], `{n} lines: one after another`)
+		end
+		if n >= 2 then
+			local last = starts[n] - starts[n - 1]
+			ok(last > Tally.LineBeat, `{n} lines: a breath before the best`)
+		end
+		ok(flourish >= starts[n] + Tally.LineIn, `{n} lines: the flourish once the best is in`)
+		ok(ends > flourish and ends <= 4.5, `{n} lines: done inside the car's count`)
+	end
+end
+
 print(`tally.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)
