@@ -62,7 +62,9 @@ local Save = require(ReplicatedStorage.Shared.Save)
 local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
+local FindUses = require(script.Parent.FindUses)
 local FrontOffice = require(script.Parent.FrontOffice)
+local HomeUses = require(script.Parent.HomeUses)
 local Saving = require(script.Parent.Saving)
 local Slots = require(script.Parent.Slots)
 local Takes = require(script.Parent.Takes)
@@ -116,7 +118,9 @@ function Arranging.new(): ArrangingSystem
 	local frontOffice: FrontOffice.FrontOffice? = nil
 	local saving: Saving.SavingSystem? = nil
 	local slots: Slots.Slots? = nil
+	local findUses: FindUses.FindUsesSystem? = nil
 	local takeOut: (player: Player, id: string, model: Model) -> ()
+	local pressOut: (holder: Player, player: Player, id: string, model: Model, key: string) -> ()
 
 	-- `player`'s home unit and its slot, if they hold one.
 	local function unitOf(player: Player): (Model?, LobbySpecs.Slot?)
@@ -263,6 +267,11 @@ function Arranging.new(): ArrangingSystem
 			Takes.offer(model, function(by: Player)
 				takeOut(by, id, each)
 			end)
+			-- its own button, for anyone in the home (S5-03i3, D-351): Switch, Play, Wind...
+			local key = base or name
+			HomeUses.offer(model, key, function(by: Player)
+				pressOut(owner, by, id, each, key)
+			end)
 			drawn = { model = model, size = size, centre = centre }
 			home.drawn[id] = drawn
 			home.room.heights[id] = size.Y -- a top's height is the drawn box's
@@ -360,6 +369,7 @@ function Arranging.new(): ArrangingSystem
 		local placements = room.placements
 		local folder = Instance.new("Folder")
 		folder.Name = FOLDER
+		HomeUses.room(folder, room.face * CFrame.new(room.centre), room.size)
 		folder.Parent = unit
 		-- its own pieces are rows (D-346): a home laid before them adopts them where they stood
 		-- (`Layout.adopt`, once); a home that grew keeps its pieces on their walls (`Layout.grow`)
@@ -529,6 +539,23 @@ function Arranging.new(): ArrangingSystem
 		sendBox(player)
 	end
 
+	-- A find's own button on find `id` set out (`model`) in `holder`'s home, pressed by `player`,
+	-- the holder or a friend (S5-03i3, D-351): its press plays if it's still drawn there and they
+	-- stand in the home within reach (`HomeUses.near`). FindUses keeps each player's pace.
+	function pressOut(holder: Player, player: Player, id: string, model: Model, key: string)
+		local home = homes[holder]
+		local drawn = if home then home.drawn[id] else nil
+		local f = findUses
+		if
+			not (home and drawn and f)
+			or drawn.model ~= model
+			or not HomeUses.near(player, model)
+		then
+			return -- a far press, from next door, or one already taken: nothing happens
+		end
+		f:setOut(player, model, key)
+	end
+
 	-- Answers the asker, then sends their box when the move changed it.
 	local function answer(player: Player, what: string, id: string, refusal: string)
 		if answerRemote then
@@ -600,6 +627,7 @@ function Arranging.new(): ArrangingSystem
 			frontOffice = (registry:get("frontOffice") :: any) :: FrontOffice.FrontOffice
 			saving = (registry:get("saving") :: any) :: Saving.SavingSystem -- any: as above
 			slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
+			findUses = (registry:get("findUses") :: any) :: FindUses.FindUsesSystem -- any: as above
 
 			local folder = ReplicatedStorage:FindFirstChild(Spots.RemoteFolder)
 			if not folder then

@@ -66,6 +66,16 @@ local function hide(model: Model)
 	end
 end
 
+-- The find's Take (on its "Take" attachment): a find set out has its own button too (HomeUses).
+local function takeOf(model: Model): ProximityPrompt?
+	for _, d in model:GetDescendants() do
+		if d:IsA("ProximityPrompt") and d.Parent and d.Parent.Name == "Take" then
+			return d
+		end
+	end
+	return nil
+end
+
 local HomeTakeView = {}
 
 function HomeTakeView.new(): Brix.System
@@ -199,7 +209,7 @@ function HomeTakeView.new(): Brix.System
 		local s: Standing
 		s = {
 			model = inst,
-			prompt = inst:FindFirstChildWhichIsA("ProximityPrompt", true),
+			prompt = takeOf(inst),
 			ownerAttribute = ownerAttribute,
 			connection = inst:GetAttributeChangedSignal(Take.Attribute):Connect(function()
 				taken(s)

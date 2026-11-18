@@ -29,6 +29,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Pose = require(ReplicatedStorage.Shared.Finds.Pose)
+local Press = require(ReplicatedStorage.Shared.Home.Press)
 local Finds = require(ReplicatedStorage.Shared.Finds)
 local Head = require(ReplicatedStorage.Shared.Finds.Head)
 local Keepers = require(script.Parent.Keepers)
@@ -75,6 +76,8 @@ export type FindUsesSystem = Brix.System & {
 	wearLit: (self: any, player: Player, model: Model, key: string) -> (),
 	-- `player` rode a lobby car up: the lights they carry or wear lit at home start running down.
 	leave: (self: any, player: Player) -> (),
+	-- `player` pressed `model`, find `key` set out in a home (S5-03i3): true if the press took.
+	setOut: (self: any, player: Player, model: Model, key: string) -> boolean,
 }
 
 function FindUses.new(): FindUsesSystem
@@ -311,6 +314,61 @@ function FindUses.new(): FindUsesSystem
 		return Head.home(p.X, p.Y, p.Z, room.Width, room.Depth)
 	end
 
+	-- Stamps `model` with a press that took (its state, the light left, which of a bundle's presses,
+	-- the server clock), so every screen plays it (FindUseView), and sets its noise going: heard
+	-- along `path` for a find set down to play, a lure's beat, or one bang.
+	local function stampPress(
+		player: Player,
+		model: Model,
+		key: string,
+		row: Use.Row,
+		state: Use.State,
+		left: number,
+		count: number?,
+		now: number,
+		durations: { [string]: number },
+		path: Path?
+	)
+		-- an arrow that lands (the farm spinner, F-G1e3d): a new animal each pull, picked here,
+		-- with the one it set off from, so every screen spins it from there to this one
+		local lands = Use.lands(row)
+		if lands and lands.lands then
+			local stops = #lands.lands.calls
+			local on = Use.stop(model:GetAttribute(Use.LandAttribute), stops)
+			model:SetAttribute(Use.LandFromAttribute, on)
+			model:SetAttribute(Use.LandAttribute, Use.pick(stops, on, random:NextNumber()))
+		end
+		model:SetAttribute(Use.KeyAttribute, key)
+		model:SetAttribute(Use.StateAttribute, state)
+		model:SetAttribute(Use.LeftAttribute, Use.encode(left))
+		-- which of a bundle's presses: the glow sticks' next stick (F-G1e5b)
+		model:SetAttribute(Use.CountAttribute, count)
+		-- last, so a screen reading the stamp on this change sees all of it
+		model:SetAttribute(Use.AtAttribute, now)
+		CollectionService:AddTag(model, Use.Tag)
+		local delay = Use.noiseAt(row, state, durations)
+		local to = Use.lureUntil(row, state, durations)
+		-- a noisy find set down to play is heard along its path until its press is over
+		if path and delay then
+			path.at = now
+			paths[model] = path
+			local total = 0
+			for _, step in Use.chain(row, state) do
+				total += Use.length(step, durations)
+			end
+			task.delay(total + 1, function()
+				if paths[model] == path then
+					paths[model] = nil
+				end
+			end)
+		end
+		if delay and to and row.lure then
+			lure(model, row, now, delay, to, player.Name)
+		elseif delay then
+			bang(model, row, now, delay, player.Name)
+		end
+	end
+
 	local function onUsed(use: Slots.Use)
 		local row = Use.Rows[use.key]
 		if not row then
@@ -357,44 +415,44 @@ function FindUses.new(): FindUsesSystem
 			end
 		end
 		last[player] = t
-		-- an arrow that lands (the farm spinner, F-G1e3d): a new animal each pull, picked here,
-		-- with the one it set off from, so every screen spins it from there to this one
-		local lands = Use.lands(row)
-		if lands and lands.lands then
-			local stops = #lands.lands.calls
-			local on = Use.stop(model:GetAttribute(Use.LandAttribute), stops)
-			model:SetAttribute(Use.LandFromAttribute, on)
-			model:SetAttribute(Use.LandAttribute, Use.pick(stops, on, random:NextNumber()))
+		stampPress(player, model, use.key, row, state, left, count, now, durations, path)
+	end
+
+	-- A find set out in a home pressed where it stands (S5-03i3, D-351; HomeUses checked who and
+	-- how near): its press as from a hand, but it stays put. A wind-up walks on where it stands
+	-- (`Press.stop`), and at home a light never runs down (D-259). True if the press took.
+	local function setOut(player: Player, model: Model, key: string): boolean
+		local row = Press.row(key)
+		local t = os.clock()
+		local before = last[player]
+		if not row or (before and t - before < Use.Gap) then
+			return false
 		end
-		model:SetAttribute(Use.KeyAttribute, use.key)
-		model:SetAttribute(Use.StateAttribute, state)
-		model:SetAttribute(Use.LeftAttribute, Use.encode(left))
-		-- which of a bundle's presses: the glow sticks' next stick (F-G1e5b)
-		model:SetAttribute(Use.CountAttribute, count)
-		-- last, so a screen reading the stamp on this change sees all of it
-		model:SetAttribute(Use.AtAttribute, now)
-		CollectionService:AddTag(model, Use.Tag)
-		local delay = Use.noiseAt(row, state, durations)
-		local to = Use.lureUntil(row, state, durations)
-		-- a noisy find set down to play is heard along its path until its press is over
-		if path and delay then
-			path.at = now
-			paths[model] = path
-			local total = 0
-			for _, step in Use.chain(row, state) do
-				total += Use.length(step, durations)
-			end
-			task.delay(total + 1, function()
-				if paths[model] == path then
-					paths[model] = nil
-				end
-			end)
+		local durations = Finds.durations(key)
+		local now = Workspace:GetServerTimeNow()
+		local stamp = stampOf(model)
+		local pressed, left, count =
+			Use.press(row, stamp, if stamp then now - stamp.at else 0, durations)
+		if not pressed then
+			return false
 		end
-		if delay and to and row.lure then
-			lure(model, row, now, delay, to, player.Name)
-		elseif delay then
-			bang(model, row, now, delay, player.Name)
-		end
+		local state: Use.State = pressed :: Use.State
+		last[player] = t
+		model:SetAttribute(Use.FromAttribute, nil)
+		model:SetAttribute(Use.StopAttribute, Press.stop(row))
+		stampPress(
+			player,
+			model,
+			key,
+			row,
+			state,
+			Use.home(row, state, left),
+			count,
+			now,
+			durations,
+			nil
+		)
+		return true
 	end
 
 	--[[
@@ -523,6 +581,10 @@ function FindUses.new(): FindUsesSystem
 		model:SetAttribute(Use.CountAttribute, count)
 		model:SetAttribute(Use.AtAttribute, Workspace:GetServerTimeNow()) -- last: the stamp is whole
 		CollectionService:AddTag(model, Use.Tag)
+	end
+
+	function system.setOut(_: any, player: Player, model: Model, key: string): boolean
+		return setOut(player, model, key)
 	end
 
 	-- `player` rode a lobby car up into a climb (S5-03f3): each light they carry or wear that was lit
