@@ -5,12 +5,12 @@
 	floor, two pinch, twist and tilt; it glides and settles, a flick drifting on; the walls between
 	you and the room's middle melt away as it turns, and come back as it turns on.
 
-	It is Brix's `OrbitCamera` (springs, soft stops, the ceiling) fed by Brix's `Gestures` (one
+	It is Brix's `OrbitCamera` (springs, soft stops) fed by Brix's `Gestures` (one
 	intent at a time from fingers, mouse, wheel and gamepad); this module only wires Roblox to
 	them and adds what is about this home:
-	- the eye stays over the room and out through your door (`BuildView.eyeBox`, D-443), brought in
-	  level by Brix's orbit (`eyeArea`), so it never stands where a smaller home's sliding walls run
-	  on past its corners; the focus shows in the middle of the band the tray and top bar leave
+	- while its orbit is the view the roof and the world go from your screen (`ArrangeStage`,
+	  D-444), so the eye rises anywhere within `Around` of the walls and looks down into the
+	  open-topped room; the focus shows in the middle of the band the tray and top bar leave
 	  clear (`aim`), so the room is never half under the tray;
 	- the home's own walls, and what hangs on them, fade as the eye passes them (`BuildView.sideOf`
 	  sorts the pieces, the fade eases on top of the springs);
@@ -32,6 +32,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local BuildView = require(ReplicatedStorage.Shared.Home.BuildView)
+local ArrangeStage = require(script.Parent.ArrangeStage)
 
 local Feel = Arrange.Feel
 local Cam = Arrange.Camera
@@ -118,8 +119,8 @@ local function blend(a: CFrame, b: CFrame, t: number): CFrame
 end
 
 -- The orbit for `room`: its focus kept over the floor inside the walls, starting on the home view
--- (`BuildView.homeView`): out past the near walls, a front corner on the side the player stands
--- (`from`, their eyes, in the room's frame), as high as the ceiling lets it look down.
+-- (`BuildView.homeView`): out through the door, turned toward the side the player stands (`from`,
+-- their eyes, in the room's frame), high over the open-topped room at `HomeTilt` (D-444).
 local function orbitFor(room: Room, eyeBox: BuildView.Box, from: Vector3): Brix.OrbitCamera
 	local box = room.inside
 	local face, c, s = box.face, box.centre, box.size
@@ -133,7 +134,7 @@ local function orbitFor(room: Room, eyeBox: BuildView.Box, from: Vector3): Brix.
 		if from.X < 0 then -1 else 1,
 		Cam.Slant
 	)
-	local rise = s.Y - Cam.UnderCeiling - Cam.FocusUp - Cam.CeilingGap
+	local rise = flat * math.tan(Cam.HomeTilt)
 	local eye = face
 		* Vector3.new(
 			c.X + flat * math.sin(angle),
@@ -155,7 +156,7 @@ local function orbitFor(room: Room, eyeBox: BuildView.Box, from: Vector3): Brix.
 		tilt = math.clamp(math.asin(off.Y / distance), Cam.LowTilt, Cam.HighTilt),
 		distance = distance,
 		near = Cam.Near,
-		far = math.clamp(math.max(s.X, s.Z) + Cam.FarPast, distance, Cam.FarMost),
+		far = math.max(distance, math.min(math.max(s.X, s.Z) + Cam.FarPast, Cam.FarMost)),
 		lowTilt = Cam.LowTilt,
 		highTilt = Cam.HighTilt,
 		eyeArea = Brix.Zone.box({
@@ -174,7 +175,6 @@ local function orbitFor(room: Room, eyeBox: BuildView.Box, from: Vector3): Brix.
 			),
 			turn = math.atan2(-across.Z, across.X),
 		}),
-		ceiling = (face * Vector3.new(c.X, floor + s.Y - Cam.UnderCeiling, c.Z)).Y,
 		settle = Cam.Settle,
 		drift = Cam.Drift,
 		fadeDepth = Cam.FadeDepth,
@@ -191,6 +191,7 @@ function ArrangeCamera.new(options: Options): Camera
 		stickTurn = Cam.StickTurn,
 	})
 	local orbit: Brix.OrbitCamera? = nil
+	local stage = ArrangeStage.new(Cam.Stage, Cam.Void, Cam.Light)
 	local room: Room? = nil
 	-- What the camera shows: the orbit, or a fixed view; gliding there from `from` since `since`.
 	local shot: CFrame? = nil
@@ -428,6 +429,7 @@ function ArrangeCamera.new(options: Options): Camera
 		closing = false
 		unbind()
 		clearWalls()
+		stage.drop()
 		for _, c in placedWatch do
 			c:Disconnect()
 		end
@@ -470,6 +472,15 @@ function ArrangeCamera.new(options: Options): Camera
 			goal = CFrame.lookAt(seen, fromVector(l), fromVector(u))
 		else
 			return
+		end
+		-- The world goes while the orbit is the view, and comes back once a glide has brought a
+		-- fixed shot or your eyes (D-444).
+		local r = room
+		if r and shot == nil and not closing then
+			local middle = roomFrame.Position
+			stage.lift(r.unit, middle, middle.Y - half.Y)
+		elseif from == nil then
+			stage.drop()
 		end
 		local fading = fadeWalls(if closing then nil else eye, dt)
 		local f = from
@@ -700,7 +711,9 @@ function ArrangeCamera.new(options: Options): Camera
 			local inside = r.inside
 			roomFrame = inside.face * CFrame.new(inside.centre)
 			half = inside.size / 2
-			eyeBox = BuildView.eyeBox(half.X, half.Z, Cam.WallGap, Cam.Hall)
+			-- With the world gone (D-444) the eye may stand anywhere within `Around` of the walls:
+			-- a gap of −Around reaches that far past every one.
+			eyeBox = BuildView.eyeBox(half.X, half.Z, -Cam.Around, Cam.Around)
 			orbit = orbitFor(r, eyeBox, roomFrame:PointToObjectSpace(cam.CFrame.Position))
 			aimedY, aimedW = -1, -1
 			screen()
@@ -736,6 +749,11 @@ function ArrangeCamera.new(options: Options): Camera
 			end
 			stopDip()
 			gestures:cancel()
+			-- Between the orbit and a fixed shot always through black: the world comes back or goes
+			-- in the dark, and a swing would cross the building's walls (D-444).
+			if (fixed == nil) ~= (shot == nil) then
+				dip = true
+			end
 			local g = options.gui()
 			if not dip or not g then
 				shot = fixed
@@ -798,6 +816,7 @@ function ArrangeCamera.new(options: Options): Camera
 				finishClose()
 			end
 			unbind()
+			stage.destroy()
 			if test then
 				test:Destroy()
 				test = nil

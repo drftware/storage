@@ -9,6 +9,12 @@ nowhere else.
   `482368f` (the plots each player's home comes from), which is only on this Mac. In `../engine`,
   `git push origin main`, then this repository. Pushed the other way round, a fresh clone can't find
   the pinned commit.
+- [ ] **Arrange takes the roof off** (S5-03j1d1, D-444; seen in Studio Play at A16 size, not on a
+  phone). On your phone, in your home, tap Arrange. Look for: the camera rises out of your eyes
+  over your room, and everything else (the lobby, the neighbours) is gone, your room standing
+  open-topped on a dark floor; it opens without a stutter, and the frame rate holds while you
+  turn round it. Tap Done: you land back in your eyes with the lobby all there. My default, yours
+  to change: the dark floor's colour and the warm light (`Arrange.Camera.Void`, `Light`).
 - [ ] **The torch let down, and its switch beside the jump button** (L-11a2, D-435; seen in
   Studio Play on the Galaxy A16, not on a real phone or iPad). On your phone, then your iPad:
   1. Look at the bottom right. The torch's round switch now sits right of the jump button, at

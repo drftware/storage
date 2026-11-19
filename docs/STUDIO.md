@@ -3640,3 +3640,11 @@ verified: a doc page, Studio, or "untested".
   sees them. `Walls.Left` and `Right` run x 60.3 to 89.9 and `Back` z 468 to 488 on Unit1 at Small.
 - **The A16's clear band** in viewport points: from the top bar's 58 to the tray's tabs at 186 (the
   tray 10 off the foot, 92 tall, its 44-point tabs 6 above it). ArrangeView's `clear` says it.
+- **From 20 studs a room in the lobby goes black** (S5-03j1d1): Lighting's Atmosphere (density 0.38,
+  haze 1.4, lit by nothing) and its DepthOfField swallow it, and Roblox stops drawing a PointLight
+  that far from the camera (by graphics quality, so sooner on a phone). Zoomed to 8 studs it lit
+  again. `ArrangeStage` clears the haze and blur and raises `Lighting.Ambient` while lifted.
+- **The slot's floor is the lobby's** (`Boards`, `Floor`): a unit model has no floor of its own, so
+  hiding the lobby hides the room's floor too; the room's looks still show (D-444's capture).
+- **A camera set by `execute_luau` stays put while Arrange's camera rests** (it writes nothing once
+  still): handy for trying a pose before coding it.

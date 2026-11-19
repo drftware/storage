@@ -3330,15 +3330,21 @@ Done when players watch the results to the end and change their perks between cl
       and out the door (`BuildView.eyeBox`, Brix ENG-28b `eyeArea`, brought in level); the room sat
       under the tray, so the focus shows mid-band (`aim`, ArrangeView's `clear`). Captured before
       and after (`docs/art/s5-03j1c-small-*`). Split at the run's context cap.
-    - [ ] **S5-03j1d The build camera at the bar, on every size, and its fixed shots.** Studio Play at A16
-      size, driven by `CameraTest`: Medium, Large and XL homes open past their near walls (a
-      Large's corner only just fits beside it; an XL comes in through the door) and fade as they
-      turn; decide D-440's XL question by looking; the front tab's swing to the door and the
-      hall dip after a card chip; Done swoops back into your eyes; WASD slides (keyboard from
-      the MCP). Tune `Arrange.Camera` by what's seen; capture each size. First, the faults
-      D-443 left: the lobby's walls framing the door view, a Small room seen too close from over
-      it, the door's buttons and limit bar in the band. Ask of each capture whether a player sees
-      their room clearly and wants to start placing things; keep going until yes.
+    - [x] **S5-03j1d1 The roof comes off: your room alone on a dark floor.** While Arrange's
+      orbit is the view, everything but your unit and the players goes from your screen
+      (`ArrangeStage`), so the camera rises over the open-topped room to a dollhouse look from a
+      front corner (`HomeTilt` 0.95), the near walls fading. Done (D-444): seen on a Small home,
+      `docs/art/s5-03j1d-small-stage.png`; haze, blur and the bulb's distance cut handled.
+    - [ ] **S5-03j1d2 The build camera at the bar, on every size, and its fixed shots.** Studio
+      Play at A16 size. First, what D-444 left on a Small home: the sliding walls' long ends past
+      the room's corners stand in the dark (mask each run past a corner with a void-coloured Neon
+      box joined to that wall's fade group, a pure `BuildView` sum with a Lune spec); the light a
+      touch brighter (`Arrange.Camera.Light`); the home view's distance fitted so the whole floor
+      sits in the clear band (a pure fit from the floor's size, `HomeTilt` and the band); the
+      door's Close and Slam and the job box's Open hidden while Arrange is open. Then Medium,
+      Large and XL (`CameraTest` drags round the circle); the front tab's dip to the door and the
+      hall dip after a card chip; Done's swoop back into your eyes (the world back as it lands);
+      WASD. Ask of each capture whether a player sees their whole room and wants to place things.
       **Acceptance:** each size seen and captured; check green.
     - [x] **ENG-26c Nearest free spot and guides, in Brix.** Placements answers the nearest free
       pose to a blocked one within a reach, and the guide lines where a footprint's edge or

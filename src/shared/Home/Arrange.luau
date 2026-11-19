@@ -137,27 +137,33 @@ Arrange.Camera = table.freeze({
 	-- box, not a flat wall.
 	Clear = 5,
 	Slant = 0.4,
-	-- The home view's eye stays this far under the ceiling's stop (studs).
-	CeilingGap = 0.05,
+	-- The home view looks down this steeply (radians from level, D-444): a dollhouse look into the
+	-- open-topped room, the far walls standing and the floor whole.
+	HomeTilt = 0.95,
 	-- The nearest a pinch brings the eye (studs), and how far past the room's longer side it can
 	-- back away: enough to back out through the door and see the whole room.
 	Near = 4,
 	FarPast = 4,
-	FarMost = 30,
+	FarMost = 45,
 	-- The flattest and steepest it looks (radians from level): never quite across, so the floor
 	-- always shows; nearly straight down, a floor plan.
 	LowTilt = 0.25,
 	HighTilt = 1.45,
-	-- The eye stays this far under the ceiling (studs): the unit's ceiling is the whole lobby's.
-	UnderCeiling = 0.75,
+	-- While the camera looks down on your home, everything else this near it goes from your screen
+	-- (studs, D-444), and the room stands on an even dark floor of this colour: calm, a little warm.
+	Stage = 120,
+	Void = Color3.fromRGB(20, 19, 22),
+	-- The ambient light meanwhile: a warm, even light, so the room reads from any distance on any
+	-- phone (the bulb isn't drawn from far off).
+	Light = Color3.fromRGB(118, 110, 100),
 	-- Seconds the camera takes to glide where your fingers sent it (shorter is snappier), and how
 	-- long a flick drifts on.
 	Settle = 0.3,
 	Drift = 0.35,
-	-- The eye stays this far inside the room's walls (a wall it comes this near is gone, D-443),
-	-- and goes at most this far out into the hall through your door (studs).
+	-- A wall the eye comes this near, over the room, is gone (studs, D-443); and the eye goes at
+	-- most this far out past any wall (D-444: the world is gone, so a front corner is free).
 	WallGap = 0.6,
-	Hall = 5,
+	Around = 20,
 	-- A wall is gone once the eye is this far past it (studs); it fades in and out with a half
 	-- life of this many seconds on top, so even a reset's glide never pops a wall.
 	FadeDepth = 1.2,

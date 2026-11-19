@@ -10530,3 +10530,35 @@ The conductor's two complaints about D-442's Small captures, seen and found in S
   side of the facade frame the room like a doorway, and over a Small room the eye, kept under a 10-stud
   ceiling, is so close that the corner shelf fills the view. The door's Close and Slam buttons and the
   limit bar sit in the band. S5-03j1d takes these on first.
+
+
+## D-444 The roof comes off: while the build camera looks down, the world goes from your screen (S5-03j1d1, Nov 18)
+
+The conductor's direction after D-443's captures: the eye, kept under a 10-stud ceiling, can't see
+a Small room whole; take the roof off as The Sims does. Tried in Studio Play at A16 size, in order:
+- **Hiding only the lobby's ceiling (`UnitTops`) isn't enough.** Over your slot nothing else stands
+  above the walls, but any lid round your room (one per slot, or a dark one), the hall's upper wall
+  over your door and the neighbours' partitions all stand between a slanted eye and your room's near
+  walls: from outside, a slanted look into a room clears its near walls only if nothing else is in the
+  way. So splitting `UnitTops` per unit in the lobby's art would not have bought the view.
+- **So everything but your unit goes, for your screen alone** (`ArrangeStage`, client): every part and
+  picture within `Arrange.Camera.Stage` (120 studs) of your home gets `LocalTransparencyModifier` 1,
+  except your unit, every player's character and the camera's own children (Arrange's lifted finds);
+  parts streaming in meanwhile are hidden as they come. Your room stands open-topped on an even dark
+  floor (a Neon part, `Void`, so no light changes its colour). This is The Sims 4's apartment build
+  mode (the neighbours' units drop away) and Animal Crossing's room editor (your room alone on
+  black). Every other player sees the lobby as it is. About 1,500 parts, 12 ms, once per opening.
+- **The haze, depth of field and the room's own bulb go dark from afar.** The lobby's Atmosphere
+  (density 0.38) and depth of field black out a room seen from 20 studs, and Roblox stops drawing
+  the bulb's light that far off (sooner on a low-end phone). While lifted the haze is cleared, the
+  blur is off and the ambient light rises to `Light`, a warm even light; all three are put back.
+- **The eye goes anywhere within `Around` (20 studs) of the walls**, with no ceiling: the home view is
+  a front corner on the side you stand (`BuildView.homeView`, `Clear` 5 past each near wall) looking
+  down at `HomeTilt` (0.95 rad, 54 degrees). Replaces D-439's ceiling rule and D-443's eye box.
+- **Between the orbit and a fixed shot the camera always dips through black** (was a swing to the
+  door): the world comes back or goes in the dark, and a swing would cross the building's walls.
+  The world comes back as the close's swoop lands in your eyes, so you never see it pop.
+- **Not at the bar yet** (`docs/art/s5-03j1d-small-stage.png`): the sliding walls' long ends past
+  the corners stand in the dark (D-354), the room is a little dim and sits high in the band, and the
+  door's Close and Slam still show. S5-03j1d2 takes these first, then the other sizes and shots.
+
