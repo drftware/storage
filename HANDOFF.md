@@ -2,39 +2,38 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-19, S5-03j3a done: the snapper, pure (D-455) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
+**Updated:** 2026-11-19, S5-03j3a2 done: the snapper in the hand (D-456) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; search its heading). Order now: S5-03j3a2, j3b, j3c, j4 to j7, ENG-29, k1 to k6.
-- **`Home/Snapping` is pure and specced, not wired** (D-455): only arriving at a wall turns a
-  piece; walls and tops hold a little past where they took hold; never the door's wall.
+  only; search its heading). Order now: S5-03j3b, j3c, j4 to j7, ENG-29, k1 to k6.
+- **Snapping is live in Arrange** (D-456): a piece with a back turns to a wall as it arrives
+  and sits flush; Brix's line-up fills `Lifted.lines` on every settle (not drawn yet); a find
+  stands on a top only with its middle over it. Seen in Studio at A16, `docs/art/s5-03j3a2-*`.
 - **Studio has tonight's code** (`rojo serve`, port 34872): restart Play to run edits.
 - **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j3a2 The snapper in the hand
-The moment: a crate pushed toward the back wall swings its back to it and sits flush; a cup
-dragged over the job box hops up onto it, and back down once clearly off the edge (The Sims 4).
-1. `ArrangeHand.Lifted` gains `backs: boolean` (furniture by `Furniture.ofPlaced(l.name)`, not
-   `Snapping.Flat`, not a `Layout.Lean` kind), `wall: number?`, and `lines:
-   Brix.PlacementAlignment` (`{ x = 0, y = 0, count = 0, guides = {} }`, made once per lift).
-2. In `lift`, where a placed thing's pose is read (~line 613): `l.wall = Snapping.wall(...)`
-   from that pose with `at` nil, so a piece lifted off a wall starts against it and never turns.
-3. `settle` (~313): after the grid and clamp, on "Floor", not Free, `l.backs`: `wall =
-   Snapping.wall(floor, x, y, rx, ry, turn, l.wall)`; `l.turn = Snapping.turned(l.turn, wall,
-   l.wall)`; if the turn changed, snap and clamp again with it; `l.wall = wall`; against a wall,
-   `Snapping.flush`. Then (not Free, not the mirror) `r.placements:align(l.id, l.shape, pose,
-   Snapping.Line, l.lines)` and `Snapping.lineUp(..., across = wall and Snapping.across(wall))`,
-   writing the count back into `l.lines.count`; Free or the mirror: count 0. Layout's lean and
-   clear stay last (the job box turns, then keeps its lid's room).
-4. `aim` (~238): tops by `Snapping.over(x, y, w, d, l.pose ~= nil and l.pose.on == id)`
-   instead of `REACH`; on a near tie in ray distance the current top wins. Rooms keep `REACH`.
-5. Studio at A16 (CameraTest "carry", STUDIO.md; aim with `WorldToViewportPoint`; read state
-   with execute_luau): a crate turns and sits flush at the back wall; R there keeps its turn.
-**Acceptance:** green; both moments seen in Studio (the job box's find too), in `docs/art/`.
-**Read first:** `src/shared/Home/Snapping.luau` (whole, ~200 lines); `ArrangeHand.luau` lines
-200-345 (aim, settle) and 595-620 (lift's pose); DECISIONS D-455; ROADMAP's S5-03j3a2 and j3b.
+## Next task: S5-03j3b Snapping seen and heard
+The moment: a cup dragged over the job box hops up with a light tock, and down again; a crate
+slid beside another shows a faint line where their edges meet, as The Sims 4 draws its guides.
+1. A new client module `src/client/ArrangeGuides.luau` (header, small typed interface): a pool
+   of six thin anchored parts made once (`new(parent)`), faint warm white, no collide, touch,
+   query or shadow; `show(frame, lines)` lays the first `lines.count` of `lines.guides` on the
+   area's frame (a guide on "x" stands at x = `at` from y = `from` to `to`; floor y is the
+   frame's -Z), parks the rest; `hide()`. Called only when the pose changes, never per frame.
+2. `ArrangeHand` owns one: `setPose` shows `l.lines` on `Arrange.frameOn(r, pose.on)` while a
+   thing is carried; hide on let go, Put away, the server's answer and `stopFollow`.
+3. The tock: in `setPose`, when `was.on ~= pose.on` and either is a top (not
+   `r.placements:areaOf`), play `TOCK` (the knock, higher and quieter, beside `CLINK`) instead
+   of the step's tick. Check the plan doc's feedback table row for "onto a table" first.
+4. Studio at A16 (STUDIO.md "Proving snapping in Play"): drag a crate beside the other till
+   their edges line up and capture the line; carry the moon lamp off and onto the job box and
+   read the tock's Sound under the screen's sounds folder.
+**Acceptance:** green; the lines and the tock seen in Studio, captured to `docs/art/`.
+**Read first:** `ArrangeHand.luau` lines 481-530 (shade, paint, setPose) and 1295-1320 (drop);
+`Home/Snapping.luau` lines 166-212; `vendor/brix/src/Contracts/Placements.luau` lines 160-185;
+`Home/Arrange.luau` lines 238-280 (the sounds); DECISIONS D-456; ROADMAP's S5-03j3b and j3c.
 
 ## Queue (next sessions, the owner's ticket order)
 0. A tray card's drag isn't Gestures': the wheel zooms, no twist (route the wheel, D-453).
@@ -43,7 +42,8 @@ dragged over the job box hops up onto it, and back down once clearly off the edg
    minimap's "You" sliver (D-447). Drop `ArrangeCamera.Room.slot`, `slotBox` (D-443); rename
    `BuildView.eyeBox` (D-444). Hand projections land 10 points low on a notch: use `lens`
    (D-446). `ToolView.luau` ~1293 reads the on-screen flag as "ahead" (D-451). Arrange reopens
-   on the last tab: does the doc want that? `aim`'s room `REACH` stays 2.5 (D-455).
+   on the last tab: does the doc want that? `aim`'s room `REACH` stays 2.5 (D-455). A blocked
+   let-go's slide settles flush and lined up and may be judged blocked again: watch (D-456).
    After S5-03j and k: S5-03g2b's three "Polish:" lines (D-326 to D-328), then g3b.
 1. Small's doorway's inside boards are oak, not the picked paint (D-355). Sitting (D-353):
    cross-legged on the blanket needs our own animation; lying on the bed.

@@ -3698,3 +3698,17 @@ verified: a doc page, Studio, or "untested".
 - **The wheel zooms the build camera through the unit's facade** (S5-03j2a2): ten notches put the
   eye behind `Units.Unit1.Colliders.FacadeRight` (a wall in the face, the finds' outlines through
   it). Four notches on a Medium home is a clean close view (a crate about 29 points across).
+
+## Proving snapping in Play (S5-03j3a2, Nov 19)
+
+- **Medium's floor in the world (Unit1, slot 1):** floor x runs along world -Z and floor y along
+  world -X: world X = 66.125 - y, Z = 478 - x (from the set-out pieces' pivots). Half-width 6.0,
+  half-depth 5.875. The shelf (7.5 by 1.6) fills the back wall from x -3.5 to 4.0, so a piece
+  pushed there shows red; the left wall (+x) is clear from y -4 to -2.
+- **Reading what the hand did without its locals:** the ghost is the one Model under
+  `CurrentCamera` (its pivot's yaw, its `Highlight.OutlineColor`: red 0.91/0.36 refused); the
+  server's answer by `ArrangeTest:Invoke(player, "rows")`; a find's height by its drawn model's
+  bounding box bottom (the job box's top at 2.74, the ghost hangs 0.6 above where it'd stand).
+- **Aim at the plane you mean:** a viewport point made from a world point above the floor lands
+  the floor ray further from the camera. For a top, aim at a point on the top's plane; work the
+  top's axis out from two finds on it, and recompute it after either moves.

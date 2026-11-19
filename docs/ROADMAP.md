@@ -3522,14 +3522,16 @@ Done when players watch the results to the end and change their perks between cl
         checks): the wall a piece is against (held past its reach, corners to the wall it faces,
         never the door's), flush, only arriving turns it; a find on a top by its middle, held
         `Over` past the edge; which of Brix `align`'s moves and lines hold. Not wired (context).
-      - [ ] **S5-03j3a2 The snapper in the hand.** Wire `Snapping` into `ArrangeHand`: `settle`
-        (floor, not Free, a piece with a back: `wall`, `turned` into `l.turn`, re-grid, `flush`;
-        then `align` into a per-lift `Brix.PlacementAlignment` and `lineUp`), `aim` (tops by
-        `over`, not `REACH`), lift (`l.wall` from where it stood). Seen in Studio at A16: a crate
-        pushed to the back wall turns its back and sits flush; a find over the job box stands on
-        it and steps down past its edge.
+      - [x] **S5-03j3a2 The snapper in the hand.** Done (D-456; `docs/art/s5-03j3a2-*.png`):
+        `ArrangeHand.settle` runs grid, wall (turn as it arrives, flush), Brix's line-up, then the
+        mirror's lean and the job box's lid; `aim` takes tops by `Snapping.over`, a near tie to
+        the top it's on; lift starts a piece against the wall it stood at. Seen in Studio at A16
+        (Medium): a crate to the left wall turns 0 to 90 and stands flush (x 5.05 of 6.0), lined
+        up 0.075 with the other crate's edge; the moon lamp stays on the job box 0.25 past its
+        edge, steps down 0.8 past, stays down just outside it, hops up over it.
       - [ ] **S5-03j3b Seen and heard.** The tock as a find hops onto a top and back down; the
-        guide lines drawn faint from a pool of six (no allocation per drag); seen in Studio at A16.
+        guide lines drawn faint from a pool of six (no allocation per drag), from `Lifted.lines`
+        (Brix's `Alignment`, filled by `settle`); seen in Studio at A16.
       - [ ] **S5-03j3c Wall things.** A wall thing slides along its wall as dragged; a handle
         raises and lowers it (Sims 4's wall height, with Alt aside); seen in Studio at A16.
     - [ ] **S5-03j4 Undo, and every action answers.** Undo and redo while Arrange is open (a

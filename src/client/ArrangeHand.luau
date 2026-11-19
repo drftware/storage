@@ -32,6 +32,7 @@ local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local Settle = require(ReplicatedStorage.Shared.Home.Settle)
+local Snapping = require(ReplicatedStorage.Shared.Home.Snapping)
 local Turning = require(ReplicatedStorage.Shared.Home.Turning)
 
 local Feel = Arrange.Feel
@@ -57,9 +58,13 @@ local CLINK: Arrange.Sound = table.clone(Arrange.Knock)
 CLINK.pitch = (Arrange.Knock.pitch or 1) * 1.45
 CLINK.volume = (Arrange.Knock.volume or 0.5) * 0.45
 
--- How far past an area's edge a finger still aims at it (studs): a find dragged toward a wall
--- slides along it, flush, rather than stopping short.
+-- How far past a room area's edge a finger still aims at it (studs): a find dragged toward a
+-- wall slides along it, flush, rather than stopping short. Tops don't use it: a find stands on a
+-- top only with its middle over it (`Snapping.over`, D-455).
 local REACH = 2.5
+-- How much nearer along the finger's ray (studs) another top has to be than the one a find
+-- stands on to take it: two tops of a height side by side don't trade it back and forth.
+local TIE = 0.25
 -- A find lifted off the floor or out of the tray, as a ghost the finger drags.
 export type Lifted = {
 	what: string, -- what Place sends: the id set out when it's moved, the find's name from the box
@@ -89,6 +94,13 @@ export type Lifted = {
 	-- where the run began, so a turn that pushed the thing off a wall is undone by turning back
 	-- (four quarter turns bring it home, S5-03j2b1b); a move starts a new run.
 	turnRun: { from: Brix.PlacementPose, to: Brix.PlacementPose? }?,
+	-- Snapping (S5-03j3a2, D-455): whether it turns its back to a wall it's pushed to (furniture
+	-- that isn't flat, and not the leaning mirror); the wall it's against now, if any (lifted
+	-- off one, it starts against it, so lifting never turns it); and Brix's line-up with its
+	-- neighbours, made once per lift and filled again on every move (the guide lines to draw).
+	backs: boolean,
+	wall: number?,
+	lines: Brix.PlacementAlignment,
 }
 
 -- What the hand needs from the screen that owns it.
@@ -258,7 +270,10 @@ function ArrangeHand.new(options: Options): Hand
 		-- hangs a ceiling light from the tile you point at: the corner camera looks down on the
 		-- room, so the ceiling itself is seldom on the screen (S5-03g4d)
 		local under = r.frames.Floor
-		local function try(on: string, f: CFrame, area: Brix.PlacementArea)
+		-- the top the find stands on now: it holds a little past its edge, and wins a near tie
+		local held = if l.pose then l.pose.on else nil
+		local heldBest = false
+		local function try(on: string, f: CFrame, area: Brix.PlacementArea, top: boolean)
 			if not table.find(l.shape.fits, area.kind) then
 				return
 			end
@@ -269,20 +284,29 @@ function ArrangeHand.new(options: Options): Hand
 				return -- seen from behind or edge on
 			end
 			local t = (plane.Position - ray.Origin):Dot(n) / facing
-			if t <= 0 or t >= nearest then
+			local mine = top and on == held
+			if
+				t <= 0
+				or t
+					>= (if heldBest then nearest - TIE elseif mine then nearest + TIE else nearest)
+			then
 				return
 			end
 			local p = f:PointToObjectSpace(ray.Origin + ray.Direction * t)
 			local x, y = p.X, -p.Z
-			if math.abs(x) > area.width / 2 + REACH or math.abs(y) > area.depth / 2 + REACH then
+			if top then
+				if not Snapping.over(x, y, area.width, area.depth, mine) then
+					return -- a find stands on a top only with its middle over it (D-455)
+				end
+			elseif math.abs(x) > area.width / 2 + REACH or math.abs(y) > area.depth / 2 + REACH then
 				return
 			end
-			best, nearest, bx, by = on, t, x, y
+			best, nearest, bx, by, heldBest = on, t, x, y, mine
 		end
 		for on, f in r.frames do
 			local area = r.placements:areaOf(on)
 			if area then
-				try(on, f, area)
+				try(on, f, area, false)
 			end
 		end
 		for id in tops do
@@ -290,7 +314,7 @@ function ArrangeHand.new(options: Options): Hand
 				local shape = Arrange.shapeOf(id)
 				local f = Arrange.frameOn(r, id)
 				if shape and shape.top and f then
-					try(id, f, shape.top)
+					try(id, f, shape.top, true)
 				end
 			end
 		end
@@ -307,9 +331,32 @@ function ArrangeHand.new(options: Options): Hand
 		return if shape then shape.top else nil
 	end
 
-	-- `x`, `y` on area `on` snapped to the grid (or with Free, as they are) and kept inside it,
-	-- the find turned `l.turn`: kept in by the reach of its footprint so turned, square on or
-	-- askew, as Brix's judge measures it (S5-03j2b2b).
+	-- `x`, `y` on `area` snapped by `snapper` (the grid, or Free) and kept inside it, `l` turned
+	-- `turn`: kept in by the reach of its footprint so turned, square on or askew, as Brix's judge
+	-- measures it (S5-03j2b2b). Answers where it stands and its turn, how far its middle may go
+	-- from the area's each way, and its reach across and deep.
+	local function snapIn(
+		snapper: Brix.PlacementSnap,
+		area: Brix.PlacementArea,
+		l: Lifted,
+		x: number,
+		y: number,
+		turn: number
+	): (number, number, number, number, number, number, number)
+		local _, _, turned = snapper:snap(area, l.shape, x, y, turn) -- (the turn's snap alone)
+		local rx, ry = Turning.reach(l.shape.width, l.shape.depth, turned)
+		local hx, hy = math.max(0, area.width / 2 - rx), math.max(0, area.depth / 2 - ry)
+		local sx, sy, st =
+			snapper:snap(area, l.shape, math.clamp(x, -hx, hx), math.clamp(y, -hy, hy), turn)
+		return math.clamp(sx, -hx, hx), math.clamp(sy, -hy, hy), st, hx, hy, rx, ry
+	end
+
+	-- Where `l` settles with the finger at `x`, `y` on area `on`, as The Sims 4 settles a thing
+	-- you drag (D-455): on the grid (Free: as it is) and inside the area; a piece with a back
+	-- pushed to a wall turns its back to it as it arrives and sits flush; lined up with its
+	-- neighbours where an edge or middle comes within `Snapping.Line` (the lines kept in
+	-- `l.lines`); then the mirror leans on its wall and the job box keeps its lid's room. Free
+	-- skips the wall and the lines. No tables made but the pose answered.
 	local function settle(
 		r: Arrange.Room,
 		l: Lifted,
@@ -321,15 +368,34 @@ function ArrangeHand.new(options: Options): Hand
 		if not area then
 			return nil
 		end
-		local snapper = if options.free() then freeSnap else snap
-		local _, _, turned = snapper:snap(area, l.shape, x, y, l.turn) -- (the turn's snap alone)
-		local rx, ry = Turning.reach(l.shape.width, l.shape.depth, turned)
-		local hx, hy = math.max(0, area.width / 2 - rx), math.max(0, area.depth / 2 - ry)
-		local sx, sy, st =
-			snapper:snap(area, l.shape, math.clamp(x, -hx, hx), math.clamp(y, -hy, hy), l.turn)
-		local pose =
-			{ on = on, x = math.clamp(sx, -hx, hx), y = math.clamp(sy, -hy, hy), turn = st }
-		local kind, floor = l.starter, r.placements:areaOf("Floor")
+		local free = options.free()
+		local snapper = if free then freeSnap else snap
+		local px, py, pt, hx, hy, rx, ry = snapIn(snapper, area, l, x, y, l.turn)
+		if on ~= "Floor" then
+			l.wall = nil
+		elseif l.backs and not free then
+			local wall = Snapping.wall(area, px, py, rx, ry, pt, l.wall)
+			local turn = Snapping.turned(pt, wall, l.wall)
+			if turn ~= pt then -- arrived at a wall: its back to it, then the grid at that turn
+				l.turn = turn
+				px, py, pt, hx, hy, rx, ry = snapIn(snapper, area, l, x, y, turn)
+			end
+			l.wall = wall
+			if wall then
+				px, py = Snapping.flush(area, wall, px, py, rx, ry)
+			end
+		end
+		local pose = { on = on, x = px, y = py, turn = pt }
+		local kind, lines = l.starter, l.lines
+		if free or (kind and Layout.Lean[kind]) then
+			lines.count = 0
+		else
+			r.placements:align(l.id, l.shape, pose, Snapping.Line, lines)
+			local across: ("x" | "y")? = if l.wall then Snapping.across(l.wall) else nil
+			pose.x, pose.y, lines.count =
+				Snapping.lineUp(px, py, lines.x, lines.y, hx, hy, across, lines.guides, lines.count)
+		end
+		local floor = r.placements:areaOf("Floor")
 		if kind and floor and Layout.Lean[kind] then
 			-- the mirror finds the wall nearest the finger and turns its back to it (D-348)
 			local leant = Layout.leanTo(kind, pose, floor)
@@ -569,6 +635,7 @@ function ArrangeHand.new(options: Options): Hand
 		local from = ghost:GetPivot()
 		local kind = Layout.kind(id)
 		local row = if kind then Furniture.byId(kind) else nil
+		local piece = Furniture.ofPlaced(name)
 		local l: Lifted = {
 			what = what,
 			id = id,
@@ -593,6 +660,9 @@ function ArrangeHand.new(options: Options): Hand
 			asking = nil,
 			shelf = nil,
 			shrink = nil,
+			backs = piece ~= nil and not Snapping.Flat[piece.id] and not Layout.Lean[piece.id],
+			wall = nil,
+			lines = { x = 0, y = 0, count = 0, guides = {} },
 		}
 		lifted = l
 		carrying = false
@@ -613,6 +683,12 @@ function ArrangeHand.new(options: Options): Hand
 			local pose = r.placements:poseOf(id)
 			if pose then
 				l.turn = pose.turn
+				-- lifted off a wall, it starts against it: the first move keeps the turn it has
+				local floor = r.placements:areaOf("Floor")
+				if l.backs and floor and pose.on == "Floor" then
+					local rx, ry = Turning.reach(shape.width, shape.depth, pose.turn)
+					l.wall = Snapping.wall(floor, pose.x, pose.y, rx, ry, pose.turn, nil)
+				end
 				setPose(r, l, { on = pose.on, x = pose.x, y = pose.y, turn = pose.turn })
 			end
 		end

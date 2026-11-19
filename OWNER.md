@@ -119,9 +119,12 @@ nowhere else.
      back with a small clink, the next one a beat later, a tiny second bounce, then still (S5-03j2b2c,
      D-454). Tell me: does the hop read on your phone, or is it too small to see from Arrange's
      view (my default: a jump of 0.16 studs, a small jolt; I can make it bigger)?
-- [ ] **Decide: which things snap to a wall** (S5-03j3a, D-455; the rules are written and tested,
-  not yet in the game, so nothing to try until S5-03j3a2). My defaults, any of which is a word to
-  change:
+- [ ] **Try it, then decide: which things snap to a wall** (S5-03j3a, D-455; in the game since
+  S5-03j3a2, D-456). Open Arrange on your phone, drag a milk crate from the middle of the room to
+  the left wall, then lift the moon lamp off the job box and drag it slowly past the box's end and
+  back. Look for: the crate swings its back to the wall as it gets there and sits flush; the lamp
+  stays on the box a little past its edge, drops to the floor once clearly off, and hops back up
+  only once its middle is over the box. My defaults, any of which is a word to change:
   1. A piece of furniture pushed within a stud of the back wall or a side wall swings round so its
      back is to the wall and slides flush against it, as in The Sims 4. It turns only as it
      arrives: turn it yourself while it's against the wall and it keeps your turn.

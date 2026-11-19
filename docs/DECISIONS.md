@@ -10826,3 +10826,28 @@ the room lifts it with today's drag (Turn, Place, the tray away).
   the thing in its area and, against a wall, along the wall, never off it; a side not taken drops
   its guide lines in place (no allocation).
 - **The grid** stays Brix's `PlacementSnap.grid` at `Arrange.Step`; Snapping doesn't copy it.
+
+## D-456 The snapper in the hand (S5-03j3a2, 2026-11-19)
+
+- **What:** `ArrangeHand` runs D-455's rules. `settle` goes grid (`snapIn`, Brix's snap kept in
+  by the turned reach), then the wall (on the floor, not Free, a piece with a back:
+  `Snapping.wall`, `turned` into `l.turn`, the grid again at that turn, `flush`), then Brix's
+  `align` into `Lifted.lines` with `Snapping.lineUp` (not Free, not the mirror: count 0), then
+  the mirror's `leanTo` and the job box's `clearOf` last. `aim` takes a top only by
+  `Snapping.over` (the 2.5-stud `REACH` stays for room areas), and on a near tie (`TIE`, 0.25
+  studs of ray) the top the find stands on keeps it.
+- **New on `Lifted`:** `backs` (furniture by `Furniture.ofPlaced`, not `Snapping.Flat`, not a
+  `Layout.Lean` piece), `wall` (set at lift from where it stood, `at` nil, so lifting never
+  turns it; nil off the floor; kept through Free, so letting Alt go by a wall keeps your turn),
+  `lines` (made once per lift; `align` and `lineUp` refill it in place, nothing allocated per
+  move beyond the pose `settle` already made).
+- **Every settle snaps**, not only the drag's: Turn and twist against a wall keep their turn (the
+  wall is held) and sit flush at the new reach; `freeNear` and `startSpot` settle through it too,
+  so a slide on a blocked let-go can land flush and lined up. If a lined-up or flushed spot is
+  judged blocked, `freeNear` answers nil and the thing floats back (not seen tonight).
+- **Seen in Studio at A16 (Medium):** a milk crate dragged to the back wall turned 90 to 0 and
+  stood flush (red: the 7.5-stud shelf fills that wall; on let go it slid into the free corner);
+  to the left wall, green, turned 0 to 90, flush at x 5.05 of the half-width 6.0, lined up 0.075
+  to the other crate's edge. The moon lamp: 0.25 past the job box's end it stayed on it; 0.8 past
+  it stepped down; from the floor just outside the end it stayed down (the old reach hopped it
+  up); over the box it hopped back up.
