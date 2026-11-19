@@ -3677,6 +3677,14 @@ verified: a doc page, Studio, or "untested".
   calls, `WindowFocusReleased`, and the camera cancels the drag), so the thing floats back. To
   capture mid-drag, start a background Bash first (`sleep 2; screencapture ...`), then one call:
   down, a few `moveTo`s, a 3000 ms `wait`, up.
+- **Turning a carried thing from the MCP** (S5-03j2b2b2): `CameraTest` "carry", x, y, dx, dy,
+  { wheel = n } or { twist = radians } or { hold = s }: a press (a mouse's, or a finger's for a
+  twist), a drag, then the wheel or a second finger round the first, held, let go. `task.spawn`
+  it with a long `hold` to press R (`user_keyboard_input`) mid-drag. Aim it with
+  `WorldToViewportPoint`: Gestures takes viewport points, and `WorldToScreenPoint`'s land
+  about 46 left and 70 up, on bare floor, which drags the camera instead.
+- **Alt from the MCP** (S5-03j2b2b2): `user_keyboard_input` keyDown LeftAlt stays down across
+  calls (`IsKeyDown` true from a Client `execute_luau`) until a keyUp.
 - **`WorldToScreenPoint`'s second value is "on the screen", not "ahead of the camera"**
   (S5-03j2b1b): a point past the screen's edge in front of the camera reads false. To ask
   whether a point is behind the camera, test the returned depth (`p.Z <= 0`).

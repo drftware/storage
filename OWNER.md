@@ -97,9 +97,9 @@ nowhere else.
      defaults, yours to change: the × is gone (a tap on the room lets go); Turn sits in the
      middle; the plus is hidden when your box has no more of that find; one you just took out
      has Put away too.
-- [ ] **Turning a held thing, with your fingers and a mouse** (S5-03j2b2b1, D-453; passes
-  checks; a Studio check of R, the wheel and Free is the next session's, the twist is yours).
-  In your home, tap Arrange.
+- [ ] **Turning a held thing, with your fingers and a mouse** (S5-03j2b2b1, D-453; R, the
+  wheel, Alt, the switch and a free twist seen working in Studio, D-454; the real fingers and
+  the feel are yours). In your home, tap Arrange.
   1. On your phone, drag a chair and, still holding it, put a second finger down and twist both
      round. Look for: it turns with your fingers, clicking into each quarter with a click-click
      and a little spin past. Twist slowly and fast: both land on the quarter nearest.
@@ -114,6 +114,11 @@ nowhere else.
   4. Tell me: does the twist feel like turning a real thing (my default: the quarter nearest
      your fingers, no lag), is the soft tick every 15 degrees too busy or too quiet, and is the
      switch's icon clear enough without words?
+  5. Put a small find on the job box's lid (or a lamp on the pallet), then drag the box a little
+     way and let go. Look for: as it lands, the find on top jolts up a finger's width and drops
+     back with a small clink, the next one a beat later, a tiny second bounce, then still (S5-03j2b2c,
+     D-454). Tell me: does the hop read on your phone, or is it too small to see from Arrange's
+     view (my default: a jump of 0.16 studs, a small jolt; I can make it bigger)?
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

@@ -3462,7 +3462,7 @@ Done when players watch the results to the end and change their perks between cl
         the conductor's question: does the camera hold still through a drag (no zoom), the
         framing changing only by the edge follow near the screen's edge? Capture to
         `docs/art/s5-03j2b-*.png`.
-      - [ ] **S5-03j2b2 Twist, Free and riders.** The free turn's sum (a twist's angle plus quarter
+      - [x] **S5-03j2b2 Twist, Free and riders.** The free turn's sum (a twist's angle plus quarter
         turns, snapped to quarters unless free) pure in `src/shared/Home` with specs first; a
         second finger's twist while dragging (`intent`'s "twist" with a target); R and the wheel
         while held; Alt, or a Free switch in a corner, places off the grid at any angle (check
@@ -3477,7 +3477,7 @@ Done when players watch the results to the end and change their perks between cl
           footprints) and the save take any angle, not only 0, 90, 180, 270: grep their turn
           handling, write a failing spec for each that refuses, widen it. If Brix needs it,
           that's a Brix ticket by Brix's AGENTS.md, then the pin moves (D-252).
-        - [ ] **S5-03j2b2b Twist, R and the wheel, Free.** Split at the run's context line
+        - [x] **S5-03j2b2b Twist, R and the wheel, Free.** Split at the run's context line
           (S5-03j2b2b1's session):
           - [x] **S5-03j2b2b1 In code** (D-453; check green, untested in Studio). A twist on a
             carried thing turns it from where the twist began (`ArrangeHand.twist`, `Turning.seen`
@@ -3490,7 +3490,10 @@ Done when players watch the results to the end and change their perks between cl
             carried thing settles again the moment Free changes. `settle` keeps a turned thing
             in by `Turning.reach` at any angle. FreeCursor leaves Alt alone while a screen has
             the mouse.
-          - [ ] **S5-03j2b2b2 Seen in Studio.** Studio Play at A16 (685 by 338), Medium home: R
+          - [x] **S5-03j2b2b2 Seen in Studio.** Done (D-454; `docs/art/s5-03j2b2b-*.png`): R on a
+            selected and a carried crate, the wheel mid-drag (the camera held still), Alt and the
+            switch, a free twist of 0.6 radians kept by the server and back after a rejoin with
+            nothing overlapping it. Was: Studio Play at A16 (685 by 338), Medium home: R
             on a selected and on a carried crate; the wheel during a mouse drag (CameraTest's
             "wheel" verb can't drag, so drive Gestures through the hand's `intent` with a
             "twist" if the MCP mouse can't hold and roll); the Free switch on and off (looks lit
@@ -3506,13 +3509,24 @@ Done when players watch the results to the end and change their perks between cl
           turn = 1 })` while Free is on; `settle`'s clamp swaps width and depth only at quarters
           (use Brix's turned reach, |cos| and |sin|); negate the twist when the camera sees the
           face from behind (the ceiling from above); a click each time `Turning.nearest` changes.
-        - [ ] **S5-03j2b2c Riders settle.** What stands on a piece moves with it (D-338) and
-          settles with a little bounce as its piece lands, each a beat after the last. Seen in
-          Studio at A16 with a find on the table.
+        - [x] **S5-03j2b2c Riders settle.** Done (D-454; `docs/art/s5-03j2b2c-riders.png`): riders
+          already rode in the ghost (D-338); now as the piece lands each hops `Settle.Hop` and
+          drops back with a clink, a beat after the last, a smaller bounce, then still
+          (`Home/Settle`, its spec). Seen in Studio: a moon lamp and a stress ball on the job box.
     - [ ] **S5-03j3 Snapping.** A pure snapper in `src/shared/Home` with Lune specs: the
       half-stud grid; furniture against a wall turns its back to it; a find dragged over a top
       hops onto it with a tock and back down off it; guide lines from ENG-26c drawn faint; wall
-      things slide along their wall, a handle raises and lowers them.
+      things slide along their wall, a handle raises and lowers them. Split (S5-03j2b2b2's
+      session; one session each):
+      - [ ] **S5-03j3a The snapper, pure.** `Home/Snapping` with Lune specs first: the half-stud
+        grid; a piece dragged near a wall turns its back to it (within a reach, Free aside);
+        which top a find dragged over hops onto and when it steps back down; Brix's `align`
+        (ENG-26c) for guide lines, one answer per drag. Wire into `ArrangeHand.settle`; the tock
+        and the faint lines can wait for b.
+      - [ ] **S5-03j3b Seen and heard.** The tock as a find hops onto a top and back down; the
+        guide lines drawn faint from a pool of six (no allocation per drag); seen in Studio at A16.
+      - [ ] **S5-03j3c Wall things.** A wall thing slides along its wall as dragged; a handle
+        raises and lowers it (Sims 4's wall height, with Alt aside); seen in Studio at A16.
     - [ ] **S5-03j4 Undo, and every action answers.** Undo and redo while Arrange is open (a
       pure undo list, Lune specs; the server takes each undo as an ordinary move). Every row of
       the doc's feedback table: lift, drag, onto a table, blocked (the blocker glows), turn,

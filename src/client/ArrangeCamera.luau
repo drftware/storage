@@ -799,7 +799,7 @@ function ArrangeCamera.new(options: Options): Camera
 	-- `execute_luau`, because Studio's MCP mouse is a finger with no wheel or right button. It
 	-- feeds Gestures exactly what a mouse would: `"right", x, y, dx, dy, seconds` drags with the
 	-- right button, `"wheel", notches, x, y` rolls the wheel, `"tap", x, y` taps (twice quickly
-	-- is the reset). `"state"` answers the eye, the look point and each wall's fade (left, right,
+	-- is the reset), `"carry", x, y, dx, dy, { wheel, twist, hold }` turns a dragged thing. `"state"` answers the eye, the look point and each wall's fade (left, right,
 	-- back, front) as one line; `"frame"` where the floor's corners and the walls' tops show
 	-- against the clear band. Points are viewport points, as Gestures takes them.
 	local test: BindableFunction? = nil
@@ -831,6 +831,44 @@ function ArrangeCamera.new(options: Options): Camera
 				gestures:press("cameraTest", a, b, "left", now)
 				task.wait()
 				gestures:release("cameraTest", a, b, os.clock())
+				return "ok"
+			elseif verb == "carry" then
+				-- A carried thing turned mid-drag (S5-03j2b2b2), which the MCP's mouse can't do:
+				-- presses at x, y and drags by dx, dy, then `e.wheel` notches of the wheel (a
+				-- mouse's press) or a second finger twisted `e.twist` radians round the first
+				-- (a finger's press), holds `e.hold` seconds and lets go.
+				local how = if type(e) == "table" then e else {}
+				local by = if type(how.twist) == "number" then how.twist else nil
+				gestures:press("cameraTest", a, b, if by then "touch" else "left", now)
+				for i = 1, 20 do
+					task.wait()
+					gestures:move("cameraTest", a + c * i / 20, b + d * i / 20, os.clock())
+				end
+				local x, y = a + c, b + d
+				if type(how.wheel) == "number" then
+					gestures:wheel(how.wheel, x, y, os.clock())
+				end
+				if by then
+					gestures:press("cameraTest2", x + 60, y, "touch", os.clock())
+					for i = 1, 20 do
+						task.wait()
+						local t = by * i / 20
+						gestures:move(
+							"cameraTest2",
+							x + 60 * math.cos(t),
+							y + 60 * math.sin(t),
+							os.clock()
+						)
+					end
+					gestures:release(
+						"cameraTest2",
+						x + 60 * math.cos(by),
+						y + 60 * math.sin(by),
+						os.clock()
+					)
+				end
+				task.wait(if type(how.hold) == "number" then how.hold else 0.3)
+				gestures:release("cameraTest", x, y, os.clock())
 				return "ok"
 			elseif verb == "state" then
 				local cam = Workspace.CurrentCamera

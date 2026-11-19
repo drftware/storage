@@ -10776,3 +10776,26 @@ the room lifts it with today's drag (Turn, Place, the tray away).
 - **Not yet:** a card dragged up out of the tray is the tray's own drag, not Gestures', so the
   wheel zooms and a second finger doesn't twist it; R and Free work on it. Queued.
 
+
+## D-454 Turning seen in Studio; riders hop as their piece lands (S5-03j2b2b2, S5-03j2b2c, Nov 18)
+
+- **Seen in Studio Play at A16, Medium home** (`docs/art/s5-03j2b2b-*.png`): R on a selected
+  crate turns it a quarter with the 5-degree spin past (two presses, 90 to 180 to 270); R mid-drag
+  turns the carried crate; the wheel mid-drag turns it a quarter and the camera doesn't zoom; the
+  Free switch lights honey at a glance and goes dark again; Alt held lights it, let go darkens it,
+  the mouse untouched. With Free on, a two-finger twist of 0.6 radians set the crate at 34 degrees
+  off square; the server kept turn 236 off the grid and, after Stop and Play, it came back there
+  with nothing drawn overlapping it (`GetPartsInPart` against every other piece).
+- **Let go overlapping the shelf, the crate slid 1.3 studs to the nearest free spot.** That's the
+  designed slide (D-449's `freeNear`), not a pop.
+- **Riders settle (S5-03j2b2c):** what stands on a piece already rode in its ghost (D-338). Now,
+  as the piece lands, each rider's copy hops up `Settle.Hop` (0.16 studs over 0.16 s) and drops
+  back with a clink (the find's knock, high and quiet), the next a beat (0.07 s) later, then a
+  bounce at a third of the height, then still; the ghost waits for them before it gives way to
+  what the server drew, so nothing pops. Same when a piece is set back where it stood. The hop
+  is straight up (against gravity), whatever the top faces. The bounce is as things on a table
+  jump when The Sims 4 drops the table. Only the copies are stepped, only for the bounce.
+- **Studio test hook:** `CameraTest` "carry" presses, drags and then rolls the wheel or twists a
+  second finger mid-drag, since the MCP's mouse can't hold and roll. Its points are viewport
+  points (`WorldToViewportPoint`), not `WorldToScreenPoint`'s: a press aimed by the latter missed
+  the crate and dragged the camera instead.

@@ -31,6 +31,7 @@ local Layout = require(ReplicatedStorage.Shared.Home.Layout)
 local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
+local Settle = require(ReplicatedStorage.Shared.Home.Settle)
 local Turning = require(ReplicatedStorage.Shared.Home.Turning)
 
 local Feel = Arrange.Feel
@@ -50,6 +51,11 @@ THUD.volume = (Arrange.Knock.volume or 0.5) * 1.3
 local SOFT: Arrange.Sound = table.clone(Arrange.Tick)
 SOFT.pitch = (Arrange.Tick.pitch or 1) * 1.2
 SOFT.volume = (Arrange.Tick.volume or 0.12) * 0.75
+-- A rider coming back down on its piece as the piece lands (S5-03j2b2c): the find's knock, small,
+-- high and quiet, a cup on a table.
+local CLINK: Arrange.Sound = table.clone(Arrange.Knock)
+CLINK.pitch = (Arrange.Knock.pitch or 1) * 1.45
+CLINK.volume = (Arrange.Knock.volume or 0.5) * 0.45
 
 -- How far past an area's edge a finger still aims at it (studs): a find dragged toward a wall
 -- slides along it, flush, rather than stopping short.
@@ -69,6 +75,8 @@ export type Lifted = {
 	starter: string?, -- a home's own piece's kind (`Layout.kind`): it stands by its spec box
 	kept: boolean, -- the job box: it moves, never away, so it has no Put away
 	riders: { Model }, -- what stands on it, drawn, hidden while copies ride in the ghost (D-338)
+	copies: { Model }, -- those copies in the ghost, in the riders' order: they hop as it lands
+	still: number, -- the clock when its riders are still again after a landing (0: no landing)
 	from: CFrame, -- where the ghost began
 	pose: Brix.PlacementPose?, -- where it would stand now, snapped
 	turn: number,
@@ -575,6 +583,8 @@ function ArrangeHand.new(options: Options): Hand
 			starter = kind,
 			kept = row ~= nil and row.kept == true,
 			riders = {},
+			copies = {},
+			still = 0,
 			from = from,
 			pose = nil,
 			turn = 0,
@@ -598,6 +608,7 @@ function ArrangeHand.new(options: Options): Hand
 				copy.Parent = ghost
 				hide(m, true)
 				table.insert(l.riders, m)
+				table.insert(l.copies, copy)
 			end
 			local pose = r.placements:poseOf(id)
 			if pose then
@@ -814,6 +825,45 @@ function ArrangeHand.new(options: Options): Hand
 		Debris:AddItem(p, 1.2)
 	end
 
+	-- The riders settle as their piece lands (S5-03j2b2c, D-338): each copy in the ghost jolts up
+	-- off the piece and drops back with a clink, a beat after the one before, bounces once lower,
+	-- then stands still (`Settle`). Only the copies are stepped, only until they're still; the
+	-- ghost waits for them (`l.still`) before it gives way to what the server drew.
+	local function bounce(l: Lifted)
+		local copies = l.copies
+		local count = #copies
+		if count == 0 then
+			return
+		end
+		local start, length = os.clock(), Settle.length(count)
+		l.still = start + length
+		local rest: { CFrame } = table.create(count)
+		for i, c in copies do
+			rest[i] = c:GetPivot()
+		end
+		local clinked = 0
+		local step: RBXScriptConnection
+		step = RunService.RenderStepped:Connect(function()
+			local t = os.clock() - start
+			if not l.ghost.Parent then
+				step:Disconnect()
+				return
+			end
+			local done = t >= length
+			for i, c in copies do
+				-- (up against gravity, whatever the piece's top faces)
+				c:PivotTo(if done then rest[i] else rest[i] + Vector3.yAxis * Settle.height(t, i))
+			end
+			while clinked < count and t >= Settle.landsAt(clinked + 1) do
+				clinked += 1
+				play(CLINK, sounds())
+			end
+			if done then
+				step:Disconnect()
+			end
+		end)
+	end
+
 	-- Place: the ghost drops onto its spot with a knock and a puff; the server's answer keeps it.
 	local function placeNow()
 		local r, l = options.room(), lifted
@@ -835,6 +885,8 @@ function ArrangeHand.new(options: Options): Hand
 				slideBack(l) -- no answer: as if refused
 			end
 		end)
+		-- (the ghost stays till its riders are still: an upper bound, `bounce` sets it exactly)
+		l.still = os.clock() + Feel.Land + Settle.length(#l.copies)
 		local cf = Instance.new("CFrameValue")
 		cf.Value = l.ghost:GetPivot()
 		cf.Changed:Connect(function(v: CFrame)
@@ -847,6 +899,7 @@ function ArrangeHand.new(options: Options): Hand
 				play(if Furniture.ofPlaced(l.name) then THUD else Arrange.Knock, sounds())
 				local stand = Arrange.frameOn(r, pose.on)
 				puff(if stand then Arranged.pose(stand, pose.x, pose.y, pose.turn) else at)
+				bounce(l)
 				TweenService
 					:Create(l.highlight, QUICK, { OutlineTransparency = 1, FillTransparency = 1 })
 					:Play()
@@ -1006,6 +1059,10 @@ function ArrangeHand.new(options: Options): Hand
 				end
 				task.wait(0.05)
 			end
+			local riding = l.still - os.clock() -- its riders still hopping
+			if riding > 0 then
+				task.wait(riding)
+			end
 			letGo(l, true)
 		end)
 	end
@@ -1146,7 +1203,12 @@ function ArrangeHand.new(options: Options): Hand
 		t.Completed:Once(function()
 			cf:Destroy()
 			play(if Furniture.ofPlaced(l.name) then THUD else Arrange.Knock, sounds())
-			letGo(l, true)
+			if #l.copies > 0 then
+				bounce(l)
+				task.delay(Settle.length(#l.copies), letGo, l, true)
+			else
+				letGo(l, true)
+			end
 		end)
 		t:Play()
 	end
