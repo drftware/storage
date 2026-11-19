@@ -3477,7 +3477,27 @@ Done when players watch the results to the end and change their perks between cl
           footprints) and the save take any angle, not only 0, 90, 180, 270: grep their turn
           handling, write a failing spec for each that refuses, widen it. If Brix needs it,
           that's a Brix ticket by Brix's AGENTS.md, then the pin moves (D-252).
-        - [ ] **S5-03j2b2b Twist, R and the wheel, Free.** In ArrangeHand: a second finger's
+        - [ ] **S5-03j2b2b Twist, R and the wheel, Free.** Split at the run's context line
+          (S5-03j2b2b1's session):
+          - [x] **S5-03j2b2b1 In code** (D-453; check green, untested in Studio). A twist on a
+            carried thing turns it from where the twist began (`ArrangeHand.twist`, `Turning.seen`
+            negating it for a face seen from behind): on the grid a ratchet click-click and a
+            little spin past at each quarter; with Free it follows to the degree, a soft tick
+            every 15 (`Turning.notch`, `FreeTick`). The wheel on a dragged thing is a quarter a
+            notch (Gestures' `wheelTurn`). `ArrangeTurn` (new): R turns the selected or carried
+            thing (`Turning.press`), Alt held or the Free switch under Done (honey when on, an
+            askew square over the grid's dots) swaps the grid snap for `PlacementSnap.free`, and a
+            carried thing settles again the moment Free changes. `settle` keeps a turned thing
+            in by `Turning.reach` at any angle. FreeCursor leaves Alt alone while a screen has
+            the mouse.
+          - [ ] **S5-03j2b2b2 Seen in Studio.** Studio Play at A16 (685 by 338), Medium home: R
+            on a selected and on a carried crate; the wheel during a mouse drag (CameraTest's
+            "wheel" verb can't drag, so drive Gestures through the hand's `intent` with a
+            "twist" if the MCP mouse can't hold and roll); the Free switch on and off (looks lit
+            at a glance?) and a crate placed at an odd angle with it; the server keeps it and it
+            comes back at that angle after a rejoin (Stop, Play); `Arranged`'s footprint the
+            judge saw covers the drawn box. Capture `docs/art/s5-03j2b2b-*.png` at half scale.
+          In ArrangeHand: a second finger's
           twist while dragging (Brix Gestures' `intent` "twist" with a target) turns the
           carried thing by `Turning`; R and the wheel while held turn it a quarter; Alt held,
           or a round Free switch in a corner (an icon, off by default), places off the grid

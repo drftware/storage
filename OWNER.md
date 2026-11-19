@@ -97,6 +97,23 @@ nowhere else.
      defaults, yours to change: the × is gone (a tap on the room lets go); Turn sits in the
      middle; the plus is hidden when your box has no more of that find; one you just took out
      has Put away too.
+- [ ] **Turning a held thing, with your fingers and a mouse** (S5-03j2b2b1, D-453; passes
+  checks; a Studio check of R, the wheel and Free is the next session's, the twist is yours).
+  In your home, tap Arrange.
+  1. On your phone, drag a chair and, still holding it, put a second finger down and twist both
+     round. Look for: it turns with your fingers, clicking into each quarter with a click-click
+     and a little spin past. Twist slowly and fast: both land on the quarter nearest.
+  2. Tap the round switch under Done (a tilted square over dots). Look for: it lights honey at
+     once. Drag and twist again: it follows your fingers smoothly with a faint tick every so
+     often, and lands at the angle you leave it. Tap the switch again: it goes dark, and the next
+     drag squares the chair back onto the grid.
+  3. On a computer: drag a crate and roll the wheel (a quarter a notch), press R (a quarter the
+     other way), and hold Alt while you drag (the switch lights while Alt is down; let go of Alt
+     and the crate snaps back to the grid under the mouse). Close Arrange: the mouse is still
+     locked to the view as before, not left loose.
+  4. Tell me: does the twist feel like turning a real thing (my default: the quarter nearest
+     your fingers, no lag), is the soft tick every 15 degrees too busy or too quiet, and is the
+     switch's icon clear enough without words?
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

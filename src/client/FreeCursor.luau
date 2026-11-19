@@ -246,8 +246,10 @@ function FreeCursor.new(): (Brix.System, Need)
 						drawCursor()
 						return
 					end
-					-- Processed means a text box or Roblox's own menu has the key.
-					if processed or input.KeyCode ~= KEY then
+					-- Processed means a text box or Roblox's own menu has the key. While a screen
+					-- has the mouse, Alt is that screen's (Arrange's Free, S5-03j2b2b): it must not
+					-- leave the mouse let go behind it when the screen closes.
+					if processed or input.KeyCode ~= KEY or next(needed) ~= nil then
 						return
 					end
 					setFree(not free)

@@ -10747,3 +10747,32 @@ the room lifts it with today's drag (Turn, Place, the tray away).
     its back straight back to the nearest wall, at any turn (both walls count in a corner), and
     the box pushed nearer slides out along its own front. The mirror leans only when square: at
     any other angle it leans on nothing and is refused, as before.
+
+## D-453 Turning a held thing: twist, R, the wheel and Free (S5-03j2b2b1, 2026-11-18)
+
+- **A twist counts from where it began.** Gestures gives a twist of a carried thing as small
+  angles; the hand adds them up from the turn the thing stood at when the twist began, and shows
+  `Turning.twisted` of that, so a slow twist and a fast one land on the same quarter. A drag
+  beginning or ending, R, Turn or Free changing starts the count over.
+- **The wheel is a quarter a notch** (`wheelTurn = pi / 2` in ArrangeCamera's Gestures), the same
+  as R, so a mouse player clicks round in quarters; with Free on it's still a quarter (a notch
+  can't twist by eye). Wheel up turns it clockwise as seen from above, R anticlockwise, as The
+  Sims' two rotate keys go opposite ways.
+- **Feel.** On the grid each quarter a twist reaches plays Turn's ratchet click-click and its
+  spin past and back. With Free the thing follows the fingers to the degree with no spin (an
+  overshoot would lag the fingers) and a soft tick (the step's tick, higher and fainter) every 15
+  degrees (`Turning.FreeTick`).
+- **Seen from behind.** A twist on a thing on the ceiling, seen from above, is negated
+  (`Turning.seen`, the camera's look dotted with the face's normal), so it turns the way the
+  fingers go on the screen. The same test covers a thing on a near wall seen through it.
+- **ArrangeTurn holds the keys and the switch,** its own module (R, Alt, the switch), opened with
+  Arrange and listening only while open. The hand asks it `free()` as it settles. The switch sits
+  under Done, 52 points, the ring's style; Free on paints it honey (the limit bar's fill) with the
+  icon dark and a white rim, off it's the ring's dark button with the icon dim. Off by default,
+  kept between opens. The ring keeps off it.
+- **Alt was FreeCursor's** (it lets go of the mouse in first person). While a screen needs the
+  mouse it's already free, so FreeCursor now ignores Alt then; before, each Free placement
+  flipped its hidden toggle and could leave the mouse loose after Arrange closed.
+- **Not yet:** a card dragged up out of the tray is the tray's own drag, not Gestures', so the
+  wheel zooms and a second finger doesn't twist it; R and Free work on it. Queued.
+

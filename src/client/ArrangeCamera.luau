@@ -222,6 +222,8 @@ function ArrangeCamera.new(options: Options): Camera
 		end,
 		mouseTurn = Cam.MouseTurn,
 		stickTurn = Cam.StickTurn,
+		-- the wheel on a carried thing turns it a quarter a notch, as R does (S5-03j2b2b)
+		wheelTurn = math.pi / 2,
 	})
 	local orbit: Brix.OrbitCamera? = nil
 	local stage = ArrangeStage.new(Cam.Stage, Cam.Void, Cam.Light)

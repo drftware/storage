@@ -31,6 +31,7 @@ local Layout = require(ReplicatedStorage.Shared.Home.Layout)
 local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
+local Turning = require(ReplicatedStorage.Shared.Home.Turning)
 
 local Feel = Arrange.Feel
 
@@ -44,6 +45,11 @@ local BACK = TweenInfo.new(Feel.Back, Enum.EasingStyle.Sine, Enum.EasingDirectio
 local THUD: Arrange.Sound = table.clone(Arrange.Knock)
 THUD.pitch = (Arrange.Knock.pitch or 1) * 0.68
 THUD.volume = (Arrange.Knock.volume or 0.5) * 1.3
+-- Free's soft tick every 15 degrees of a twist: the step's tick, fainter and higher, so a turn
+-- by eye still feels its way round without the grid's ratchet (S5-03j2b2b).
+local SOFT: Arrange.Sound = table.clone(Arrange.Tick)
+SOFT.pitch = (Arrange.Tick.pitch or 1) * 1.2
+SOFT.volume = (Arrange.Tick.volume or 0.12) * 0.75
 
 -- How far past an area's edge a finger still aims at it (studs): a find dragged toward a wall
 -- slides along it, flush, rather than stopping short.
@@ -100,6 +106,9 @@ export type Options = {
 	-- Whether gui point `x`, `y` is over the tray's place (the tray is away while a thing is
 	-- carried): a thing let go there floats back, a card's into its card.
 	overTray: (x: number, y: number) -> boolean,
+	-- Whether Free is on (Alt held, or the corner switch, ArrangeTurn): the carried thing goes
+	-- off the grid, where the finger has it, at any whole degree (S5-03j2b2b).
+	free: () -> boolean,
 }
 
 -- The hand, as ArrangeView and the build camera call it.
@@ -129,6 +138,8 @@ export type Hand = {
 	answered: (what: unknown, id: unknown, refusal: unknown) -> (),
 	-- Stops the lifted thing's follow.
 	stopFollow: () -> (),
+	-- Free went on or off: a carried thing settles again at once, onto the grid or off it.
+	freeChanged: () -> (),
 }
 
 local ArrangeHand = {}
@@ -188,6 +199,8 @@ function ArrangeHand.new(options: Options): Hand
 	local follow: RBXScriptConnection? = nil
 	local lastTick = 0
 	local snap = Brix.PlacementSnap.grid({ step = Arrange.Step, turn = Arrange.Turn })
+	-- Free (Alt, or the corner switch): exactly where the finger has it, to the whole degree.
+	local freeSnap = Brix.PlacementSnap.free({ turn = 1 })
 	-- Where a blocked thing may slide when let go, and where one set out with no finger starts.
 	local slideSearch = Brix.PlacementSearch.grid({ step = Arrange.Step, reach = Feel.SlideReach })
 	local startSearch = Brix.PlacementSearch.grid({ step = Arrange.Step, reach = Feel.StartReach })
@@ -286,7 +299,9 @@ function ArrangeHand.new(options: Options): Hand
 		return if shape then shape.top else nil
 	end
 
-	-- `x`, `y` on area `on` snapped to the grid and kept inside it, the find turned `turn`.
+	-- `x`, `y` on area `on` snapped to the grid (or with Free, as they are) and kept inside it,
+	-- the find turned `l.turn`: kept in by the reach of its footprint so turned, square on or
+	-- askew, as Brix's judge measures it (S5-03j2b2b).
 	local function settle(
 		r: Arrange.Room,
 		l: Lifted,
@@ -298,13 +313,12 @@ function ArrangeHand.new(options: Options): Hand
 		if not area then
 			return nil
 		end
-		local w, d = l.shape.width, l.shape.depth
-		if l.turn % 180 == 90 then
-			w, d = d, w
-		end
-		local hx, hy = math.max(0, (area.width - w) / 2), math.max(0, (area.depth - d) / 2)
+		local snapper = if options.free() then freeSnap else snap
+		local _, _, turned = snapper:snap(area, l.shape, x, y, l.turn) -- (the turn's snap alone)
+		local rx, ry = Turning.reach(l.shape.width, l.shape.depth, turned)
+		local hx, hy = math.max(0, area.width / 2 - rx), math.max(0, area.depth / 2 - ry)
 		local sx, sy, st =
-			snap:snap(area, l.shape, math.clamp(x, -hx, hx), math.clamp(y, -hy, hy), l.turn)
+			snapper:snap(area, l.shape, math.clamp(x, -hx, hx), math.clamp(y, -hy, hy), l.turn)
 		local pose =
 			{ on = on, x = math.clamp(sx, -hx, hx), y = math.clamp(sy, -hy, hy), turn = st }
 		local kind, floor = l.starter, r.placements:areaOf("Floor")
@@ -841,13 +855,74 @@ function ArrangeHand.new(options: Options): Hand
 		t:Play()
 	end
 
-	-- Turn: a quarter turn with a ratchet's click-click, spinning a little past and back.
+	-- A ratchet's click-click, as its pawl jumps a tooth: each quarter a turn clicks into.
+	local function ratchet()
+		play(Arrange.Ratchet, sounds())
+		task.delay(0.07, play, Arrange.Ratchet, sounds())
+	end
+
+	-- The little spin past a quarter and back, the way `l` just turned from `was` (its target).
+	local function spinFrom(l: Lifted, was: CFrame)
+		local axis, angle = (l.target.Rotation * was.Rotation:Inverse()):ToAxisAngle()
+		if angle > 0.01 then
+			spinAt, spinAxis = os.clock(), axis.Unit
+		end
+	end
+
+	-- A twist going on (two fingers, or the wheel on a carried thing): the turn it began at, and
+	-- all it has twisted since, as the face sees it (radians). Nil between twists.
+	local twistFrom: number? = nil
+	local twistSum = 0
+
+	-- Two fingers twisting the carried thing, or a wheel notch (a quarter): it turns from where it
+	-- stood when the twist began, as Turning has it. On the grid it clicks round in quarters, a
+	-- ratchet and a little spin past at each; with Free it follows the fingers to the degree,
+	-- ticking softly every 15 (S5-03j2b2b).
+	local function twist(angle: number)
+		local r, l, camera = options.room(), lifted, Workspace.CurrentCamera
+		local pose = if l then l.pose else nil
+		if not (r and l and pose and camera and carrying) or l.asking then
+			return
+		end
+		local face = Arrange.frameOn(r, pose.on)
+		local facing = if face then camera.CFrame.LookVector:Dot(face.YVector) else -1
+		local from = twistFrom or pose.turn
+		if not twistFrom then
+			twistFrom, twistSum = from, 0
+		end
+		twistSum += Turning.seen(angle, facing)
+		local free = options.free()
+		local turn = Turning.twisted(from, twistSum, free)
+		if turn == pose.turn then
+			return
+		end
+		local was = l.target
+		l.turn = turn
+		lastTick = os.clock() -- the turn's own click below, not the step's tick
+		aimAt(Vector2.new(fingerX, fingerY - thumb))
+		local now = l.pose
+		if not now or now.turn == pose.turn then
+			return -- (a mirror stays leant on its wall)
+		elseif not free then
+			spinFrom(l, was)
+			ratchet()
+		elseif
+			Turning.notch(now.turn, Turning.FreeTick) ~= Turning.notch(pose.turn, Turning.FreeTick)
+		then
+			play(SOFT, sounds())
+		end
+	end
+
+	-- Turn (and R): a quarter turn with a ratchet's click-click, spinning a little past and back;
+	-- on the grid on to the next quarter (a thing set askew comes square), with Free a quarter
+	-- from where it is.
 	local function turnNow()
 		local r, l = options.room(), lifted
 		if not (r and l) or l.asking then
 			return
 		end
-		l.turn = (l.turn + Arrange.Turn) % 360
+		twistFrom = nil
+		l.turn = Turning.press(if l.pose then l.pose.turn else l.turn, options.free())
 		local pose, was = l.pose, l.target
 		if pose then
 			local run = l.turnRun
@@ -859,12 +934,17 @@ function ArrangeHand.new(options: Options): Hand
 				l.turnRun = { from = from, to = l.pose }
 			end
 		end
-		local axis, angle = (l.target.Rotation * was.Rotation:Inverse()):ToAxisAngle()
-		if angle > 0.01 then
-			spinAt, spinAxis = os.clock(), axis.Unit
+		spinFrom(l, was)
+		ratchet()
+	end
+
+	-- Free went on or off: a carried thing settles again where the finger has it, on the grid or
+	-- off it, and a twist going on starts over from there.
+	local function freeChanged()
+		twistFrom = nil
+		if carrying and lifted then
+			aimAt(Vector2.new(fingerX, fingerY - thumb))
 		end
-		play(Arrange.Ratchet, sounds())
-		task.delay(0.07, play, Arrange.Ratchet, sounds())
 	end
 
 	-- Put away: the find shrinks back toward the tray; the server's answer puts it in the box.
@@ -1179,10 +1259,17 @@ function ArrangeHand.new(options: Options): Hand
 					stretch(now)
 				end
 			end
+			twistFrom = nil
 			carry(i.button == "touch", i.x, i.y)
 		elseif i.kind == "dragMoved" then
 			move(i.x, i.y)
+		elseif i.kind == "twist" then
+			-- (only ever the carried thing's: Gestures twists a thing only while it's dragged)
+			if i.target ~= nil then
+				twist(i.angle)
+			end
 		elseif i.kind == "dragEnded" then
+			twistFrom = nil
 			if carrying and l then
 				if i.cancelled or options.overTray(i.x, i.y) then
 					slideBack(l)
@@ -1312,6 +1399,7 @@ function ArrangeHand.new(options: Options): Hand
 		another = another,
 		answered = answered,
 		stopFollow = stopFollow,
+		freeChanged = freeChanged,
 	}
 end
 

@@ -103,6 +103,47 @@ do
 	ok(near(c, math.cos(math.rad(37))) and near(s, math.sin(math.rad(37))), "37 by its cosine")
 end
 
+-- How far a turned footprint reaches (S5-03j2b2b): a 4 by 2 crate square on reaches 2 and 1;
+-- a quarter round, 1 and 2; askew, its corners reach farther both ways, as Brix's judge sees it.
+do
+	local x, y = Turning.reach(4, 2, 0)
+	ok(x == 2 and y == 1, "square on: half its width and depth")
+	x, y = Turning.reach(4, 2, 90)
+	ok(x == 1 and y == 2, "a quarter round: swapped, exactly")
+	x, y = Turning.reach(4, 2, 270)
+	ok(x == 1 and y == 2, "three quarters: swapped too")
+	x, y = Turning.reach(4, 2, 45)
+	local h = math.sqrt(0.5) * 3
+	ok(near(x, h) and near(y, h), "45 degrees: both reach (4 + 2) times cos 45, halved")
+	x, y = Turning.reach(4, 2, -30)
+	local c, s = math.cos(math.rad(30)), math.sin(math.rad(30))
+	ok(near(x, (4 * c + 2 * s) / 2) and near(y, (4 * s + 2 * c) / 2), "a turn back is as wide")
+end
+
+-- A twist as the face sees it: from its own side as the screen shows it; from behind (the
+-- ceiling seen from above) the other way round.
+do
+	ok(Turning.seen(QUARTER, -0.8) == QUARTER, "the floor from above: as twisted")
+	ok(Turning.seen(QUARTER, 0.8) == -QUARTER, "the ceiling from above: the other way")
+	ok(Turning.seen(QUARTER, 0) == QUARTER, "edge on: as twisted")
+	-- a quarter's twist clockwise on the screen turns a floor thing clockwise from above (down),
+	-- and a ceiling thing seen from above clockwise too, which from below is up
+	ok(Turning.twisted(90, Turning.seen(QUARTER, -1), false) == 0, "floor: clockwise is down")
+	ok(Turning.twisted(90, Turning.seen(QUARTER, 1), false) == 180, "ceiling: clockwise is up")
+end
+
+-- Clicks: one each time the turn crosses into a new notch (a quarter on the grid, Free's soft
+-- tick every 15 degrees), counted the same either side of a whole turn.
+do
+	ok(Turning.notch(0, 90) == 0 and Turning.notch(90, 90) == 1, "quarters count up")
+	ok(Turning.notch(270, 90) == 3 and Turning.notch(360, 90) == 0, "a whole turn is notch 0")
+	ok(Turning.notch(14, 15) == 0 and Turning.notch(15, 15) == 1, "15 is the next free notch")
+	ok(Turning.notch(359, 15) == 23 and Turning.notch(-1, 15) == 23, "just under a whole turn")
+	ok(Turning.notch(89.9999999, 90) == 1, "a hair under a quarter (a float) counts as on it")
+	ok(Turning.notch(44, Turning.FreeTick) ~= Turning.notch(46, Turning.FreeTick), "45 ticks")
+	ok(Turning.notch(31, Turning.FreeTick) == Turning.notch(44, Turning.FreeTick), "31 to 44: none")
+end
+
 print(`turning: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

@@ -70,4 +70,31 @@ function Turning.facing(turn: number): (number, number)
 	return math.cos(r), math.sin(r)
 end
 
+-- Free's soft tick (degrees): a turn by eye still clicks quietly every 15 degrees, so a twist
+-- feels its way round as the grid's quarters do.
+Turning.FreeTick = 15
+
+-- Half of how far a footprint `width` by `depth` turned `turn` (degrees) reaches across its
+-- area and along it, as Brix's judge measures a turned footprint: square on, half its width and
+-- depth; a quarter round, swapped; askew, its corners reach farther both ways.
+function Turning.reach(width: number, depth: number, turn: number): (number, number)
+	local c, s = Turning.facing(turn)
+	c, s = math.abs(c), math.abs(s)
+	return (width * c + depth * s) / 2, (width * s + depth * c) / 2
+end
+
+-- Twist `twist` (radians, clockwise on the screen) as the face a thing stands on sees it, the
+-- camera looking along `facing` (the camera's look dotted with the face's normal): seen from
+-- its own side (negative, or edge on) as the screen shows it; from behind it (the ceiling from
+-- above) the other way round.
+function Turning.seen(twist: number, facing: number): number
+	return if facing > 0 then -twist else twist
+end
+
+-- Which notch of `step` degrees turn `turn` is in, from 0 (0 up to `step`): a turn crossing
+-- into another notch clicks. A hair under a notch (a float's rounding) counts as on it.
+function Turning.notch(turn: number, step: number): number
+	return math.floor(Turning.round(turn) / step + 1e-6) % math.round(360 / step)
+end
+
 return table.freeze(Turning)

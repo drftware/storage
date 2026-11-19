@@ -58,6 +58,7 @@ local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local ArrangeCamera = require(script.Parent.ArrangeCamera)
 local ArrangeHand = require(script.Parent.ArrangeHand)
 local ArrangeRing = require(script.Parent.ArrangeRing)
+local ArrangeTurn = require(script.Parent.ArrangeTurn)
 local LooksTab = require(script.Parent.LooksTab)
 local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
@@ -176,6 +177,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	-- The round buttons round the selected thing (ArrangeRing), and how many of each card's find
 	-- your box holds (Another shows only while there's one more).
 	local buttonRing: ArrangeRing.ArrangeRing? = nil
+	-- R, Alt and the Free switch under Done (ArrangeTurn).
+	local turnKeys: ArrangeTurn.ArrangeTurn? = nil
 	local boxCount: { [string]: number } = {}
 	local cards: { [string]: TextButton } = {}
 	-- The tray's three tabs (FINDS, ROOM: the paint tab, FRONT: your door; LooksTab's pages),
@@ -360,6 +363,10 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		overTray = function(_: number, y: number): boolean
 			local tall = if gui then gui.AbsoluteSize.Y else 280
 			return y >= tall - (10 + TRAY)
+		end,
+		free = function(): boolean
+			local t = turnKeys
+			return t ~= nil and t.free()
 		end,
 	})
 	pickThing, toHand = hand.pick, hand.intent
@@ -874,6 +881,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			TweenService:Create(t, RISE, { Position = UDim2.new(0.5, 0, 1, -10) }):Play()
 		end
 		attachTabs(home) -- their rings follow the home's look and door while you arrange
+		if turnKeys then
+			turnKeys.open(true)
+		end
 		local ask = remote(Arrange.BoxRemote)
 		if ask then
 			ask:FireServer()
@@ -892,6 +902,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		pending = nil
 		dragInput = nil
 		attachTabs(nil)
+		if turnKeys then
+			turnKeys.open(false)
+		end
 		still(false)
 		body(false)
 		me:SetAttribute(Tools.StowAttribute, nil) -- the wheel comes back up
@@ -1216,7 +1229,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		-- Done and the limit bar (filled in place: the ring lays out while the camera moves).
 		local doneBox: Ring.Box = { left = 0, top = 0, right = 0, bottom = 0 }
 		local limitBox: Ring.Box = { left = 0, top = 0, right = 0, bottom = 0 }
-		local keepClear = { doneBox, limitBox }
+		local freeBox: Ring.Box = { left = 0, top = 0, right = 0, bottom = 0 }
+		local keepClear = { doneBox, limitBox, freeBox }
 		local function boxOf(o: GuiObject, into: Ring.Box)
 			local at, size = o.AbsolutePosition, o.AbsoluteSize
 			into.left, into.top, into.right, into.bottom = at.X, at.Y, at.X + size.X, at.Y + size.Y
@@ -1243,7 +1257,26 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			avoid = function(): { Ring.Box }
 				boxOf(done, doneBox)
 				boxOf(m, limitBox)
+				local keys = turnKeys
+				if keys then
+					boxOf(keys.button, freeBox)
+				end
 				return keepClear
+			end,
+		})
+		turnKeys = ArrangeTurn.new({
+			parent = g,
+			at = UDim2.new(1, -14, 0, 72), -- under Done (14 down, 48 tall), a 10-point gap
+			colour = PANEL,
+			rim = RIM,
+			ink = INK,
+			lit = HONEY,
+			press = press,
+			turn = function()
+				hand.turnNow()
+			end,
+			changed = function()
+				hand.freeChanged()
 			end,
 		})
 		return g
@@ -1470,6 +1503,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 				if o then
 					o.destroy()
 					buttonRing = nil
+				end
+				local t = turnKeys
+				if t then
+					t.destroy()
+					turnKeys = nil
 				end
 				gui:Destroy()
 				gui = nil

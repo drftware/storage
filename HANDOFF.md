@@ -2,42 +2,42 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-18, S5-03j2b2a done: any angle, pure (D-452) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
+**Updated:** 2026-11-18, S5-03j2b2b1 done: twist, R, wheel, Free in code (D-453) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; search its heading). Order now: S5-03j2b2b, c, j3 to j7, ENG-29, k1 to k6.
-- **Any angle works end to end** (S5-03j2b2a, D-452): `Home/Turning` (pure) gives the turn a
-  twist or a Turn press shows; the server, Brix's judge, the save and the drawing take any angle
-  (`arranged.spec` proves the footprint judged is the box drawn); the job box's lid room counts
-  at any angle. Nothing on screen uses Turning yet.
+  only; search its heading). Order now: S5-03j2b2b2, c, j3 to j7, ENG-29, k1 to k6.
+- **Turning a held thing is in code, untested in Studio** (S5-03j2b2b1, D-453): a twist or the
+  wheel (a quarter a notch) on a carried thing turns it (`ArrangeHand.twist`), a ratchet and spin
+  per quarter, Free's soft tick every 15 degrees; `ArrangeTurn` (new) holds R, Alt and the Free
+  switch under Done; `settle` keeps a thing in by `Turning.reach` at any angle.
 - **Studio has tonight's code** (`rojo serve`, port 34872): restart Play to run edits.
 - **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j2b2b Twist, R and the wheel, Free
-The moment: a second finger twists a dragged chair round, clicking each quarter; Free stops it anywhere.
-1. ROADMAP's S5-03j2b2b ("From j2b2a" lines); the plan doc's "Turning" (read: search "Turning").
-2. In ArrangeHand's `intent` (~line 1163), a "twist" with a target while carrying: keep the
-   twist's sum since it began and the turn it began at; show `Turning.twisted(start, sum, free)`
-   (negate the twist when the camera sees the face from behind: the ceiling from above). Play
-   `Arrange.Ratchet` each time the shown quarter changes; with Free a soft tick every 15 degrees.
-   R turns by `Turning.press` as `turnNow` does; the wheel comes as a twist with a target
-   (Gestures' `wheelTurn`: a quarter, pi/2, so a notch clicks a quarter).
-3. Free: Alt held, or a round switch in a corner (an icon in ArrangeRing's style, off by
-   default, lit while on), swaps the grid snap for `Brix.PlacementSnap.free({ turn = 1 })`.
-   `settle` (~line 290) clamps with width and depth swapped only at quarters: use the turned
-   reach (|cos|, |sin|). The mirror keeps to quarters (it leans only square, D-452).
-4. Studio Play at A16 (685 by 338), Medium home, Rojo connected (STUDIO.md's two tells first):
-   R and the wheel on a held crate, Alt and the switch place it at an odd angle, it saves
-   through a rejoin. Capture `docs/art/s5-03j2b2b-*.png`; the twist goes to OWNER.md's phone steps.
-**Acceptance:** R, the wheel and a twist turn a held thing, clicking at quarters; Free places
-at any angle and the server keeps it; seen in Studio at A16; check green.
-**Read first:** ROADMAP's S5-03j2b2b; `Home/Turning.luau`; ArrangeHand's `intent`, `turnNow`,
-`settle`; ArrangeRing's button making; ArrangeCamera's `toHand` (~487) and its Gestures options.
+## Next task: S5-03j2b2b2 Turning, seen in Studio
+The moment: R or the wheel clicks a held crate round; Free sets it askew and it stays askew.
+1. STUDIO.md's two tells first (is Studio on tonight's code). Play at A16 (685 by 338), Medium
+   home; Arrange is (681, 37); MCP clicks land about 47 points left of the gui point.
+2. Select a crate (tap it): press R (`user_keyboard_input`): a quarter, click-click, spin past.
+   Drag it and press R mid-drag. If the MCP mouse can't hold a drag and roll the wheel, send the
+   hand a twist from a Client `execute_luau` (a `{kind = "twist", angle = math.pi / 2, target =
+   <the crate>}` while carrying) or extend ArrangeCamera's Studio-only `CameraTest`.
+3. Tap the Free switch under Done: it lights honey at a glance (capture it on and off). Drag the
+   crate with Free on and twist it to an odd angle (a twist of 0.6 radians); let go. It lands
+   askew, green; the server keeps it (Output quiet; `Arranged` has it at that turn).
+4. Stop and Play again (a rejoin): it comes back at that angle, and nothing drawn overlaps it.
+5. Hold Alt (a Client `execute_luau` can't hold keys: try `user_keyboard_input`; else judge from
+   the switch). Fix what reads wrong; capture `docs/art/s5-03j2b2b-*.png` at half scale.
+**Acceptance:** R, a twist and Free seen working at A16; a free angle survives a rejoin; check
+green. **Budget:** about 100k context for a Studio check (S5-03j2b1b's note).
+**Read first:** ROADMAP's S5-03j2b2b2; STUDIO.md's "Arrange's build camera, first try in Play";
+`src/client/ArrangeTurn.luau`; ArrangeHand's `twist` and `turnNow`; ArrangeCamera's `CameraTest`.
 
 ## Queue (next sessions, the owner's ticket order)
-0. After S5-03j2: at the view Arrange opens with, a crate is about 16 points across on a Medium
+0. A card dragged up out of the tray is the tray's own drag, not Gestures', so the wheel zooms
+   and a second finger can't twist it (R and Free work): route the wheel to the hand while a
+   tray drag carries (D-453). After S5-03j2: at the view Arrange opens with, a crate is about 16 points across on a Medium
    home (D-449): the camera's fit may want to open closer; the wheel zooms the eye through the
    unit's facade (`Colliders.FacadeRight`; STUDIO.md). D held 0.35 s slides the room half off
    the screen (black beyond): the slide may want a limit. The yellow sliver at Arrange's right
