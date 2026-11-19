@@ -37,6 +37,25 @@ nowhere else.
   3. An egg warms for 2 hours, then wobbles for 10 minutes before it hatches.
   4. A find you Take keeps its spot (a faint outline) until you set it somewhere else or leave
      your home.
+- [ ] **Arrange's build camera, with your fingers and a gamepad** (S5-03j1b, D-442; seen in
+  Studio Play at Galaxy A16 size on a Small home, turned with a stand-in for the mouse; pinch,
+  twist, tilt and sticks can't be driven from Studio). Stand in your home and tap Arrange:
+  1. Look for: the camera rises out of your eyes and backs out over the front corner on the side
+     you stood, about 0.7 s, landing high and looking down into the room. The wall with your door
+     and the side wall nearest you are gone, so the whole room shows. Nothing pops or snaps.
+  2. Slide one finger across empty floor. Look for: the floor follows your finger, and a quick
+     flick drifts on a little and settles.
+  3. Pinch in and out. Look for: it zooms toward the spot between your fingers; zooming in past
+     the gone walls brings them back as the camera re-enters the room.
+  4. Twist two fingers. Look for: the room turns under them, and each wall melts away as the
+     camera passes behind it and comes back as it leaves (door wall, both sides, the back).
+  5. Drag two fingers up and down together. Look for: the camera tilts between looking across
+     the room and looking straight down at it. It never rises through the ceiling.
+  6. Double tap empty floor. Look for: it glides back to where it opened.
+  7. On a gamepad: the left stick slides, the right stick turns and tilts, the triggers zoom.
+     Look for the same as above, and that drag right turns the view right, as Roblox's own camera.
+  8. Tell me if the landing view is too far, too high or too steep: `Arrange.Camera`'s `Clear`
+     (how far past the walls it stands), `FocusUp` and `Settle` are the numbers.
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

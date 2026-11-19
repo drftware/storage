@@ -3614,3 +3614,21 @@ verified: a doc page, Studio, or "untested".
 - **Mapping the phone in this session's window capture** (Studio at 703, 30, 1386 by 972; window
   number from Swift's `CGWindowListCopyWindowInfo`): `sips --cropOffset 360 356 -c 314 672` gives
   the phone's screen.
+- **Studio's MCP puts the camera back to Custom behind you** (S5-03j1b): when an `execute_luau`
+  sees `CameraType` change while it runs, the Assistant resets it ("The execute_luau changed camera
+  type. Resetting from Scriptable back to Custom", in Output). Arrange opens on the button's
+  release a frame or two after `user_mouse_input` returns, so a Client `execute_luau` sent straight
+  after the click catches the change and Roblox's camera takes over (Arrange still open, the view
+  at your head). End the click's action list with a 2000 ms `wait` before any `execute_luau`.
+- **Driving the build camera without a mouse** (S5-03j1b): a Client `execute_luau` can call
+  `Players.LocalPlayer.PlayerScripts:FindFirstChild("CameraTest", true):Invoke(...)` (Studio
+  only): `"right", x, y, dx, dy, seconds` (a right-drag; 98 points turns 45°), `"wheel", notches,
+  x, y`, `"drag", ...` (left), `"tap", x, y`, and `"state"` (eye and look in the room's frame,
+  each wall's fade left/right/back/front, resting). It goes through Brix's Gestures as a mouse does.
+- **Getting into Arrange in Play:** the button shows only while you stand in your home. Server
+  `execute_luau`: `ServerStorage.ArrangeTest:Invoke(player, "size", "Small")`, then pivot the
+  character to (62, 3, 479) (slot 1, Unit1). The button sits at gui (622, 4), 46 square: click
+  (692, 27). Done is at gui (567, 14), 104 by 48: click (666, 38). Clicks land 47 points left of
+  where they're sent across, none down.
+- **Captures:** `screencapture -l <window> -x -o` of Studio's window, then the `sips` crop above:
+  672 by 314, about 300 tokens to look at. Half scale for `docs/art` is `sips -Z 336`.

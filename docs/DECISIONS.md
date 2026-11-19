@@ -10490,3 +10490,21 @@ would cost a session about 35k tokens of its context (`docs/STUDIO.md`). So:
   snapper turns backs to walls itself.
 - Both are pure and only advise: the client still checks the settled pose, the server judges it.
 
+
+## D-442 The build camera opens out past the near walls, low-focused, at Roblox's own field of view (S5-03j1b, Nov 18)
+
+Seen in Studio Play at Galaxy A16 size on a Small home. D-439's home view (by the door, 1.2 under
+the ceiling, looking down at a focus 3 up) left the eye 2.4 studs from the room's middle: inside
+every wall, so turning never faded one and the view was wallpaper up close. Fixed before tuning:
+- **The home view stands past the near walls** (`BuildView.homeView`, Lune spec): `Clear` (1.3)
+  past each near wall, a front corner on the side you stood, as high as the ceiling allows. Where
+  the slot has no room beside the home (XL, and a Large only just fits), it comes in from the hall
+  through the door turned `Slant` (0.4 rad). Double tap goes back there. This is The Sims' view.
+- **The focus is 1 stud up, not 3**, so the floor's middle sits nearer the screen's middle and a
+  sliding finger keeps up with the floor.
+- **Field of view stays Roblox's 70.** 50 was tried: the Small room crowded the screen and lost its
+  shape. The tray still hides the room's front third: a framing shift is in ROADMAP's polish.
+- **Seen working:** the swoop (0.7 s), right-drag turns (drag right, look right: `MouseTurn` sign
+  kept), the wheel zooms, a one-finger drag slides; walls fade one by one all the way round.
+  A double tap on a find doesn't reset (by design: it isn't empty floor).
+- Medium, Large, XL (D-440's XL question), the front tab, the close swoop and WASD split to S5-03j1c.

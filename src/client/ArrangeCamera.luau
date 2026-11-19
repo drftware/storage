@@ -114,15 +114,29 @@ local function blend(a: CFrame, b: CFrame, t: number): CFrame
 		* CFrame.Angles(pa + (pb - pa) * t, 0, 0)
 end
 
--- The orbit for `room`: its focus kept over the floor inside the walls, starting on today's corner
--- view (high by the door, looking in) told as a heading, tilt and distance about the room's middle.
-local function orbitFor(room: Room): Brix.OrbitCamera
+-- The orbit for `room`: its focus kept over the floor inside the walls, starting on the home view
+-- (`BuildView.homeView`): out past the near walls, a front corner on the side the player stands
+-- (`from`, their eyes, in the room's frame), as high as the ceiling lets it look down.
+local function orbitFor(room: Room, eyeBox: BuildView.Box, from: Vector3): Brix.OrbitCamera
 	local box = room.inside
 	local face, c, s = box.face, box.centre, box.size
 	local floor = c.Y - s.Y / 2
 	local focus = face * Vector3.new(c.X, floor + Cam.FocusUp, c.Z)
-	local eye = face * Vector3.new(c.X, c.Y + s.Y / 2 - Feel.Below, c.Z - s.Z / 2 + Feel.In)
-	local into = face:VectorToWorldSpace(Vector3.new(0, 0, 1))
+	local angle, flat = BuildView.homeView(
+		s.X / 2,
+		s.Z / 2,
+		Cam.Clear,
+		eyeBox,
+		if from.X < 0 then -1 else 1,
+		Cam.Slant
+	)
+	local rise = s.Y - Cam.UnderCeiling - Cam.FocusUp - Cam.CeilingGap
+	local eye = face
+		* Vector3.new(
+			c.X + flat * math.sin(angle),
+			floor + Cam.FocusUp + rise,
+			c.Z - flat * math.cos(angle)
+		)
 	local across = face:VectorToWorldSpace(Vector3.new(1, 0, 0))
 	local off = eye - focus
 	local distance = math.max(off.Magnitude, Cam.Near)
@@ -134,7 +148,7 @@ local function orbitFor(room: Room): Brix.OrbitCamera
 			turn = math.atan2(-across.Z, across.X),
 		}),
 		focus = toVector(focus),
-		heading = math.atan2(-into.X, -into.Z),
+		heading = math.atan2(off.X, off.Z),
 		tilt = math.clamp(math.asin(off.Y / distance), Cam.LowTilt, Cam.HighTilt),
 		distance = distance,
 		near = Cam.Near,
@@ -572,6 +586,77 @@ function ArrangeCamera.new(options: Options): Camera
 		end
 	end
 
+	-- Studio only (S5-03j1b): `ArrangeCamera.CameraTest:Invoke(verb, ...)` from a Client
+	-- `execute_luau`, because Studio's MCP mouse is a finger with no wheel or right button. It
+	-- feeds Gestures exactly what a mouse would: `"right", x, y, dx, dy, seconds` drags with the
+	-- right button, `"wheel", notches, x, y` rolls the wheel, `"tap", x, y` taps (twice quickly
+	-- is the reset). `"state"` answers the eye, the look point and each wall's fade (left, right,
+	-- back, front) as one line. Points are viewport points, as Gestures takes them.
+	local test: BindableFunction? = nil
+	if RunService:IsStudio() then
+		local hook = Instance.new("BindableFunction")
+		hook.Name = "CameraTest"
+		-- any: a BindableFunction's arguments, only ever a Studio session's own
+		hook.OnInvoke = function(verb: any, a: any, b: any, c: any, d: any, e: any): string?
+			local now = os.clock()
+			if verb == "right" or verb == "drag" then
+				local id = "cameraTest"
+				local seconds = if type(e) == "number" then e else 0.4
+				if verb == "right" then
+					gestures:press(id, a, b, "right", now)
+				else
+					gestures:press(id, a, b, "left", now)
+				end
+				local frames = math.max(1, math.floor(seconds * 60))
+				for i = 1, frames do
+					task.wait()
+					gestures:move(id, a + c * i / frames, b + d * i / frames, os.clock())
+				end
+				gestures:release(id, a + c, b + d, os.clock())
+				return "ok"
+			elseif verb == "wheel" then
+				gestures:wheel(a, b, c, now)
+				return "ok"
+			elseif verb == "tap" then
+				gestures:press("cameraTest", a, b, "left", now)
+				task.wait()
+				gestures:release("cameraTest", a, b, os.clock())
+				return "ok"
+			elseif verb == "state" then
+				local cam = Workspace.CurrentCamera
+				local o = orbit
+				if not (cam and o) then
+					return "closed"
+				end
+				local e1, l1 = o:view()
+				local eye, look = roomFrame:PointToObjectSpace(cam.CFrame.Position), fromVector(l1)
+				local fades = {}
+				for i, w in walls do
+					fades[i] = string.format("%.2f", w.shown)
+				end
+				local at = roomFrame:PointToObjectSpace(look)
+				local raw = roomFrame:PointToObjectSpace(fromVector(e1))
+				return string.format(
+					"eye %.1f,%.1f,%.1f (orbit %.1f,%.1f,%.1f) look %.1f,%.1f,%.1f fades %s rest %s",
+					eye.X,
+					eye.Y,
+					eye.Z,
+					raw.X,
+					raw.Y,
+					raw.Z,
+					at.X,
+					at.Y,
+					at.Z,
+					table.concat(fades, "/"),
+					tostring(o:resting())
+				)
+			end
+			return nil
+		end
+		hook.Parent = script
+		test = hook
+	end
+
 	local camera: Camera = {
 		open = function(r: Room, fixed: CFrame?)
 			local cam = Workspace.CurrentCamera
@@ -596,7 +681,7 @@ function ArrangeCamera.new(options: Options): Camera
 				front = -half.Z - Cam.Hall,
 				back = s0.Z + sh.Z - Cam.WallGap,
 			}
-			orbit = orbitFor(r)
+			orbit = orbitFor(r, eyeBox, roomFrame:PointToObjectSpace(cam.CFrame.Position))
 			screen()
 			shot = fixed
 			cam.CameraType = Enum.CameraType.Scriptable
@@ -691,6 +776,10 @@ function ArrangeCamera.new(options: Options): Camera
 				finishClose()
 			end
 			unbind()
+			if test then
+				test:Destroy()
+				test = nil
+			end
 		end,
 	}
 	return camera

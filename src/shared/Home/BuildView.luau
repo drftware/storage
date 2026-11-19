@@ -1,6 +1,6 @@
 --!strict
 --[[
-	BuildView (S5-03j1a, D-439): the build camera's two sums, pure, in plain numbers so Lune proves
+	BuildView (S5-03j1a, D-439; `homeView` S5-03j1b, D-442): the build camera's sums, pure, in plain numbers so Lune proves
 	them. The moment they serve: you pinch out over your home and the camera backs out through the
 	door, the wall in front of you melting away, as The Sims cuts walls down; it never wanders into
 	a neighbour's unit, and the walls you look past are the only ones that go.
@@ -15,6 +15,7 @@
 	- `sideOf` says which of the room's four walls a piece of the home belongs to, from its box:
 	  only the pieces flush with or beyond a wall's plane, so the floor, the lamp and furniture
 	  standing in the room never fade with a wall.
+	- `homeView` says where the camera opens: out past the near walls, so the room shows whole.
 ]]
 
 local BuildView = {}
@@ -83,6 +84,34 @@ function BuildView.sideOf(
 	consider("back", minZ - halfZ, band)
 	consider("front", -halfZ - maxZ, frontBand)
 	return best
+end
+
+-- Where the camera stands when Arrange opens, and goes back to on a double tap (S5-03j1b): out
+-- past the walls it looks over, as The Sims' build camera stands over a cut-away house, so the
+-- whole room shows and the near walls are gone. A room reaching `halfX` and `halfZ` each way,
+-- the eye `clear` past each near wall's plane, kept inside `box` (the slot, and the hall's
+-- edge). Where the slot has room beside the home, a front corner, on the `side` the player
+-- stands (1 is +x); else in from the hall through the door, turned `slant` toward that side as
+-- far as the slot allows. Answers the eye's heading off straight in through the door (radians,
+-- toward `side`) and its flat distance from the room's middle.
+function BuildView.homeView(
+	halfX: number,
+	halfZ: number,
+	clear: number,
+	box: Box,
+	side: number,
+	slant: number
+): (number, number)
+	local sign = if side < 0 then -1 else 1
+	local beside = if sign > 0 then box.right else -box.left
+	local out = -box.front
+	local dx, dz = halfX + clear, halfZ + clear
+	if dx <= beside and dz <= out then
+		return sign * math.atan2(dx, dz), math.sqrt(dx * dx + dz * dz)
+	end
+	local z = math.max(math.min(dz, out), 0)
+	local angle = math.min(slant, math.atan2(math.max(beside, 0), z))
+	return sign * angle, z / math.cos(angle)
 end
 
 return table.freeze(BuildView)

@@ -3306,7 +3306,7 @@ Done when players watch the results to the end and change their perks between cl
       sums in `Home/BuildView` (Lune spec), feel numbers in `Arrange.Camera`; the eye stays in
       the lobby slot and up to 5 studs out into the hall; the old camera code left ArrangeView.
       Passes checks, untested in Studio.
-    - [ ] **S5-03j1b The build camera, seen and tuned.** Studio Play at Galaxy A16 size: Arrange
+    - [x] **S5-03j1b The build camera, seen and tuned.** Studio Play at Galaxy A16 size: Arrange
       opens with a swoop, right-drag turns, the wheel zooms, a left drag on empty floor slides,
       WASD slides, double click resets; the walls fade from the door's side, both sides and the
       back as it turns (a Small home, then Medium); the front tab's swing and the hall dip; close
@@ -3318,6 +3318,19 @@ Done when players watch the results to the end and change their perks between cl
       Tried Nov 18 (D-440): Studio was running this morning's code (Rojo not connected), so the
       camera couldn't be seen. Rojo connected later that night: Studio has the camera now.
       Also question D-439's "an XL home's side walls don't fade" once it's seen (D-440).
+      Done on a Small home (D-442), split at the run's context cap: the opening view sat inside
+      every wall, so nothing faded; it now opens out past the near walls (`BuildView.homeView`,
+      Lune spec), focus 1 up. Seen: the swoop, right-drag turns the right way, wheel zooms, a
+      drag slides, every wall fades in turn all the way round. Captured
+      (`docs/art/s5-03j1b-small-*.png`); phone and gamepad steps in OWNER.md. A Studio-only
+      `CameraTest` hook drives the camera as a mouse would (STUDIO.md).
+    - [ ] **S5-03j1c The build camera on every size, and its fixed shots.** Studio Play at A16
+      size, driven by `CameraTest`: Medium, Large and XL homes open past their near walls (a
+      Large's corner only just fits beside it; an XL comes in through the door) and fade as they
+      turn; decide D-440's XL question by looking; the front tab's swing to the door and the
+      hall dip after a card chip; Done swoops back into your eyes; WASD slides (keyboard from
+      the MCP). Tune `Arrange.Camera` by what's seen; capture each size.
+      **Acceptance:** each size seen and captured; check green.
     - [x] **ENG-26c Nearest free spot and guides, in Brix.** Placements answers the nearest free
       pose to a blocked one within a reach, and the guide lines where a footprint's edge or
       middle meets a neighbour's on the same area. Suite cases first; the pin moves.
@@ -3937,6 +3950,12 @@ actions themselves and dealing the new finds on floors are later game tickets.
 - [ ] **F-12 The eight wave 1 big finds.**
 
 ## Polish waiting for a slot
+
+- **The build camera frames the room above the tray** (S5-03j1b, D-442): the room's middle sits
+  at the screen's middle, so on a phone the tray hides its front third. Shift the picture up so
+  the room centres in the open band between the top bar and the tray (pitch the camera down a
+  little past its focus, and map each finger's point back through the same shift for Gestures
+  and `OrbitCamera`, so slides and pinches still land under the finger).
 
 - **The jukebox's window and photo pass** (S4-05a, D-414): its bay window is a flat leaning
   pane, so up close it still reads a little like a screen; the arch-tops had a curved glass dome

@@ -124,12 +124,20 @@ Arrange.Feel = table.freeze({
 	Fresh = 1.5,
 })
 
--- The build camera's feel (ArrangeCamera, S5-03j1a, D-439): The Sims 4's build camera over your
--- home. It opens on today's corner view (`Feel.Below`, `Feel.In`) and swoops there over `Feel.Rise`.
+-- The build camera's feel (ArrangeCamera, S5-03j1a, D-439, tuned in Studio in S5-03j1b, D-442):
+-- The Sims 4's build camera over your home. It swoops up from your eyes over `Feel.Rise` to the
+-- home view (`BuildView.homeView`): out past the near walls, looking down over the room.
 Arrange.Camera = table.freeze({
-	-- The point it circles stands this high off the floor (studs): about a table's top, so a
-	-- pinch or twist turns about what you're arranging, not the floorboards.
-	FocusUp = 3,
+	-- The point it circles stands this high off the floor (studs): low, so the floor under a
+	-- sliding finger keeps up with it, and the room's floor sits in the middle of the screen.
+	FocusUp = 1,
+	-- The home view stands this far past each near wall (studs): just past `FadeDepth`, so those
+	-- walls are all the way gone; and turns this far off straight in (radians) when it comes in
+	-- through the door (a home as big as its slot), so the room shows as a box, not a flat wall.
+	Clear = 1.3,
+	Slant = 0.4,
+	-- The home view's eye stays this far under the ceiling's stop (studs).
+	CeilingGap = 0.05,
 	-- The nearest a pinch brings the eye (studs), and how far past the room's longer side it can
 	-- back away: enough to back out through the door and see the whole room.
 	Near = 4,
