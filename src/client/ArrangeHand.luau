@@ -35,6 +35,7 @@ local Tools = require(ReplicatedStorage.Shared.Tools)
 local Settle = require(ReplicatedStorage.Shared.Home.Settle)
 local Snapping = require(ReplicatedStorage.Shared.Home.Snapping)
 local Turning = require(ReplicatedStorage.Shared.Home.Turning)
+local WallHang = require(ReplicatedStorage.Shared.Home.WallHang)
 
 local Feel = Arrange.Feel
 
@@ -281,6 +282,10 @@ function ArrangeHand.new(options: Options): Hand
 		-- the top the find stands on now: it holds a little past its edge, and wins a near tie
 		local held = if l.pose then l.pose.on else nil
 		local heldBest = false
+		-- a thing that hangs only on walls slides along them at the height it hangs (D-458): the
+		-- finger picks the wall and how far along, however high or low it is (over the floor, the
+		-- wall the finger's ray leaves the room through); `WallHang.height` keeps the height
+		local hangs = WallHang.only(l.shape.fits, Spots.Kinds.Wall)
 		local function try(on: string, f: CFrame, area: Brix.PlacementArea, top: boolean)
 			if not table.find(l.shape.fits, area.kind) then
 				return
@@ -306,7 +311,10 @@ function ArrangeHand.new(options: Options): Hand
 				if not Snapping.over(x, y, area.width, area.depth, mine) then
 					return -- a find stands on a top only with its middle over it (D-455)
 				end
-			elseif math.abs(x) > area.width / 2 + REACH or math.abs(y) > area.depth / 2 + REACH then
+			elseif
+				math.abs(x) > area.width / 2 + REACH
+				or (not hangs and math.abs(y) > area.depth / 2 + REACH)
+			then
 				return
 			end
 			best, nearest, bx, by, heldBest = on, t, x, y, mine
@@ -325,6 +333,13 @@ function ArrangeHand.new(options: Options): Hand
 					try(id, f, shape.top, true)
 				end
 			end
+		end
+		local area = if hangs and best then r.placements:areaOf(best) else nil
+		if area then
+			local pose = l.pose
+			local was = if pose then r.placements:areaOf(pose.on) else nil
+			local kept = if pose and was and was.kind == Spots.Kinds.Wall then pose.y else nil
+			by = WallHang.height(by, kept, area.depth, l.shape.depth)
 		end
 		return best, bx, by
 	end

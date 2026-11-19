@@ -10873,3 +10873,28 @@ the room lifts it with today's drag (Turn, Place, the tray away).
   floor (job box top, then something else at another height, then the floor): watch whether
   each is a hop a player sees (the job box's lid area is a likely second surface).
 
+## D-458 Wall things slide at their height (S5-03j3c1, 2026-11-19)
+
+- **What:** `src/shared/Home/WallHang.luau`, pure, with `tests/wallhang.spec.luau` (27 checks):
+  `only` (a shape that fits walls alone hangs; read from its `fits`, never an id), `room` and
+  `height` (the height kept while dragged, else the finger's, kept on the wall), and `raise` (the
+  height handle's step, for S5-03j3c2). `ArrangeHand.aim` uses `only` and `height`: for a thing
+  that hangs, the finger's height doesn't matter (no `REACH` limit up or down a wall), so a
+  finger over the floor picks the wall its ray leaves the room through, and the thing keeps the
+  height it hung at, round corners too, as The Sims 4's wall art does. Fresh from the box it takes
+  the finger's height on its first wall.
+- **Why split:** the session reached 125k context before writing code (the run's cap starts
+  nothing new past 210k), so the handle went to S5-03j3c2. Its pure part is done (`raise`).
+- **Seen in Studio at A16 (Medium, Unit1):** the find `NeonSign#1` set on the left wall at
+  height 1 (world y 6.05). Dragged right and down it went round the corner onto the back wall at
+  6.05 and landed; dragged back with the finger down by the job box it stayed at 6.05 along the
+  left wall and landed flush (Z 472.17, as placed). One drag that ran into the screen's bottom
+  edge slid the camera and the thing floated back to where it was: not chased (the camera's edge
+  slide, D-449's territory).
+- **Note for the handle:** the grid on a wall is Brix's `PlacementSnap.grid` at `Arrange.Step`
+  from the area's edge; `WallHang.raise` steps from the wall's middle. A wall's height (Medium
+  about 10) is a whole number of half steps, so they agree; if one ever isn't, settle's snap
+  wins. Run `raise`, then `settle`, and tick when the settled height changes.
+- **Not seen:** the neon moon furniture piece (`NeonSign:Furniture`, the tray card) was not
+  dragged; it is the same row's shape, so it takes the same path.
+

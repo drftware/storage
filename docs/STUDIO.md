@@ -3716,6 +3716,14 @@ verified: a doc page, Studio, or "untested".
   a time and read the ghost's pose (the Model under `CurrentCamera`) after each move.
 - **Hearing a sound that lives 0.2 s:** hook `PlayerGui.DescendantAdded` for `Sound` and append
   `SoundId`, `Volume`, `PlaybackSpeed` to an attribute on PlayerGui; read it after the drag.
+- **A wall thing to drag (S5-03j3c1):** Server `ArrangeTest:Invoke(player, "own", "NeonSign")`
+  then `"place", "NeonSign", "LeftWall", 0, 1, 0` sets the neon sign on Medium's left wall
+  (world y 6.05, Z 472.17). The left wall is the nearest one from Arrange's opening view, so it
+  fades: turn the camera (CameraTest `"right", 330, 150, -300, 0, 1`, `"wheel", -3`, `"wheel", 2,
+  300, 30`, then `"right", 330, 150, 0, -110, 0.8` to tilt up). `"carry", x, y, dx, dy,
+  { hold = 12 }` in a `task.spawn` holds it mid-drag while you sample the ghost and capture. Keep
+  the finger off the screen's edges or the camera slides under it. Studio's window now sits at
+  x 0 (window 25030); the same `sips` crop still finds the phone.
 - **Aim at the plane you mean:** a viewport point made from a world point above the floor lands
   the floor ray further from the camera. For a top, aim at a point on the top's plane; work the
   top's axis out from two finds on it, and recompute it after either moves.

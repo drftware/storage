@@ -140,6 +140,12 @@ nowhere else.
   down to the floor and up onto the box, and nothing extra as it slides about on one surface.
   Tell me if the line is too faint or too loud on your screen (my default: 0.09 studs wide, a
   quarter see-through), and whether the tock is the right sound.
+- [ ] **Try it: a wall thing slides at its height** (S5-03j3c1, D-458). Hang the neon moon on a
+  wall in your home, open Arrange on your phone and drag it along the wall, letting your thumb
+  wander down over the floor, then round the corner onto the next wall. Look for: it glides along
+  at the height it hung, never dropping toward your thumb, and goes round the corner at the same
+  height. Tell me if it should follow your thumb up and down instead (my default: it keeps its
+  height; the height handle comes next, S5-03j3c2).
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

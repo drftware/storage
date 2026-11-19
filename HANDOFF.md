@@ -2,34 +2,39 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-19, S5-03j3b done: snapping seen and heard (D-457) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
+**Updated:** 2026-11-19, S5-03j3c1 done: wall things slide at their height (D-458) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; search its heading). Order now: S5-03j3c, j4 to j7, ENG-29, k1 to k6.
-- **Snapping is seen and heard** (D-457): `ArrangeGuides` draws Brix's lines while a thing is
-  carried; a hop between surfaces of different heights tocks. Seen in Studio at A16,
-  `docs/art/s5-03j3b-crate-lined-up.png`.
+  only; search its heading). Order now: S5-03j3c2, j4 to j7, ENG-29, k1 to k6.
+- **Wall things slide** (D-458): `Home/WallHang` (pure) keeps a hung thing's height as it's
+  dragged, round corners too; `ArrangeHand.aim` uses it. Seen in Studio at A16,
+  `docs/art/s5-03j3c1-sign-slides-high*.png`. `WallHang.raise` (the handle's steps) is written
+  and tested but not wired.
 - **Studio has tonight's code** (`rojo serve`, port 34872): restart Play to run edits.
 - **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j3c Wall things
-The moment: a neon moon dragged across a wall glides along it at the height it hung, and a
-small handle above it lifts or lowers it, as The Sims 4's wall height does (Alt aside: Free).
-1. Read the plan doc's section on wall things (search "wall"), and ROADMAP's S5-03j3c line.
-   Wall things are any catalog row whose spot is "Wall" (`Spots`, `Furniture` rows): no ids.
-2. In `ArrangeHand.aim`, a thing that fits only walls keeps its height on the wall as the finger
-   moves (it slides along the wall it's on; across a corner it moves to the next wall at the
-   same height). Put the pure part (height kept, clamped to the wall's area) in a pure module
-   with Lune specs first (`Home/Snapping` or a new `Home/WallHang`).
-3. A height handle: a small round button above the selected wall thing (ArrangeRing's look),
-   drag it up or down to change only its height, grid steps unless Free; a tick per step.
-4. Studio at A16 (STUDIO.md "Proving snapping in Play"): drag the neon moon (buy or add it by
-   `ArrangeTest`) along a wall and raise it; capture to `docs/art/`.
-**Acceptance:** green; the slide and the handle seen in Studio at A16 and captured.
-**Read first:** `ArrangeHand.luau` lines 269-330 (aim) and 368-430 (settle); `Home/Spots.luau`
-lines 60-90; `Home/Arranged.luau` lines 63-90; `ArrangeRing.luau` lines 1-60; DECISIONS D-455.
+## Next task: S5-03j3c2 The height handle
+The moment: tap the neon moon on the wall and a small round handle sits just above it; drag the
+handle up and the moon rises along the wall a tick per half stud, as The Sims 4's wall-height
+handle does (Free: by eye, no ticks).
+1. A fourth ring button in `ArrangeRing` (its look: round, `Feel.RingSize`, a small up-down
+   arrow icon of `bar`s), shown only for a selected thing that hangs (`WallHang.only` on its
+   shape's `fits`, never an id), placed above the thing's screen box, not in the row.
+2. Its drag is its own (InputBegan on the button, then UserInputService InputChanged/Ended, as
+   the tray card's drag in ArrangeView ~497 and ~1456 is): screen points up are converted to
+   studs on the wall by the camera (the wall point under the thing and one stud above it, both
+   to the screen), then `WallHang.raise(from, by, step, area.depth, shape.depth)` (step
+   `Arrange.Step`, 0 when `options.free()`), then `settle` and `setPose`. Tick per changed
+   height (`tick`, ArrangeHand ~243); the Gestures camera must not pan meanwhile.
+3. A new hand call, say `raiseBy(studs)`, on ArrangeHand's returned table; the ring's option
+   calls it. Let go places through the usual Place path (as Turn's does: `turnNow` ~1093).
+4. Studio at A16 (STUDIO.md "Proving snapping in Play", its wall-thing line): select the sign,
+   drag the handle up two steps; capture to `docs/art/` half scale plus a full-scale close-up.
+**Acceptance:** green; the handle seen and dragged in Studio at A16, the height moved in steps.
+**Read first:** `Home/WallHang.luau` (all); `ArrangeRing.luau` 1-50, 124-170; `ArrangeView.luau`
+315-335, 1232-1265; `ArrangeHand.luau` 539-560 (setPose), 1093-1130 (turnNow); DECISIONS D-458.
 
 ## Queue (next sessions, the owner's ticket order)
 0. A tray card's drag isn't Gestures': the wheel zooms, no twist (route the wheel, D-453).

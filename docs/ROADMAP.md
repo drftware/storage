@@ -3534,8 +3534,16 @@ Done when players watch the results to the end and change their perks between cl
         changes; the tock (`TOCK`) plays for any move between upward surfaces of different
         heights. Seen in Studio at A16: a crate green beside the job box with two lines (its edge
         on the box's, its back on the mirror's middle); the lamp tocks off the box and back on.
-      - [ ] **S5-03j3c Wall things.** A wall thing slides along its wall as dragged; a handle
-        raises and lowers it (Sims 4's wall height, with Alt aside); seen in Studio at A16.
+      - [x] **S5-03j3c1 Wall things slide.** Done (D-458;
+        `docs/art/s5-03j3c1-sign-slides-high*.png`): `Home/WallHang` (pure, 27 checks): a thing
+        that fits only walls keeps the height it hangs at while dragged; `aim` lets the finger go
+        any height (the wall its ray leaves the room through). Seen in Studio at A16 (Medium): the
+        neon sign dragged with the finger down by the job box went along the left wall, round the
+        corner onto the back wall and back, at 6.05 studs throughout, and landed flush.
+      - [ ] **S5-03j3c2 The height handle.** A small round button above a selected wall thing
+        (ArrangeRing's look); dragged up or down it raises or lowers only its height by
+        `WallHang.raise` (grid steps, Free by eye), a tick per step, as The Sims 4's wall-height
+        handle; seen in Studio at A16 and captured with a close-up.
     - [ ] **S5-03j4 Undo, and every action answers.** Undo and redo while Arrange is open (a
       pure undo list, Lune specs; the server takes each undo as an ordinary move). Every row of
       the doc's feedback table: lift, drag, onto a table, blocked (the blocker glows), turn,
