@@ -3866,3 +3866,18 @@ verified: a doc page, Studio, or "untested".
   the new one.
 - **`screen_capture` timed out at once this session**; the window capture (`screencapture -l`,
   the crop above, `sips -Z 343`) took a second each and never failed.
+
+## Logging Arrange's feedback in Play (S5-03j7b2, Nov 19)
+
+- **Arrange's sounds play in its screen gui**, not SoundService: a sampler that wants to hear them
+  connects `PlayerGui.DescendantAdded` and logs each new `Sound` (id, `PlaybackSpeed`, `Volume`)
+  a frame later. The landing's dust is a `Part` with a `ParticleEmitter` added to `CurrentCamera`
+  (`ArrangeHand.puff`). End the logger by `task.delay`, writing into a `StringValue`; a Client
+  `execute_luau` that loops waiting for it can time out ("Request timeout") and the delay's write
+  is then lost too, so read it back in a later, short call.
+- **Studio's window sat at (0, 30) this session**, not (703, 30); the crop `--cropOffset 360 356
+  -c 314 672` of `screencapture -l <window>` still gave the phone. Map from that crop to a click
+  with click = crop + (92, -47). `WorldToViewportPoint` + (47, -58) was 40 points off today: aim
+  from the crop instead. The room's floor in Medium is at world height 0.
+- **A drag begun on a placed thing that isn't selected may slide the camera** instead of lifting it
+  (the job box, from (472, 55)): tap it first, then drag.

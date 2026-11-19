@@ -2,66 +2,66 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-19, S5-03j7b1 done: ArrangeView taken apart to wiring, 1744 to 851 lines (D-472) · **Checks:** green · **Git:** `main`, not pushed; Brix `cea1259`.
+**Updated:** 2026-11-19, S5-03j7b2 done and the room editor (S5-03j) closed (D-473) · **Checks:** green · **Git:** `main`, not pushed; Brix `cea1259`.
 
 ## State
-- **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
-  (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; search its heading). Order now: S5-03j7b2, ENG-29 (a then b), k1 to k6.
-- **ArrangeView is wiring only (D-472):** the tray and limit bar are `ArrangeTray` (its
-  `Palette` holds Arrange's colours), the front tab's camera `ArrangeFront`, your home
-  `ArrangeHome`, still and hidden `ArrangeStill`, the grid `ArrangeGrid`, the button
-  `ArrangeButton`. New screen pieces go in their own module; ArrangeView only grows by joins.
-- **Studio:** `rojo serve` in sync (port 34872); Edit, unsaved; clicks in STUDIO.md (grep "A Play pass").
-- **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
+- **The owner's priority (D-436):** the room editor is closed; the recipes now, egg, incubator
+  and chick first, built so new items join by data alone. Plan:
+  https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools; this brief quotes what ENG-29a
+  needs). Order: ENG-29a, ENG-29b, S5-03k1 to k6 (ROADMAP grep `S5-03k`).
+- **Arrange:** wiring only (D-472); leftovers in ROADMAP's polish "The room editor's leftovers".
+- **Studio:** `rojo serve` in sync (port 34872), Edit, unsaved. **Brix:** clean at `cea1259`.
 
-## Next task: S5-03j7b2 What j7a didn't reach, and the editor's phone steps
-The moment: the whole editor on a phone, every press answering (The Sims 4).
-1. Seen and captured at A16 (`docs/art/s5-03j7b2-*`, half scale, looked at): the weighted
-   landing (a heavy and a light thing set down: thud and dust, D-461); Put away's flight into its
-   card (a RenderStepped logger, STUDIO.md "Watching something too quick"); Redo of a group Put
-   away; the carried green (only the red was captured in j7a).
-2. A group's Turn: in j7b1 a box of four in Medium's corner (job box, two crates, moon lamp)
-   turned nothing and said nothing (D-472). Tell a quiet refusal from a turn that never reaches
-   the server (`ArrangeGroup.turnNow`, the `ArrangeGroup` remote's answer); a refusal must answer
-   (a shake, a dull click), never nothing. Its ring stood below them (`s5-03j7b-boxed.png`).
-3. Judge at full scale: the guide line between lined-up edges (`s5-03j3b-crate-lined-up.png`);
-   the wall height handle beside the sign (`s5-03j3c2-handle-raised-closeup.png`).
-4. Walk the plan doc's "Every action answers" table row by row; fix what's flat, each fix in
-   the module that owns it (never back into ArrangeView).
-5. OWNER.md's phone steps for the whole editor in one ordered block (what Studio can't drive).
-**Acceptance:** green; every row of the table seen or listed in OWNER.md; captures looked at;
-ArrangeView no longer than 851 lines.
-**Read first:** ROADMAP's j7b lines (grep `j7b2`); D-461, D-470 to D-472; STUDIO.md "A Play
-pass through the whole editor" and "Watching something too quick"; the plan doc's "Every action
-answers"; `src/client/ArrangeGroup.luau` by grep (`turnNow`, `answered`).
+## Next task: ENG-29a The recipe book, in Brix (rows in, checked, filed, one lookup)
+The moment: carry an egg near the incubator and its lamp brightens (Stardew Valley's incubator,
+Grow a Garden's eggs); this is the book that knows the egg goes in. In `../engine` by its
+AGENTS.md (neutral names; never egg, chick or any find), then the pin moves. Pure, nothing ticks.
+The plan's vocabulary, quoted (Part 2, "The fixed vocabulary"):
+- "What starts it: you hold one thing and press its verb on another; you press something with
+  empty hands; you set one thing down on or beside another."
+- "What moves a stage on: real time passing, counted while you're offline too; a number of
+  presses ("wind it five times"); something nearby: a lit lamp within reach of it, a thing of a kind
+  next to it; something given: hold the watering can and press Water; something done elsewhere:
+  after your next climb, as Adopt Me's eggs hatch from tasks."
+- "What happens: become: what's inside turns into another find; make: new finds appear, beside
+  it or in your box; use up: what went in is gone; give back: what went in returns to your box;
+  chance: one of several results, odds shown on the thing before you start; again: the recipe
+  starts over by itself."
+- "How each stage looks: a motion from the find's own art kit, a glow, a sound, and whether it
+  grows toward the end. No numbers, no countdowns."
+1. Read `../engine/AGENTS.md`, then model the module on Placements (its contract, suite, page).
+2. A `Recipes` contract: the closed vocabulary as frozen name lists (starts: `put`, `use`,
+   `press`; stage ends: `time`, `presses`, `near`, `given`, `event`; results: `become`, `make`,
+   `useUp`, `giveBack`, `chance`, `again`; looks: a stage names a look by key, checked against a
+   looks table the game passes in). A row: what it's used on (a kind or a tag), what's held (a
+   kind, a tag, or nothing), its start, its stages (each one end and one look), its results.
+3. `Recipes.book(rows, catalog, looks)`: checks every row once (an unknown word, an unknown kind
+   or tag, a stage that can't end, a chance whose odds don't sum to 1, a result naming nothing)
+   and returns the problems as a list (never throws mid-game); files rows by what they're used on,
+   then what's held, kind before tag. `book:find(onKind, onTags, heldKind?, heldTags?)` is the one
+   lookup: no scan of all rows, allocation-free on the hot path (fill a list passed in).
+4. The suite carries test-only rows that use every word (a seed in a pot through three stages, a
+   battery on a charger, two things combined into one, a chance result, one that repeats, an
+   empty-handed press), plus a bench of a few thousand rows proving the lookup's cost is flat.
+   Records (start, advance, due, chance's seed) are ENG-29b: leave the types ready for them.
+5. Module page, Brix ROADMAP (ENG-29a ticked, b promoted), its checks, its own commit; then move
+   `vendor/brix` and note it in `docs/FRAMEWORK.md` in the game commit.
+**Acceptance:** both repos' checks green; no Brix file names a find; every word used by a
+test-only row; the lookup filed (not scanned) and benched.
+**Read first:** `../engine/AGENTS.md`; `../engine/src/Contracts/Placements.luau` (shape of a
+contract); `../engine/docs/modules/Placements.md`; `../engine/docs/ROADMAP.md` lines 756-800
+(ENG-26's split, where ENG-29 goes); ROADMAP's ENG-29 lines here (grep `ENG-29`); D-436.
 
 ## Queue (next sessions, the owner's ticket order)
-0. After j7b2: ENG-29a. **The shelf's cubby finds stand off the shelf:** in the Studio save two
-   (the stained-glass lamp, the walking robot, spots 3 and 6) are drawn 8 and 12 studs in front
-   of Medium's shelf (D-470): `Shelves`' `spotAt` past this shelf's tiers? Polish by name: the
-   place's squash, a drag's tilt, a group's ghost shadows. The held-find view hides the crates at
-   phone size. Pallet and camp bed cards float back in Small (D-461). A tray card's drag isn't
-   Gestures' (D-453). Hide the minimap's "You" sliver (D-447). Drop `ArrangeCamera.Room.slot`,
-   `slotBox` (D-443); rename `BuildView.eyeBox` (D-444). Hand projections: use `lens` (D-446).
-   `ToolView.luau` ~1293 reads on-screen as "ahead" (D-451). Arrange reopens on the last tab. A
-   blocked let-go may be judged blocked again (D-456). One lamp drag tocked three times (D-457).
-   Sit and Open hide a held find's kept spot; a cubby find can't be held to open Arrange (D-466).
-   A crowded button's key still presses it on a computer (D-471).
-   After S5-03j and k: S5-03g2b's three "Polish:" lines (D-326 to D-328), then g3b.
-1. Small's doorway's inside boards are oak, not the picked paint (D-355). Sitting (D-353).
-2. Home leftovers: a lamp left on kept through a rejoin (D-351); a lit find taken comes unlit;
-   the cubby finds' own buttons; a friend's take shows before the flying copy lands; the steel
-   shelf's lower tiers; a lifted lit piece's light; a grow while Arrange is open closes it (D-356);
-   Robux unit and gift cards unseen; the XL limit bar; Take through a wall; a refused cubby
-   place (D-352); a cracked taken-out find comes out whole; a cubby Take keeps no spot (D-465).
-3. The home's warm fill (D-290). Brix (in `../engine`): ENG-25b's two-client run; Driving's
-   stick read (D-254); a PlayerSaves hook before a leaving save's last write.
-4. The item catalog and design docs' finds need D-250, D-251, D-259, D-277, D-297, D-299 to 361.
-   Once the owner's real purchase passes, mark Brix's ENG-23e done. A spare home unpadlocked
-   (D-275); the hat's first-Wear dark screen; the body after a respawn (D-282); late arrivals
-   off `ClimbEnd.spot`; the driving torch (D-257); asset 203785492's type error. Counter and job
-   box cash isn't sent to analytics. One `CaughtSeized` string. Lobby sheets: no plates.
+0. After ENG-29: S5-03k1 to k6. **The shelf's cubby finds stand off the shelf** (D-470): two drawn
+   8 and 12 studs in front of Medium's shelf (`Shelves`' `spotAt`?). The held-find view hides the
+   crates at phone size. Pallet and camp bed cards float back in Small (D-461). Hide the minimap's
+   "You" sliver (D-447). Drop `ArrangeCamera.Room.slot`, `slotBox` (D-443); rename
+   `BuildView.eyeBox` (D-444). Hand projections: use `lens` (D-446). `ToolView.luau` ~1293 reads
+   on-screen as "ahead" (D-451). A blocked let-go may be judged blocked again (D-456). One lamp
+   drag tocked three times (D-457). Sit and Open hide a held find's kept spot; a cubby find can't
+   be held to open Arrange (D-466). After S5-03k: S5-03g2b's "Polish:" lines, g3b, then the
+   climb run on hold (S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06). Home and Brix leftovers: ROADMAP's polish "Home leftovers (from HANDOFF, Nov 19)".
 
 ## Kickoff for the next agent
 ```text

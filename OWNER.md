@@ -254,6 +254,40 @@ nowhere else.
   0.95, a blanket 0.12), the four bands and the taps' strengths (`Home/Feedback`), and the pop
   (the panel's click, low). Also: in the Small room the pallet and the camp bed float back when
   their card is tapped (no free spot near the middle): tell me if that's a full room or a bug.
+- [ ] **The whole room editor on your phone, start to finish** (S5-03j7b2, D-473; every piece seen
+  in Studio Play at A16 size, none on a real phone). This one pass covers the Arrange items above;
+  tick them as you go. In your home, on your phone:
+  1. **Open.** Tap the Arrange button (top right). The camera rises over the room, the roof comes
+     off, a crate is about a thumb wide. Look for: no jolt, the tray along the bottom, 5/50 at top
+     left.
+  2. **Look round.** One finger on bare floor slides the view (it stops with the room's edge still
+     on screen); two fingers pinch to zoom, twist to turn, tilt up and down. Look for: smooth, never
+     through a wall.
+  3. **Set something out.** Drag the milk crate's card up into the room. It follows your thumb a
+     little above it (so your thumb doesn't hide it), green where it fits, a tick each step. Let go:
+     a knock, a puff of dust, a firm tap in your hand, the bar 5/50 to 6/50.
+  4. **Into the way.** Drag it onto the shelf: it goes red, the shelf glows red, one dull knock.
+     Let go: it floats back. Along a neighbour's edge, a faint guide line shows them lined up.
+  5. **Onto a table.** Drag a teddy onto the job box's top: a little hop up, a tock.
+  6. **Pick and act.** Tap the crate: its ring shows Turn and Put away. Turn: a quick spin with a
+     click-click. Put away: it shrinks and flies down into its card, the card bumps and pops.
+  7. **Undo and Redo** (top bar): the crate comes back out and goes away again, the same flight.
+  8. **Wall things.** Drag the neon sign along the wall: it slides at its height. Its handle
+     raises and lowers it.
+  9. **Box several.** Hold a finger on bare floor a moment, then drag a box round three things in
+     a corner. They glow; their ring sits under them. Drag one: all three move together. Press
+     their Turn: they swing a quarter about their middle, and if that would push one into a wall
+     they shift over to the nearest place they fit. Hem them in (things all round) and press Turn: red,
+     a little side-to-side shake, a dull knock, a tap, and back. Put away: all three fly to the
+     tray; Undo brings all three back; Redo sends them again.
+  10. **Hold to open.** Done, then hold a finger on your lamp in the room: Arrange opens with it
+     lifted.
+  11. **Done.** Everything comes back: the touch stick, the torch, the tool wheel, your camera.
+  Look for, all through: every press answers at once (a move, a sound, a tap), nothing snaps,
+  no words explain anything, nothing too small to hit with a thumb. My defaults, yours to change:
+  a group's Turn shifts up to two studs to fit before it refuses (`Arrange.Feel.TurnNudges`, 4
+  half-stud steps), and a refusal shows red half a second with a shake 0.18 studs wide
+  (`RefusedBeat`, `Shake`).
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

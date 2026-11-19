@@ -109,6 +109,33 @@ function Group.turned(members: { Member }, floor: string, quarters: number): { M
 	return out
 end
 
+export type Nudge = { dx: number, dy: number }
+
+-- Where to try a turned group that won't fit as it stands: every offset of up to `most` steps of
+-- `step` studs each way, nearest first, never no move. A group turned in a corner swings into a
+-- wall; the screen tries these in order and lands the first that fits, as a single Turn settles
+-- off a wall (The Sims 4 shifts a rotated object to the nearest free spot the same way).
+function Group.nudges(step: number, most: number): { Nudge }
+	local out: { Nudge } = {}
+	for i = -most, most do
+		for j = -most, most do
+			if i ~= 0 or j ~= 0 then
+				table.insert(out, { dx = i * step, dy = j * step })
+			end
+		end
+	end
+	table.sort(out, function(a: Nudge, b: Nudge): boolean
+		local da, db = a.dx * a.dx + a.dy * a.dy, b.dx * b.dx + b.dy * b.dy
+		if da ~= db then
+			return da < db
+		elseif a.dx ~= b.dx then
+			return a.dx < b.dx
+		end
+		return a.dy < b.dy
+	end)
+	return out
+end
+
 -- A list from a screen: a table with exactly 1 to `Group.Most` entries at 1..n and nothing else.
 local function list(v: unknown): { unknown }?
 	if type(v) ~= "table" then

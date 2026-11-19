@@ -203,6 +203,25 @@ do
 	ok(same(set, before), "nothing changed")
 end
 
+-- A turn that won't fit tries the nearest nudges first (S5-03j7b2): every offset within `most`
+-- steps, never no move, each once, sorted by distance so the group shifts the least it can.
+do
+	local list = Group.nudges(0.5, 2)
+	ok(#list == 24, "five by five less the middle: 24 nudges")
+	local seen, last, zero = {}, 0, false
+	for _, n in list do
+		local d = math.sqrt(n.dx * n.dx + n.dy * n.dy)
+		ok(d >= last - 1e-9, "nearest first")
+		last = d
+		zero = zero or (n.dx == 0 and n.dy == 0)
+		seen[string.format("%g,%g", n.dx, n.dy)] = true
+	end
+	ok(not zero, "never no move")
+	ok(seen["0.5,0"] and seen["-1,-1"] and seen["1,1"], "steps of the size asked, both ways")
+	ok(math.abs(list[1].dx) + math.abs(list[1].dy) == 0.5, "first a single step")
+	ok(#Group.nudges(0.5, 0) == 0, "no steps, no nudges")
+end
+
 print(string.format("group: %d checks, %d failed", checks, failures))
 if failures > 0 then
 	error("group spec failed")

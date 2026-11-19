@@ -11293,3 +11293,38 @@ captured to `docs/art/s5-03j6b2b-*`:
 - **Seen in the captures, for j7b2:** with four boxed in Medium's corner the group's Turn button
   stands well below them on the bare floor, and their lit glow hardly reads at half scale
   (`s5-03j7b-boxed.png`).
+
+## D-473 A group's Turn shifts to fit, and its "no" shakes; the room editor closed (S5-03j7b2, Nov 19)
+
+- **What j7b1 saw was a refusal, not a lost turn.** Logged frame by frame in Studio Play at A16
+  (four boxed in Medium's corner: the job box, two crates, the moon lamp): the Turn reached
+  `ArrangeGroup.turnNow`, the turned ghosts showed red for 0.6 s and floated back, and no ask went
+  to the server. Its ratchet, knock and slide do play (into the screen's gui, which the capture
+  can't hear). Turning four things about their middle in a corner always swings one into a wall,
+  so there the button could never work, and 0.25 s of red was over before the eye found it.
+- **The turned group now shifts to the nearest place it fits** before it refuses, as a single
+  Turn already settles off a wall and as The Sims 4 moves a turned object to the nearest free
+  spot: `Group.nudges(step, most)` (pure, in `tests/group.spec`) lists every offset of up to
+  `Arrange.Feel.TurnNudges` (4) snap steps each way, nearest first; `turnNow` judges each on the
+  room's judge and lands the first that fits, as one ask. Seen: the same four turned a quarter and
+  landed (the server's rows moved and turned), `docs/art/s5-03j7b2-group-turned-in-corner.png`.
+  Runs once per press, never per frame; names no find.
+- **A refusal answers plainly:** red for `Feel.RefusedBeat` (0.5 s), the ghosts shake side to side
+  across the screen (`Feel.Shake`, 0.18 studs, out and back twice), the dull knock and now a clear
+  tap in the hand. The shake itself wasn't caught on camera (OWNER.md's whole-editor block, step 9).
+- **The ring under a boxed group** stands under the box round all of them, as a single thing's ring
+  stands under it; judged right in the capture, left as is.
+- **The plan's feedback table, row by row** (seen across S5-03j2 to j7b2 unless said): Lift
+  (whoosh, light tap, shadow; the "stretch" and rising to the finger not built), Drag (spring,
+  a tick each step, logged today; the tilt with speed not built), Onto a table (hop, tock), Blocked
+  (red, the blocker's glow and one knock, seen today), Turn (spin with overshoot, ratchet), Place
+  (thud by weight heard in j4b1; the dust puff and the squash not seen in Studio: the puff is in
+  OWNER.md, the squash not built), Put away (flight logged in code, never caught on camera:
+  OWNER.md), Undo (glides back). Not built, by name in ROADMAP's polish: the place's squash, the
+  lift's stretch, a drag's tilt, a group's ghost shadows.
+- **Not reached, moved to OWNER.md by name rather than another session:** the weighted landing's
+  dust seen on screen, Put away's flight, Redo of a group Put away, the carried group's green, and
+  the guide line and the wall handle at full scale. Three card drags in a full Medium room were
+  refused or floated back (no free spot where the MCP's finger let go) and a drag on the job box
+  slid the camera; Studio can't judge feel anyway. One ordered phone pass for the whole editor is
+  in OWNER.md. With it **S5-03j is closed** (the conductor, Nov 19); the recipes start with ENG-29a.

@@ -3271,7 +3271,8 @@ Done when players watch the results to the end and change their perks between cl
       crate, the beanbag, the blanket and the camp bed's two; jump to stand; the landing's sound,
       the cushion's give and your view gliding in. Queued: cross-legged on the blanket (needs our
       own animation; script joint writes lose to a seated body's Animator) and lying on the bed.
-  - [ ] **S5-03j The room editor, rebuilt** (the owner, Nov 18, D-436; the plan is the Claude Doc
+  - [x] **S5-03j The room editor, rebuilt** (closed Nov 19, D-473; what's left is in Polish waiting
+    for a slot under "The room editor's leftovers" and OWNER.md's whole-editor pass) (the owner, Nov 18, D-436; the plan is the Claude Doc
     "The room editor and the recipe system", https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU,
     read its "Part 1" and "How it's built" sections only). Arrange with The Sims 4's control:
     a camera you turn, slide and zoom, drag anything and let go to place, snapping that does the
@@ -3605,7 +3606,7 @@ Done when players watch the results to the end and change their perks between cl
       away, undone and redone; fixes from what's seen (D-470: a shelf is boxed and ringed by its
       own body, not its cubby finds; `docs/art/s5-03j6b2b-*`). Polish by name: a shadow under each
       carried ghost; an undone group Put away's finds popping up out of the box.
-    - [ ] **S5-03j7 The editor seen whole.** Every row of the feedback table checked in Studio
+    - [x] **S5-03j7 The editor seen whole.** Every row of the feedback table checked in Studio
       Play at A16 size and captured; fixes; ArrangeView's leftovers removed; OWNER.md's phone
       steps written. Split (Nov 19, the conductor; j6b2b's session):
       - [x] **j7a Seen whole, and the screen's fixes.** Done Nov 19 (D-471,
@@ -3627,12 +3628,16 @@ Done when players watch the results to the end and change their perks between cl
         j6b2b (D-470): a group's Turn refused, and Redo of a group Put away, not yet seen; the
         carried group's soft green and the box's glow read faint at phone size
         (`s5-03j6b2b-carried-green.png`).
-      - [ ] **j7b ArrangeView taken apart to wiring, and OWNER.md's phone steps.** Split (Nov 19,
+      - [x] **j7b ArrangeView taken apart to wiring, and OWNER.md's phone steps.** Split (Nov 19,
         its own session): - [x] **j7b1** taken apart (D-472): ArrangeView 1744 to 851 lines, only
         wiring; `ArrangeTray`, `ArrangeFront`, `ArrangeHome`, `ArrangeStill`, `ArrangeGrid`,
         `ArrangeButton` out of it; seen unchanged in Studio Play at A16 (open, a card dragged up and
         landed, select, Turn, Put away, Undo, a box of four, Done, the front tab;
-        `docs/art/s5-03j7b-*`). - [ ] **j7b2** what j7a didn't reach: the carried lines below
+        `docs/art/s5-03j7b-*`). - [x] **j7b2** done Nov 19 (D-473): the group's Turn was a refusal
+        too quick to see; it now shifts to the nearest place it fits (`Group.nudges`) and a refusal
+        holds red with a shake and a tap (`docs/art/s5-03j7b2-*`); the feedback table walked; the
+        unseen landing, flight, group Redo, green, guide line and handle went to OWNER.md's
+        whole-editor phone pass. Was: what j7a didn't reach: the carried lines below
         (from "Carried from j7a"), plus a group's Turn that changed nothing on four boxed things
         in Medium's corner (seen in j7b1: refused, or not reaching? tell them apart; its ring stood well below them and their glow hardly read, `s5-03j7b-boxed.png`),
         then OWNER.md's phone steps for the whole editor. Was: (6)
@@ -4229,6 +4234,25 @@ actions themselves and dealing the new finds on floors are later game tickets.
 - [ ] **F-12 The eight wave 1 big finds.**
 
 ## Polish waiting for a slot
+
+- **Home leftovers (from HANDOFF, Nov 19)**, kept in the order they were queued:
+  1. Small's doorway's inside boards are oak, not the picked paint (D-355). Sitting (D-353).
+  2. Home leftovers: a lamp left on kept through a rejoin (D-351); a lit find taken comes unlit;
+  the cubby finds' own buttons; a friend's take shows before the flying copy lands; the steel
+  shelf's lower tiers; a lifted lit piece's light; a grow while Arrange is open closes it (D-356);
+  Robux unit and gift cards unseen; the XL limit bar; Take through a wall; a refused cubby
+  place (D-352); a cracked taken-out find comes out whole; a cubby Take keeps no spot (D-465).
+  3. The home's warm fill (D-290). Brix: ENG-25b's two-client run; Driving's stick read (D-254); a
+  PlayerSaves hook before a leaving save's last write. Catalog decisions D-250 to D-361; ENG-23e
+  after the owner's real purchase; hat, respawn, late arrivals, driving torch, asset 203785492.
+
+- **The room editor's leftovers** (S5-03j closed, D-473), each by name: the place's squash (the
+  ghost's parts scaled on one axis, D-461); the lift's stretch and rise to the finger; a drag's
+  tilt with speed; a shadow under each carried group ghost; an undone group Put away's finds
+  popping up out of the box; the group's soft green and box glow at phone size (raise only if the
+  owner's pass says faint); the guide line and the wall height handle judged at full scale on a
+  phone; a tray card's drag through Gestures (D-453); Arrange reopening on the last tab; a
+  crowded button's key still pressing it on a computer (D-471).
 
 - **The build camera frames the room above the tray** (S5-03j1b, D-442): the room's middle sits
   at the screen's middle, so on a phone the tray hides its front third. Shift the picture up so

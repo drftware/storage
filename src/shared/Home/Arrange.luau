@@ -157,6 +157,16 @@ Arrange.Feel = table.freeze({
 	FitsWash = 0.6,
 	RefusedWash = 0.45,
 	ShadowLayers = { 1, 0.78, 0.56 },
+	-- A group's Turn that swings into a wall or a neighbour tries shifting the turned group up to
+	-- this many snap steps each way (nearest first) before it refuses: four boxed in a corner
+	-- turned nothing at all without it (S5-03j7b2). More finds a spot farther off and moves the
+	-- group further than the player meant.
+	TurnNudges = 4,
+	-- A refused group Turn: how long it shows red (seconds; 0.25 was over before the eye found it,
+	-- S5-03j7b2) and how far it shakes side to side (studs), a "no" without a word, as a refused
+	-- build in The Sims 4 shudders.
+	RefusedBeat = 0.5,
+	Shake = 0.18,
 	-- The guide lines where a dragged thing's edge or middle lines up with a neighbour's, as The
 	-- Sims 4 draws them: this wide (studs), this far off the surface so the floor never eats them,
 	-- this see-through (0 solid) and this far past each end (studs) so a line reads as running

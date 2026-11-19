@@ -46,8 +46,11 @@ local FLOOR = "Floor" -- the room's floor area (Brix's Placements names it so)
 -- The thuds of a group landing come one after another this far apart (seconds), heaviest first:
 -- three distinct knocks read as three things landing, not one muddy bang.
 local THUD_GAP = 0.05
--- How long a refused Turn shows red before the group floats back (seconds).
-local RED_BEAT = 0.25
+-- Where a turned group that won't fit tries next, nearest first (Group.nudges).
+local NUDGES = Group.nudges(Arrange.Step, Feel.TurnNudges)
+-- The refused Turn's shake: sideways, out and back twice, then still (in Feel.Shake widths).
+local SHAKE = { 1, -1, 0.6, -0.6, 0 }
+local SHAKE_GAP = 0.05
 -- A group pressing into something: the hand's bump (the knock, low and soft).
 local BUMP: Arrange.Sound = table.clone(Arrange.Knock)
 BUMP.pitch = (Arrange.Knock.pitch or 1) * 0.7
@@ -630,6 +633,33 @@ function ArrangeGroup.new(options: Options): ArrangeGroup
 		end
 	end
 
+	-- A refused Turn's "no": every ghost shudders sideways across the screen and settles where it
+	-- was aimed.
+	local function shake()
+		local camera = Workspace.CurrentCamera
+		if not camera then
+			return
+		end
+		local side = camera.CFrame.RightVector * Feel.Shake
+		local aimed: { [Piece]: CFrame } = {}
+		for _, p in pieces do
+			aimed[p] = p.target
+		end
+		for k, sign in SHAKE do
+			task.delay(k * SHAKE_GAP, function()
+				if asking ~= "red" then
+					return
+				end
+				for _, p in pieces do
+					local at = aimed[p]
+					if at then
+						p.target = at + side * sign
+					end
+				end
+			end)
+		end
+	end
+
 	-- Turn: the lit things swing a quarter about their middle, with the ratchet's click-click; they
 	-- land as one ask, or show red a beat and float back.
 	local function turnNow()
@@ -640,6 +670,16 @@ function ArrangeGroup.new(options: Options): ArrangeGroup
 		quarters = 1
 		now = Group.turned(start, FLOOR, quarters)
 		fits = judge(r, now)
+		if not fits then
+			-- swung into a wall or a neighbour: the nearest shift of the turned group that fits
+			for _, n in NUDGES do
+				local tried = Group.moved(now, FLOOR, n.dx, n.dy)
+				if judge(r, tried) then
+					now, fits = tried, true
+					break
+				end
+			end
+		end
 		paint()
 		aimAll(r)
 		play(Arrange.Ratchet, options.sounds())
@@ -649,8 +689,10 @@ function ArrangeGroup.new(options: Options): ArrangeGroup
 			task.delay(Feel.Land, drop)
 		else
 			play(BUMP, options.sounds())
+			options.tap(Feedback.Taps.Tap)
 			asking = "red"
-			task.delay(RED_BEAT, function()
+			shake()
+			task.delay(Feel.RefusedBeat, function()
 				asking = nil
 				floatBack()
 			end)
