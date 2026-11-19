@@ -11034,3 +11034,28 @@ egg or seed, Minecraft's outline, Animal Crossing's and The Sims' place-from-han
 - **My defaults** (OWNER.md): the find faces the room's door (turn 0), Reach 10, the faint 0.6.
 - **Split** (context): j5a1 this, built and green; j5a2 sees it in Studio Play at A16 and
   captures it.
+
+## D-464 Placing by hand seen in Studio: the look stops at what you see (S5-03j5a2, 2026-11-19)
+
+Seen in Studio Play at Galaxy A16 size in a Small home, holding the moon lamp (captures
+`docs/art/s5-03j5a2-*`): looking at the job box's top, a faint lamp sits there near the middle of
+the look and Drop reads Place; one press lands it solid within a quarter second, the hand bar
+clears and the save's rows have it on the job box. The server refused a far ask (from the lobby),
+an unknown surface, bad numbers and an overlap, and the lamp stayed in hand. What was wrong:
+- **It aimed through things.** Arrange's aim lets a finger reach 2.5 studs past a room area's edge
+  and never asks what's in front, right for a camera above the room but not for your own eyes:
+  looking out of the door at the lobby floor put a copy in the room's corner, hidden behind the
+  front wall, and Drop read Place for a spot you couldn't see. Now `PlaceAim.aim` takes
+  `AimOptions` (`slack`, `far`); the hand passes no slack and stops the look 0.3 studs past the
+  first thing a raycast hits (you, your hand's views and the copy left out; unseen parts passed).
+  Looking at a box's side or a milk crate too small to hold the find shows nothing. Arrange is
+  unchanged (its defaults).
+- **The faint copy washed out.** At 0.6 it was hard to see on the job box's grey-green top; at 0.4
+  it read as the find already standing there. A soft white outline (Minecraft's) was tried and
+  dropped: Roblox draws a `Highlight` only on opaque parts (STUDIO.md). Now 0.5, breathing 0.08
+  either way over 1.6 s (`HandPlace.Breathe`, `Breath`), so it reads as where it'd go. A feel
+  default: OWNER.md.
+- **Not seen:** a friend's held find (two players; the server's `heldFromBox` refuses it in the
+  Lune spec) and a phone's finger: OWNER.md. Your home's camera is first person
+  (`LockFirstPerson`), so the third-person worry (a look from behind your back) doesn't arise.
+

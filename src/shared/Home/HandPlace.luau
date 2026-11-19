@@ -23,7 +23,14 @@ HandPlace.Slack = 3 -- studs past it the server allows, for a screen a beat behi
 -- The faint copy: how see-through it is (0 solid, 1 gone) and how quickly it fades in or out,
 -- and how quickly it glides to a new spot (seconds); it never turns green or red (the plan's
 -- "green-free": nowhere it fits, it simply isn't there).
-HandPlace.Faint = 0.6
+-- Seen in Studio at phone size (S5-03j5a2): 0.6 washed out on a grey-green top, 0.4 read as the
+-- find already standing there. A white outline was tried and dropped: Roblox draws a Highlight
+-- only on opaque parts (STUDIO.md).
+HandPlace.Faint = 0.5
+-- It breathes, a little more and less see-through, so it reads as where it'd go rather than a
+-- find set out: how far (in transparency, each way) and one breath's length (seconds).
+HandPlace.Breathe = 0.08
+HandPlace.Breath = 1.6
 HandPlace.Fade = 0.12
 HandPlace.Glide = 0.08
 

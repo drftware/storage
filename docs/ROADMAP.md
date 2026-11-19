@@ -3579,8 +3579,11 @@ Done when players watch the results to the end and change their perks between cl
       server ask that sets it down (checked as Take is); **j5b** a Taken find's faint outline that
       it snaps back into, and a held finger on one of your things opening Arrange with it lifted.
       j5a split (Nov 19, its own session): - [x] **j5a1** built and green (D-463: `PlaceAim`,
-      `HandPlaceView`, the `HandPlace` ask); - [ ] **j5a2** seen in Studio Play at A16 and
-      captured, fixes from what's seen.
+      `HandPlaceView`, the `HandPlace` ask); - [x] **j5a2** seen in Studio Play at A16 and
+      captured, fixes from what's seen (D-464: the look stops at what it hits, no slack past
+      the room's edges, a breathing faint). j5b split (Nov 19, j5a2's session): - [ ] **j5b1** a
+      Taken find's faint spot it snaps back into; - [ ] **j5b2** a held finger on one of your
+      things opens Arrange with it lifted.
     - [ ] **S5-03j6 Several at once.** A box dragged round several things selects them; they
       move, turn and put away together; the server takes them as one move.
     - [ ] **S5-03j7 The editor seen whole.** Every row of the feedback table checked in Studio

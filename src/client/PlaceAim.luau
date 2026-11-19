@@ -141,6 +141,11 @@ function PlaceAim.rides(r: Arrange.Room, id: string, base: string): boolean
 end
 local rides = PlaceAim.rides
 
+-- How an aim reads its ray, for a caller that isn't Arrange's finger. `slack`: studs past a room
+-- area's edge it still aims at it (REACH when nil). `far`: how far along the ray it looks, in the
+-- ray's own lengths (no end when nil); a look from inside the room stops at what it hits first.
+export type AimOptions = { slack: number?, far: number? }
+
 -- The area along `ray` that `c` fits, nearest first, and the point on it (`x`, `y` from its
 -- middle): a room's floor, walls and ceiling, or the top of anything in `tops`. Nil over nothing
 -- it fits.
@@ -148,8 +153,11 @@ function PlaceAim.aim(
 	r: Arrange.Room,
 	c: Carried,
 	ray: Ray,
-	tops: { [string]: boolean }
+	tops: { [string]: boolean },
+	options: AimOptions?
 ): (string?, number, number)
+	local slack = if options and options.slack then options.slack else REACH
+	local far = if options and options.far then options.far else math.huge
 	local best: string? = nil
 	local nearest, bx, by = math.huge, 0, 0
 	-- something hung from the ceiling follows the finger over the floor under it, as The Sims
@@ -177,6 +185,7 @@ function PlaceAim.aim(
 		local mine = top and on == held
 		if
 			t <= 0
+			or t > far
 			or t >= (if heldBest then nearest - TIE elseif mine then nearest + TIE else nearest)
 		then
 			return
@@ -188,8 +197,8 @@ function PlaceAim.aim(
 				return -- a thing stands on a top only with its middle over it (D-455)
 			end
 		elseif
-			math.abs(x) > area.width / 2 + REACH
-			or (not hangs and math.abs(y) > area.depth / 2 + REACH)
+			math.abs(x) > area.width / 2 + slack
+			or (not hangs and math.abs(y) > area.depth / 2 + slack)
 		then
 			return
 		end

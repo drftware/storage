@@ -3772,3 +3772,18 @@ verified: a doc page, Studio, or "untested".
 - The ghost's own glow is a `Highlight` in the ghost; the blocker glows are `ArrangeBlocker`
   Highlights under the camera, which a Client `execute_luau` can list with their `Adornee`.
 
+## Placing by hand in Play (S5-03j5a2, Nov 19)
+
+- **A `Highlight` draws only on opaque parts.** On a model whose parts have any Transparency (0.2
+  tried, 0.6 too) neither the fill nor the outline draws, wherever it's parented (the camera or
+  Workspace); set the parts to 0 and it shows at once. So a see-through ghost can't be outlined
+  with one.
+- **Your home is first person** (`CameraMode` LockFirstPerson). In the A16 emulator a left drag
+  on bare screen turns the look: about 1 degree a point across (right turns the yaw negative) and
+  0.6 a point down. Standing at (66.5, 3, 479.5) in Unit1's Small home, one drag from (300, 80)
+  to (455, 137) looks at the job box's top (yaw -155, pitch -30).
+- **Setting up:** Server `ArrangeTest:Invoke(p, "place", "MoonLamp", "JobBox:Furniture#1", 0.17,
+  -0.27, 0)` then `"take"` with the id it returns. A find still in your hand when Play stops goes
+  back to the box, so set it out again each run. Drop is `PlayerGui.Slots.Hud.Drop`; click its
+  middle plus 47 across.
+

@@ -40,6 +40,11 @@ local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 local Feel = Arrange.Feel
 local LAND = TweenInfo.new(Feel.Land, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local ANSWER_WAIT = 3 -- seconds: no answer by then, the copy fades back as if refused
+local LOOK = 64 -- studs: how far the look ray goes
+-- studs past what the look hits first that a surface still counts: a top or the floor you look
+-- at is hit at its own face, never past it (a box's side hides the floor behind it)
+local PAST = 0.3
+local SEE_THROUGH = 3 -- unseen parts (a collider, a sign's box) the look passes before giving up
 
 export type HandPlaceView = {
 	-- What your hand holds out: its catalog key ("" for nothing or pocketed) and its slot.
@@ -74,6 +79,9 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 	local watch: { RBXScriptConnection } = {}
 	local answer: RBXScriptConnection? = nil
 	local remote: RemoteEvent? = nil -- HandPlace's ask, found as the screen starts
+	-- the look's raycast: you, the copy (in the camera) and your hand's view are never in its way
+	local looking = RaycastParams.new()
+	looking.FilterType = Enum.RaycastFilterType.Exclude
 
 	local function sounds(): Instance
 		return me:FindFirstChildOfClass("PlayerGui") or me
@@ -86,9 +94,10 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 		end
 	end
 
-	-- The copy's parts at `a` of the way to faint (0: unseen).
+	-- The copy's parts at `a` of the way to faint (0: unseen), breathing as it shows.
 	local function fade(a: number)
-		local faint = HandPlace.Faint
+		local breath = math.sin(os.clock() * (2 * math.pi / HandPlace.Breath))
+		local faint = HandPlace.Faint + HandPlace.Breathe * breath
 		for i, p in parts do
 			p.Transparency = 1 - (1 - solid[i]) * (1 - faint) * a
 		end
@@ -134,6 +143,22 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 		return math.abs(p.X) <= h.X and math.abs(p.Z) <= h.Z and math.abs(p.Y) <= h.Y + 2
 	end
 
+	-- How far along the look (studs) the first thing you can see is: the aim stops there, so the
+	-- copy goes only where you see a surface, never behind a wall, a box's side or out the door.
+	local function seen(look: CFrame): number
+		for _ = 0, SEE_THROUGH do
+			local hit = Workspace:Raycast(look.Position, look.LookVector * LOOK, looking)
+			if not hit then
+				return LOOK
+			end
+			if hit.Instance.Transparency < 1 then
+				return hit.Distance + PAST
+			end
+			looking:AddToFilter(hit.Instance)
+		end
+		return 0
+	end
+
 	local function frame(dt: number)
 		local r, c, m, camera = room, carried, copy, Workspace.CurrentCamera
 		local character = me.Character
@@ -147,7 +172,13 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 		local pose: Brix.PlacementPose? = nil
 		if standingIn(r, root) then
 			local look = camera.CFrame
-			local on, x, y = PlaceAim.aim(r, c, Ray.new(look.Position, look.LookVector * 64), tops)
+			local on, x, y = PlaceAim.aim(
+				r,
+				c,
+				Ray.new(look.Position, look.LookVector),
+				tops,
+				{ slack = 0, far = seen(look) }
+			)
 			pose = if on then PlaceAim.settle(r, c, on, x, y, false) else nil
 		end
 		local at = if pose and PlaceAim.fitsAt(r, c, pose)
@@ -227,6 +258,17 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 		copy = m
 		fade(0)
 		m.Parent = Workspace.CurrentCamera
+		local mine: { Instance } = { Workspace.CurrentCamera }
+		if me.Character then
+			table.insert(mine, me.Character)
+		end
+		for _, viewName in { "YourTool", "YourInfrared" } do -- ToolView's views of your hand
+			local view = Workspace:FindFirstChild(viewName)
+			if view then
+				table.insert(mine, view)
+			end
+		end
+		looking.FilterDescendantsInstances = mine
 		carried = {
 			id = probe,
 			shape = shape,
