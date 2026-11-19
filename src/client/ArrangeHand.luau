@@ -87,9 +87,9 @@ export type Options = {
 	remote: (name: string) -> RemoteEvent?,
 	-- Whether the room holds all it can (a card won't lift, a cubby find won't come out).
 	full: () -> boolean,
-	-- The screen's buttons for a lifted find, shown for `l`, or put away for nil; while a finger
-	-- `carrying` it, the buttons hide but the tray stays out of the way.
-	showVerbs: (l: Lifted?, carrying: boolean?) -> (),
+	-- The ring of buttons round the thing selected (ArrangeRing), shown for `l`, or put away for
+	-- nil; while a finger is `carrying` it, the ring hides but the tray stays out of the way.
+	showRing: (l: Lifted?, carrying: boolean?) -> (),
 	-- A thing is carried under gui point `x`, `y` this frame: near the screen's edge the build
 	-- camera slides that way (`ArrangeCamera.follow`).
 	follow: (x: number, y: number) -> (),
@@ -116,9 +116,11 @@ export type Hand = {
 	setOut: (key: string, at: Vector2?, from: CFrame?) -> (),
 	-- Sends the lifted thing back where it came from.
 	slideBack: (l: Lifted) -> (),
-	-- Turn and Put away for the lifted thing.
+	-- The ring's buttons for the selected thing: Turn, Put away, and Another (it's set down and
+	-- one more of the same lifts out of your box beside it, selected).
 	turnNow: () -> (),
 	awayNow: () -> (),
+	another: () -> (),
 	-- The server's answer to a Place or a Put away.
 	answered: (what: unknown, id: unknown, refusal: unknown) -> (),
 	-- Stops the lifted thing's follow.
@@ -176,8 +178,8 @@ end
 function ArrangeHand.new(options: Options): Hand
 	local me = Players.LocalPlayer
 	local tops = options.tops
-	local placed, sounds, remote, showVerbs =
-		options.placed, options.sounds, options.remote, options.showVerbs
+	local placed, sounds, remote, showRing =
+		options.placed, options.sounds, options.remote, options.showRing
 	local lifted: Lifted? = nil
 	local follow: RBXScriptConnection? = nil
 	local lastTick = 0
@@ -417,7 +419,7 @@ function ArrangeHand.new(options: Options): Hand
 			or was.turn ~= pose.turn
 		l.pose = pose
 		l.fits = fitsAt(r, l, pose)
-		l.target = at + normal * Feel.Hover
+		l.target = at + normal * (if carrying then Feel.Hover else Feel.Hair)
 		paint(l)
 		shade(r, l, pose)
 		if moved and was then
@@ -448,6 +450,10 @@ function ArrangeHand.new(options: Options): Hand
 		end
 	end
 
+	-- Turn's little overshoot: since when it spins (-1: not), and about which axis, the way the
+	-- quarter turn went.
+	local spinAt, spinAxis = -1, Vector3.yAxis
+
 	-- The ghost eases after its target each frame while it's lifted (the one thing that steps).
 	local function startFollow()
 		if follow then
@@ -468,7 +474,21 @@ function ArrangeHand.new(options: Options): Hand
 					aimAt(Vector2.new(fingerX, fingerY - thumb))
 				end
 			end
-			l.ghost:PivotTo(l.ghost:GetPivot():Lerp(l.target, 1 - 0.5 ^ (dt / Feel.Follow)))
+			local goal = l.target
+			if spinAt >= 0 then
+				-- past the quarter and back: a bump that peaks a third of the way in, at
+				-- `Overshoot` degrees (sin(pi k)(1 - k) peaks near 0.47)
+				local k = (os.clock() - spinAt) / Feel.Spin
+				if k >= 1 then
+					spinAt = -1
+				else
+					local a = math.rad(Feel.Overshoot) * math.sin(math.pi * k) * (1 - k) / 0.47
+					goal = CFrame.new(goal.Position)
+						* CFrame.fromAxisAngle(spinAxis, a)
+						* goal.Rotation
+				end
+			end
+			l.ghost:PivotTo(l.ghost:GetPivot():Lerp(goal, 1 - 0.5 ^ (dt / Feel.Follow)))
 		end)
 	end
 
@@ -477,7 +497,7 @@ function ArrangeHand.new(options: Options): Hand
 		if lifted == l then
 			lifted = nil
 			stopFollow()
-			showVerbs(nil)
+			showRing(nil)
 		end
 		l.ghost:Destroy()
 		if l.original and showOriginal then
@@ -568,7 +588,7 @@ function ArrangeHand.new(options: Options): Hand
 			end
 		end
 		play(Arrange.Lift, sounds())
-		showVerbs(l)
+		showRing(l)
 		startFollow()
 	end
 
@@ -738,7 +758,7 @@ function ArrangeHand.new(options: Options): Hand
 			end)
 			t:Play()
 		end
-		showVerbs(nil)
+		showRing(nil)
 		lifted = nil
 	end
 
@@ -790,7 +810,7 @@ function ArrangeHand.new(options: Options): Hand
 		end
 		l.asking = "place"
 		stopFollow()
-		showVerbs(nil)
+		showRing(nil)
 		ask:FireServer(l.what, pose.on, pose.x, pose.y, pose.turn, l.shelf) -- nil but out of a cubby
 		task.delay(3, function()
 			if lifted == l and l.asking == "place" then
@@ -817,19 +837,27 @@ function ArrangeHand.new(options: Options): Hand
 		t:Play()
 	end
 
+	-- Turn: a quarter turn with a ratchet's click-click, spinning a little past and back.
 	local function turnNow()
 		local r, l = options.room(), lifted
 		if not (r and l) or l.asking then
 			return
 		end
 		l.turn = (l.turn + Arrange.Turn) % 360
-		local pose = l.pose
+		local pose, was = l.pose, l.target
 		if pose then
 			local fresh = settle(r, l, pose.on, pose.x, pose.y)
 			if fresh then
+				lastTick = os.clock() -- the ratchet, not the step's tick
 				setPose(r, l, fresh)
 			end
 		end
+		local axis, angle = (l.target.Rotation * was.Rotation:Inverse()):ToAxisAngle()
+		if angle > 0.01 then
+			spinAt, spinAxis = os.clock(), axis.Unit
+		end
+		play(Arrange.Ratchet, sounds())
+		task.delay(0.07, play, Arrange.Ratchet, sounds())
 	end
 
 	-- Put away: the find shrinks back toward the tray; the server's answer puts it in the box.
@@ -841,7 +869,7 @@ function ArrangeHand.new(options: Options): Hand
 		end
 		l.asking = "away"
 		stopFollow()
-		showVerbs(nil)
+		showRing(nil)
 		if l.shelf then
 			ask:FireServer(l.what, l.shelf) -- out of a cubby: its name and spot, into the box
 		else
@@ -1014,7 +1042,7 @@ function ArrangeHand.new(options: Options): Hand
 	local function stay(l: Lifted)
 		l.asking = "back"
 		stopFollow()
-		showVerbs(nil)
+		showRing(nil)
 		lifted = nil
 		l.highlight.Enabled = false
 		local cf = Instance.new("CFrameValue")
@@ -1093,7 +1121,7 @@ function ArrangeHand.new(options: Options): Hand
 	-- buttons mid-drag: a tapped thing's buttons go as it's dragged (S5-03j2a2's captures).
 	local function carry(touch: boolean, x: number, y: number)
 		carrying = true
-		showVerbs(lifted, true)
+		showRing(lifted, true)
 		thumb = if touch then Feel.Thumb else 0
 		move(x, y)
 	end
@@ -1159,10 +1187,45 @@ function ArrangeHand.new(options: Options): Hand
 			if l then
 				drop(l)
 			end
-			if t and not lifted then
-				take(t, Vector2.new(i.x, i.y))
+			if t and not lifted and take(t, Vector2.new(i.x, i.y)) then
+				local now = lifted
+				if now then
+					stretch(now) -- selected: it comes up a hair with the stretch, and its ring
+				end
 			end
 		end
+	end
+
+	-- Another (The Sims' eyedropper): the selected thing is set down, and once it has landed one
+	-- more of the same lifts out of your box beside it, turned the same way, selected, so a row of
+	-- chairs is Another, Another, Another.
+	local function another()
+		local l = lifted
+		if not l or l.asking or l.kept or carrying then
+			return
+		end
+		local key, pose, from = l.name, l.pose, l.ghost:GetPivot()
+		drop(l)
+		task.spawn(function()
+			local deadline = os.clock() + 3
+			while lifted and os.clock() < deadline do
+				task.wait(0.05) -- the first one's landing (and the server's word on it)
+			end
+			if lifted then
+				return
+			end
+			liftBoxed(key, nil, from)
+			local copy, r = lifted, options.room()
+			if not (copy and r and pose) or copy.name ~= key then
+				return
+			end
+			copy.turn = pose.turn
+			local beside = freeNear(r, copy, pose, startSearch)
+			if beside then
+				setPose(r, copy, beside)
+			end
+			stretch(copy)
+		end)
 	end
 
 	-- A card dragged up out of the tray: `key` lifts out of your box under gui point `at` and the
@@ -1232,6 +1295,7 @@ function ArrangeHand.new(options: Options): Hand
 		slideBack = slideBack,
 		turnNow = turnNow,
 		awayNow = awayNow,
+		another = another,
 		answered = answered,
 		stopFollow = stopFollow,
 	}

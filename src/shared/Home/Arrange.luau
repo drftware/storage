@@ -125,6 +125,20 @@ Arrange.Feel = table.freeze({
 	-- A thing lifted under the finger swells this much (times its size) and settles back at once:
 	-- the small stretch of something picked up.
 	Stretch = 1.08,
+	-- A thing tapped and selected (S5-03j2b1) rides only a hair over its spot (studs), so it
+	-- reads as picked out yet still where it stands; dragged, it rises to `Hover`.
+	Hair = 0.2,
+	-- Turn: the thing spins past its quarter by this much (degrees) and settles back over this
+	-- long (seconds), a quick spin with a little overshoot, as The Sims' rotate snaps round.
+	Overshoot = 9,
+	Spin = 0.3,
+	-- The round buttons round a selected thing (points): each this wide, this far apart and clear
+	-- of the thing, the row's ends dipping this much round it, kept this far inside the screen.
+	-- 52 is over the phone's 48-point target (Roblox's mobile guidance).
+	RingSize = 52,
+	RingGap = 10,
+	RingSag = 8,
+	RingMargin = 8,
 	-- Its shadow on the surface where it would land: this much bigger than its footprint, and this
 	-- dark in the middle (0 none, 1 black), fading out through these rounded layers (shares of its
 	-- size), so its edge is soft. Seen from the build camera's steep corner the thing hides the
@@ -237,6 +251,16 @@ Arrange.Tick = {
 	pitch = 1.6,
 } :: Sound
 -- Setting it down: the job box lid's clack, lighter and quieter, a soft knock.
+-- Turn's ratchet: the tick's click, lower and firmer, played twice a beat apart (click-click),
+-- as a ratchet's pawl jumps a tooth.
+Arrange.Ratchet = {
+	id = "rbxassetid://15675059323",
+	from = 0,
+	length = 0.12,
+	volume = 0.22,
+	pitch = 1.15,
+} :: Sound
+
 Arrange.Knock = {
 	id = "rbxassetid://9116436662",
 	from = 1.45,

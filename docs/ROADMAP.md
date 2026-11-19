@@ -3436,6 +3436,33 @@ Done when players watch the results to the end and change their perks between cl
       with a spec). What stands on a piece moves with it (D-338's riders) and settles with a
       little bounce as it lands. The old verbs bar leaves ArrangeView.
       **Acceptance:** Studio Play at A16 size, captured; check green.
+      Split at the run's context line (S5-03j2b1's session):
+      - [x] **S5-03j2b1a Select and the ring, in code** (D-450; split at the run's context line:
+        check green, untested in Studio). `Ring.place` (pure, `tests/ring.spec.luau`, 30 checks)
+        bows a row of buttons over the thing's screen box, under it when there's no room above,
+        slid on to the screen. `ArrangeRing` draws Put away, Turn, Another as 52-point round icon
+        buttons (frames, no words) and lays them out again only when the camera or the thing
+        moves. A tap selects: the thing comes up `Feel.Hair` (0.2 studs) with the stretch; dragged
+        it rises to `Hover`. Turn: `Arrange.Ratchet` twice, 0.07 s apart, and a spin `Overshoot`
+        9 degrees past over `Spin` 0.3 s. Another sets the thing down, waits for it to land, lifts
+        one more out of your box at the free spot beside it, turned the same, selected; shown
+        while your box holds one past this (`boxCount`). The verbs bar and its × are gone from
+        ArrangeView (a tap on the room lets go).
+      - [ ] **S5-03j2b1b The ring seen in Studio.** Studio Play at A16 (685 by 338), Medium home:
+        tap a find (it comes up a hair with its ring over it); Turn (clicks round, spins a little
+        past and back); Another on a find your box holds more of (one lands beside it, selected);
+        Put away; tap the room (the ring goes, it lands); the ring follows a camera slide and a
+        pinch; a find high on the screen gets its ring under it. Judge the icons at phone size
+        (the Turn arrow's gap and head drawn from frames) and fix what reads wrong. While there,
+        the conductor's question: does the camera hold still through a drag (no zoom), the
+        framing changing only by the edge follow near the screen's edge? Capture to
+        `docs/art/s5-03j2b-*.png`.
+      - [ ] **S5-03j2b2 Twist, Free and riders.** The free turn's sum (a twist's angle plus quarter
+        turns, snapped to quarters unless free) pure in `src/shared/Home` with specs first; a
+        second finger's twist while dragging (`intent`'s "twist" with a target); R and the wheel
+        while held; Alt, or a Free switch in a corner, places off the grid at any angle (check
+        Arranging, Brix's judge and the save take any angle; widen them with a spec if not);
+        riders settle with a little bounce as their piece lands (D-338). Seen in Studio at A16.
     - [ ] **S5-03j3 Snapping.** A pure snapper in `src/shared/Home` with Lune specs: the
       half-stud grid; furniture against a wall turns its back to it; a find dragged over a top
       hops onto it with a tock and back down off it; guide lines from ENG-26c drawn faint; wall

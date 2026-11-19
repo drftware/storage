@@ -2,41 +2,41 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-18, S5-03j2a2 done: the hand seen in Studio (D-449) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
+**Updated:** 2026-11-18, S5-03j2b1a done: select and the ring, in code (D-450) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; its feedback table is under "Every action answers"). Order now: S5-03j2b, j3 to j7,
-  ENG-29, k1 to k6.
-- **The hand is seen in Studio Play** (S5-03j2a2, D-449; `docs/art/s5-03j2a-*.png`): drag lands,
-  blocked hops free, a card over the tray floats back, tap-Turn-tap lands turned.
+  only; its feedback table is under "Every action answers"). Order now: S5-03j2b1b, j2b2, j3 to
+  j7, ENG-29, k1 to k6.
+- **Select and the ring are in code, untested in Studio** (S5-03j2b1a, D-450): `Ring.place`
+  (pure, specs), `ArrangeRing` (Put away, Turn, Another as round icon buttons), a tap selects a
+  hair up, Turn's ratchet and overshoot, the hand's `another`. The verbs bar and its × are gone.
 - **Studio has tonight's code** (`rojo serve`, port 34872): restart Play to run edits. Hooks:
   `ArrangeTest` ("size", "place", ...), `CameraTest` (client), `GrowTest` "cash".
 - **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j2b Select, turn, riders
-The moment: tap the lamp, it lifts a hair with round buttons round it; Turn clicks it a quarter
-round; a second finger twists the table you drag; what stands on it rides and bounces.
-1. Read ROADMAP's S5-03j2b and the doc's matching lines (search "Another" and "Free").
-2. Pure first: the round buttons' layout round a thing's screen box (kept on screen, clear of the
-   thumb) as a small pure module with Lune specs; the free turn's sum (twist angle plus quarter
-   turns) in `src/shared/Home`, specs first.
-3. A tap selects (lifts a hair): round icon buttons Turn, Put away, Another (one more of the same
-   from your box, The Sims' eyedropper; hidden when the box has none); a tap on the room clears.
-   The old verbs bar leaves ArrangeView (`showVerbs`; hidden while carried already, D-449).
-4. Turn: a quarter turn with a ratchet click and a little overshoot. While dragging, a second
-   finger's twist turns freely (`intent`'s "twist" with a target reaches `ArrangeHand.intent`);
-   R or the wheel while held. Alt, or a Free switch in a corner, places off the grid at any
-   angle: check Arranging and the judge take any angle first; widen them with a spec if not.
-5. Riders (D-338) move with the piece and settle with a little bounce as it lands.
-6. Studio Play at A16, Medium home: tap, Turn, Another (a twist goes in OWNER.md's phone steps).
-   Capture to `docs/art/s5-03j2b-*.png`. A drag through the MCP must be one call (STUDIO.md).
-**Acceptance:** seen in Studio at A16 size and captured; specs for the pure parts; check green.
-Won't fit? Split it in ROADMAP first (j2b1 pure + select, j2b2 twist, Free, riders).
-**Read first:** ROADMAP's S5-03j2b (grep it); D-448 and D-449 in DECISIONS; `ArrangeHand.luau`'s
-`intent` and `turnNow` (grep); ArrangeView's `showVerbs` and its verbs bar (grep `verbs`);
-STUDIO.md's "A drag must be one `user_mouse_input` call".
+## Next task: S5-03j2b1b The ring seen in Studio
+The moment: tap the lamp, it lifts a hair and round buttons pop in over it; Turn clicks it round
+with a little spin past; the plus sets one more beside it.
+1. Read ROADMAP's S5-03j2b1b (grep it) and D-450. STUDIO.md's "A drag must be one
+   `user_mouse_input` call" and "Tapping a placed find" before driving Studio.
+2. Run STUDIO.md's two tells that Studio has tonight's code; Play at A16 (685 by 338), Medium.
+3. Tap a find: it comes up a hair with the stretch; the ring sits over it, clear of it. Turn:
+   click-click, spins past and back. Put away: shrinks into the tray. Another on a find the box
+   holds more of: the first settles, one more comes out beside it, turned the same, selected.
+   Tap the room: the ring goes, it lands. Slide and pinch: the ring follows. A find high on the
+   screen: the ring sits under it.
+4. Judge the icons at phone size (crop and enlarge; `ArrangeRing`'s `turnIcon`, `awayIcon`,
+   `anotherIcon` are frames) and fix what reads wrong. Check the ring's `area` against Done (top
+   right) and the limit bar (top left): give `Ring.place` the band under them if the ring hits
+   them.
+5. The conductor's question (D-450): through one drag with no wheel, does the camera hold still
+   (it may only slide near the screen's edge)? Capture the drag's start and middle and compare.
+6. Capture to `docs/art/s5-03j2b-*.png` at half scale.
+**Acceptance:** each of step 3 seen in Studio Play at A16 and captured; check green.
+**Read first:** ROADMAP's S5-03j2b1b; D-450; `src/client/ArrangeRing.luau` (270 lines); the
+hand's `another`, `turnNow` (grep); STUDIO.md's drag and "Tapping a placed find" sections.
 
 ## Queue (next sessions, the owner's ticket order)
 0. After S5-03j2: at the view Arrange opens with, a crate is about 16 points across on a Medium

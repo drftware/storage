@@ -51,11 +51,13 @@ local FurnitureTab = require(script.Parent.FurnitureTab)
 local Grades = require(ReplicatedStorage.Shared.Grades)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Layout = require(ReplicatedStorage.Shared.Home.Layout)
+local Ring = require(ReplicatedStorage.Shared.Home.Ring)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local CardPlate = require(ReplicatedStorage.Shared.Home.CardPlate)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local ArrangeCamera = require(script.Parent.ArrangeCamera)
 local ArrangeHand = require(script.Parent.ArrangeHand)
+local ArrangeRing = require(script.Parent.ArrangeRing)
 local LooksTab = require(script.Parent.LooksTab)
 local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
@@ -171,9 +173,10 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	local doneButton: TextButton? = nil
 	local tray: Frame? = nil
 	local list: ScrollingFrame? = nil
-	local verbs: Frame? = nil
-	local awayButton: TextButton? = nil
-	local turnButton: TextButton? = nil
+	-- The round buttons round the selected thing (ArrangeRing), and how many of each card's find
+	-- your box holds (Another shows only while there's one more).
+	local buttonRing: ArrangeRing.ArrangeRing? = nil
+	local boxCount: { [string]: number } = {}
 	local cards: { [string]: TextButton } = {}
 	-- The tray's three tabs (FINDS, ROOM: the paint tab, FRONT: your door; LooksTab's pages),
 	-- which one shows (kept between opens), and where each tab's things rest in the tray (they
@@ -306,33 +309,30 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		return r
 	end
 
-	-- The verbs pop in at the corner while a find is lifted, and the tray slides down out of the
-	-- way so the floor by the door shows; it slides back up when the find is set down or let go.
-	-- While a finger is `carrying` it, the verbs stay hidden: nothing but the thing and its shadow.
-	local function showVerbs(l: ArrangeHand.Lifted?, carrying: boolean?)
-		local v = verbs
-		if v then
-			local was = v.Visible
-			v.Visible = l ~= nil and not carrying
-			local scale = v:FindFirstChildOfClass("UIScale")
-			if scale and l and not was then
-				scale.Scale = 0.8
-				TweenService:Create(scale, POP, { Scale = 1 }):Play()
+	-- The ring pops in round a selected thing (ArrangeRing), and the tray slides down out of the
+	-- way so the floor by the door shows; it slides back up when the thing is set down or let go.
+	-- While a finger is `carrying` it, the ring stays hidden: nothing but the thing and its shadow.
+	local function showRing(l: ArrangeHand.Lifted?, carrying: boolean?)
+		local o = buttonRing
+		if o then
+			local which: ArrangeRing.Which? = nil
+			if l and not carrying then
+				-- one more of the same while your box holds one past this (a selected thing
+				-- straight out of the box is still counted there)
+				local left = (boxCount[l.name] or 0) - (if l.original then 0 else 1)
+				which = {
+					away = l.original ~= nil and not l.kept,
+					turn = not (l.starter and Layout.Lean[l.starter]), -- the mirror turns itself
+					another = not l.kept and not full and left > 0,
+				}
 			end
+			o.show(if which and l then l.ghost else nil, which)
 		end
 		local t = tray
 		if t and open then
 			TweenService:Create(t, QUICK, {
 				Position = UDim2.new(0.5, 0, 1, if l then AWAY else -10),
 			}):Play()
-		end
-		local a = awayButton
-		if a then
-			a.Visible = l ~= nil and l.original ~= nil and not l.kept
-		end
-		local turner = turnButton
-		if turner then -- the mirror turns itself to the wall it's carried to
-			turner.Visible = not (l and l.starter and Layout.Lean[l.starter])
 		end
 		local s = list
 		if s then
@@ -352,7 +352,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		full = function(): boolean
 			return full
 		end,
-		showVerbs = showVerbs,
+		showRing = showRing,
 		follow = function(x: number, y: number)
 			buildCam.follow(x, y)
 		end,
@@ -425,6 +425,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			c:Destroy()
 		end
 		table.clear(cards)
+		table.clear(boxCount)
 		local template = Home.template()
 		-- the furniture first, then the finds
 		local dealt: { BoxPanel.Card } = {}
@@ -502,6 +503,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			end)
 			b.Parent = s
 			cards[card.key] = b
+			boxCount[card.key] = card.count
 			if full then
 				dim(b, true, not dimmedBefore) -- it fills up as you watch: the cards dim, eased
 			elseif dimmedBefore then
@@ -926,7 +928,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			end)
 			tw:Play()
 		end
-		showVerbs(nil)
+		showRing(nil)
 	end
 
 	----------------------------------------------------------------------------------------------
@@ -1210,46 +1212,27 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 		showTab(onTab, false)
 
-		-- What you do with the lifted find: a corner cluster under the right thumb (the tray slides
-		-- away while a find is lifted, so the whole room shows). Turn where the jump button sits, Put
-		-- away beside it, × above Turn. No Place: letting go places (S5-03j2a, D-436).
-		local v = Instance.new("Frame")
-		v.BackgroundTransparency = 1
-		v.AnchorPoint = Vector2.new(1, 1)
-		v.Position = UDim2.new(1, -14, 1, -14)
-		v.Size = UDim2.fromOffset(238, 106)
-		v.Visible = false
-		v.Parent = g
-		Instance.new("UIScale").Parent = v
-		verbs = v
-		local function at(button: TextButton, right: number, up: number)
-			button.AnchorPoint = Vector2.new(1, 1)
-			button.Position = UDim2.new(1, -right, 1, -up)
-		end
-		local cancel = pill("×", 48, PANEL, v)
-		cancel.TextSize = 30
-		at(cancel, 0, 58)
-		cancel.Activated:Connect(function()
-			local l = hand.lifted()
-			if l and not l.asking then
-				press(cancel)
-				hand.slideBack(l)
-			end
-		end)
-		local away = pill("Put away", 116, PANEL, v)
-		at(away, 122, 0)
-		away.Activated:Connect(function()
-			press(away)
-			hand.awayNow()
-		end)
-		awayButton = away
-		local turn = pill("Turn", 112, PANEL, v)
-		at(turn, 0, 0)
-		turn.Activated:Connect(function()
-			press(turn)
-			hand.turnNow()
-		end)
-		turnButton = turn
+		-- The round buttons round a selected thing (S5-03j2b1): Put away, Turn, Another.
+		buttonRing = ArrangeRing.new({
+			parent = g,
+			colour = PANEL,
+			rim = RIM,
+			ink = INK,
+			press = press,
+			away = function()
+				hand.awayNow()
+			end,
+			turn = function()
+				hand.turnNow()
+			end,
+			another = function()
+				hand.another()
+			end,
+			area = function(): Ring.Box
+				local size = g.AbsoluteSize
+				return { left = 0, top = 0, right = size.X, bottom = size.Y }
+			end,
+		})
 		return g
 	end
 
@@ -1470,6 +1453,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			end
 			table.clear(unitWatch)
 			if gui then
+				local o = buttonRing
+				if o then
+					o.destroy()
+					buttonRing = nil
+				end
 				gui:Destroy()
 				gui = nil
 			end

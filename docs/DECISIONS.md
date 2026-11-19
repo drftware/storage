@@ -10674,3 +10674,28 @@ the room lifts it with today's drag (Turn, Place, the tray away).
     to the inventory does in Animal Crossing's room editor (`Options.overTray`).
   Left for later (HANDOFF's Queue): at the default view a crate is about 16 points across on a
   Medium home; zoomed in by the wheel the eye passes through the unit's facade.
+
+- **D-450 A tap selects and rings the thing with round buttons; Turn clicks round; Another is the
+  eyedropper** (S5-03j2b1a, the plan doc's "A tap without dragging selects it" and "Turning").
+  Built in code, untested in Studio (the run's context line came first). Choices made as defaults:
+  - The ring is one row bowed over the thing's box on the screen (`Ring.place`), a gap clear of
+    it, its ends dipping 8 points round it; with no room above it sits under the thing, bowed up.
+    Over the thing is clear of the thumb that tapped it. Order left to right: Put away, Turn,
+    Another, so Turn, the one pressed most, sits nearest. 52 points each, over Roblox's 48-point
+    touch target. Icons drawn from frames (a ring with an arrowhead, an arrow into a box, a plus):
+    Roblox's fonts can't be trusted with arrow glyphs.
+  - The verbs bar's × is gone with it: a tap on the room lets the thing go, as The Sims clears a
+    selection. A selected thing rides `Feel.Hair` (0.2 studs) up, against `Hover` (0.6) while
+    dragged, so a selection reads as picked out but still standing there.
+  - Turn plays a ratchet (the tick's sound, lower, twice 0.07 s apart) and the thing spins 9
+    degrees past its quarter and back over 0.3 s, about the axis the turn went round.
+  - Another sets the selected thing down (it lands, or is asked for), waits for that to finish,
+    then lifts one more of the same out of your box at the free spot nearest it, turned the
+    same, still selected, so a row of chairs is Another, Another. It shows only while your box
+    holds one past the thing in hand; never for the job box.
+  The conductor asked why the camera framed one drag differently between S5-03j2a2's captures. The
+  edge follow (Brix's `OrbitCamera.follow`) only slides, it never changes the distance, and the
+  clear band the camera centres in is fixed (it doesn't move with the tray). The likely cause is
+  that session's own wheel zoom between captures (its notes: wheel 4 for a close view). The
+  Studio check in S5-03j2b1b confirms it.
+
