@@ -17,28 +17,33 @@ local function near(a: number, b: number): boolean
 	return math.abs(a - b) < 1e-9
 end
 
-local slot: BuildView.Box = { left = -9.4, right = 9.4, front = -10, back = 23 }
-
--- keepIn
-ok(BuildView.keepIn(2, -3, 0, 0, slot) == 1, "an eye inside the box stays where it is")
-ok(near(BuildView.keepIn(20, 0, 0, 0, slot), 9.4 / 20), "past the side: pulled in to the side")
-ok(near(BuildView.keepIn(0, -20, 0, 0, slot), 10 / 20), "out into the hall: pulled to its edge")
-ok(near(BuildView.keepIn(-18.8, 46, 0, 0, slot), 0.5), "past two sides: the nearer crossing wins")
+-- eyeBox: over the room, inside its walls, and out through the door (D-443)
+local eb = BuildView.eyeBox(4, 3.875, 0.6, 5)
+ok(near(eb.left, -3.4) and near(eb.right, 3.4), "across: the room's width, a gap inside each wall")
 ok(
-	near(BuildView.keepIn(14, 0, 12, 0, slot), 1),
-	"a focus pushed past the box keeps its eye beyond it"
+	near(eb.front, -8.875) and near(eb.back, 3.275),
+	"deep: out the door to the hall's reach, a gap short of the back"
 )
-ok(BuildView.keepIn(0, 0, 0, 0, slot) == 1, "an eye on the focus stays")
-local last = 1
-local smooth = true
-for i = 0, 200 do
-	local share = BuildView.keepIn(5 + i * 0.1, -2, 0, 0, slot)
-	if share > last + 1e-12 or last - share > 0.02 then
-		smooth = false
-	end
-	last = share
-end
-ok(smooth, "the share falls a little at a time as the eye goes out, never jumping")
+local tiny = BuildView.eyeBox(0.4, 0.4, 0.6, 5)
+ok(
+	tiny.left == 0 and tiny.right == 0 and tiny.back == 0,
+	"a room narrower than the gap: the middle line"
+)
+
+-- fade: out past a wall, and close inside it while over the room
+ok(
+	BuildView.fade(-3, false, 0.6, 1.2) == 0 and BuildView.fade(1.2, false, 0.6, 1.2) == 1,
+	"outside: none on the room's side, gone at depth"
+)
+ok(near(BuildView.fade(0.6, false, 0.6, 1.2), 0.5), "outside: halfway at half depth")
+ok(
+	near(BuildView.fade(-0.6, true, 0.6, 1.2), 1),
+	"over the room: gone once the eye is within the gap"
+)
+ok(
+	BuildView.fade(-1.8, true, 0.6, 1.2) == 0 and near(BuildView.fade(-1.2, true, 0.6, 1.2), 0.5),
+	"over the room: fades in over depth before the gap"
+)
 
 -- sideOf: a Medium room, 12 across and 11.75 deep (half 6 and 5.875)
 local function side(minX: number, maxX: number, minZ: number, maxZ: number): string

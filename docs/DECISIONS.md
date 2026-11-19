@@ -10508,3 +10508,25 @@ every wall, so turning never faded one and the view was wallpaper up close. Fixe
   kept), the wheel zooms, a one-finger drag slides; walls fade one by one all the way round.
   A double tap on a find doesn't reset (by design: it isn't empty floor).
 - Medium, Large, XL (D-440's XL question), the front tab, the close swoop and WASD split to S5-03j1c.
+
+
+## D-443 The build camera's eye stays over the room and out the door, and aims the room into the clear band (S5-03j1c, Nov 18)
+
+The conductor's two complaints about D-442's Small captures, seen and found in Studio Play at A16 size:
+- **The wallpapered wall in the side view was the back wall's run past the room's corner.** A smaller
+  home's movable walls are each the XL wall's whole length (D-354: they only ever slide), so beside or
+  behind the room, inside the slot, the eye stood next to 6 studs of papered wall running on past the
+  corner, and the slot's floor carried on under it. No fade can cut part of a part, so **the eye no
+  longer goes there**: it stays over the room (0.6 inside its walls) and out through the door as far as
+  the hall's 5 studs (`BuildView.eyeBox`). Brix's orbit brings it in level (ENG-28b's `eyeArea`), so at
+  the sides and back it looks down steeply into the room instead of dropping. A wall the eye comes within
+  0.6 of, over the room, is gone (`BuildView.fade`): it stands just behind the camera.
+- **The room sat under the tray.** The focus now shows in the middle of the band between the top bar and
+  the tray's tabs (ENG-28b's `aim`; ArrangeView's `clear`), and the home view backs out the hall's whole
+  reach (`Clear` 5), which fits a Small floor into that band.
+- Replaces D-439's slot box and D-442's front-corner opening (`BuildView.keepIn` removed). Applies to
+  every size alike, so D-440's XL question goes away: no size's eye leaves its room.
+- **Not at the bar yet** (captures `docs/art/s5-03j1c-small-*`): from the door the lobby's walls either
+  side of the facade frame the room like a doorway, and over a Small room the eye, kept under a 10-stud
+  ceiling, is so close that the corner shelf fills the view. The door's Close and Slam buttons and the
+  limit bar sit in the band. S5-03j1d takes these on first.

@@ -282,6 +282,13 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		taken = function(x: number, y: number): boolean
 			return takenAt(Vector2.new(x, y))
 		end,
+		-- Under the top bar and over the tray's tabs where they rest (the tray 10 off the foot,
+		-- `TRAY` tall, its 44-point tabs 6 above it), in viewport points (D-443).
+		clear = function(): (number, number)
+			local inset = GuiService:GetGuiInset()
+			local tall = if gui then gui.AbsoluteSize.Y else 280
+			return inset.Y, inset.Y + tall - (10 + TRAY + 6 + 44)
+		end,
 	})
 	-- What the front tab shows (S5-03g3c): the door from inside, or after a card chip your
 	-- plate from the hall. Back to the door each time Arrange opens.

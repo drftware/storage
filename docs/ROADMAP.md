@@ -3324,12 +3324,21 @@ Done when players watch the results to the end and change their perks between cl
       drag slides, every wall fades in turn all the way round. Captured
       (`docs/art/s5-03j1b-small-*.png`); phone and gamepad steps in OWNER.md. A Studio-only
       `CameraTest` hook drives the camera as a mouse would (STUDIO.md).
-    - [ ] **S5-03j1c The build camera on every size, and its fixed shots.** Studio Play at A16
+    - [x] **S5-03j1c The build camera's eye over the room, aimed into the clear band.** The
+      conductor's two faults, found and fixed on a Small home (D-443): the side view's paper was
+      the back wall's run past the corner (walls only slide, D-354), so the eye stays over the room
+      and out the door (`BuildView.eyeBox`, Brix ENG-28b `eyeArea`, brought in level); the room sat
+      under the tray, so the focus shows mid-band (`aim`, ArrangeView's `clear`). Captured before
+      and after (`docs/art/s5-03j1c-small-*`). Split at the run's context cap.
+    - [ ] **S5-03j1d The build camera at the bar, on every size, and its fixed shots.** Studio Play at A16
       size, driven by `CameraTest`: Medium, Large and XL homes open past their near walls (a
       Large's corner only just fits beside it; an XL comes in through the door) and fade as they
       turn; decide D-440's XL question by looking; the front tab's swing to the door and the
       hall dip after a card chip; Done swoops back into your eyes; WASD slides (keyboard from
-      the MCP). Tune `Arrange.Camera` by what's seen; capture each size.
+      the MCP). Tune `Arrange.Camera` by what's seen; capture each size. First, the faults
+      D-443 left: the lobby's walls framing the door view, a Small room seen too close from over
+      it, the door's buttons and limit bar in the band. Ask of each capture whether a player sees
+      their room clearly and wants to start placing things; keep going until yes.
       **Acceptance:** each size seen and captured; check green.
     - [x] **ENG-26c Nearest free spot and guides, in Brix.** Placements answers the nearest free
       pose to a blocked one within a reach, and the guide lines where a footprint's edge or

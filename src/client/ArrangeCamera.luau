@@ -8,9 +8,10 @@
 	It is Brix's `OrbitCamera` (springs, soft stops, the ceiling) fed by Brix's `Gestures` (one
 	intent at a time from fingers, mouse, wheel and gamepad); this module only wires Roblox to
 	them and adds what is about this home:
-	- the eye stays inside the lobby slot your home stands in, and goes only a little way out into
-	  the hall through your door (`BuildView.keepIn`): the slot's own walls and ceiling are the
-	  lobby's, shared by every unit, so they can't fade;
+	- the eye stays over the room and out through your door (`BuildView.eyeBox`, D-443), brought in
+	  level by Brix's orbit (`eyeArea`), so it never stands where a smaller home's sliding walls run
+	  on past its corners; the focus shows in the middle of the band the tray and top bar leave
+	  clear (`aim`), so the room is never half under the tray;
 	- the home's own walls, and what hangs on them, fade as the eye passes them (`BuildView.sideOf`
 	  sorts the pieces, the fade eases on top of the springs);
 	- opening swoops from your eyes, closing swoops back, and the front tab's fixed shots (your
@@ -61,6 +62,8 @@ export type Options = {
 	gui: () -> ScreenGui?,
 	-- Whether a press at this gui point takes a find (ArrangeView's drag): then it isn't the camera's.
 	taken: (x: number, y: number) -> boolean,
+	-- The band of the screen no menu covers: its top and bottom, in viewport points.
+	clear: () -> (number, number),
 }
 
 export type Camera = {
@@ -155,6 +158,22 @@ local function orbitFor(room: Room, eyeBox: BuildView.Box, from: Vector3): Brix.
 		far = math.clamp(math.max(s.X, s.Z) + Cam.FarPast, distance, Cam.FarMost),
 		lowTilt = Cam.LowTilt,
 		highTilt = Cam.HighTilt,
+		eyeArea = Brix.Zone.box({
+			pathing = Brix.Pathing.floor(),
+			center = toVector(
+				face
+					* Vector3.new(
+						c.X + (eyeBox.left + eyeBox.right) / 2,
+						c.Y,
+						c.Z + (eyeBox.front + eyeBox.back) / 2
+					)
+			),
+			-- tall enough that the eye's height never counts, only where it stands
+			size = toVector(
+				Vector3.new(eyeBox.right - eyeBox.left, s.Y * 4, eyeBox.back - eyeBox.front)
+			),
+			turn = math.atan2(-across.Z, across.X),
+		}),
 		ceiling = (face * Vector3.new(c.X, floor + s.Y - Cam.UnderCeiling, c.Z)).Y,
 		settle = Cam.Settle,
 		drift = Cam.Drift,
@@ -290,7 +309,8 @@ function ArrangeCamera.new(options: Options): Camera
 			if seen then
 				local out = OUTWARD[i]
 				local past = seen:Dot(out) - (if out.X ~= 0 then half.X else half.Z)
-				want = math.clamp(past / Cam.FadeDepth, 0, 1)
+				local over = math.abs(seen.X) <= half.X and math.abs(seen.Z) <= half.Z
+				want = BuildView.fade(past, over, Cam.WallGap, Cam.FadeDepth)
 			end
 			local shown = w.shown + (want - w.shown) * k
 			if math.abs(want - shown) < 0.002 then
@@ -306,12 +326,20 @@ function ArrangeCamera.new(options: Options): Camera
 		return moving
 	end
 
-	-- The eye pulled in along its line of sight until it's inside the slot (or the hall's edge).
-	local function keepIn(eye: Vector3, focus: Vector3): Vector3
-		local e = roomFrame:PointToObjectSpace(eye)
-		local f = roomFrame:PointToObjectSpace(focus)
-		local share = BuildView.keepIn(e.X, e.Z, f.X, f.Z, eyeBox)
-		return if share < 1 then focus + (eye - focus) * share else eye
+	-- Shows the focus in the middle of the clear band, told again only when the band moves.
+	local aimedY, aimedW = -1, -1
+	local function aim()
+		local camera = Workspace.CurrentCamera
+		local o = orbit
+		if not (camera and o) then
+			return
+		end
+		local top, bottom = options.clear()
+		local y, w = (top + bottom) / 2, camera.ViewportSize.X
+		if math.abs(y - aimedY) > 0.5 or math.abs(w - aimedW) > 0.5 then
+			aimedY, aimedW = y, w
+			o:aim(w / 2, y)
+		end
 	end
 
 	local function screen()
@@ -434,12 +462,12 @@ function ArrangeCamera.new(options: Options): Camera
 		if shot then
 			goal = shot
 		elseif o then
+			aim()
 			o:step(dt)
 			local e, l, u = o:view()
-			local look = fromVector(l)
-			local seen = keepIn(fromVector(e), look)
+			local seen = fromVector(e)
 			eye = seen
-			goal = CFrame.lookAt(seen, look, fromVector(u))
+			goal = CFrame.lookAt(seen, fromVector(l), fromVector(u))
 		else
 			return
 		end
@@ -669,20 +697,14 @@ function ArrangeCamera.new(options: Options): Camera
 				finishClose()
 			end
 			room = r
-			local inside, slot = r.inside, r.slot
+			local inside = r.inside
 			roomFrame = inside.face * CFrame.new(inside.centre)
 			half = inside.size / 2
-			-- the slot's box in the room's frame: both share the unit's frame and the door's line
-			local s0 = slot.centre - inside.centre
-			local sh = slot.size / 2
-			eyeBox = {
-				left = s0.X - sh.X + Cam.WallGap,
-				right = s0.X + sh.X - Cam.WallGap,
-				front = -half.Z - Cam.Hall,
-				back = s0.Z + sh.Z - Cam.WallGap,
-			}
+			eyeBox = BuildView.eyeBox(half.X, half.Z, Cam.WallGap, Cam.Hall)
 			orbit = orbitFor(r, eyeBox, roomFrame:PointToObjectSpace(cam.CFrame.Position))
+			aimedY, aimedW = -1, -1
 			screen()
+			aim()
 			shot = fixed
 			cam.CameraType = Enum.CameraType.Scriptable
 			glide()

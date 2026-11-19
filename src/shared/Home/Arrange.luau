@@ -131,10 +131,11 @@ Arrange.Camera = table.freeze({
 	-- The point it circles stands this high off the floor (studs): low, so the floor under a
 	-- sliding finger keeps up with it, and the room's floor sits in the middle of the screen.
 	FocusUp = 1,
-	-- The home view stands this far past each near wall (studs): just past `FadeDepth`, so those
-	-- walls are all the way gone; and turns this far off straight in (radians) when it comes in
-	-- through the door (a home as big as its slot), so the room shows as a box, not a flat wall.
-	Clear = 1.3,
+	-- The home view stands this far out of the door (studs, D-443): the hall's whole reach, which
+	-- fits a Small room's floor into the band the tray and top bar leave clear (bigger rooms fill
+	-- it and run on past); and turns this far off straight in (radians), so the room shows as a
+	-- box, not a flat wall.
+	Clear = 5,
 	Slant = 0.4,
 	-- The home view's eye stays this far under the ceiling's stop (studs).
 	CeilingGap = 0.05,
@@ -153,8 +154,8 @@ Arrange.Camera = table.freeze({
 	-- long a flick drifts on.
 	Settle = 0.3,
 	Drift = 0.35,
-	-- The eye stays this far inside the slot's own walls (the lobby's, which can't fade), and goes
-	-- at most this far out into the hall through your door (studs).
+	-- The eye stays this far inside the room's walls (a wall it comes this near is gone, D-443),
+	-- and goes at most this far out into the hall through your door (studs).
 	WallGap = 0.6,
 	Hall = 5,
 	-- A wall is gone once the eye is this far past it (studs); it fades in and out with a half

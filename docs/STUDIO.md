@@ -3632,3 +3632,11 @@ verified: a doc page, Studio, or "untested".
   where they're sent across, none down.
 - **Captures:** `screencapture -l <window> -x -o` of Studio's window, then the `sips` crop above:
   672 by 314, about 300 tokens to look at. Half scale for `docs/art` is `sips -Z 336`.
+
+## The build camera over a smaller home (S5-03j1c, Nov 18)
+
+- **A smaller home's walls run on past its corners** to the slot's sides and back (D-354), with the
+  slot's floor under them: anything that stands the eye beside or behind the room inside the slot
+  sees them. `Walls.Left` and `Right` run x 60.3 to 89.9 and `Back` z 468 to 488 on Unit1 at Small.
+- **The A16's clear band** in viewport points: from the top bar's 58 to the tray's tabs at 186 (the
+  tray 10 off the foot, 92 tall, its 44-point tabs 6 above it). ArrangeView's `clear` says it.
