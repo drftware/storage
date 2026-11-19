@@ -27,7 +27,7 @@ local Spots = require("./Spots")
 local Group = {}
 
 -- A place in the room, as Brix's Placements gives it (`Brix.PlacementPose`).
-export type Pose = { on: string, x: number, y: number, turn: number }
+export type Pose = { on: string, x: number, y: number, turn: number, top: number? }
 -- One thing of a group and where it stands (or where it's going).
 export type Member = { id: string, pose: Pose }
 -- One thing of a group ask: `what` is the id of a thing set out (it moves) or a find's name from the
@@ -73,10 +73,10 @@ function Group.moved(members: { Member }, floor: string, dx: number, dy: number)
 	for _, m in members do
 		local p = m.pose
 		if p.on == floor then
-			table.insert(
-				out,
-				{ id = m.id, pose = { on = p.on, x = p.x + dx, y = p.y + dy, turn = p.turn } }
-			)
+			table.insert(out, {
+				id = m.id,
+				pose = { on = p.on, x = p.x + dx, y = p.y + dy, turn = p.turn, top = p.top },
+			})
 		end
 	end
 	return out
@@ -102,7 +102,13 @@ function Group.turned(members: { Member }, floor: string, quarters: number): { M
 			end
 			table.insert(out, {
 				id = m.id,
-				pose = { on = p.on, x = cx + dx, y = cy + dy, turn = (p.turn + 90 * q) % 360 },
+				pose = {
+					on = p.on,
+					x = cx + dx,
+					y = cy + dy,
+					turn = (p.turn + 90 * q) % 360,
+					top = p.top,
+				},
 			})
 		end
 	end

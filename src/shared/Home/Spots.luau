@@ -40,14 +40,21 @@ export type Vec = { number }
 -- Where a find may stand.
 export type Spot = "Floor" | "Tabletop" | "Wall" | "Ceiling"
 
--- A flat area, as Brix's Placements takes it (`Brix.PlacementArea`).
-export type Area = { kind: string, width: number, depth: number }
+-- A flat area, as Brix's Placements takes it (`Brix.PlacementArea`): `height` the room above it.
+export type Area = { kind: string, width: number, depth: number, height: number? }
 
--- A find's footprint and where it may stand, as Brix's Placements takes it (`Brix.PlacementShape`).
-export type Shape = { width: number, depth: number, fits: { string }, top: Area? }
+-- A find's footprint and where it may stand, as Brix's Placements takes it (`Brix.PlacementShape`):
+-- `tops` the flat tops of its own others stand on, `height` how tall it stands.
+export type Shape = {
+	width: number,
+	depth: number,
+	fits: { string },
+	tops: { Area }?,
+	height: number?,
+}
 
--- A pose, as Brix's Placements takes it (`Brix.PlacementPose`).
-export type Pose = { on: string, x: number, y: number, turn: number }
+-- A pose, as Brix's Placements takes it (`Brix.PlacementPose`): `top` which of a thing's tops.
+export type Pose = { on: string, x: number, y: number, turn: number, top: number? }
 
 -- The part of Brix's Placements a lift uses (`Spots.lift`).
 export type Judge = {
@@ -176,12 +183,15 @@ function Spots.shape(name: string, box: Vec?): Shape
 	local piece = Furniture.ofPlaced(name)
 	local row = if piece then nil else Spots.Rows[base(name)]
 	if piece then
-		shape.top = (Spots.pieceTop(piece.id)) -- a crate's or the pallet's top (D-338)
+		local top = Spots.pieceTop(piece.id) -- a crate's or the pallet's top (D-338)
+		shape.tops = if top then { top } else nil
 	elseif row and row.top then
-		shape.top = {
-			kind = Spots.Kinds.Top,
-			width = math.max(Spots.Least, b[1] - 2 * Spots.Rim),
-			depth = math.max(Spots.Least, b[3] - 2 * Spots.Rim),
+		shape.tops = {
+			{
+				kind = Spots.Kinds.Top,
+				width = math.max(Spots.Least, b[1] - 2 * Spots.Rim),
+				depth = math.max(Spots.Least, b[3] - 2 * Spots.Rim),
+			},
 		}
 	end
 	return shape
@@ -392,6 +402,7 @@ function Spots.carry(
 			x = d[1] * bx[1] + d[2] * bx[2] + d[3] * bx[3],
 			y = d[1] * by[1] + d[2] * by[2] + d[3] * by[3],
 			turn = row.turn,
+			top = row.top,
 		})
 	end
 	return out

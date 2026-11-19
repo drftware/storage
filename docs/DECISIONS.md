@@ -11404,3 +11404,16 @@ Brix `0b8c775` (its E-088); the pin moved from `e4b0dd1`.
   the same save step (S5-03k2 does the step). The migration from 15 adds an empty map and touches
   nothing else; save.spec proves a v15 save loads with every field as it was.
 
+## D-477 A piece offers several tops, each with its room above, in Brix (S5-03j8a1, 2026-11-19)
+
+The owner found the shelves only take things on top (S5-03j8). Brix's Placements let a thing offer
+one top, so the fix starts there (D-252): Brix `9408d63` (ENG-30, its E-089) gives a shape `tops`, a
+list, and `height`; an area or top may say `height`, the room above it; a pose and a saved row say
+`top`, which of a thing's tops (its first when left out); a thing taller than the room is refused
+"tooTall", counting what stands on its open tops. Saved form 2; form 1 loads as before.
+- The game moved to the list with no change in play: every piece still offers its one top.
+- The save's current placed rows take an optional `top` (1 to 64), so old saves stay valid and a
+  tier's row can be kept; `Arranging.keep`, `Group`, `Layout`'s push and `Spots`' re-lay keep it.
+- Default (OWNER.md): a find taller than a tier's room doesn't fit there and shows red, replacing
+  the oak shelf's shrink-to-fit.
+

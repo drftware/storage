@@ -94,7 +94,7 @@ export type Spot = { find: string, fresh: number }
 
 -- One find set out in your home, as Brix's Placements saves it (`Brix.PlacementRow`): its id
 -- (`Spots.id`), the area or find it stands `on`, its middle `x` and `y` there and its `turn`.
-export type PlacedRow = { id: string, on: string, x: number, y: number, turn: number }
+export type PlacedRow = { id: string, on: string, x: number, y: number, turn: number, top: number? }
 -- Everything set out in your home: Brix's saved form (`Brix.PlacementsSaved`).
 export type Placed = { form: number, rows: { PlacedRow } }
 
@@ -790,6 +790,8 @@ function Save.format(brix: any): Format
 					x = Schema.number({ min = -500, max = 500 }),
 					y = Schema.number({ min = -500, max = 500 }),
 					turn = Schema.number({ min = -360, max = 360 }),
+					-- which of a piece's tops it stands on (a shelf's tier), its first when left out
+					top = Schema.optional(Schema.number({ min = 1, max = 64, integer = true })),
 				}),
 				{ maxCount = Save.PlacedMost }
 			),

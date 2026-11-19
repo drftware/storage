@@ -1176,7 +1176,7 @@ function ArrangeHand.new(options: Options): Hand
 				r.placements:place(id, mine.shape, pose)
 				r.placements:takeEvents()
 				r.heights[id] = mine.size.Y
-				if mine.shape.top then
+				if mine.shape.tops then
 					tops[id] = true
 				end
 				if mine.finished then

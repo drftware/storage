@@ -3650,6 +3650,56 @@ Done when players watch the results to the end and change their perks between cl
         flight into its card (a RenderStepped logger), a group's Turn refused, Redo of a group
         Put away; judge the guide line and the wall height handle at full scale; walk the plan's
         feedback table row by row. If it won't fit, split j7b (taking apart first).
+  - [ ] **S5-03j8 Shelves are surfaces like anything else** (the owner, Nov 19, trying the
+    finished editor: "I can't drag an object to the middle shelf or the bottom, it seems to only
+    want to go on top"; it goes before S5-03k2). Today every piece offers one top, its highest
+    (`Spots.pieceTop`), because Brix's Placements lets a thing offer only one; and the starter oak
+    shelf runs on an older system of its own (fixed cubbies, the save's `shelf` list, shrink to
+    fit, `ShelfView`), which Arrange and placing by hand don't see. Done looks like: any piece
+    offers any number of surfaces (a table one, the steel shelf four, the oak shelf a cubby each
+    plus its top), each a place things stand with the room above it, as data from the art; Arrange
+    and placing by hand pick the surface under your finger or look with the same copy, snapping,
+    guides, tock and judge as everywhere; things on every tier ride along when the shelf moves;
+    Take works on them; the oak shelf's finds become ordinary placed finds (a save migration, none
+    lost: one that no longer fits goes to the job box), its sparkle and "New" a look any set-out
+    find can have; nothing names the shelf or any piece. A find taller than a tier's room doesn't
+    fit there and shows red (The Sims), replacing the cubbies' shrink-to-fit (OWNER.md).
+    Precedents: The Sims 4's surfaces and shelf slots, Animal Crossing's tables and shelves.
+    Split (Nov 19, its first session; one green piece a session, each promoting the next):
+    - [x] **j8a1 Brix: a thing offers several tops, each with its room above** Done Nov 19
+      (D-477; Brix `9408d63`, pinned): Brix's shapes take `tops` and `height`, poses and saved rows
+      `top`, refusal "tooTall"; the game moved to the list, the save's placed rows take an optional
+      `top`, and the server's and pure pose copies keep it. Was: (ENG-30 in Brix,
+      by Brix's own AGENTS.md, then the pin moves). A shape's tops are a list; a pose on a thing
+      names which of its tops (the first when it doesn't say); an area or top may say how much room
+      stands above it and a shape how tall it is, and a thing taller than the room is refused; a
+      thing standing on a thing has the room left above that thing; what stands on any top moves
+      with its thing; saves keep which top. The game moves to the list unchanged in behaviour (its
+      one top each), check.sh green.
+    - [ ] **j8a2 Every piece's surfaces as data.** `art/home/build.py` writes each piece's
+      surfaces (the middle, the size, the room above or open) for every piece with one, the oak
+      shelf's six cubbies and its top and the job box's lid included; rebuilt with scripts/art.sh.
+      One pure lookup in `Spots` replaces `pieceTop`, `PieceTops` and `StarterTops`; every piece's
+      shape offers all its surfaces to Brix, finds say how tall they are; Lune specs (a tier's
+      room, the top open, a find too tall for a cubby, no piece named in code). Aiming still picks
+      the highest, as today.
+    - [ ] **j8b Arrange and placing by hand aim at any tier.** `ArrangeHand.aim`, `Home/Snapping`
+      and `PlaceAim.room` pick the surface under your finger or look (the nearest one the ray
+      meets, its room in front); the server judges the same; riders on every tier; seen in Studio
+      on the steel shelf (a find on its bottom, middle and top tiers, by drag and by hand, a too
+      tall one red, the shelf moved with all three aboard). From j8a1: the client's pose copies
+      drop `top` (`ArrangeHand` ~644, ~652, ~1191, ~1534; `ArrangeGroup` ~361, ~527; `PlaceAim`
+      ~110) and the server's pose ask must read and check it (a whole number, one of the piece's
+      tops); a refused "tooTall" answers as any refusal (red, no text).
+    - [ ] **j8c The oak shelf folded in.** The save's next version moves each find on the `shelf`
+      list to a placed row on its cubby (one that won't fit or can't be placed goes to the job box)
+      with a migration and its spec; `shelf`, `Home/Shelf`, `Spots.offShelf`, Arranging's
+      `fromShelf`/`shelfAway` and `ShelfView`'s placing go; the new-find sparkle and "New" become a
+      look any set-out find can have; Take, Open and Sit on cubby finds as on any set-out find.
+    - [ ] **j8d Seen whole.** Studio Play at Galaxy A16 size (685 by 338): both shelves' every
+      tier aimed at by drag and by hand, a too-tall find red, both shelves moved with riders,
+      Take from a cubby, an old save's shelf finds where they were; captured to `docs/art/` and
+      looked at; fixes. Then S5-03k2 is Next task again.
   - [ ] **S5-03k The recipe system: what one thing does to another** (the owner, Nov 18,
     D-436; D-188's "hatched pets live there"; the doc's "Part 2" section). One data row per
     recipe; a fixed vocabulary of starts, stage ends, results and looks; thousands of rows by

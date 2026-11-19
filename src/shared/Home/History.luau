@@ -27,7 +27,7 @@
 ]]
 
 -- A place in the room, as Brix's Placements gives it (`Brix.PlacementPose`).
-export type Pose = { on: string, x: number, y: number, turn: number }
+export type Pose = { on: string, x: number, y: number, turn: number, top: number? }
 
 -- One thing across its steps: what it is, and the id it stands as now (nil: in the box).
 export type Thing = { name: string, id: string? }

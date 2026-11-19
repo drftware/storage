@@ -5,6 +5,10 @@ nowhere else.
 
 ## Now
 
+- [ ] **Decide: a find too tall for a shelf's tier doesn't fit there** (S5-03j8, D-477; my default,
+  nothing to test yet). Today the oak shelf shrinks a find to fit its cubby. From S5-03j8 every
+  shelf works like a table: a find taller than the room under the next tier shows red there and
+  won't go in, as in The Sims; it still fits the shelf's top. Say if you'd rather keep shrinking.
 - [ ] **Push Brix before you push this game** (S5-03a3a, D-273): the game now pins Brix at
   `482368f` (the plots each player's home comes from), which is only on this Mac. In `../engine`,
   `git push origin main`, then this repository. Pushed the other way round, a fresh clone can't find

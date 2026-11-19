@@ -44,7 +44,7 @@ the other zones (sphere, polygon, any-of, grown), the floor pathing and the sphe
 
 ## What Brix has built since the pin
 
-These are in the pin (moved to `0b8c775` for ENG-29b, recipe records: `start`, `due` and `advance`, which the
+These are in the pin (moved to `9408d63` for ENG-30, a thing's several tops and the room above each, which S5-03j8's shelves stand on, D-477; before that `0b8c775` for ENG-29b, recipe records: `start`, `due` and `advance`, which the
 home's server runs every recipe under way by, D-475; before that `e4b0dd1` for ENG-29a, the recipe book, `Brix.Recipes.book`, which the
 recipe rows of S5-03k1 are checked by, D-474; before that `cea1259` for ENG-26d, Placements' `blocking`, the things a drag presses
 into, lit up by Arrange's hand, D-462; before that `e62e218` for ENG-28c, `UndoList`, used by Arrange's Undo and Redo,

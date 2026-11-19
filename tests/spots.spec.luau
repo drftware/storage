@@ -54,7 +54,7 @@ do
 	local unknown = Spots.shape("Mystery", nil)
 	ok(near(unknown.width, 1) and near(unknown.depth, 1), "a find with no art: a stud each way")
 	local tv = Spots.shape("Television", { 1.62, 2.5, 1.2 })
-	local top = tv.top
+	local top = if tv.tops then tv.tops[1] else nil
 	ok(
 		top ~= nil and top.kind == "top" and near(top.width, 1.42) and near(top.depth, 1.0),
 		"a TV's top, its rim kept clear"
@@ -361,10 +361,11 @@ do
 		"a pallet stands only on the floor"
 	)
 	ok(
-		shape.top ~= nil
-			and shape.top.kind == Spots.Kinds.Top
-			and near(shape.top.width, 4.2)
-			and near(shape.top.depth, 3.4),
+		shape.tops ~= nil
+			and #shape.tops == 1
+			and shape.tops[1].kind == Spots.Kinds.Top
+			and near(shape.tops[1].width, 4.2)
+			and near(shape.tops[1].depth, 3.4),
 		"a pallet offers its top, kept a rim in"
 	)
 	local kept = Spots.owned({
@@ -396,7 +397,7 @@ do
 		"the shelf's top tier, below its posts' tops"
 	)
 	ok(top("CampBed") == nil and top("Blanket") == nil, "a bed and a cushion are sat on")
-	ok(Spots.shape("CampBed:Furniture", Spots.pieceBox("CampBed")).top == nil, "no top on a bed")
+	ok(Spots.shape("CampBed:Furniture", Spots.pieceBox("CampBed")).tops == nil, "no top on a bed")
 	ok(top("Teddy") == nil, "no piece: no top")
 
 	-- The save rule: a find riding on the pallet is never lost or doubled as the pallet moves,

@@ -65,7 +65,7 @@ function HandPlace.keptAttribute(i: number): string
 	return `ToolKept{i}`
 end
 
-export type Pose = { on: string, x: number, y: number, turn: number }
+export type Pose = { on: string, x: number, y: number, turn: number, top: number? }
 
 -- A pose as an attribute's text: "on|x|y|turn".
 function HandPlace.encode(pose: Pose): string

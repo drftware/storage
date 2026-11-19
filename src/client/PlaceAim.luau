@@ -113,7 +113,7 @@ function PlaceAim.room(unit: Model, tops: { [string]: boolean }, owner: number?)
 				if size then
 					r.heights[w.id] = size.Y
 				end
-				if shape.top then
+				if shape.tops then
 					tops[w.id] = true
 				end
 				table.remove(waiting, i)
@@ -214,8 +214,9 @@ function PlaceAim.aim(
 		if id ~= c.id and not rides(r, id, c.id) then
 			local shape = Arrange.shapeOf(id)
 			local f = Arrange.frameOn(r, id)
-			if shape and shape.top and f then
-				try(id, f, shape.top, true)
+			local top = if shape and shape.tops then shape.tops[1] else nil
+			if top and f then
+				try(id, f, top, true)
 			end
 		end
 	end
@@ -236,7 +237,7 @@ function PlaceAim.areaOf(r: Arrange.Room, on: string): Brix.PlacementArea?
 		return area
 	end
 	local shape = Arrange.shapeOf(on)
-	return if shape then shape.top else nil
+	return if shape and shape.tops then shape.tops[1] else nil
 end
 local areaOf = PlaceAim.areaOf
 

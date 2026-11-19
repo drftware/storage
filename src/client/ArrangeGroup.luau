@@ -835,7 +835,7 @@ function ArrangeGroup.new(options: Options): ArrangeGroup
 				local shape = Arrange.shapeOf(o.id)
 				if shape then
 					r.placements:place(o.id, shape, o.to)
-					if shape.top then
+					if shape.tops then
 						options.tops[o.id] = true
 					end
 				end

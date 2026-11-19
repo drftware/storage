@@ -487,7 +487,7 @@ function Layout.grow(
 end
 
 -- A pose on one of the room's areas, as Brix takes it.
-export type Pose = { on: string, x: number, y: number, turn: number }
+export type Pose = { on: string, x: number, y: number, turn: number, top: number? }
 -- The floor's size, as Brix and `Spots.room` give it.
 export type Floor = { width: number, depth: number }
 
@@ -557,7 +557,13 @@ function Layout.clearOf(kind: string, pose: Pose, floor: Floor): Pose
 	local push = clear - gap
 	-- out along its front, the way its back doesn't face, at whatever turn it stands
 	local c, sn = Turning.facing(pose.turn)
-	return { on = pose.on, x = pose.x - sn * push, y = pose.y + c * push, turn = pose.turn }
+	return {
+		on = pose.on,
+		x = pose.x - sn * push,
+		y = pose.y + c * push,
+		turn = pose.turn,
+		top = pose.top,
+	}
 end
 
 -- `pose` for leaning piece `kind` carried to the wall nearest its middle (the back wall or a

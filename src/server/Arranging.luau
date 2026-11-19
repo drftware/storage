@@ -357,10 +357,14 @@ function Arranging.new(): ArrangingSystem
 		local rows: { Save.PlacedRow } = {}
 		for _, row in saved.rows do
 			if Spots.name(row.id) then
-				table.insert(
-					rows,
-					{ id = row.id, on = row.on, x = row.x, y = row.y, turn = row.turn }
-				)
+				table.insert(rows, {
+					id = row.id,
+					on = row.on,
+					x = row.x,
+					y = row.y,
+					turn = row.turn,
+					top = row.top,
+				})
 			end
 		end
 		data.placed = { form = saved.form, rows = rows }

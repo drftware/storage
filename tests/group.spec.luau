@@ -112,7 +112,7 @@ end
 -- The move itself, on Brix's own judge.
 local SMALL: Brix.PlacementShape = { width = 1, depth = 1, fits = { "floor", "top" } }
 local TABLE: Brix.PlacementShape =
-	{ width = 2, depth = 1, fits = { "floor" }, top = { kind = "top", width = 2, depth = 1 } }
+	{ width = 2, depth = 1, fits = { "floor" }, tops = { { kind = "top", width = 2, depth = 1 } } }
 local function shapeOf(id: string): Brix.PlacementShape
 	return if string.find(id, "^Table") then TABLE else SMALL
 end
