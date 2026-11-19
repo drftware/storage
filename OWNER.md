@@ -174,6 +174,16 @@ nowhere else.
   defaults, yours to change: it faces the door, you can set it 10 studs off (`HandPlace.Reach`),
   how faint it is (0.5, breathing 0.08 either way over 1.6 s: `HandPlace.Faint`, `Breathe`,
   `Breath`). Tell me if the breathing reads as "where it'd go" or just as a flicker.
+- [ ] **Try it: a taken find snaps back into its spot** (S5-03j5b1, D-465; seen in Studio Play
+  at A16 with one player, not on a phone). On your phone, in your home:
+  1. Take the moon lamp off the job box. A fainter, still lamp stays where it stood.
+  2. Look at the floor: the breathing copy goes there, the still one stays. Look back near the
+     still one: the copy clicks into that very spot, turned as it stood, with a tick and a tap.
+  3. Press Place: it's back exactly where it was. Take it again, walk out of your door, come back:
+     the still lamp is gone (it's forgotten once you step out).
+  Look for: the snap is easy to hit with a glance and never steals a spot beside it. My defaults,
+  yours to change: how faint the still copy is (0.78, `HandPlace.KeptFaint`), how near a look
+  snaps (1.25 studs, `HandPlace.Snap`), and that stepping out forgets it.
 - [ ] **Feel it: what's in the way glows** (S5-03j4b2, D-462; seen in Studio Play at A16, not on
   a phone). On your phone, open Arrange and drag a milk crate into the shelf, slowly:
   1. The moment it presses in, the crate goes red, the shelf flares soft red and stays faintly

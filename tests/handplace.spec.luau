@@ -4,6 +4,10 @@
 -- anything reads it, the judge's word decides, and a find set down from your hand goes from your
 -- hand onto its spot in one step: what you own never changes, it's never in your hand and set out
 -- at once, and a refused ask leaves it in your hand.
+local roblox = require("@lune/roblox")
+local Vector3 = roblox.Vector3
+local CFrame = roblox.CFrame
+
 local Brix = require("../vendor/brix/src")
 local HandPlace = require("../src/shared/Home/HandPlace")
 local Save = require("../src/shared/Save")
@@ -75,6 +79,51 @@ do
 		return set:poseOf(each) ~= nil
 	end)
 	ok(Spots.name(gold) == "Teddy:Gold", "a held Gold stands as its own name")
+end
+
+-- The kept spot (S5-03j5b1, D-465): where a Taken find stood rides as text on its slot, read back
+-- only when it's whole; a look near it snaps, a look beside it or behind a wall doesn't.
+do
+	local pose = { on = "JobBoxTop", x = 0.25, y = -1.5, turn = 90 }
+	local back = HandPlace.decode(HandPlace.encode(pose))
+	ok(
+		back ~= nil and back.on == pose.on and back.x == 0.25 and back.y == -1.5 and back.turn == 90,
+		"a kept spot reads back as it was written"
+	)
+	local onTop = HandPlace.decode(HandPlace.encode({ on = "Lamp#2", x = 0, y = 0, turn = 0 }))
+	ok(onTop ~= nil and onTop.on == "Lamp#2", "a spot on a find's own top keeps its name")
+	ok(HandPlace.decode(nil) == nil, "no spot kept: nothing")
+	ok(HandPlace.decode(7) == nil, "a number isn't a spot")
+	ok(HandPlace.decode("Floor|1|2") == nil, "a spot missing its turn isn't one")
+	ok(HandPlace.decode("Floor|x|2|0") == nil, "a spot with a word for a number isn't one")
+	ok(HandPlace.decode("Floor|nan|2|0") == nil, "not a number isn't one")
+	ok(HandPlace.decode("Floor|1e9|2|0") == nil, "a spot miles off isn't one")
+	ok(HandPlace.decode(string.rep("a", 200)) == nil, "a long text isn't one")
+	ok(HandPlace.keptAttribute(1) ~= HandPlace.slotAttribute(1), "the kept spot has its own mark")
+	ok(HandPlace.keptAttribute(1) ~= HandPlace.keptAttribute(2), "each slot its own kept spot")
+	ok(HandPlace.KeptFaint > HandPlace.Faint, "the kept copy is fainter than where you look")
+
+	local eye = Vector3.new(0, 5, 0)
+	local ahead = Vector3.new(0, 0, -1)
+	local spot = Vector3.new(0, 5, -6)
+	ok(HandPlace.snaps(eye, ahead, 20, spot), "a look straight at it snaps")
+	ok(
+		HandPlace.snaps(eye, ahead, 20, spot + Vector3.new(HandPlace.Snap * 0.9, 0, 0)),
+		"a look within a step of it snaps"
+	)
+	ok(
+		not HandPlace.snaps(eye, ahead, 20, spot + Vector3.new(HandPlace.Snap * 1.5, 0, 0)),
+		"a look beside it doesn't"
+	)
+	ok(not HandPlace.snaps(eye, -ahead, 20, spot), "a look away from it doesn't")
+	ok(not HandPlace.snaps(eye, ahead, 2, spot), "behind what you see, it doesn't")
+	ok(HandPlace.snaps(eye, ahead, 5, spot), "just past what you see (its own top), it does")
+
+	local face = CFrame.new(10, 0, 10)
+	local middle, size = Vector3.new(0, 4, 0), Vector3.new(12, 8, 10)
+	ok(HandPlace.inside(face, middle, size, Vector3.new(12, 3, 8)), "standing in the room: in")
+	ok(not HandPlace.inside(face, middle, size, Vector3.new(17, 3, 10)), "out the door: out")
+	ok(not HandPlace.inside(face, middle, size, Vector3.new(10, 20, 10)), "on the floor above: out")
 end
 
 print(`handplace: {checks - failures}/{checks} passed`)

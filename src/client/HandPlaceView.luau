@@ -13,6 +13,12 @@
 	the camera's look. Nowhere it fits (or out of reach, or outside your home) nothing shows and
 	Drop drops as ever; no text explains anything.
 
+	A find you Take keeps its spot (S5-03j5b1, D-465): while it's in your hand in your home, a
+	fainter, still copy stands where it stood (the slot's `HandPlace.keptAttribute`, the server's),
+	and a look that passes within a step of it (`HandPlace.snaps`) clicks the copy into that very
+	spot, turned as it stood. Something now in its way, and it isn't shown. Precedent: The Sims'
+	and Animal Crossing's picked-up furniture leaving its footprint to drop back into.
+
 	Only while you hold a find out of your own box in your home does anything step: one
 	RenderStepped, connected for that hold and gone with it.
 ]]
@@ -74,6 +80,14 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 	local solid: { number } = {} -- each part's own transparency, as the find is drawn
 	local shown = false
 	local alpha = 0 -- how far the copy has faded in (0 gone, 1 faint)
+	-- the kept spot (S5-03j5b1): where it stood when Taken, its still copy, and whether the look
+	-- has snapped into it
+	local kept: HandPlace.Pose? = nil
+	local keptCopy: Model? = nil
+	local keptParts: { BasePart } = {}
+	local keptSolid: { number } = {}
+	local keptAlpha = 0
+	local snapped = false
 	local asking = false
 	local step: RBXScriptConnection? = nil
 	local watch: { RBXScriptConnection } = {}
@@ -103,15 +117,50 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 		end
 	end
 
+	-- The kept spot's copy at `a` of the way to its fainter, still look (0: unseen).
+	local function fadeKept(a: number)
+		for i, p in keptParts do
+			p.Transparency = 1 - (1 - keptSolid[i]) * (1 - HandPlace.KeptFaint) * a
+		end
+	end
+
 	local function dropCopy()
-		local c = copy
-		copy = nil
+		local c, k = copy, keptCopy
+		copy, keptCopy = nil, nil
 		table.clear(parts)
 		table.clear(solid)
-		alpha = 0
+		table.clear(keptParts)
+		table.clear(keptSolid)
+		alpha, keptAlpha, snapped = 0, 0, false
 		if c then
 			c:Destroy()
 		end
+		if k then
+			k:Destroy()
+		end
+	end
+
+	-- A copy of the held find to show faintly: inert, untagged, gilded if it's a Gold; its parts
+	-- and their own transparencies go into `into` and `drawnAs`.
+	local function ghost(gold: boolean, into: { BasePart }, drawnAs: { number }): Model?
+		local m = Tools.clone(key, CFrame.identity)
+		if not m then
+			return nil
+		end
+		ArrangeHand.inert(m)
+		for _, tag in m:GetTags() do
+			m:RemoveTag(tag)
+		end
+		if gold then
+			Gold.gild(m)
+		end
+		for _, d in m:GetDescendants() do
+			if d:IsA("BasePart") then
+				table.insert(into, d)
+				table.insert(drawnAs, d.Transparency)
+			end
+		end
+		return m
 	end
 
 	-- Your own home, if you hold one.
@@ -138,9 +187,7 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 
 	-- Whether you stand inside your home's room now.
 	local function standingIn(r: Arrange.Room, root: BasePart): boolean
-		local p = r.face:PointToObjectSpace(root.Position) - r.centre
-		local h = r.size / 2
-		return math.abs(p.X) <= h.X and math.abs(p.Z) <= h.Z and math.abs(p.Y) <= h.Y + 2
+		return HandPlace.inside(r.face, r.centre, r.size, root.Position)
 	end
 
 	-- How far along the look (studs) the first thing you can see is: the aim stops there, so the
@@ -170,16 +217,28 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 			return -- set down: the copy is landing
 		end
 		local pose: Brix.PlacementPose? = nil
+		local keptAt: CFrame? = nil -- where the kept spot's copy stands, while it still fits
+		local snap = false
 		if standingIn(r, root) then
 			local look = camera.CFrame
-			local on, x, y = PlaceAim.aim(
-				r,
-				c,
-				Ray.new(look.Position, look.LookVector),
-				tops,
-				{ slack = 0, far = seen(look) }
-			)
-			pose = if on then PlaceAim.settle(r, c, on, x, y, false) else nil
+			local far = seen(look)
+			local k = kept
+			if k and PlaceAim.fitsAt(r, c, k) then
+				keptAt = PlaceAim.standAt(r, c, k)
+			end
+			local ka = keptAt
+			if k and ka and HandPlace.snaps(look.Position, look.LookVector, far, ka * c.centre) then
+				pose, snap = k, true -- a look back at where it stood: into that very spot
+			else
+				local on, x, y = PlaceAim.aim(
+					r,
+					c,
+					Ray.new(look.Position, look.LookVector),
+					tops,
+					{ slack = 0, far = far }
+				)
+				pose = if on then PlaceAim.settle(r, c, on, x, y, false) else nil
+			end
 		end
 		local at = if pose and PlaceAim.fitsAt(r, c, pose)
 			then PlaceAim.standAt(r, c, pose)
@@ -191,16 +250,39 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 		if at and spot and (spot - root.Position).Magnitude > HandPlace.Reach then
 			at = nil -- out of reach: nothing shows
 		end
+		snap = snap and at ~= nil
 		c.pose = if at then pose else nil
 		if at then
 			local was = m:GetPivot()
-			local k = if alpha <= 0 then 1 else math.min(1, dt / HandPlace.Glide)
+			-- into the kept spot it clicks, no glide: the tick and a clear tap say it's home
+			local k = if alpha <= 0 or (snap and not snapped)
+				then 1
+				else math.min(1, dt / HandPlace.Glide)
 			m:PivotTo(was:Lerp(at, k))
 			alpha = math.min(1, alpha + dt / HandPlace.Fade)
 		else
 			alpha = math.max(0, alpha - dt / HandPlace.Fade)
 		end
+		if snap and not snapped then
+			ArrangeHand.play(Arrange.Tick, sounds())
+			taps.tap(Feedback.Taps.Tap)
+		end
+		snapped = snap
 		fade(alpha)
+		-- the kept spot's still copy, while it fits and the look isn't in it (the faint copy is)
+		local kc = keptCopy
+		if kc then
+			local ka = keptAt
+			if ka and not snap then
+				if keptAlpha <= 0 then
+					kc:PivotTo(ka)
+				end
+				keptAlpha = math.min(1, keptAlpha + dt / HandPlace.Fade)
+			else
+				keptAlpha = math.max(0, keptAlpha - dt / HandPlace.Fade)
+			end
+			fadeKept(keptAlpha)
+		end
 		setShown(at ~= nil)
 	end
 
@@ -214,7 +296,7 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 		end
 		table.clear(watch)
 		dropCopy()
-		carried, room, unit = nil, nil, nil
+		carried, room, unit, kept = nil, nil, nil, nil
 		setShown(false)
 	end
 
@@ -222,16 +304,11 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 	local function start()
 		local u = if own then findHome() else nil
 		local gold = me:GetAttribute(Gold.slotAttribute(slot)) == true
-		local m = if u then Tools.clone(key, CFrame.identity) else nil
+		local m = if u then ghost(gold, parts, solid) else nil
 		if not (u and m) then
+			table.clear(parts)
+			table.clear(solid)
 			return
-		end
-		ArrangeHand.inert(m)
-		for _, tag in m:GetTags() do
-			m:RemoveTag(tag)
-		end
-		if gold then
-			Gold.gild(m)
 		end
 		name = if gold then Gold.key(key) else key
 		local size, centre = Arranged.bounds(m)
@@ -246,18 +323,29 @@ function HandPlaceView.new(changed: (showing: boolean) -> ()): HandPlaceView
 		local shape = if probe then Arrange.shapeOf(probe) else nil
 		if not (r and probe and shape and size and centre) then
 			m:Destroy()
+			table.clear(parts)
+			table.clear(solid)
 			room, unit = nil, nil
 			return
-		end
-		for _, d in m:GetDescendants() do
-			if d:IsA("BasePart") then
-				table.insert(parts, d)
-				table.insert(solid, d.Transparency)
-			end
 		end
 		copy = m
 		fade(0)
 		m.Parent = Workspace.CurrentCamera
+		-- the kept spot's still copy, drawn only while the server keeps a spot for this slot
+		local keptName = HandPlace.keptAttribute(slot)
+		local function readKept()
+			kept = HandPlace.decode(me:GetAttribute(keptName))
+			if kept and not keptCopy then
+				local k = ghost(gold, keptParts, keptSolid)
+				if k then
+					keptCopy = k
+					fadeKept(0)
+					k.Parent = Workspace.CurrentCamera
+				end
+			end
+		end
+		readKept()
+		table.insert(watch, me:GetAttributeChangedSignal(keptName):Connect(readKept))
 		local mine: { Instance } = { Workspace.CurrentCamera }
 		if me.Character then
 			table.insert(mine, me.Character)

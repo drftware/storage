@@ -271,7 +271,12 @@ export type Slots = Brix.System & {
 	-- A find `key` out of `player`'s job box (S5-03c2b2, D-293; a Gold's gilded) into a free slot,
 	-- as `give` with `quiet` (their screen plays the pick-up as the picture lands), marked as
 	-- from their box. The slot it went into, or nil when it can't (as `give`).
-	unbox: (self: any, player: Player, key: string) -> number?,
+	-- `kept`: where it stood when Taken (S5-03j5b1), its kept spot while it's in their hand.
+	unbox: (self: any, player: Player, key: string, kept: HandPlace.Pose?) -> number?,
+	-- Whether any find in `player`'s hands keeps a spot (S5-03j5b1).
+	keeps: (self: any, player: Player) -> boolean,
+	-- Forgets every kept spot of `player`'s finds (they stepped out of their home, S5-03j5b1).
+	forget: (self: any, player: Player) -> (),
 	-- Whether a find could go into `player`'s hands now, as `unbox` asks (S5-03i2a): a living
 	-- character, no big tool held in both hands, and a free slot.
 	room: (self: any, player: Player) -> boolean,
@@ -375,6 +380,10 @@ type Tool = {
 	-- out of a job box sealed, its pack torn on the climb (D-427): still its owner's sealed one by
 	-- name till it's settled (`named`), then a plain one (`Taken`'s `torn`)
 	torn: boolean?,
+	-- where it stood in its owner's home when they Took it (S5-03j5b1, D-465): its kept spot, shown
+	-- faintly while it's in their hand; gone once it's dropped, given, set down or put away, or
+	-- they step out of their home (`forget`)
+	kept: HandPlace.Pose?,
 }
 
 -- The name `t` goes by in a save: "Teddy", its Gold's "Teddy:Gold", or its sealed one's
@@ -621,6 +630,11 @@ function Slots.new(): Slots
 			local own = if t and ownBox(t, player.UserId) then true else nil
 			if player:GetAttribute(HandPlace.slotAttribute(i)) ~= own then
 				player:SetAttribute(HandPlace.slotAttribute(i), own)
+			end
+			-- where it stood when Taken, while it's still theirs to set down by hand (S5-03j5b1)
+			local kept = if own and t and t.kept then HandPlace.encode(t.kept) else nil
+			if player:GetAttribute(HandPlace.keptAttribute(i)) ~= kept then
+				player:SetAttribute(HandPlace.keptAttribute(i), kept)
 			end
 			local uses = if t and t.uses then t.uses else 0
 			if player:GetAttribute(Wear.slotAttribute(i)) ~= uses then
@@ -1421,6 +1435,9 @@ function Slots.new(): Slots
 		end
 		local id = Carry.release(h.carry) :: string
 		local t = tools[id]
+		if t then
+			t.kept = nil -- set down somewhere else: its old spot's forgotten
+		end
 		publish(player)
 		if not t then
 			return
@@ -1482,6 +1499,7 @@ function Slots.new(): Slots
 		Carry.release(h.carry)
 		Carry.take(them.carry, id)
 		t.owner = friend
+		t.kept = nil -- a friend's now: the spot was yours to snap back to
 		stow(t)
 		dress(player)
 		dress(friend)
@@ -2382,7 +2400,7 @@ function Slots.new(): Slots
 		return make(player, key, quiet, nil, nil, since, sealed) ~= nil
 	end
 
-	function system.unbox(_: any, player: Player, key: string): number?
+	function system.unbox(_: any, player: Player, key: string, kept: HandPlace.Pose?): number?
 		local base = Gold.base(key) -- a Gold's find: carried as the find, gilded
 		local sealed = Seal.base(key) -- a sealed one's (D-427): carried as the find, in its pack
 		local find = base or sealed or key
@@ -2394,7 +2412,35 @@ function Slots.new(): Slots
 		if t and sealed and not t.sealed then
 			t.torn = true -- the place lacks its pack: dealt plain, settled as the sealed one
 		end
+		if t and kept then
+			t.kept = table.clone(kept)
+			publish(player)
+		end
 		return n
+	end
+
+	function system.keeps(_: any, player: Player): boolean
+		for _, id in handOfPlayer(player).carry.slots do
+			local t = tools[id]
+			if t and t.kept then
+				return true
+			end
+		end
+		return false
+	end
+
+	function system.forget(_: any, player: Player)
+		local any = false
+		for _, id in handOfPlayer(player).carry.slots do
+			local t = tools[id]
+			if t and t.kept then
+				t.kept = nil
+				any = true
+			end
+		end
+		if any then
+			publish(player)
+		end
 	end
 
 	function system.room(_: any, player: Player): boolean

@@ -40,4 +40,73 @@ function HandPlace.slotAttribute(i: number): string
 	return `ToolOwnBox{i}`
 end
 
+--[[
+	The kept spot (S5-03j5b1, D-465). The moment: you take the lamp off the job box to carry it
+	about; a fainter, still lamp stays where it stood; change your mind, look back at it, and the
+	copy clicks into that very spot. Precedent: The Sims' and Animal Crossing's picked-up furniture
+	leaving its footprint to drop back into.
+
+	The server keeps where a find stood when you Take it (Slots, with the find in your hand) and
+	writes it beside the slot's mark (`keptAttribute`, `encode`); it's gone once the find is set
+	down anywhere, put away, dropped, given, or you step out of your home (Arranging). It's only a
+	pose to aim at: a Place into it is judged again as any Place is, so a stale one is refused as
+	any far or bad ask is.
+]]
+
+-- How see-through the kept spot's copy is: fainter than the copy where you look (`Faint`) and
+-- still, so it reads as where it stood, not where it would go.
+HandPlace.KeptFaint = 0.78
+-- Studs from the look to the kept spot's middle that still snap the copy into it: a step either
+-- way, so a glance back at it is enough, never so wide it steals a spot beside it.
+HandPlace.Snap = 1.25
+
+-- The player attribute holding slot `i`'s kept spot (`encode`'s text, or absent).
+function HandPlace.keptAttribute(i: number): string
+	return `ToolKept{i}`
+end
+
+export type Pose = { on: string, x: number, y: number, turn: number }
+
+-- A pose as an attribute's text: "on|x|y|turn".
+function HandPlace.encode(pose: Pose): string
+	return string.format("%s|%.3f|%.3f|%.1f", pose.on, pose.x, pose.y, pose.turn)
+end
+
+local function finite(n: number?): boolean
+	return n ~= nil and n == n and math.abs(n) < 1e4
+end
+
+-- `encode`'s text back to a pose, or nil for anything else (an attribute is read as it comes).
+function HandPlace.decode(text: unknown): Pose?
+	if type(text) ~= "string" or #text > 120 then
+		return nil
+	end
+	local on, x, y, turn = string.match(text, "^([^|]+)|([^|]+)|([^|]+)|([^|]+)$")
+	local nx, ny, nt = tonumber(x), tonumber(y), tonumber(turn)
+	if not (on and finite(nx) and finite(ny) and finite(nt)) then
+		return nil
+	end
+	return { on = on, x = nx :: number, y = ny :: number, turn = nt :: number }
+end
+
+-- Whether a look from `origin` along unit `dir`, seeing as far as `far` studs, passes within
+-- `Snap` of `at` (the kept spot's middle) in front of you and not behind what you see.
+function HandPlace.snaps(origin: Vector3, dir: Vector3, far: number, at: Vector3): boolean
+	local to = at - origin
+	local along = to:Dot(dir)
+	if along <= 0 or along > far + HandPlace.Snap then
+		return false
+	end
+	return (to - dir * along).Magnitude <= HandPlace.Snap
+end
+
+-- Whether `at` stands inside a room laid at `face` (its middle `centre` and `size` in the face's
+-- own space), counting a little headroom: where you are "in your home" for the kept spot and
+-- for placing by hand.
+function HandPlace.inside(face: CFrame, centre: Vector3, size: Vector3, at: Vector3): boolean
+	local p = face:PointToObjectSpace(at) - centre
+	local h = size / 2
+	return math.abs(p.X) <= h.X and math.abs(p.Z) <= h.Z and math.abs(p.Y) <= h.Y + 2
+end
+
 return table.freeze(HandPlace)

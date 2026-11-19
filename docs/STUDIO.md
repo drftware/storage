@@ -3787,3 +3787,10 @@ verified: a doc page, Studio, or "untested".
   back to the box, so set it out again each run. Drop is `PlayerGui.Slots.Hud.Drop`; click its
   middle plus 47 across.
 
+- **The kept spot (S5-03j5b1):** after that `"take"`, the server's word is the player attribute
+  `ToolKept1` ("JobBox:Furniture#1|0.170|-0.270|0.0"); on the Client the camera holds two
+  `MoonLamp` copies (the still kept one at Transparency 0.78, the aim's at 1 until it shows). In
+  the A16 emulator a 30-point drag left from (300, 150) looks off the spot and the same drag
+  right looks back into it: both copies' pivots then match and the still one reads 1. Moving the
+  character 14 studs out along Z from (66.5, 3, 479.5) forgets `ToolKept1` within a second. A
+  Server `"hand"` with the job box spot sets the lamp out again before Play stops.

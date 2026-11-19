@@ -53,6 +53,9 @@
 	(one out of their own box, `Slots:heldFromBox`) at that spot in their own home, within reach
 	(`HandPlace.Reach`), judged as a Place is; set out, it leaves their hand in the same step
 	(`Slots:setDown`), so it's never lost or doubled. The asker hears (id, refusal) back.
+	A find you Take keeps where it stood while it's in your hand and you're in your home
+	(S5-03j5b1, D-465: `Slots:unbox`'s `kept`, forgotten as you step out, `watchKept`); your
+	screen snaps a look back into it, and its Place is judged as any is.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -87,6 +90,10 @@ local Takes = require(script.Parent.Takes)
 
 -- A find as drawn: its model, and its box (`Arranged.bounds`) measured once; a starter piece's
 -- kind, which stands by its spec box instead (`Arrange.starterPivot`).
+-- Seconds between looks at whether a player holding a find that keeps its spot still stands in
+-- their home (S5-03j5b1): stepping out forgets it within this long.
+local KEPT_WATCH = 0.5
+
 type Drawn = { model: Model, size: Vector3, centre: Vector3, starter: string? }
 
 -- One held home: its unit, its room (`Arrange.room`: its judge, each area's frame), how many
@@ -139,6 +146,7 @@ function Arranging.new(): ArrangingSystem
 	local findUses: FindUses.FindUsesSystem? = nil
 	local takeOut: (player: Player, id: string, model: Model) -> ()
 	local pressOut: (holder: Player, player: Player, id: string, model: Model, key: string) -> ()
+	local watchKept: (player: Player) -> ()
 
 	-- `player`'s home unit and its slot, if they hold one.
 	local function unitOf(player: Player): (Model?, LobbySpecs.Slot?)
@@ -603,6 +611,34 @@ function Arranging.new(): ArrangingSystem
 		end
 	end
 
+	-- While `player` holds a find that keeps its spot (S5-03j5b1, D-465), a look every
+	-- `KEPT_WATCH` seconds (never a frame's step) at whether they still stand in their home: out
+	-- of it, every kept spot's forgotten. One watch per player, gone once nothing keeps a spot.
+	local watching: { [Player]: boolean } = {}
+	function watchKept(player: Player)
+		if watching[player] then
+			return
+		end
+		watching[player] = true
+		task.spawn(function()
+			local s = slots
+			while s and player.Parent and s:keeps(player) do
+				task.wait(KEPT_WATCH)
+				local home = homes[player]
+				local character = player.Character
+				local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
+				local r = if home then home.room else nil
+				if
+					not (r and root and root:IsA("BasePart"))
+					or not HandPlace.inside(r.face, r.centre, r.size, root.Position)
+				then
+					s:forget(player)
+				end
+			end
+			watching[player] = nil
+		end)
+	end
+
 	-- Take on find `id` set out (`model`), pressed by `player`: only their own, as drawn now.
 	function takeOut(player: Player, id: string, model: Model)
 		if not limit:take(player, os.clock()) then
@@ -622,14 +658,18 @@ function Arranging.new(): ArrangingSystem
 		then
 			return -- a friend's press, a far one, or full hands: nothing happens
 		end
+		local stood = home.placements:poseOf(id) -- its kept spot while it's in their hand
 		home.drawn[id] = nil -- it flies from here: the removal below leaves it to Takes
 		Takes.leave(model, player)
 		Spots.lift(home.placements, id)
 		keep(home, data)
 		apply(home, player, true)
-		s:unbox(player, name)
+		s:unbox(player, name, stood)
 		drawnSignal:fire(player)
 		sendBox(player)
+		if stood then
+			watchKept(player)
+		end
 	end
 
 	-- A find's own button on find `id` set out (`model`) in `holder`'s home, pressed by `player`,

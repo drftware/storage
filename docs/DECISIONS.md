@@ -11059,3 +11059,34 @@ an unknown surface, bad numbers and an overlap, and the lamp stayed in hand. Wha
   Lune spec) and a phone's finger: OWNER.md. Your home's camera is first person
   (`LockFirstPerson`), so the third-person worry (a look from behind your back) doesn't arise.
 
+## D-465 A taken find keeps its spot, faintly, and snaps back into it (S5-03j5b1, 2026-11-19)
+
+The moment: you take the moon lamp off the job box to carry it about; a fainter, still lamp stays
+where it stood; change your mind, look back at it, and the copy clicks into that very spot, turned
+as it stood, with a tick and a clear phone tap; Place sets it back (the plan's "Placing by hand";
+The Sims' and Animal Crossing's picked-up furniture leaving its footprint to drop back into).
+- **The server keeps it, on the find in your hand.** Take (`Arranging`'s `takeOut`) reads the
+  find's pose before lifting it and hands it to `Slots:unbox(player, name, kept)`, which keeps it
+  on the carried find (`Tool.kept`) and writes it beside the slot's own-box mark
+  (`HandPlace.keptAttribute(i)`, `HandPlace.encode`'s "on|x|y|turn"), only while that mark holds.
+  It's gone when the find leaves your hand (set down by hand or in Arrange, put away), is dropped
+  (set somewhere else) or given, goes up the climb, or you step out of your home: while anything
+  of yours keeps a spot, Arranging looks every 0.5 s (`KEPT_WATCH`, never a frame's step) whether
+  you stand in your home's room (`HandPlace.inside`, now the screen's test too) and forgets them
+  all (`Slots:forget`) once you don't. No save change: a kept spot never outlives the server.
+- **It's only a pose to aim at.** The server never trusts it back: a Place into it is a HandPlace
+  ask judged as any is, so a stale or blocked spot is refused as a far or bad ask is. Names no
+  find; works for anything Take can take, on any area or top.
+- **The screen** (`HandPlaceView`): a second inert copy, still and fainter (`HandPlace.KeptFaint`
+  0.78 against the aim's breathing 0.5), shown while it fits where it stood (something moved into
+  it: not shown) and you're in the room. A look that passes within `HandPlace.Snap` (1.25 studs)
+  of its middle, in front of you and no further than what you see (`HandPlace.snaps`, pure,
+  Lune-spec'd), aims at the kept pose exactly; the aim copy jumps there without its glide, the
+  still copy fades out under it, and `Arrange.Tick` with `Feedback.Taps.Tap` play once.
+- **Seen in Studio Play at A16 (685 by 338)** with the moon lamp in a Small home: after Take the
+  slot carried the spot and a still copy stood on the job box at 0.78; a look at it snapped the
+  aim copy onto the exact spot and hid the still one; a look away brought the still one back;
+  Drop set the lamp down at the very pose it had; Take again then a step out of the door forgot
+  the spot within a second. `screen_capture` timed out twice, so no captures this session (the
+  next screen ticket's capture should include the kept spot).
+- **My defaults** (OWNER.md): 0.78 faint, a 1.25-stud snap, forgotten as you step out.
