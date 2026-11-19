@@ -3587,3 +3587,30 @@ verified: a doc page, Studio, or "untested".
 - **Watching a roll:** raise the player's `BestFloor` attribute from the Server (the screen
   only, not the save) while the camera faces away, start a `screencapture` loop with no sleep,
   then turn the camera to the dial from the Client: the digits flip within about 1.3 s.
+
+## Arrange's build camera, first try in Play (S5-03j1b, Nov 18)
+
+- **Studio can be a day behind without saying so.** With no `rojo serve` running, Play ran the
+  room editor as of `5dde6c0`: Arrange opened with its old fixed camera and no input moved it.
+  Two quick tells, from a Client `execute_luau`: `require(ReplicatedStorage.Brix).Gestures` is
+  nil, and `StarterPlayerScripts.Client` has no `ArrangeCamera`. To see how far behind it is,
+  compare a changed script's `#Source` with `git show <commit>:<path> | wc -c` down its log
+  (here ArrangeView's 77446 bytes matched `5dde6c0`; everything else matched HEAD).
+- **Getting code into Studio without Rojo is expensive:** the Assistant's `HttpService` refuses
+  LAN addresses too ("domain 10.0.0.73:8765 is not in the Assistant HTTP allowlist"), so the only
+  way is pasting each file's text through `execute_luau` or `multi_edit`. For the room editor
+  that is about 35k tokens (Brix's Gestures and OrbitCamera with their contracts, `BuildView`,
+  `ArrangeCamera` whole; `Brix` init, `Home.Arrange`, `ArrangeView` as diffs). A changed
+  ReplicatedStorage module must be swapped for a new instance (see "Patching scripts without
+  Rojo" above): for `ReplicatedStorage.Brix` that means moving its children to the new one.
+- **In the Device Simulator the MCP's mouse is a finger:** with the A16 picked,
+  `UserInputService.TouchEnabled` is true and `user_mouse_input` arrives as `Touch` (began,
+  changed, ended, in gui points). The wheel and the right button arrive as nothing at all. To
+  check wheel, right-drag and WASD, pick a desktop in the simulator's device menu first; pinch,
+  twist and two-finger tilt can't be driven from the MCP (OWNER.md's phone steps).
+- **The Arrange button opens from a click** at its middle in gui points plus 47 across: (681, 37)
+  on the A16 (the button at gui 601, 4, 66 square). The older note's clicks at y 95 added the
+  top bar's 58 and missed.
+- **Mapping the phone in this session's window capture** (Studio at 703, 30, 1386 by 972; window
+  number from Swift's `CGWindowListCopyWindowInfo`): `sips --cropOffset 360 356 -c 314 672` gives
+  the phone's screen.

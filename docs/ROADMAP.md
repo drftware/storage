@@ -3315,6 +3315,9 @@ Done when players watch the results to the end and change their perks between cl
       wired in j2 with the drag.
       **Acceptance:** seen in Studio Play at A16 size, captured; walls fade from every side;
       check green.
+      Tried Nov 18 (D-440): Studio was running this morning's code (Rojo not connected), so the
+      camera couldn't be seen. Waits on `OWNER.md` (connect Rojo); ENG-26c goes first, then this.
+      Also question D-439's "an XL home's side walls don't fade" once it's seen (D-440).
     - [ ] **ENG-26c Nearest free spot and guides, in Brix.** Placements answers the nearest free
       pose to a blocked one within a reach, and the guide lines where a footprint's edge or
       middle meets a neighbour's on the same area. Suite cases first; the pin moves.

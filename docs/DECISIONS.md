@@ -10457,3 +10457,22 @@ pieces follow its pattern: their own module, a small typed interface, ArrangeVie
   camera reads every other press. The edge follow is wired with the drag's rebuild (S5-03j2).
 - The ticket ran out of room before Studio (the run's context cap), so it split: S5-03j1b sees
   it in Studio Play at A16 size, tunes it and captures it.
+
+## D-440 The build camera waits for Studio to have the code; ENG-26c goes first (S5-03j1b, Nov 18)
+
+S5-03j1b opened Arrange in Studio Play at A16 size and found Studio running this morning's
+scripts (`5dde6c0` for the room editor): `rojo serve` wasn't running, so the build camera, Brix's
+Gestures and OrbitCamera never reached the place, and the old fixed camera showed instead. Only a
+Connect click in Studio's Rojo plugin fixes that (`OWNER.md`); pasting the files through the MCP
+would cost a session about 35k tokens of its context (`docs/STUDIO.md`). So:
+- **ENG-26c (Placements' nearest free spot and guides, in Brix) goes next.** It's pure Lune work
+  and needs no Studio; the run keeps moving overnight.
+- **S5-03j1b comes straight after**, once Studio has the code: Rojo connected by the owner, or, if
+  still not, the session pastes the files itself first by STUDIO.md's recipe. Its steps are
+  unchanged.
+- **D-439's "an XL home's side walls don't fade" is to be questioned when it's seen**, not now:
+  at XL the eye stays inside the room, so a camera that can't see past the near wall may be the
+  very thing the owner asked to fix. The ways out each cost something (fading the lobby's shared
+  partition meshes shows the neighbours' units; letting the eye out of the slot needs those
+  meshes hidden for you alone), so it's decided by looking, in S5-03j1b.
+- Not seen yet: the swoop, every drag, the fades. Nothing in the camera's code changed.
