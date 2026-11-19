@@ -133,6 +133,13 @@ nowhere else.
      the blanket never turn either (they lie flat, no back). Everything else you buy does.
   4. A find hops onto a table only when its middle is over the table, and steps back down only
      once it's dragged 0.4 studs past the edge, so it doesn't flicker on and off.
+- [ ] **Try it: the guide lines and the tock** (S5-03j3b, D-457). Open Arrange on your phone and
+  slide a milk crate slowly beside the job box, then carry the moon lamp off the job box and back
+  on. Look for: as the crate's edge comes level with the box's edge, a thin faint warm line runs
+  along both, gone the moment you let go; the lamp makes a light wooden tock each time it hops
+  down to the floor and up onto the box, and nothing extra as it slides about on one surface.
+  Tell me if the line is too faint or too loud on your screen (my default: 0.09 studs wide, a
+  quarter see-through), and whether the tock is the right sound.
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

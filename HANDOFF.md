@@ -2,38 +2,34 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-19, S5-03j3a2 done: the snapper in the hand (D-456) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
+**Updated:** 2026-11-19, S5-03j3b done: snapping seen and heard (D-457) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; search its heading). Order now: S5-03j3b, j3c, j4 to j7, ENG-29, k1 to k6.
-- **Snapping is live in Arrange** (D-456): a piece with a back turns to a wall as it arrives
-  and sits flush; Brix's line-up fills `Lifted.lines` on every settle (not drawn yet); a find
-  stands on a top only with its middle over it. Seen in Studio at A16, `docs/art/s5-03j3a2-*`.
+  only; search its heading). Order now: S5-03j3c, j4 to j7, ENG-29, k1 to k6.
+- **Snapping is seen and heard** (D-457): `ArrangeGuides` draws Brix's lines while a thing is
+  carried; a hop between surfaces of different heights tocks. Seen in Studio at A16,
+  `docs/art/s5-03j3b-crate-lined-up.png`.
 - **Studio has tonight's code** (`rojo serve`, port 34872): restart Play to run edits.
 - **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j3b Snapping seen and heard
-The moment: a cup dragged over the job box hops up with a light tock, and down again; a crate
-slid beside another shows a faint line where their edges meet, as The Sims 4 draws its guides.
-1. A new client module `src/client/ArrangeGuides.luau` (header, small typed interface): a pool
-   of six thin anchored parts made once (`new(parent)`), faint warm white, no collide, touch,
-   query or shadow; `show(frame, lines)` lays the first `lines.count` of `lines.guides` on the
-   area's frame (a guide on "x" stands at x = `at` from y = `from` to `to`; floor y is the
-   frame's -Z), parks the rest; `hide()`. Called only when the pose changes, never per frame.
-2. `ArrangeHand` owns one: `setPose` shows `l.lines` on `Arrange.frameOn(r, pose.on)` while a
-   thing is carried; hide on let go, Put away, the server's answer and `stopFollow`.
-3. The tock: in `setPose`, when `was.on ~= pose.on` and either is a top (not
-   `r.placements:areaOf`), play `TOCK` (the knock, higher and quieter, beside `CLINK`) instead
-   of the step's tick. Check the plan doc's feedback table row for "onto a table" first.
-4. Studio at A16 (STUDIO.md "Proving snapping in Play"): drag a crate beside the other till
-   their edges line up and capture the line; carry the moon lamp off and onto the job box and
-   read the tock's Sound under the screen's sounds folder.
-**Acceptance:** green; the lines and the tock seen in Studio, captured to `docs/art/`.
-**Read first:** `ArrangeHand.luau` lines 481-530 (shade, paint, setPose) and 1295-1320 (drop);
-`Home/Snapping.luau` lines 166-212; `vendor/brix/src/Contracts/Placements.luau` lines 160-185;
-`Home/Arrange.luau` lines 238-280 (the sounds); DECISIONS D-456; ROADMAP's S5-03j3b and j3c.
+## Next task: S5-03j3c Wall things
+The moment: a neon moon dragged across a wall glides along it at the height it hung, and a
+small handle above it lifts or lowers it, as The Sims 4's wall height does (Alt aside: Free).
+1. Read the plan doc's section on wall things (search "wall"), and ROADMAP's S5-03j3c line.
+   Wall things are any catalog row whose spot is "Wall" (`Spots`, `Furniture` rows): no ids.
+2. In `ArrangeHand.aim`, a thing that fits only walls keeps its height on the wall as the finger
+   moves (it slides along the wall it's on; across a corner it moves to the next wall at the
+   same height). Put the pure part (height kept, clamped to the wall's area) in a pure module
+   with Lune specs first (`Home/Snapping` or a new `Home/WallHang`).
+3. A height handle: a small round button above the selected wall thing (ArrangeRing's look),
+   drag it up or down to change only its height, grid steps unless Free; a tick per step.
+4. Studio at A16 (STUDIO.md "Proving snapping in Play"): drag the neon moon (buy or add it by
+   `ArrangeTest`) along a wall and raise it; capture to `docs/art/`.
+**Acceptance:** green; the slide and the handle seen in Studio at A16 and captured.
+**Read first:** `ArrangeHand.luau` lines 269-330 (aim) and 368-430 (settle); `Home/Spots.luau`
+lines 60-90; `Home/Arranged.luau` lines 63-90; `ArrangeRing.luau` lines 1-60; DECISIONS D-455.
 
 ## Queue (next sessions, the owner's ticket order)
 0. A tray card's drag isn't Gestures': the wheel zooms, no twist (route the wheel, D-453).
@@ -44,6 +40,7 @@ slid beside another shows a faint line where their edges meet, as The Sims 4 dra
    (D-446). `ToolView.luau` ~1293 reads the on-screen flag as "ahead" (D-451). Arrange reopens
    on the last tab: does the doc want that? `aim`'s room `REACH` stays 2.5 (D-455). A blocked
    let-go's slide settles flush and lined up and may be judged blocked again: watch (D-456).
+   One lamp drag off the job box tocked three times (D-457): find the third surface.
    After S5-03j and k: S5-03g2b's three "Polish:" lines (D-326 to D-328), then g3b.
 1. Small's doorway's inside boards are oak, not the picked paint (D-355). Sitting (D-353):
    cross-legged on the blanket needs our own animation; lying on the bed.

@@ -10851,3 +10851,25 @@ the room lifts it with today's drag (Turn, Place, the tray away).
   to the other crate's edge. The moon lamp: 0.25 past the job box's end it stayed on it; 0.8 past
   it stepped down; from the floor just outside the end it stayed down (the old reach hopped it
   up); over the box it hopped back up.
+
+## D-457 Snapping seen and heard (S5-03j3b, 2026-11-19)
+
+- **What:** `src/client/ArrangeGuides.luau` draws the lines Brix's line-up answers
+  (`Lifted.lines`) as The Sims 4 draws its guides: six thin warm-white neon parts made once,
+  laid on the area's frame only when the hand's pose changes, parked otherwise; it names no
+  thing and works on any area. `ArrangeHand.setPose` shows them while a finger carries the thing
+  and hides them on every let go through `stopFollow`. Each line runs `Feel.GuideReach` (0.3)
+  past both ends so it reads as passing through both things.
+- **The tock** (the plan's "onto a table" row: a small hop up, tock): the knock at 1.25 times
+  the pitch and 0.35 the volume, 0.18 s, played in place of the step's tick on the move it hops.
+  **A hop is read from heights, not ids:** both surfaces face up and stand more than `Feel.Hop`
+  (0.3 studs) apart. HANDOFF's "not `placements:areaOf`" test was wrong: furniture tops (the job
+  box's) are placement areas too, so it never fired in Studio. Heights cover any piece's top, a
+  find's top and a shelf's tiers alike; a rug's 0.05 never tocks; walls never do.
+- **Guide width:** 0.06 studs at 0.35 see-through broke into dashes over the tile grout at A16
+  size; 0.09 at 0.25 reads as one faint line (seen, `docs/art/s5-03j3b-crate-lined-up.png`).
+- **Not done here:** the plan's "tap" haptic on the hop (S5-03j4 takes every feedback row with
+  phone haptics). One drag of the lamp off the job box tocked three times on its way to the
+  floor (job box top, then something else at another height, then the floor): watch whether
+  each is a hop a player sees (the job box's lid area is a likely second surface).
+

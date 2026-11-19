@@ -21,6 +21,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local ArrangeGuides = require(script.Parent.ArrangeGuides)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
@@ -57,6 +58,13 @@ SOFT.volume = (Arrange.Tick.volume or 0.12) * 0.75
 local CLINK: Arrange.Sound = table.clone(Arrange.Knock)
 CLINK.pitch = (Arrange.Knock.pitch or 1) * 1.45
 CLINK.volume = (Arrange.Knock.volume or 0.5) * 0.45
+-- A carried thing hopping up onto a top, or down off one, as it's dragged (S5-03j3b; the plan's
+-- "onto a table" row): the knock, higher, shorter and quieter still, a cup's foot tocking on wood.
+-- It takes the step's tick's place for that move, so a hop is one clear sound, not two.
+local TOCK: Arrange.Sound = table.clone(Arrange.Knock)
+TOCK.pitch = (Arrange.Knock.pitch or 1) * 1.25
+TOCK.volume = (Arrange.Knock.volume or 0.5) * 0.35
+TOCK.length = 0.18
 
 -- How far past a room area's edge a finger still aims at it (studs): a find dragged toward a
 -- wall slides along it, flush, rather than stopping short. Tops don't use it: a find stands on a
@@ -231,11 +239,11 @@ function ArrangeHand.new(options: Options): Hand
 	local fingerX, fingerY, thumb = 0, 0, 0
 	local aimedFrom = CFrame.identity
 
-	local function tick()
+	local function tick(sound: Arrange.Sound?)
 		local now = os.clock()
 		if now - lastTick > 0.04 then
 			lastTick = now
-			play(Arrange.Tick, sounds())
+			play(sound or Arrange.Tick, sounds())
 		end
 	end
 
@@ -439,6 +447,8 @@ function ArrangeHand.new(options: Options): Hand
 	-- The soft shadow under the lifted thing, where it would land: one part made at the first lift
 	-- and kept, moved only as the thing's spot changes; rounded layers darken toward its middle.
 	local shadow: Part? = nil
+	-- The faint lines where it lines up with a neighbour (ArrangeGuides), laid on each move.
+	local guides = ArrangeGuides.new()
 	local function shadowPart(): Part
 		local made = shadow
 		if made then
@@ -497,6 +507,19 @@ function ArrangeHand.new(options: Options): Hand
 		h.FillTransparency = if l.fits then 0.78 else 0.55
 	end
 
+	-- Whether moving from area `from` to area `to` is a hop up or down: both face up and stand at
+	-- different heights (the floor to a table's top, a top to a shelf's tier). Read from the areas'
+	-- frames, so any piece with a top, a room's own or a find's, hops the same way; a wall or the
+	-- ceiling never does.
+	local function hops(r: Arrange.Room, from: string, to: string): boolean
+		local a, b = Arrange.frameOn(r, from), Arrange.frameOn(r, to)
+		return a ~= nil
+			and b ~= nil
+			and a.YVector.Y > 0.9
+			and b.YVector.Y > 0.9
+			and math.abs(a.Position.Y - b.Position.Y) > Feel.Hop
+	end
+
 	-- Moves the lifted find to `pose`, hovering over it, and judges it there.
 	local function setPose(r: Arrange.Room, l: Lifted, pose: Brix.PlacementPose)
 		local at, normal = standAt(r, l, pose)
@@ -514,8 +537,14 @@ function ArrangeHand.new(options: Options): Hand
 		l.target = at + normal * (if carrying then Feel.Hover else Feel.Hair)
 		paint(l)
 		shade(r, l, pose)
+		local a = if carrying and l.lines.count > 0 then Arrange.frameOn(r, pose.on) else nil
+		if a then
+			guides:show(a, l.lines)
+		else
+			guides:hide()
+		end
 		if moved and was then
-			tick()
+			tick(if was.on ~= pose.on and hops(r, was.on, pose.on) then TOCK else nil)
 		end
 	end
 
@@ -536,6 +565,7 @@ function ArrangeHand.new(options: Options): Hand
 		if part then
 			part.Parent = nil
 		end
+		guides:hide()
 		if follow then
 			follow:Disconnect()
 			follow = nil

@@ -147,6 +147,18 @@ Arrange.Feel = table.freeze({
 	ShadowSize = 1.35,
 	ShadowDark = 0.6,
 	ShadowLayers = { 1, 0.78, 0.56 },
+	-- The guide lines where a dragged thing's edge or middle lines up with a neighbour's, as The
+	-- Sims 4 draws them: this wide (studs), this far off the surface so the floor never eats them,
+	-- this see-through (0 solid) and this far past each end (studs) so a line reads as running
+	-- through both things, not stopping at their corners. Faint: a hint you notice, not a ruler.
+	-- At 0.06 wide and 0.35 see-through it broke into dashes over the tile grout at phone size.
+	GuideWidth = 0.09,
+	GuideLift = 0.04,
+	GuideFaint = 0.25,
+	GuideReach = 0.3,
+	-- A carried thing moving to a surface this much higher or lower (studs) hops onto it with a
+	-- tock (the floor to the job box's top is 2.7; a rug's 0.05 is no hop at all).
+	Hop = 0.3,
 	-- The puff of dust as it lands: this many motes.
 	Puff = 10,
 	-- The limit bar fills or empties over this long (seconds) as a Place or Put away is answered,

@@ -3709,6 +3709,13 @@ verified: a doc page, Studio, or "untested".
   `CurrentCamera` (its pivot's yaw, its `Highlight.OutlineColor`: red 0.91/0.36 refused); the
   server's answer by `ArrangeTest:Invoke(player, "rows")`; a find's height by its drawn model's
   bounding box bottom (the job box's top at 2.74, the ghost hangs 0.6 above where it'd stand).
+- **A good view of the left wall's crates (S5-03j3b):** from Arrange's opening view,
+  CameraTest `"wheel", 3, 330, 60`, then `"right", 330, 150, 196, 0, 0.8`, then
+  `"wheel", 2, 315, 60`. The ceiling bulb then sits clear of the crates. A carried thing lands
+  about 61 points above the finger here, and the grid steps 0.6, so walk the finger a few points at
+  a time and read the ghost's pose (the Model under `CurrentCamera`) after each move.
+- **Hearing a sound that lives 0.2 s:** hook `PlayerGui.DescendantAdded` for `Sound` and append
+  `SoundId`, `Volume`, `PlaybackSpeed` to an attribute on PlayerGui; read it after the drag.
 - **Aim at the plane you mean:** a viewport point made from a world point above the floor lands
   the floor ray further from the camera. For a top, aim at a point on the top's plane; work the
   top's axis out from two finds on it, and recompute it after either moves.
