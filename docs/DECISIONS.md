@@ -11328,3 +11328,25 @@ captured to `docs/art/s5-03j6b2b-*`:
   refused or floated back (no free spot where the MCP's finger let go) and a drag on the job box
   slid the camera; Studio can't judge feel anyway. One ordered phone pass for the whole editor is
   in OWNER.md. With it **S5-03j is closed** (the conductor, Nov 19); the recipes start with ENG-29a.
+
+## D-474 The recipe book is in Brix, and its row shape is fixed (2026-11-19, ENG-29a)
+
+The owner's bar today: "easily extensible and not tailored specifically for any particular item".
+Brix's `Recipes.book` (its E-087) takes every recipe as one data row and names nothing of this
+game's. What later recipe tickets build on:
+
+- **A row:** `id`, `on` and `held` (each `{ kind = ... }` or `{ tag = ... }`; `held` nil for empty
+  hands), `start` (`put`, `use`, `press`), `verb` (the button's word), `stages` (each a `look` and
+  how it `ends`: `time` with `seconds`, `presses` with `count` and `verb`, `near` with a match,
+  `given` with a match, `verb`, optional `count` and `useUp`, `event` with a name), `results`
+  (`become` with `of` "in" or "on" and `into`, `make` with `kind`, `count`, `at` "beside" or
+  "stored", `useUp` and `giveBack` with `of`, `chance` with `outcomes` of `odds` and `results`,
+  `again` last). "Stored" is this game's box.
+- **Kinds** are find ids with their tags from `art/finds/rows.py` (S5-03k1); **looks** and
+  **events** are the game's own tables, checked by name only. A new egg joins the hatch by its tag.
+- **Problems, not throws:** a faulty row is left out with its field path and reason; S5-03k1's
+  spec fails the game's check on any problem, so none ships.
+- **Empty results are allowed when there are stages** (a switch lit until pressed again, a wind-up
+  playing 20 seconds), so S5-03k6 folds Switch, Play and Wind in as press rows with no new words.
+- The doc's "a thing of a kind next to it" and "a lit lamp within reach" are one end, `near`, with
+  how near and what counts as lit left to the game (S5-03k2 reports what's near).

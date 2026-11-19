@@ -3659,8 +3659,17 @@ Done when players watch the results to the end and change their perks between cl
       on, then what's held: kind, then tags); `start`, `advance(record, now, event)` with
       catch-up across any gap, `due(record)`; stages ended by time, presses, things nearby,
       things given and named events; results become, make, use up, give back, chance (from a
-      seed kept in the record), again. Pure; contract, suite, module page; the pin moves. Split
-      a (the book: rows, checks, filing, lookup) and b (records: start, advance, due, chance).
+      seed kept in the record), again. Pure; contract, suite, module page; the pin moves.
+      - [x] **ENG-29a The recipe book.** Done Nov 19 (D-474), Brix `e4b0dd1`, the pin moved.
+        `Brix.Recipes.book({ rows, kinds, looks, events })` checks every row once and answers
+        faulty rows as problems (index, id, field path, reason); `find(on, held, into)` is one
+        lookup, flat from 30 to 30,000 rows (about 0.45 µs, 0 bytes). A recipe with stages may
+        have no results, so Switch, Play and Wind fit as empty-handed rows. Brix's suite carries
+        test-only rows that use every word (a seed through three stages, a cell charged, flour
+        and a jug combined at once, a chance with a "nothing" outcome, a music box that starts
+        over at dawn, a switch, a rag polishing a statue).
+      - [ ] **ENG-29b Records: a recipe under way.** `start`, `advance` with catch-up, `due`, a
+        chance rolled from the record's seed, `again`; on the book, against `RecipeRecord`.
     - [ ] **S5-03k1 Recipe rows and the save.** The game's rows in one data module (the hatch
       first: egg tag + Incubator, Place, Warming 2 h, Wobbling 10 min, becomes Chick beside);
       tags with each find's catalog row (`art/finds/rows.py`, never the generated file); Lune
