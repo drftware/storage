@@ -34,9 +34,14 @@ export type Stage = {
 	destroy: () -> (),
 }
 
--- What the stage hides: parts, and the pictures on them.
+-- What the stage hides: parts, the pictures on them, and the signs' text on them (a SurfaceGui
+-- draws on a part its transparency hid: a lobby card's text showed as a white line, S5-03j1d3b).
 local function shows(i: Instance): boolean
-	return i:IsA("BasePart") or i:IsA("Decal") or i:IsA("Texture")
+	return i:IsA("BasePart")
+		or i:IsA("Decal")
+		or i:IsA("Texture")
+		or i:IsA("SurfaceGui")
+		or i:IsA("BillboardGui")
 end
 
 -- The Workspace child an instance stands under, or nil if it isn't in Workspace.
@@ -52,6 +57,8 @@ end
 -- `light`: the ambient light while lifted.
 function ArrangeStage.new(reach: number, colour: Color3, light: Color3): Stage
 	local hidden: { Instance } = {}
+	-- Signs switched off while lifted (a gui has no transparency modifier), to switch back on.
+	local switched: { LayerCollector } = {}
 	local added: RBXScriptConnection? = nil
 	local ground: Part? = nil
 	local keep: Model? = nil
@@ -82,7 +89,15 @@ function ArrangeStage.new(reach: number, colour: Color3, light: Color3): Stage
 		if k and i:IsDescendantOf(k) then
 			return
 		end
-		if near(i) then
+		if not near(i) then
+			return
+		end
+		if i:IsA("LayerCollector") then
+			if i.Enabled then
+				i.Enabled = false
+				table.insert(switched, i)
+			end
+		else
 			(i :: any).LocalTransparencyModifier = 1 -- any: BasePart, Decal and Texture all have it
 			table.insert(hidden, i)
 		end
@@ -98,6 +113,10 @@ function ArrangeStage.new(reach: number, colour: Color3, light: Color3): Stage
 			(i :: any).LocalTransparencyModifier = 0 -- any: as `hide`
 		end
 		table.clear(hidden)
+		for _, gui in switched do
+			gui.Enabled = true
+		end
+		table.clear(switched)
 		local g = ground
 		ground = nil
 		if g then

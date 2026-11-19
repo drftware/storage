@@ -3347,26 +3347,70 @@ Done when players watch the results to the end and change their perks between cl
       on the A16 everything sat 10 points low and 6% small). Done (D-446): Small, Medium and
       Large seen at A16 size, `docs/art/s5-03j1d3-small.png`, `-medium.png`, `-large.png`;
       Done's close seen (your eyes, prompts and light back). Split at the run's context line.
-    - [ ] **S5-03j1d3b The build camera's turn, its shots and a lift.** Studio Play at A16 size:
+    - [x] **S5-03j1d3b The build camera's turn, its shots and a lift.** Studio Play at A16 size:
       on Medium and Large, `CameraTest` "right" drags round the circle (the masks fade with their
       walls, no dark slab in front of the room); XL's home view captured; the front tab's dip to
       the door and, after a card chip, the hall dip; WASD on a desktop device; then a tap on a
       find in the room still lifts it (today's drag), so S5-03j2 starts from a working base.
       Verification only: fix what's broken, anything bigger goes to S5-03j2's lines.
       **Acceptance:** each seen and captured; check green.
+      Done (D-447): all seen at A16 size, `docs/art/s5-03j1d3b-*.png`. One fault fixed: lobby
+      signs' text drew over the dark as a white line (`ArrangeStage` now switches it off).
     - [x] **ENG-26c Nearest free spot and guides, in Brix.** Placements answers the nearest free
       pose to a blocked one within a reach, and the guide lines where a footprint's edge or
       middle meets a neighbour's on the same area. Suite cases first; the pin moves.
       Done (D-441): Brix `3cceb24` and `b8f5d71`, pinned. `nearestFree(id, shape, pose, search)`
       with `Brix.PlacementSearch.grid({ step, reach })`; `align(id, shape, pose, tolerance, into)`
       answers the settled x, y and up to six guide lines. Both pure; j2 and j3 wire them.
-    - [ ] **S5-03j2 Drag it, let go.** Touch and drag anything (finds, furniture, the home's
-      own pieces, cubby finds); it hangs a thumb's offset above the finger with a soft shadow
-      under it; let go places it (the Place button goes, D-436); blocked slides to the nearest
-      free spot, or floats back where it came from (a tray card back into the tray). A tap
-      selects: round icon buttons Turn, Put away, Another round it; a tap on the empty room
-      clears. A second finger's twist turns it freely; Alt or the phone's Free switch places off
-      the grid at any angle. Riders move with their piece and bounce as it lands.
+    - [ ] **S5-03j2 Drag it, let go** (the doc's "Moving things", items 1 to 4 and 6). Split
+      in two (D-447): the drag first, on the build camera's one Gestures reader, then the tap's
+      buttons, turning and riders.
+    - [ ] **S5-03j2a The hand: drag it, let go.** Touch and drag anything in the room (finds,
+      furniture, the home's own pieces, cubby finds) or a card up out of the tray: it lifts with
+      a small stretch and a whoosh and hangs a thumb's offset above the finger (none for a mouse),
+      a soft shadow on the surface under it where it would land. Let go places it: no Place
+      button (D-436). Blocked, it slides to the nearest free spot and places there; nothing free
+      near, it floats back where it came from (a tray card back into its card). Nothing is left
+      waiting in the air. The screen near its edge follows the drag (`ArrangeCamera.follow`).
+      Build:
+      1. `src/client/ArrangeHand.luau` (new, header comment, typed `Hand` interface): the lifted
+         state (`Lifted`) and everything that moves it, moved out of ArrangeView: `rides`,
+         `aim`, `areaOf`, `settle`, `fitsAt`, `standAt`, `paint`, `setPose`, `aimAt`, the follow,
+         `letGo`, `ridersOf`, `lift`, `liftDrawn`, `grow`, `liftBoxed`, `slideBack`, `puff`,
+         `placeNow`, `settleOnto`, `pickAt`, `cubbyOn` and the place half of `answered`.
+         ArrangeView keeps the gui, tray, tabs and verbs, and wires the hand in. Turn and Put
+         away stay ArrangeView's buttons until j2b, calling the hand.
+      2. One reader: ArrangeCamera's Gestures `pick` answers the thing under the point (the
+         hand's `pickAt`: a placed model, or a cubby and its spot) instead of `true`; intents
+         with a target (`dragBegan`, `dragMoved`, `dragEnded`, `tap`, `hold`, `twist`) go to a
+         new `Options.hand(intent)`, the rest stay the camera's. ArrangeView's room
+         `InputBegan`/`Changed`/`Ended` go. A tray card's drag still starts in its own gui
+         input (Gestures never sees a press a button sank): ArrangeView hands its moves and
+         release to the hand (`hand.move(x, y)`, `hand.release()`).
+      3. Let go: fits, Place is sent at once (Arranging's existing ask, unchanged); blocked,
+         `r.placements:nearestFree(id, shape, pose, Brix.PlacementSearch.grid({ step =
+         Arrange.Step, reach = ... }))` over `Spots.starts(l.spot)` in turn replaces the
+         hand-rolled `freeSpot` ring; nil floats back (`slideBack`). A refusal from the server
+         floats back too.
+      4. Feel numbers in `Arrange` (shared Config, a comment each): the thumb's offset (about
+         60 points up), the stretch, the shadow's size and darkness. The shadow is one part
+         made at open and moved, never made per frame; the follow steps only while dragging.
+      5. Fix while there: a tapped card lifts to `ViewportSize / 2`, 10 points low on a notched
+         phone (D-446): use the drawn screen's middle (`ArrangeCamera.lens`, expose it).
+      6. Studio: `CameraTest` "drag" from a find's screen point (STUDIO.md's "Tapping a placed
+         find") now drags it. Captures at A16 size: lifted with its shadow, placed, a blocked
+         drop sliding free, a card floating back.
+      **Acceptance:** each seen in Studio Play at A16 size and captured; ArrangeView shorter by
+      the hand; check green.
+    - [ ] **S5-03j2b Select, turn, riders.** A tap without dragging selects: it lifts a hair and
+      round icon buttons sit round it, Turn, Put away and Another (one more of the same out of
+      your box, The Sims' eyedropper; not shown when the box has none); a tap on the empty room
+      clears. Turn is a quarter turn with a ratchet click; while dragging, a second finger's
+      twist turns it freely (Gestures' target twist), with a mouse R or the wheel while held;
+      Alt held, or the phone's Free switch in a corner, places off the grid at any angle (check
+      that Arranging and the judge take any angle; if they take quarter turns only, widen them
+      with a spec). What stands on a piece moves with it (D-338's riders) and settles with a
+      little bounce as it lands. The old verbs bar leaves ArrangeView.
       **Acceptance:** Studio Play at A16 size, captured; check green.
     - [ ] **S5-03j3 Snapping.** A pure snapper in `src/shared/Home` with Lune specs: the
       half-stud grid; furniture against a wall turns its back to it; a find dragged over a top

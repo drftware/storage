@@ -3662,3 +3662,13 @@ verified: a doc page, Studio, or "untested".
   47 points each side are also why MCP clicks land 47 points left of where they're sent.
 - **`CameraTest` "frame"** (Client, while Arrange is open): the band, the floor's corners' reach
   down and across, the walls' tops and the eye's distance, in viewport points.
+- **Keys reach the game in the A16 emulator** (S5-03j1d3b): `user_keyboard_input` W, A, S, D
+  slide the build camera with the phone picked (`KeyboardEnabled` reads false, the keys still come).
+  The wheel and right button still need a desktop device.
+- **A SurfaceGui draws on a part however transparent the part is**, `LocalTransparencyModifier` too:
+  hiding a sign's part leaves its text floating. Switch the gui off (`ArrangeStage`, D-447).
+- **Arrange's tray tabs sit 28 points higher on the front tab** (the tray is taller there): gui
+  y 100, not 128. Read `FindsTab.AbsolutePosition` before clicking; click its middle plus 47 across.
+- **Tapping a placed find from the MCP:** `WorldToScreenPoint` of its bounding box's middle (the
+  input's own space, what `ScreenPointToRay` takes), plus 47 across: `user_mouse_input` down, a
+  few `moveTo`s, then capture before the up (S5-03j1d3b).

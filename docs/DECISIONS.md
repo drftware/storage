@@ -10612,3 +10612,24 @@ Seen in Studio Play at A16 size on Small, Medium and Large (`docs/art/s5-03j1d3-
   from a corner at `HomeTilt`. A shallower tilt or a straight-on view would widen it; not tried.
 - **CameraTest "frame"** answers where the floor's corners and the walls' tops show against the
   band, in viewport points, so a framing change is measured, not guessed from a capture.
+
+## D-447 The build camera seen whole; lobby signs go with the lobby; S5-03j2 split (S5-03j1d3b, Nov 18)
+
+Seen in Studio Play at A16 size (`docs/art/s5-03j1d3b-*.png`): Medium, Large and XL turned all
+the way round by quarter turns, the near walls and their masks fading each time with no dark slab
+between you and the room; XL's home view whole (floor 64 to 180, walls' tops at 33, 68.5 studs
+out); the front tab's door shot, the dip out to the hall after a card chip, and Done from the
+hall straight back to your eyes (Roblox's camera at your head); W and D slide the camera along
+the view (keys arrive in the A16 emulator, so no desktop device is needed); a press on a find in
+the room lifts it with today's drag (Turn, Place, the tray away).
+- **One fault, fixed: lobby signs drew over the dark.** A SurfaceGui draws on a part however
+  transparent the part is, so the lobby's unit cards (`FrontOffice.Dressing.Card*`) showed as a
+  thin white line beside the room from some sides. `ArrangeStage` now switches near SurfaceGuis
+  and BillboardGuis off while lifted (only those that were on) and back on at `drop`; seen gone.
+- **The yellow sliver at the right edge** (D-446's queue) is the minimap's "You" marker (gui 742,
+  58), drawn past the safe area while its window is away. Left for S5-03j2's queue.
+- **S5-03j2 split into j2a and j2b.** The drag today is ArrangeView's own `InputBegan`, apart from
+  the build camera's Gestures reader; a second finger's twist on a dragged thing needs both fingers
+  in one reader (Gestures' promise 5), so the hand moves onto the camera's reader first (j2a: drag
+  and let go, with the nearest free spot from Brix's Placements), then the tap's round buttons,
+  turning and riders (j2b). Each is a session's work; together they'd overrun the run's cap.
