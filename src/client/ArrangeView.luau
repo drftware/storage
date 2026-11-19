@@ -48,9 +48,6 @@ local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local FreeCursor = require(script.Parent.FreeCursor)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local FurnitureTab = require(script.Parent.FurnitureTab)
-local Gold = require(ReplicatedStorage.Shared.Home.Gold)
-local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
-local HomeSpecs = require(ReplicatedStorage.Shared.Home.Specs)
 local Grades = require(ReplicatedStorage.Shared.Grades)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Layout = require(ReplicatedStorage.Shared.Home.Layout)
@@ -58,6 +55,7 @@ local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local CardPlate = require(ReplicatedStorage.Shared.Home.CardPlate)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local ArrangeCamera = require(script.Parent.ArrangeCamera)
+local ArrangeHand = require(script.Parent.ArrangeHand)
 local LooksTab = require(script.Parent.LooksTab)
 local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
@@ -72,15 +70,11 @@ local PANEL = Color3.fromRGB(29, 40, 45)
 local CARD = Color3.fromRGB(43, 57, 63)
 local RIM = Color3.fromRGB(106, 138, 147)
 local INK = Lobby.Ink
-local FITS = Color3.fromRGB(126, 214, 150) -- a soft green: it can stand there
-local REFUSED = Color3.fromRGB(232, 92, 80) -- red: it can't
 local HEAVY = Font.fromEnum(Enum.Font.BuilderSansExtraBold)
 
 local RISE = TweenInfo.new(Feel.Rise, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local POP = TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local QUICK = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-local LAND = TweenInfo.new(Feel.Land, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-local BACK = TweenInfo.new(Feel.Back, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local FILL = TweenInfo.new(Feel.Fill, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local HONEY = Color3.fromRGB(247, 201, 120) -- the limit bar's fill: warm, the home's own light
 local WOOD = Color3.fromRGB(205, 160, 112) -- a piece of furniture's rim, as the job box draws it
@@ -102,11 +96,6 @@ local REFUSE: Arrange.Sound = {
 	volume = BoxPanel.Click.volume,
 	pitch = (BoxPanel.Click.pitch or 1) * 0.62,
 }
-
--- A piece of furniture set down: the find's knock, lower and fuller, a heavy thing on concrete.
-local THUD: Arrange.Sound = table.clone(Arrange.Knock)
-THUD.pitch = (Arrange.Knock.pitch or 1) * 0.68
-THUD.volume = (Arrange.Knock.volume or 0.5) * 1.3
 
 local STILL = "ArrangeStill"
 local BODY = "ArrangeBody"
@@ -131,9 +120,6 @@ local STILL_KEYS = {
 	Enum.KeyCode.Thumbstick1, -- the left stick slides the build camera (ArrangeCamera)
 	Enum.KeyCode.Thumbstick2,
 }
--- How far past an area's edge a finger still aims at it (studs): a find dragged toward a wall
--- slides along it, flush, rather than stopping short.
-local REACH = 2.5
 -- How far a finger moves on a tray card before it's a drag (pixels): up lifts, sideways scrolls.
 local SLOP = 14
 -- The tray's height with the finds in it, and how far under the screen's foot it slides away:
@@ -142,31 +128,6 @@ local TRAY = 92
 -- The tray's tabs, left to right: the finds, the room's looks, your front (S5-03g3a2).
 local FINDS, ROOM, FRONT = 1, 2, 3
 local AWAY = 190
-
--- A find lifted off the floor or out of the tray, as a ghost the finger drags.
-type Lifted = {
-	what: string, -- what Place sends: the id set out when it's moved, the find's name from the box
-	id: string, -- the id the judge checks it as (the next free one for a find from the box)
-	name: string,
-	shape: Brix.PlacementShape,
-	spot: Spots.Spot,
-	ghost: Model,
-	size: Vector3,
-	centre: Vector3,
-	highlight: Highlight,
-	original: Model?, -- the drawn find, hidden while it's lifted
-	starter: string?, -- a home's own piece's kind (`Layout.kind`): it stands by its spec box
-	kept: boolean, -- the job box: it moves, never away, so it has no Put away
-	riders: { Model }, -- what stands on it, drawn, hidden while copies ride in the ghost (D-338)
-	from: CFrame, -- where the ghost began
-	pose: Brix.PlacementPose?, -- where it would stand now, snapped
-	turn: number,
-	fits: boolean,
-	target: CFrame,
-	asking: string?, -- "place" or "away" while the server's answer is awaited
-	shelf: number?, -- the shelf's spot it was lifted out of (S5-03i2b), sent with Place and Put away
-	shrink: number?, -- out of a cubby: the size it stood there, as a share of its own
-}
 
 -- A press on a tray card that isn't a drag yet.
 type Pending = { key: string, input: InputObject, start: Vector2 }
@@ -177,49 +138,7 @@ local function corner(parent: Instance, radius: UDim)
 	c.Parent = parent
 end
 
-local function play(spec: Arrange.Sound, parent: Instance)
-	local s = Instance.new("Sound")
-	s.SoundId = spec.id
-	s.Volume = spec.volume
-	local pitch = spec.pitch or 1
-	s.PlaybackSpeed = pitch
-	s.TimePosition = spec.from
-	s.Parent = parent
-	s:Play()
-	Debris:AddItem(s, spec.length / pitch + 0.1)
-end
-
--- Makes `model` scenery the screen alone sees: never collides, touched, picked or sat on, and
--- shows no buttons.
-local function inert(model: Model)
-	for _, d in model:GetDescendants() do
-		if
-			d:IsA("Seat")
-			or d:IsA("ProximityPrompt")
-			or d:IsA("Sound")
-			or d:IsA("Script")
-			or d:IsA("LocalScript")
-		then
-			d:Destroy()
-		elseif d:IsA("BasePart") then
-			d.Anchored = true
-			d.CanCollide = false
-			d.CanTouch = false
-			d.CanQuery = false
-		elseif d:IsA("Light") then
-			d.Enabled = false
-		end
-	end
-end
-
--- Hides or shows a drawn find on this screen only.
-local function hide(model: Model, hidden: boolean)
-	for _, d in model:GetDescendants() do
-		if d:IsA("BasePart") then
-			d.LocalTransparencyModifier = if hidden then 1 else 0
-		end
-	end
-end
+local play = ArrangeHand.play
 
 local ArrangeView = {}
 
@@ -239,15 +158,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	local open = false
 	local room: Arrange.Room? = nil
 	local tops: { [string]: boolean } = {} -- finds set out whose top takes another
-	local lifted: Lifted? = nil
 	local dragInput: InputObject? = nil
 	local pending: Pending? = nil
-	local follow: RBXScriptConnection? = nil
 	local grid: Part? = nil
 	local savedCamera: CFrame? = nil
 	local touchControls = true
-	local lastTick = 0
-	local snap = Brix.PlacementSnap.grid({ step = Arrange.Step, turn = Arrange.Turn })
 
 	local gui: ScreenGui? = nil
 	local arrangeGroup: CanvasGroup? = nil
@@ -257,7 +172,6 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	local tray: Frame? = nil
 	local list: ScrollingFrame? = nil
 	local verbs: Frame? = nil
-	local placeButton: TextButton? = nil
 	local awayButton: TextButton? = nil
 	local turnButton: TextButton? = nil
 	local cards: { [string]: TextButton } = {}
@@ -269,18 +183,23 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	local tabs: { TextButton } = {}
 	local onTab = FINDS
 	local listAt, looksAt = UDim2.new(), UDim2.new()
-	-- Whether a press at a gui point takes a find (set once `pickAt` is made, below).
-	local takenAt: (at: Vector2) -> boolean = function()
-		return false
+	-- The hand's answers to the build camera's one reader (set once the hand is made, below): what
+	-- a press takes, and the room's intents for it.
+	local pickThing: (at: Vector2) -> Model? = function(_: Vector2): Model?
+		return nil
 	end
-	-- The build camera (S5-03j1a): it swoops up as Arrange opens, the hands move it, and it
-	-- leaves a press that takes a find to the drag.
+	local toHand: (i: Brix.GestureIntent<Model>) -> () = function(_: Brix.GestureIntent<Model>) end
+	-- The build camera (S5-03j1a): it swoops up as Arrange opens, the hands move it, and it hands
+	-- a press that takes a thing, and every tap, to the hand (S5-03j2a).
 	local buildCam = ArrangeCamera.new({
 		gui = function(): ScreenGui?
 			return gui
 		end,
-		taken = function(x: number, y: number): boolean
-			return takenAt(Vector2.new(x, y))
+		pick = function(x: number, y: number): Model?
+			return pickThing(Vector2.new(x, y))
+		end,
+		hand = function(i: Brix.GestureIntent<Model>)
+			toHand(i)
 		end,
 		-- Under the top bar and over the tray's tabs where they rest (the tray 10 off the foot,
 		-- `TRAY` tall, its 44-point tabs 6 above it), in viewport points (D-443).
@@ -315,15 +234,6 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		return gui or me
 	end
 
-	local function tick()
-		local now = os.clock()
-		if now - lastTick > 0.04 then
-			lastTick = now
-			play(Arrange.Tick, sounds())
-		end
-	end
-
-	-- The button's pop when pressed.
 	local function press(button: GuiObject)
 		local scale = button:FindFirstChildOfClass("UIScale")
 		if scale then
@@ -396,218 +306,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		return r
 	end
 
-	-- Whether `id` stands, however high up, on `base`.
-	local function rides(r: Arrange.Room, id: string, base: string): boolean
-		local on = id
-		for _ = 1, 32 do
-			local pose = r.placements:poseOf(on)
-			if not pose then
-				return false
-			elseif pose.on == base then
-				return true
-			end
-			on = pose.on
-		end
-		return false
-	end
-
-	-- The area under screen point `at` that the lifted find fits, nearest first, and the point on
-	-- it (`x`, `y` from its middle). Nil over nothing it fits.
-	local function aim(r: Arrange.Room, l: Lifted, at: Vector2): (string?, number, number)
-		local camera = Workspace.CurrentCamera
-		if not camera then
-			return nil, 0, 0
-		end
-		local ray = camera:ScreenPointToRay(at.X, at.Y)
-		local best: string? = nil
-		local nearest, bx, by = math.huge, 0, 0
-		-- something hung from the ceiling follows the finger over the floor under it, as The Sims
-		-- hangs a ceiling light from the tile you point at: the corner camera looks down on the
-		-- room, so the ceiling itself is seldom on the screen (S5-03g4d)
-		local under = r.frames.Floor
-		local function try(on: string, f: CFrame, area: Brix.PlacementArea)
-			if not table.find(l.shape.fits, area.kind) then
-				return
-			end
-			local plane = if area.kind == Spots.Kinds.Ceiling and under then under else f
-			local n = plane.YVector
-			local facing = ray.Direction:Dot(n)
-			if facing > -1e-4 then
-				return -- seen from behind or edge on
-			end
-			local t = (plane.Position - ray.Origin):Dot(n) / facing
-			if t <= 0 or t >= nearest then
-				return
-			end
-			local p = f:PointToObjectSpace(ray.Origin + ray.Direction * t)
-			local x, y = p.X, -p.Z
-			if math.abs(x) > area.width / 2 + REACH or math.abs(y) > area.depth / 2 + REACH then
-				return
-			end
-			best, nearest, bx, by = on, t, x, y
-		end
-		for on, f in r.frames do
-			local area = r.placements:areaOf(on)
-			if area then
-				try(on, f, area)
-			end
-		end
-		for id in tops do
-			if id ~= l.id and not rides(r, id, l.id) then
-				local shape = Arrange.shapeOf(id)
-				local f = Arrange.frameOn(r, id)
-				if shape and shape.top and f then
-					try(id, f, shape.top)
-				end
-			end
-		end
-		return best, bx, by
-	end
-
-	-- The area `on`'s size, a room's or a find's top.
-	local function areaOf(r: Arrange.Room, on: string): Brix.PlacementArea?
-		local area = r.placements:areaOf(on)
-		if area then
-			return area
-		end
-		local shape = Arrange.shapeOf(on)
-		return if shape then shape.top else nil
-	end
-
-	-- `x`, `y` on area `on` snapped to the grid and kept inside it, the find turned `turn`.
-	local function settle(
-		r: Arrange.Room,
-		l: Lifted,
-		on: string,
-		x: number,
-		y: number
-	): Brix.PlacementPose?
-		local area = areaOf(r, on)
-		if not area then
-			return nil
-		end
-		local w, d = l.shape.width, l.shape.depth
-		if l.turn % 180 == 90 then
-			w, d = d, w
-		end
-		local hx, hy = math.max(0, (area.width - w) / 2), math.max(0, (area.depth - d) / 2)
-		local sx, sy, st =
-			snap:snap(area, l.shape, math.clamp(x, -hx, hx), math.clamp(y, -hy, hy), l.turn)
-		local pose =
-			{ on = on, x = math.clamp(sx, -hx, hx), y = math.clamp(sy, -hy, hy), turn = st }
-		local kind, floor = l.starter, r.placements:areaOf("Floor")
-		if kind and floor and Layout.Lean[kind] then
-			-- the mirror finds the wall nearest the finger and turns its back to it (D-348)
-			local leant = Layout.leanTo(kind, pose, floor)
-			if leant then
-				l.turn = leant.turn
-				return leant
-			end
-		elseif kind and floor then
-			return Layout.clearOf(kind, pose, floor) -- the job box keeps its lid's room
-		end
-		return pose
-	end
-
-	-- Whether `l` may stand at `pose`: Brix's judge, and the mirror against a wall, as the
-	-- server's.
-	local function fitsAt(r: Arrange.Room, l: Lifted, pose: Brix.PlacementPose): boolean
-		if r.placements:check(l.id, l.shape, pose) ~= nil then
-			return false
-		end
-		local kind, floor = l.starter, r.placements:areaOf("Floor")
-		return not (kind and floor) or Layout.stands(kind, pose, floor)
-	end
-
-	-- Where the find's pivot stands at `pose`, and the area's normal (out of it, into the room).
-	local function standAt(r: Arrange.Room, l: Lifted, pose: Brix.PlacementPose): (CFrame?, Vector3)
-		local a = Arrange.frameOn(r, pose.on)
-		if not a then
-			return nil, Vector3.yAxis
-		end
-		local t = Arranged.pose(a, pose.x, pose.y, pose.turn)
-		local kind = l.starter
-		if kind then -- by its spec box, as the server draws it (the mirror keeps its lean)
-			return Arrange.starterPivot(t, kind), t.YVector
-		end
-		return Arranged.pivot(t, l.spot, l.size, l.centre), t.YVector
-	end
-
-	----------------------------------------------------------------------------------------------
-	-- The lifted find
-
-	local function paint(l: Lifted)
-		local h = l.highlight
-		h.OutlineColor = if l.fits then Color3.new(1, 1, 1) else REFUSED
-		h.FillColor = if l.fits then FITS else REFUSED
-		h.FillTransparency = if l.fits then 0.78 else 0.55
-		local p = placeButton
-		if p then
-			TweenService:Create(p, QUICK, {
-				BackgroundColor3 = if l.fits then FITS else CARD,
-				TextTransparency = if l.fits then 0 else 0.55,
-			}):Play()
-		end
-	end
-
-	-- Moves the lifted find to `pose`, hovering over it, and judges it there.
-	local function setPose(r: Arrange.Room, l: Lifted, pose: Brix.PlacementPose)
-		local at, normal = standAt(r, l, pose)
-		if not at then
-			return
-		end
-		local was = l.pose
-		local moved = not was
-			or was.on ~= pose.on
-			or was.x ~= pose.x
-			or was.y ~= pose.y
-			or was.turn ~= pose.turn
-		l.pose = pose
-		l.fits = fitsAt(r, l, pose)
-		l.target = at + normal * Feel.Hover
-		paint(l)
-		if moved and was then
-			tick()
-		end
-	end
-
-	local function aimAt(at: Vector2)
-		local r, l = room, lifted
-		if not (r and l) or l.asking then
-			return
-		end
-		local on, x, y = aim(r, l, at)
-		local pose = if on then settle(r, l, on, x, y) else nil
-		if pose then
-			setPose(r, l, pose)
-		end
-	end
-
-	local function stopFollow()
-		if follow then
-			follow:Disconnect()
-			follow = nil
-		end
-	end
-
-	-- The ghost eases after its target each frame while it's lifted (the one thing that steps).
-	local function startFollow()
-		if follow then
-			return
-		end
-		follow = RunService.RenderStepped:Connect(function(dt: number)
-			local l = lifted
-			if not l or l.asking then
-				stopFollow()
-				return
-			end
-			l.ghost:PivotTo(l.ghost:GetPivot():Lerp(l.target, 1 - 0.5 ^ (dt / Feel.Follow)))
-		end)
-	end
-
 	-- The verbs pop in at the corner while a find is lifted, and the tray slides down out of the
 	-- way so the floor by the door shows; it slides back up when the find is set down or let go.
-	local function showVerbs(l: Lifted?)
+	local function showVerbs(l: ArrangeHand.Lifted?)
 		local v = verbs
 		if v then
 			local was = v.Visible
@@ -638,466 +339,24 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 	end
 
-	-- Lets the ghost go: gone, the drawn find shown again (unless it was put away).
-	local function letGo(l: Lifted, showOriginal: boolean)
-		if lifted == l then
-			lifted = nil
-			stopFollow()
-			showVerbs(nil)
-		end
-		l.ghost:Destroy()
-		if l.original and showOriginal then
-			hide(l.original, false)
-			for _, m in l.riders do
-				hide(m, false)
-			end
-		end
-	end
-
-	-- What stands on `id`, however high up, as drawn here, into `out`.
-	local function ridersOf(r: Arrange.Room, id: string, out: { Model }): { Model }
-		local folder = placed()
-		for _, rider in r.placements:standingOn(id) do
-			local m = if folder then folder:FindFirstChild(rider) else nil
-			if m and m:IsA("Model") then
-				table.insert(out, m)
-			end
-			ridersOf(r, rider, out)
-		end
-		return out
-	end
-
-	-- Makes the ghost of `source` (a drawn find, or a fresh copy from the box) and lifts it.
-	local function lift(what: string, id: string, name: string, ghost: Model, original: Model?)
-		local r = room
-		local shape = Arrange.shapeOf(id)
-		local size, centre = Arranged.bounds(ghost)
-		if not (r and shape and size and centre) then
-			ghost:Destroy()
-			return
-		end
-		inert(ghost)
-		for _, tag in ghost:GetTags() do
-			ghost:RemoveTag(tag)
-		end
-		local highlight = Instance.new("Highlight")
-		highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop -- seen through the shelf it's in
-		highlight.OutlineTransparency = 0
-		highlight.Adornee = ghost
-		highlight.Parent = ghost
-		ghost.Parent = Workspace.CurrentCamera
-		local from = ghost:GetPivot()
-		local kind = Layout.kind(id)
-		local row = if kind then Furniture.byId(kind) else nil
-		local l: Lifted = {
-			what = what,
-			id = id,
-			name = name,
-			shape = shape,
-			spot = Spots.spot(name),
-			ghost = ghost,
-			size = size,
-			centre = centre,
-			highlight = highlight,
-			original = original,
-			starter = kind,
-			kept = row ~= nil and row.kept == true,
-			riders = {},
-			from = from,
-			pose = nil,
-			turn = 0,
-			fits = false,
-			target = from,
-			asking = nil,
-			shelf = nil,
-			shrink = nil,
-		}
-		lifted = l
-		if original then
-			hide(original, true)
-			-- the moon lamp on the pallet rides with it: a copy in the ghost, the drawn one hidden
-			for _, m in ridersOf(r, id, {}) do
-				local copy = m:Clone()
-				inert(copy)
-				for _, tag in copy:GetTags() do
-					copy:RemoveTag(tag)
-				end
-				copy.Parent = ghost
-				hide(m, true)
-				table.insert(l.riders, m)
-			end
-			local pose = r.placements:poseOf(id)
-			if pose then
-				l.turn = pose.turn
-				setPose(r, l, { on = pose.on, x = pose.x, y = pose.y, turn = pose.turn })
-			end
-		end
-		play(Arrange.Lift, sounds())
-		showVerbs(l)
-		startFollow()
-	end
-
-	-- Lifts find `id`, drawn as `model`, off where it stands.
-	local function liftDrawn(model: Model)
-		local id = model:GetAttribute(Spots.IdAttribute)
-		local name = if type(id) == "string" then Spots.name(id) else nil
-		if not (type(id) == "string" and name) then
-			return
-		end
-		local ghost = model:Clone()
-		ghost:PivotTo(model:GetPivot())
-		lift(id, id, name, ghost, model)
-	end
-
-	-- The spot nearest its middle where `l` fits on the first of its starting areas with room
-	-- (`Spots.starts`: the floor; the ceiling; the back wall, then the sides), in rings of grid
-	-- steps outward; the first area's middle when none does (it shows red, and the thumb takes it
-	-- from there).
-	local function freeSpot(r: Arrange.Room, l: Lifted): Brix.PlacementPose?
-		local starts = Spots.starts(l.spot)
-		local first = settle(r, l, starts[1], 0, 0)
-		local step = Arrange.Step
-		for _, on in starts do
-			local area = areaOf(r, on)
-			if not area then
-				continue
-			end
-			local reach = math.ceil(math.max(area.width, area.depth) / 2 / step)
-			for ring = 0, reach do
-				for i = -ring, ring do
-					for j = -ring, ring do
-						if math.max(math.abs(i), math.abs(j)) == ring then
-							local pose = settle(r, l, on, i * step, j * step)
-							if pose and fitsAt(r, l, pose) then
-								return pose
-							end
-						end
-					end
-				end
-			end
-		end
-		return first
-	end
-
-	-- Eases `ghost` from `from` times its size to `to` (a cubby find growing as it lifts out, or
-	-- shrinking back in), about its pivot.
-	local function grow(ghost: Model, from: number, to: number)
-		local scale = Instance.new("NumberValue")
-		scale.Value = from
-		scale.Changed:Connect(function(v: number)
-			if ghost.Parent and v > 0.01 then
-				ghost:ScaleTo(v)
-			end
-		end)
-		local t = TweenService:Create(scale, QUICK, { Value = to })
-		t.Completed:Once(function()
-			scale:Destroy()
-		end)
-		t:Play()
-	end
-
-	-- Lifts a find, or a piece of furniture by its placed name, out of the box: under screen point
-	-- `at`, or from `from` (the job box, for the panel's Set out) down onto the floor's middle; or
-	-- out of the shelf's cubby `shelved` stands in (S5-03i2b, D-352), growing from its cubby's size
-	-- as it rises toward your finger.
-	local function liftBoxed(key: string, at: Vector2?, from: CFrame?, shelved: Model?)
-		if full then
-			return -- the room holds all it can: the card dims and won't lift
-		end
-		local r = room
-		local piece = Furniture.ofPlaced(key)
-		local template = if piece then Home.template() else nil
-		local base = if piece then nil else Gold.base(key)
-		local ghost: Model? = nil
-		if r and piece and template and piece.id == "Mirror" and Home.has(template, piece.id) then
-			-- leaning on its foot, pivoted upright there, as the server draws it
-			local m = Home.mirrorAt(template, CFrame.identity, Workspace)
-			m.WorldPivot = CFrame.identity
-			ghost = m
-		elseif r and piece and template and Home.has(template, piece.id) then
-			ghost = Home.piece(template, piece.id, CFrame.identity, Workspace)
-		elseif r and not piece then
-			ghost = Tools.clone(base or key, CFrame.identity)
-		end
-		if not (r and ghost) then
-			return
-		end
-		if base then
-			Gold.gild(ghost)
-		end
-		local id = Spots.nextId(key, function(each: string): boolean
-			return r.placements:poseOf(each) ~= nil
-		end)
-		local camera = Workspace.CurrentCamera
-		if shelved then -- it rises out of its cubby, where it stood
-			ghost:PivotTo(shelved:GetPivot())
-		elseif from then -- it rises out of the job box
-			ghost:PivotTo(from + Vector3.yAxis * 1.5)
-		elseif camera and at then -- it rises out of the tray toward the room
-			local ray = camera:ScreenPointToRay(at.X, at.Y)
-			ghost:PivotTo(CFrame.new(ray.Origin + ray.Direction * 6))
-		end
-		local whole = ghost:GetScale()
-		lift(key, id, key, ghost, shelved) -- measured whole, before it's shrunk to its cubby
-		local l = lifted
-		if l and shelved and l.ghost == ghost then
-			l.shelf = Shelf.spot(shelved:GetAttribute(Shelf.SpotAttribute), #HomeSpecs.Shelf.Spots)
-			local share = math.clamp(shelved:GetScale() / whole, 0.05, 1)
-			l.shrink = share
-			ghost:ScaleTo(whole * share)
-			grow(ghost, whole * share, whole)
-		end
-		if at then
-			aimAt(at)
-		end
-		if l and not l.pose then -- over nothing it fits: start it on the floor's middle
-			-- out of the job box (or a cubby) with no thumb on it: the free spot nearest the
-			-- middle, so it arrives green (S5-03g4c2)
-			local pose = if from or shelved
-				then freeSpot(r, l)
-				else settle(r, l, Spots.starts(l.spot)[1], 0, 0)
-			if pose then
-				setPose(r, l, pose)
-			end
-		end
-	end
-
-	-- Slides the lifted find back where it came from (refused, cancelled) or, for one from the
-	-- box, shrinks it away, quietly.
-	local function slideBack(l: Lifted)
-		l.asking = "back"
-		stopFollow()
-		play(Arrange.Slide, sounds())
-		l.highlight.Enabled = false
-		if l.original then
-			local cf = Instance.new("CFrameValue")
-			cf.Value = l.ghost:GetPivot()
-			cf.Changed:Connect(function(v: CFrame)
-				l.ghost:PivotTo(v)
-			end)
-			local shrink = l.shrink
-			if shrink then -- back into its cubby, at the size it stood there
-				local whole = l.ghost:GetScale()
-				grow(l.ghost, whole, whole * shrink)
-			end
-			local t = TweenService:Create(cf, BACK, { Value = l.from })
-			t.Completed:Once(function()
-				cf:Destroy()
-				letGo(l, true)
-			end)
-			t:Play()
-		else
-			local scale = Instance.new("NumberValue")
-			scale.Value = 1
-			scale.Changed:Connect(function(v: number)
-				if v > 0.02 then
-					l.ghost:ScaleTo(v)
-				end
-			end)
-			local t = TweenService:Create(scale, BACK, { Value = 0.05 })
-			t.Completed:Once(function()
-				scale:Destroy()
-				letGo(l, false)
-			end)
-			t:Play()
-		end
-		showVerbs(nil)
-		lifted = nil
-	end
-
-	-- A puff of dust where a find lands.
-	local function puff(at: CFrame)
-		local p = Instance.new("Part")
-		p.Anchored = true
-		p.CanCollide = false
-		p.CanQuery = false
-		p.CanTouch = false
-		p.Transparency = 1
-		p.Size = Vector3.new(0.2, 0.2, 0.2)
-		p.CFrame = at
-		local e = Instance.new("ParticleEmitter")
-		e.Texture = "rbxasset://textures/particles/smoke_main.dds"
-		e.Color = ColorSequence.new(Color3.fromRGB(214, 202, 182))
-		e.LightEmission = 0
-		e.Transparency = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 0.55),
-			NumberSequenceKeypoint.new(1, 1),
-		})
-		e.Size = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 0.3),
-			NumberSequenceKeypoint.new(1, 1.1),
-		})
-		e.Lifetime = NumberRange.new(0.4, 0.7)
-		e.Speed = NumberRange.new(2, 3.5)
-		e.Drag = 6
-		e.SpreadAngle = Vector2.new(90, 90)
-		e.EmissionDirection = Enum.NormalId.Top
-		e.Rate = 0
-		e.Parent = p
-		p.Parent = Workspace.CurrentCamera
-		e:Emit(Feel.Puff)
-		Debris:AddItem(p, 1.2)
-	end
-
-	-- Place: the ghost drops onto its spot with a knock and a puff; the server's answer keeps it.
-	local function placeNow()
-		local r, l = room, lifted
-		local ask = remote(Spots.PlaceRemote)
-		if not (r and l and ask) or l.asking or not l.fits then
-			return -- red, or already asked: the press does nothing
-		end
-		local pose = l.pose
-		local at = if pose then (standAt(r, l, pose)) else nil
-		if not (pose and at) then
-			return
-		end
-		l.asking = "place"
-		stopFollow()
-		showVerbs(nil)
-		ask:FireServer(l.what, pose.on, pose.x, pose.y, pose.turn, l.shelf) -- nil but out of a cubby
-		task.delay(3, function()
-			if lifted == l and l.asking == "place" then
-				slideBack(l) -- no answer: as if refused
-			end
-		end)
-		local cf = Instance.new("CFrameValue")
-		cf.Value = l.ghost:GetPivot()
-		cf.Changed:Connect(function(v: CFrame)
-			l.ghost:PivotTo(v)
-		end)
-		local t = TweenService:Create(cf, LAND, { Value = at })
-		t.Completed:Once(function()
-			cf:Destroy()
-			if l.ghost.Parent then
-				play(if Furniture.ofPlaced(l.name) then THUD else Arrange.Knock, sounds())
-				local stand = Arrange.frameOn(r, pose.on)
-				puff(if stand then Arranged.pose(stand, pose.x, pose.y, pose.turn) else at)
-				TweenService
-					:Create(l.highlight, QUICK, { OutlineTransparency = 1, FillTransparency = 1 })
-					:Play()
-			end
-		end)
-		t:Play()
-	end
-
-	local function turnNow()
-		local r, l = room, lifted
-		if not (r and l) or l.asking then
-			return
-		end
-		l.turn = (l.turn + Arrange.Turn) % 360
-		local pose = l.pose
-		if pose then
-			local fresh = settle(r, l, pose.on, pose.x, pose.y)
-			if fresh then
-				setPose(r, l, fresh)
-			end
-		end
-	end
-
-	-- Put away: the find shrinks back toward the tray; the server's answer puts it in the box.
-	local function awayNow()
-		local l = lifted
-		local ask = remote(Spots.PutAwayRemote)
-		if not (l and l.original and ask) or l.asking or l.kept then
-			return -- the job box holds everything: it has no Put away
-		end
-		l.asking = "away"
-		stopFollow()
-		showVerbs(nil)
-		if l.shelf then
-			ask:FireServer(l.what, l.shelf) -- out of a cubby: its name and spot, into the box
-		else
-			ask:FireServer(l.id)
-		end
-		task.delay(3, function()
-			if lifted == l and l.asking == "away" then
-				letGo(l, true) -- no answer: it stays where it was
-			end
-		end)
-		play(Arrange.Slide, sounds())
-		l.highlight.Enabled = false
-		local scale = Instance.new("NumberValue")
-		scale.Value = 1
-		scale.Changed:Connect(function(v: number)
-			if v > 0.02 and l.ghost.Parent then
-				l.ghost:ScaleTo(v)
-			end
-		end)
-		local t = TweenService:Create(scale, BACK, { Value = 0.05 })
-		t.Completed:Once(function()
-			scale:Destroy()
-			l.ghost.Parent = nil -- gone; the answer lets it go
-		end)
-		t:Play()
-	end
-
-	-- Waits (briefly) for the server's drawn find to stand where the ghost landed, then lets the
-	-- ghost go, so there's never a gap.
-	local function settleOnto(l: Lifted, id: string)
-		task.spawn(function()
-			local deadline = os.clock() + 1.5
-			while os.clock() < deadline do
-				local folder = placed()
-				local drawn = if l.original and not l.shelf
-					then l.original
-					else if folder then folder:FindFirstChild(id) else nil
-				if drawn and drawn:IsA("Model") then
-					if drawn:GetPivot().Position:FuzzyEq(l.ghost:GetPivot().Position, 0.05) then
-						break
-					end
-				end
-				task.wait(0.05)
-			end
-			letGo(l, true)
-		end)
-	end
-
-	-- The server's answer to a Place or a Put away: kept, or slid back quietly.
-	local function answered(what: unknown, id: unknown, refusal: unknown)
-		local r, mine = room, lifted
-		if
-			not (r and mine and mine.asking)
-			or type(what) ~= "string"
-			or type(id) ~= "string"
-			or type(refusal) ~= "string"
-			or mine.what ~= what
-		then
-			return
-		end
-		local pose = mine.pose
-		if mine.asking == "place" then
-			if refusal == "" and id ~= "" and pose then
-				r.placements:place(id, mine.shape, pose)
-				r.placements:takeEvents()
-				r.heights[id] = mine.size.Y
-				if mine.shape.top then
-					tops[id] = true
-				end
-				settleOnto(mine, id)
-			else
-				slideBack(mine)
-			end
-		elseif mine.asking == "away" then
-			if refusal == "" then
-				local function away(each: string)
-					for _, rider in r.placements:standingOn(each) do
-						away(rider)
-					end
-					r.placements:remove(each)
-					r.heights[each] = nil
-					tops[each] = nil
-				end
-				if r.placements:poseOf(mine.id) then -- out of a cubby, it was never set out here
-					away(mine.id)
-				end
-				r.placements:takeEvents()
-				letGo(mine, false)
-			else
-				letGo(mine, true)
-			end
-		end
-	end
+	-- The hand: everything that lifts, carries and sets down (ArrangeHand).
+	local hand = ArrangeHand.new({
+		room = function(): Arrange.Room?
+			return room
+		end,
+		tops = tops,
+		placed = placed,
+		sounds = sounds,
+		remote = remote,
+		full = function(): boolean
+			return full
+		end,
+		showVerbs = showVerbs,
+		follow = function(x: number, y: number)
+			buildCam.follow(x, y)
+		end,
+	})
+	pickThing, toHand = hand.pick, hand.intent
 
 	----------------------------------------------------------------------------------------------
 	-- The tray: what's in your job box
@@ -1225,9 +484,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 				local t = input.UserInputType
 				local pressed = t == Enum.UserInputType.Touch
 					or t == Enum.UserInputType.MouseButton1
-				if pressed and full and not lifted then
+				if pressed and full and not hand.lifted() then
 					refuse(b)
-				elseif pressed and not lifted and not pending then
+				elseif pressed and not hand.lifted() and not pending then
 					pending = {
 						key = card.key,
 						input = input,
@@ -1617,9 +876,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		if not open then
 			return
 		end
-		local l = lifted
+		local l = hand.lifted()
 		if l and not l.asking then
-			slideBack(l)
+			hand.slideBack(l)
 		end
 		open = false
 		pending = nil
@@ -1936,7 +1195,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			end
 			tab.Activated:Connect(function()
 				press(tab)
-				if not lifted then
+				if not hand.lifted() then
 					showTab(i, true)
 				end
 			end)
@@ -1946,8 +1205,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		showTab(onTab, false)
 
 		-- What you do with the lifted find: a corner cluster under the right thumb (the tray slides
-		-- away while a find is lifted, so the whole room shows). Place where the jump button sits,
-		-- Turn above it, Put away beside Place, × beside Turn.
+		-- away while a find is lifted, so the whole room shows). Turn where the jump button sits, Put
+		-- away beside it, × above Turn. No Place: letting go places (S5-03j2a, D-436).
 		local v = Instance.new("Frame")
 		v.BackgroundTransparency = 1
 		v.AnchorPoint = Vector2.new(1, 1)
@@ -1963,132 +1222,36 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 		local cancel = pill("×", 48, PANEL, v)
 		cancel.TextSize = 30
-		at(cancel, 122, 58)
+		at(cancel, 0, 58)
 		cancel.Activated:Connect(function()
-			local l = lifted
+			local l = hand.lifted()
 			if l and not l.asking then
 				press(cancel)
-				slideBack(l)
+				hand.slideBack(l)
 			end
 		end)
 		local away = pill("Put away", 116, PANEL, v)
 		at(away, 122, 0)
 		away.Activated:Connect(function()
 			press(away)
-			awayNow()
+			hand.awayNow()
 		end)
 		awayButton = away
 		local turn = pill("Turn", 112, PANEL, v)
-		at(turn, 0, 58)
+		at(turn, 0, 0)
 		turn.Activated:Connect(function()
 			press(turn)
-			turnNow()
+			hand.turnNow()
 		end)
 		turnButton = turn
-		local placeB = pill("Place", 112, FITS, v)
-		at(placeB, 0, 0)
-		placeB.TextColor3 = PANEL
-		placeB.Activated:Connect(function()
-			local l = lifted
-			if l and l.fits and not l.asking then
-				press(placeB)
-				placeNow()
-			end
-		end)
-		placeButton = placeB
 		return g
 	end
 
 	----------------------------------------------------------------------------------------------
 	-- Fingers
 
-	-- The find in one of your shelf's cubbies that the ray from `origin` along `dir` meets first
-	-- (S5-03i2b, D-352), and how far along: they stand unpickable, so their boxes are tested.
-	local function cubbyOn(origin: Vector3, dir: Vector3): (Model?, number)
-		local best, nearest = nil, math.huge
-		for _, inst in CollectionService:GetTagged(Shelf.Tag) do
-			if
-				inst:IsA("Model")
-				and inst:GetAttribute(Shelf.OwnerAttribute) == me.UserId
-				and inst:IsDescendantOf(Workspace)
-			then
-				local cf, size = inst:GetBoundingBox()
-				local o, d, h = cf:PointToObjectSpace(origin), cf:VectorToObjectSpace(dir), size / 2
-				local t = Shelf.hit({ o.X, o.Y, o.Z }, { d.X, d.Y, d.Z }, { h.X, h.Y, h.Z })
-				if t and t < nearest then
-					best, nearest = inst, t
-				end
-			end
-		end
-		return best, nearest
-	end
-
-	-- The find of yours under screen point `at`, if any: one set out, or one standing in your
-	-- shelf's cubby, nearer than whatever's behind it (its spot second). Not from a cubby while the
-	-- room holds all it can: then the tap lifts the shelf.
-	local function pickAt(at: Vector2): (Model?, number?)
-		local camera = Workspace.CurrentCamera
-		local folder = placed()
-		if not (camera and folder) then
-			return nil, nil
-		end
-		local ray = camera:ScreenPointToRay(at.X, at.Y)
-		local params = RaycastParams.new()
-		params.FilterType = Enum.RaycastFilterType.Include
-		params.FilterDescendantsInstances = { folder }
-		local hit = Workspace:Raycast(ray.Origin, ray.Direction * 200, params)
-		if not full then
-			local cubby, t = cubbyOn(ray.Origin, ray.Direction)
-			local behind = if hit then (hit.Position - ray.Origin).Magnitude else math.huge
-			local spot = if cubby then cubby:GetAttribute(Shelf.SpotAttribute) else nil
-			if cubby and type(spot) == "number" and t <= behind + Feel.CubbySlack then
-				return cubby, spot
-			end
-		end
-		local inst: Instance? = if hit then hit.Instance else nil
-		while inst and inst.Parent ~= folder do
-			inst = inst.Parent
-		end
-		if inst and inst:IsA("Model") and inst:GetAttribute(Spots.OwnerAttribute) == me.UserId then
-			return inst, nil
-		end
-		return nil, nil
-	end
-
-	takenAt = function(at: Vector2): boolean
-		return lifted ~= nil or (pickAt(at)) ~= nil
-	end
-
-	local function pointer(t: Enum.UserInputType): boolean
-		return t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1
-	end
-
-	local function began(input: InputObject, processed: boolean)
-		if not open or processed or not pointer(input.UserInputType) then
-			return
-		end
-		local at = Vector2.new(input.Position.X, input.Position.Y)
-		local l = lifted
-		if (l and l.asking) or (not l and onTab == FRONT) then
-			return -- facing the door, the room's finds aren't to hand: they lift from the others
-		end
-		local model, spot = pickAt(at)
-		if model and (not l or model ~= l.original) then
-			if l then
-				slideBack(l)
-			end
-			local name = if spot then model:GetAttribute(Shelf.FindAttribute) else nil
-			if type(name) == "string" then
-				liftBoxed(name, at, nil, model) -- out of its cubby
-			else
-				liftDrawn(model)
-			end
-		elseif not l then
-			return -- a tap on the empty room
-		end
-		dragInput = input
-	end
-
+	-- A card's drag in the tray: its own gui input (Gestures never sees a press a button sank),
+	-- handed to the hand once it lifts.
 	local function changed(input: InputObject)
 		local p = pending
 		if p then
@@ -2102,7 +1265,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 				local d = at - p.start
 				if -d.Y > SLOP and -d.Y > math.abs(d.X) then
 					pending = nil -- up out of the tray: lift it
-					liftBoxed(p.key, at)
+					hand.carryBoxed(p.key, at, p.input.UserInputType == Enum.UserInputType.Touch)
 					dragInput = p.input
 				elseif math.abs(d.X) > SLOP then
 					pending = nil -- sideways: the tray scrolls
@@ -2121,21 +1284,20 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 				and drag.UserInputType == Enum.UserInputType.MouseButton1
 			)
 		then
-			aimAt(Vector2.new(input.Position.X, input.Position.Y))
+			hand.move(input.Position.X, input.Position.Y)
 		end
 	end
 
 	local function ended(input: InputObject)
 		local p = pending
 		if p and input == p.input then
-			pending = nil -- a tap on a card: lift it into the room's middle
-			local camera = Workspace.CurrentCamera
-			if camera then
-				liftBoxed(p.key, camera.ViewportSize / 2)
-			end
+			pending = nil -- a tap on a card: out into the room's middle, and down
+			local x, y = buildCam.middle()
+			hand.setOut(p.key, Vector2.new(x, y))
 		end
 		if dragInput == input then
 			dragInput = nil
+			hand.release()
 		end
 	end
 
@@ -2218,7 +1380,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	-- isn't a floor piece, or while something's already lifted.
 	local function hold(piece: string, from: CFrame?)
 		local p = Furniture.byId(piece)
-		if not (running and p) or lifted or not (open or standingIn()) then
+		if not (running and p) or hand.lifted() or not (open or standingIn()) then
 			return
 		end
 		if onTab ~= FINDS then
@@ -2226,7 +1388,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 		openNow()
 		if open then
-			liftBoxed(Furniture.placed(piece), nil, from)
+			hand.setOut(Furniture.placed(piece), nil, from)
 		end
 	end
 
@@ -2256,7 +1418,6 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			for _, inst in CollectionService:GetTagged(UnitKit.Tag) do
 				watchUnit(inst)
 			end
-			table.insert(connections, UserInputService.InputBegan:Connect(began))
 			table.insert(connections, UserInputService.InputChanged:Connect(changed))
 			table.insert(connections, UserInputService.InputEnded:Connect(ended))
 			task.spawn(function()
@@ -2271,7 +1432,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 					table.insert(
 						connections,
 						answer.OnClientEvent:Connect(function(what: any, id: any, refusal: any)
-							answered(what, id, refusal)
+							hand.answered(what, id, refusal)
 						end)
 					)
 				end
@@ -2293,7 +1454,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			running = false
 			closeNow()
 			buildCam.destroy()
-			stopFollow()
+			hand.stopFollow()
 			for _, c in connections do
 				c:Disconnect()
 			end

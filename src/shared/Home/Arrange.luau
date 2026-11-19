@@ -109,6 +109,28 @@ Arrange.Feel = table.freeze({
 	GridLift = 0.09,
 	-- A refused or cancelled find slides back where it came from over this long (seconds).
 	Back = 0.35,
+	-- The hand (S5-03j2a). A dragged thing hangs this far (points) above a finger, so the thumb
+	-- doesn't hide it; a mouse holds it right under the pointer.
+	Thumb = 60,
+	-- Let go where it's blocked, a thing slides to the nearest free spot no further than this
+	-- (studs): a short hop that reads as "it made room", never a jump across the room. Further
+	-- than this and it floats back where it came from instead.
+	SlideReach = 3,
+	-- A thing set out with no finger on it (a tapped card, the job box's Set out) lands on the free
+	-- spot nearest the room's middle no further than this (studs): most of any room's floor.
+	StartReach = 16,
+	-- A thing set out with no finger on it hangs over its spot this long (seconds) before it
+	-- lands, so you see where it's going.
+	SetOut = 0.35,
+	-- A thing lifted under the finger swells this much (times its size) and settles back at once:
+	-- the small stretch of something picked up.
+	Stretch = 1.08,
+	-- Its shadow on the surface where it would land: this much bigger than its footprint, and this
+	-- dark in the middle (0 none, 1 black), fading out through these rounded layers (shares of its
+	-- size), so its edge is soft.
+	ShadowSize = 1.15,
+	ShadowDark = 0.45,
+	ShadowLayers = { 1, 0.78, 0.56 },
 	-- The puff of dust as it lands: this many motes.
 	Puff = 10,
 	-- The limit bar fills or empties over this long (seconds) as a Place or Put away is answered,

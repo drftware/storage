@@ -17,8 +17,10 @@
 	- opening swoops from your eyes, closing swoops back, and the front tab's fixed shots (your
 	  door, your plate from the hall) swing or dip through black, as before (D-436).
 
-	ArrangeView owns one and calls `open`, `show`, `close`; `taken` is its answer to whether a press
-	at a point takes a find (a lifted one, or one under the finger): the camera leaves those alone.
+	ArrangeView owns one and calls `open`, `show`, `close`. Its one Gestures reader is the room's only
+	reader of fingers (S5-03j2a): `pick` is the hand's answer to what's under a press (ArrangeHand),
+	and every intent with a thing for its target, and every tap, goes to `hand`; the rest move the
+	camera.
 	Nothing steps while Arrange is shut; while open, one render step reads the hands and moves the
 	camera, and does next to nothing once the camera and the walls are still.
 ]]
@@ -63,8 +65,12 @@ export type Room = { inside: Box, slot: Box, unit: Model }
 export type Options = {
 	-- The gui the dip's black hangs in (under the tray and buttons).
 	gui: () -> ScreenGui?,
-	-- Whether a press at this gui point takes a find (ArrangeView's drag): then it isn't the camera's.
-	taken: (x: number, y: number) -> boolean,
+	-- The thing of yours under gui point `x`, `y` that a press there takes (ArrangeHand's `pickAt`),
+	-- or nil for the room itself: a drag on a thing is the hand's, on the room the camera's.
+	pick: (x: number, y: number) -> Model?,
+	-- The hand's intents, in gui points: every one with a thing for its target, and every tap (a
+	-- tap on the empty room sets down what the hand holds).
+	hand: (intent: Brix.GestureIntent<Model>) -> (),
 	-- The band of the screen no menu covers: its top and bottom, in viewport points.
 	clear: () -> (number, number),
 }
@@ -80,6 +86,9 @@ export type Camera = {
 	close: (back: CFrame?) -> (),
 	-- A find is dragged at gui point `x`, `y`: near the screen's edge the camera slides that way.
 	follow: (x: number, y: number) -> (),
+	-- Where the room's focus shows, in gui points: the middle of the band the menus leave clear,
+	-- on the screen the camera draws (D-446). A card tapped in the tray lifts to here.
+	middle: () -> (number, number),
 	-- Lets go of everything, at once.
 	destroy: () -> (),
 }
@@ -207,9 +216,9 @@ end
 
 function ArrangeCamera.new(options: Options): Camera
 	local gestures = Brix.Gestures.new({
-		pick = function(x: number, y: number): boolean?
+		pick = function(x: number, y: number): Model?
 			local inset = GuiService:GetGuiInset()
-			return if options.taken(x, y - inset.Y) then true else nil
+			return options.pick(x, y - inset.Y)
 		end,
 		mouseTurn = Cam.MouseTurn,
 		stickTurn = Cam.StickTurn,
@@ -473,12 +482,41 @@ function ArrangeCamera.new(options: Options): Camera
 		end
 	end
 
-	local function apply(i: Brix.GestureIntent<boolean>)
+	-- An intent for the hand, its point moved from viewport points into gui points (the intent is
+	-- this reader's own table, read once).
+	local function toHand(i: Brix.GestureIntent<Model>)
+		local up = GuiService:GetGuiInset().Y
+		if i.kind == "twist" then
+			local y = i.y
+			if y then
+				i.y = y - up
+			end
+		elseif
+			i.kind == "tap"
+			or i.kind == "doubleTap"
+			or i.kind == "hold"
+			or i.kind == "dragBegan"
+			or i.kind == "dragMoved"
+			or i.kind == "dragEnded"
+		then
+			i.y -= up
+		end
+		options.hand(i)
+	end
+
+	local function apply(i: Brix.GestureIntent<Model>)
 		local o = orbit
 		if not o or shot or closing then
 			return
 		end
-		if i.kind == "slide" then
+		local target = if i.kind == "slide"
+				or i.kind == "pinch"
+				or i.kind == "tilt"
+			then nil
+			else i.target
+		if target or i.kind == "tap" then
+			toHand(i)
+		elseif i.kind == "slide" then
 			o:slide(i.dx, i.dy)
 		elseif i.kind == "dragBegan" or i.kind == "dragMoved" then
 			if i.target == nil then
@@ -982,6 +1020,15 @@ function ArrangeCamera.new(options: Options): Camera
 			shot = back
 			closing = true
 			glide()
+		end,
+		middle = function(): (number, number)
+			local inset = GuiService:GetGuiInset()
+			if aimedY >= 0 then
+				return aimedW / 2, aimedY - drawnDown - inset.Y
+			end
+			local cam = Workspace.CurrentCamera
+			local view = if cam then cam.ViewportSize else Vector2.new(800, 400)
+			return view.X / 2, view.Y / 2
 		end,
 		follow = function(x: number, y: number)
 			local o = orbit

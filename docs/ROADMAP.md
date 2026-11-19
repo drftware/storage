@@ -3402,6 +3402,22 @@ Done when players watch the results to the end and change their perks between cl
          drop sliding free, a card floating back.
       **Acceptance:** each seen in Studio Play at A16 size and captured; ArrangeView shorter by
       the hand; check green.
+    - [x] **S5-03j2a1 The hand in code** (steps 1 to 5, split at the run's context line, D-448):
+      `ArrangeHand` holds the hand (ArrangeView 2,314 lines to 1,520); the camera's one reader
+      picks the thing and hands it every drag on a thing and every tap; let go lands, hops to
+      `nearestFree` within `Feel.SlideReach` or floats back; a tapped card and Set out land on
+      their own after `Feel.SetOut`; thumb offset, stretch, one shadow part; Place is gone.
+      Check green, untested in Studio.
+    - [ ] **S5-03j2a2 The hand seen in Studio.** Step 6 of j2a, and fixes: Studio Play at A16
+      size, Medium home. `CameraTest` "left" from a find's screen point (STUDIO.md's "Tapping a
+      placed find") drags it to free floor: it lifts with the stretch, hangs above the point with
+      its shadow under it, lands with a knock when let go. Drag it onto a blocked spot (the
+      shelf's): it hops free and lands. Drag a card up out of the tray (its own gui input) and let
+      go over the tray: it floats back into its card. Tap a card: it glides to the room's middle
+      and lands. Tap a find, Turn, tap the empty room: it lands turned. Capture each to
+      `docs/art/s5-03j2a-*.png`. Watch for: the thumb offset's sign (the thing above the finger),
+      the shadow's size and darkness on oak, the shadow on a wall spot, a tap on the ghost
+      itself (`pick`'s box test).
     - [ ] **S5-03j2b Select, turn, riders.** A tap without dragging selects: it lifts a hair and
       round icon buttons sit round it, Turn, Put away and Another (one more of the same out of
       your box, The Sims' eyedropper; not shown when the box has none); a tap on the empty room

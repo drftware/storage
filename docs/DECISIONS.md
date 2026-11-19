@@ -10633,3 +10633,25 @@ the room lifts it with today's drag (Turn, Place, the tray away).
   in one reader (Gestures' promise 5), so the hand moves onto the camera's reader first (j2a: drag
   and let go, with the nearest free spot from Brix's Placements), then the tap's round buttons,
   turning and riders (j2b). Each is a session's work; together they'd overrun the run's cap.
+- **D-448 The hand is its own module, on the build camera's one reader; letting go places**
+  (S5-03j2a1, the owner's D-436). `src/client/ArrangeHand.luau` holds everything that lifts,
+  carries and sets down; ArrangeView keeps the gui and wires it. The camera's Gestures `pick` asks
+  the hand what a press takes (the lifted thing by its box, else your find or cubby find), and
+  every intent with a thing for its target, and every tap, goes to the hand; ArrangeView's own
+  room input is gone. A tray card's drag keeps its gui input (Gestures never sees a press a button
+  sank) and hands moves and release over. Choices made for the owner, as defaults:
+  - Let go lands where it fits; blocked, it hops to Brix's `nearestFree` within 3 studs
+    (`Feel.SlideReach`) and lands, as Animal Crossing's and The Sims' room editors make room;
+    nothing near, it floats back. The free spot is settled and judged again for the mirror's wall
+    and the job box's lid. A find tapped and let be lands where it stood with no server ask.
+  - Until j2b, a tap still lifts a thing with ×, Turn and Put away (Place is gone); a tap on the
+    room or on another thing sets it down. A tapped card and the job box's Set out lift out, hang
+    0.35 s over the free spot nearest the room's middle (`Feel.SetOut`, `StartReach` 16 studs, the
+    search's limit) and land on their own, as Animal Crossing sets a stored item down in front of
+    you: nothing waits in the air. "The room's middle" is where the build camera shows its focus
+    (`ArrangeCamera.middle`, the clear band's middle on the drawn screen), not the plain screen
+    middle the ticket named, since the room sits in that band.
+  - The shadow is one part made at the first lift with a SurfaceGui of three rounded layers
+    stacking to 45% dark; Studio's built-in textures have no soft blob (`glow.png` is a
+    starburst). It moves only when the thing's spot changes.
+  - The thumb's offset is 60 points for a touch, none for a mouse; the stretch is 1.08 times.
