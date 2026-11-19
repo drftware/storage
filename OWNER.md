@@ -160,6 +160,18 @@ nowhere else.
   there's nothing to do, never a dead tap. On a keyboard, Ctrl+Z and Ctrl+Y do the same. Two
   defaults to judge: a find taken out of a shelf cubby and undone goes into the job box, not its
   cubby; undoing a Put away brings back the piece alone, not what stood on it.
+- [ ] **Try it: set a find down where you look** (S5-03j5a1, D-463; passes checks, not yet seen in
+  Studio or on a phone). On your phone, in your home, take the teddy (or any find) into your hand:
+  1. Look at the job box's top. A faint teddy sits there, on the grid, facing the door; the Drop
+     button reads Place. Look away at the floor, a wall: it glides there. Look out of the door or
+     at nothing it fits: it fades and the button reads Drop again.
+  2. Press Place: it goes solid, drops onto the spot with its knock and a little dust, your phone
+     taps, and your hand is empty. Arrange shows it standing there.
+  3. In a friend's home, or on a climb, the same find: Drop just drops it. A find a friend handed
+     you: Drop too (only your own box's finds go down by hand).
+  Look for: the copy never flickers between two spots, and it's easy to aim at phone size. My
+  defaults, yours to change: it faces the door, you can set it 10 studs off (`HandPlace.Reach`),
+  how faint it is (0.6, `HandPlace.Faint`).
 - [ ] **Feel it: what's in the way glows** (S5-03j4b2, D-462; seen in Studio Play at A16, not on
   a phone). On your phone, open Arrange and drag a milk crate into the shelf, slowly:
   1. The moment it presses in, the crate goes red, the shelf flares soft red and stays faintly

@@ -2,40 +2,40 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-19, S5-03j4b2 done: what's in the way glows (D-462) · **Checks:** green · **Git:** `main`, not pushed; Brix `cea1259`.
+**Updated:** 2026-11-19, S5-03j5a1 done: a held find shows where it'd go (D-463) · **Checks:** green · **Git:** `main`, not pushed; Brix `cea1259`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; search its heading). Order now: S5-03j5a, j5b, j6, j7, ENG-29, k1 to k6.
-- **S5-03j4 is done** (D-460 to D-462). Last: Brix's `Placements.blocking` feeds `ArrangeBlockers`,
-  lighting what a red ghost presses into, one dull bump; seen at A16 (`docs/art/s5-03j4b2-*`).
-  Put away's flight is too quick to capture (STUDIO.md).
-- **Studio has tonight's code** (`rojo serve`, port 34872): restart Play to run edits.
+  only; search its heading). Order now: S5-03j5a2, j5b, j6, j7, ENG-29, k1 to k6.
+- **S5-03j5a1 is built and green, unseen in Studio** (D-463): `PlaceAim` (the one aim and judge,
+  out of ArrangeHand and ArrangeView), `HandPlaceView` (the faint copy, Drop reads Place), the
+  server's `HandPlace` ask (Arranging `placeHeld`, Slots `heldFromBox`/`setDown`).
+- **Studio:** `rojo serve` (port 34872) was running; this session didn't open Studio.
 - **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j5a Place a held find where you look
-The moment: in your own home, holding the teddy, you look at the job box's top and a see-through
-teddy sits there, snapped and turned to the room; Drop reads Place, and one press sets it down
-with the landing's knock (Animal Crossing's and The Sims' place-from-hand).
-1. Read the plan doc's "Placing by hand" section. In your own home, while a find is held (the
-   tool system), aim from the camera's ray with the hand's own aiming and judge (`aim`,
-   `settle`, `fitsAt` in `ArrangeHand`): move the shared parts out into a module both use
-   rather than copying them. A see-through copy (green-free: just faint) shows where it fits;
-   nothing shows where it doesn't.
-2. Drop's button (`ToolView`) reads Place while the copy shows; pressed, a new ask to
-   `Arranging` sets it on that spot in one server step: type, range, ownership (your home, your
-   held find), reach and rate checked as Take (D-350) and Place are; the save changes once.
-   Elsewhere Drop is unchanged. No text explaining anything.
-3. Lune specs for any pure piece; Studio at A16: hold a find in your home, capture the copy and
-   the Place button (half scale plus a full-scale close-up in `docs/art/`).
-**Acceptance:** green; the server refuses a bad, far or someone else's ask; seen in Studio.
-**Read first:** ROADMAP S5-03j5 (grep); DECISIONS D-350; `src/server/Arranging.luau` `onPlace`
-(630-700) and `takeOut` (568-600); `src/client/ToolView.luau` 495-520 (Drop); `ArrangeHand.luau`
-`aim` to `standAt` (302-500); the plan doc's "Placing by hand".
+## Next task: S5-03j5a2 See placing by hand in Studio, and fix what's seen
+The moment: in your own home, holding the teddy, you look at the job box's top and a faint teddy
+sits there; Drop reads Place; one press sets it down with the landing's knock.
+1. Run STUDIO.md's two tells ("Arrange's build camera, first try in Play"); if Studio lacks
+   `PlaceAim`, `HandPlaceView`, `Shared/Home/HandPlace`, paste them by that section's recipe.
+2. Play at Galaxy A16 (685 by 338). In your home, take a find into your hand (Take on a shelf
+   find, or `ServerStorage.ArrangeTest:Invoke(player, "take", id)`). Aim the camera at the job
+   box's top, the floor, a wall: the faint copy shows, glides, fades; Drop reads Place. Press it
+   (or `:Invoke(player, "hand", on, x, y, turn)` for the server alone): the find stands there,
+   your hand is empty, the save's rows have it (`"rows"`). Try a far spot (refused `far`), a
+   friend's held find (not marked own: no Place), and Drop elsewhere (unchanged).
+3. Fix what's wrong (watch: the third-person camera's look ray from behind your back may aim
+   past near tops; the copy's first pivot; Drop's word coming back after a refusal). Capture the
+   copy and the Place button: half scale plus a full-scale close-up in `docs/art/s5-03j5a2-*`.
+**Acceptance:** green; seen in Studio Play at A16 and captured; the server refuses a far, bad or
+someone else's ask.
+**Read first:** DECISIONS D-463; `src/client/HandPlaceView.luau` (all, 382 lines);
+`src/server/Arranging.luau` 520-540 and 698-715 (placeHeld, onHandPlace), 859-866 (the "hand"
+test verb); `src/client/ToolView.luau` 596-606, 930-940, 1128-1136; STUDIO.md 3591 on.
 
 ## Queue (next sessions, the owner's ticket order)
-0. S5-03j5b next after j5a (ROADMAP's split). Polish by name: the place's squash, a drag's tilt.
+0. S5-03j5b next after j5a2 (ROADMAP's split). Polish by name: the place's squash, a drag's tilt.
    Pallet and camp bed cards float back in the Small room (no free spot near the middle?):
    check (D-461). A tray card's drag isn't Gestures': the wheel zooms, no twist (route the wheel, D-453).
    At Arrange's opening view a crate is ~16 points across (D-449): open closer; the wheel zooms

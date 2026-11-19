@@ -48,6 +48,11 @@
 	spot)), `what` then the find's name as it stands there. Set down, it comes off the spot and onto
 	a row in one step (`Spots.offShelf`), refused it's back in its cubby; put away, it goes into the
 	box (`Save.unshelf`). Either way `drawn` fires and the shelf is laid again.
+
+	Placing by hand (S5-03j5a, D-463): HandPlace(on, x, y, turn) sets the find in the asker's hand
+	(one out of their own box, `Slots:heldFromBox`) at that spot in their own home, within reach
+	(`HandPlace.Reach`), judged as a Place is; set out, it leaves their hand in the same step
+	(`Slots:setDown`), so it's never lost or doubled. The asker hears (id, refusal) back.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -61,6 +66,7 @@ local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
+local HandPlace = require(ReplicatedStorage.Shared.Home.HandPlace)
 local Holding = require(ReplicatedStorage.Shared.Home.Holding)
 local Layout = require(ReplicatedStorage.Shared.Home.Layout)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
@@ -126,6 +132,7 @@ function Arranging.new(): ArrangingSystem
 	local made: { Instance } = {}
 	local answerRemote: RemoteEvent? = nil
 	local boxRemote: RemoteEvent? = nil
+	local handRemote: RemoteEvent? = nil -- HandPlace: asked with (on, x, y, turn), answers (id, refusal)
 	local frontOffice: FrontOffice.FrontOffice? = nil
 	local saving: Saving.SavingSystem? = nil
 	local slots: Slots.Slots? = nil
@@ -438,7 +445,14 @@ function Arranging.new(): ArrangingSystem
 
 	-- Place: sets `what` (a find's name, out of the box; or an id set out, moved) at `pose`. The id
 	-- it stands as and "", or "" and the refusal.
-	local function place(player: Player, what: string, pose: Brix.PlacementPose): (string, string)
+	-- `fromHand` (S5-03j5a, D-463): `what` is the find in their hand, out of their own box
+	-- (`Slots:heldFromBox`), not one in the box; set out, it leaves their hand in the same step.
+	local function place(
+		player: Player,
+		what: string,
+		pose: Brix.PlacementPose,
+		fromHand: boolean?
+	): (string, string)
 		local home = homes[player]
 		local data = if saving then saving:data(player) else nil
 		if not (home and data) or home.stale then
@@ -467,7 +481,11 @@ function Arranging.new(): ArrangingSystem
 		else
 			if Spots.setOut(home.placements:save().rows) >= home.limit then
 				return "", "full" -- the starter pieces are free, so Brix's own count runs over
-			elseif (Save.boxed(data, outOf(player))[what] or 0) < 1 then
+			elseif
+				if fromHand
+					then not (slots and slots:heldFromBox(player) == what)
+					else (Save.boxed(data, outOf(player))[what] or 0) < 1
+			then
 				return "", Spots.Refusals.NotInBox
 			elseif not Tools.template(Gold.base(what) or what) then
 				return "", Spots.Refusals.Unknown
@@ -487,10 +505,31 @@ function Arranging.new(): ArrangingSystem
 		if refusal then
 			return "", refusal
 		end
+		if fromHand and slots then
+			slots:setDown(player) -- out of their hand as it's set out: never both, never neither
+		end
 		keep(home, data)
 		apply(home, player, true)
 		drawnSignal:fire(player)
 		return id, ""
+	end
+
+	-- Place by hand (S5-03j5a, D-463): the find in `player`'s hand set at `pose` in their own
+	-- home, where they stand within reach of it (`HandPlace.Reach`). The id it stands as and "",
+	-- or "" and the refusal; refused, it stays in their hand.
+	local function placeHeld(player: Player, pose: Brix.PlacementPose): (string, string)
+		local home = homes[player]
+		local s = slots
+		local what = if s then s:heldFromBox(player) else nil
+		if not (home and what) or home.stale then
+			return "", Spots.Refusals.NotYours
+		end
+		local a = Arrange.frameOn(home.room, pose.on)
+		local at = if a then Arranged.pose(a, pose.x, pose.y, pose.turn).Position else nil
+		if not (at and Takes.within(player, at, HandPlace.Reach + HandPlace.Slack)) then
+			return "", Spots.Refusals.Far
+		end
+		return place(player, what, pose, true)
 	end
 
 	-- PutAway: puts find `id` back in the box, whatever stands on it first. "" or the refusal.
@@ -654,6 +693,24 @@ function Arranging.new(): ArrangingSystem
 		end
 	end
 
+	-- HandPlace(on, x, y, turn): the held find set there. No name rides: what's in their hand is
+	-- the server's to know. Rate first, then type and range, then ownership and reach (placeHeld).
+	local function onHandPlace(player: Player, on: unknown, x: unknown, y: unknown, turn: unknown)
+		if not limit:take(player, os.clock()) then
+			return
+		end
+		local _, pose = Spots.ask("held", on, x, y, turn)
+		if pose then
+			local id, refusal = placeHeld(player, pose)
+			if handRemote then
+				handRemote:FireClient(player, id, refusal) -- refused, it's still in their hand
+			end
+			if refusal == "" then
+				sendBox(player)
+			end
+		end
+	end
+
 	local function onPutAway(player: Player, id: unknown, spot: unknown)
 		if not limit:take(player, os.clock()) then
 			return
@@ -742,6 +799,9 @@ function Arranging.new(): ArrangingSystem
 			table.insert(connections, remote(Spots.PlaceRemote).OnServerEvent:Connect(onPlace))
 			table.insert(connections, remote(Spots.PutAwayRemote).OnServerEvent:Connect(onPutAway))
 			answerRemote = remote(Spots.AnswerRemote)
+			local hand = remote(HandPlace.Remote)
+			handRemote = hand
+			table.insert(connections, hand.OnServerEvent:Connect(onHandPlace))
 			local box = remote(Arrange.BoxRemote)
 			boxRemote = box
 			table.insert(connections, box.OnServerEvent:Connect(onBox))
@@ -755,6 +815,8 @@ function Arranging.new(): ArrangingSystem
 			-- a piece not in this week's stock); `:Invoke(player, "size", name)` makes their home
 			-- that size (a `Home.Sizes` name) and sets it up again, as a resize will (S5-03h1);
 			-- `:Invoke(player, "take", id)` presses find `id`'s Take as them (S5-03i2a);
+			-- `:Invoke(player, "hand", on, x, y, turn)` sets the find in their hand there, as a
+			-- HandPlace ask does, within reach (S5-03j5a);
 			-- `:Invoke(player, "fromShelf", spot, on, x, y, turn)` sets the find on their shelf's
 			-- `spot` there, and `:Invoke(player, "shelfAway", spot)` puts it in the box (S5-03i2b).
 			-- No client reaches it.
@@ -794,6 +856,13 @@ function Arranging.new(): ArrangingSystem
 							return "", "badAsk"
 						end
 						return placeShelved(player, name, i, pose)
+					elseif verb == "hand" then
+						-- sets the find in their hand at (on, x, y, turn) as HandPlace asks: (id, refusal)
+						local _, pose = Spots.ask("held", a, b, c, d)
+						if not pose then
+							return "", "badAsk"
+						end
+						return placeHeld(player, pose)
 					elseif verb == "take" then
 						-- presses find `a`'s Take as `player`: true when it went into their hands
 						local home = homes[player]
@@ -884,6 +953,7 @@ function Arranging.new(): ArrangingSystem
 			table.clear(made)
 			answerRemote = nil
 			boxRemote = nil
+			handRemote = nil
 		end,
 	}
 end

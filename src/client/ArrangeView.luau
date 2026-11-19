@@ -42,7 +42,6 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local Walls = require(ReplicatedStorage.Shared.Home.Walls)
-local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
 local BoxPanel = require(ReplicatedStorage.Shared.Home.BoxPanel)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local FreeCursor = require(script.Parent.FreeCursor)
@@ -58,6 +57,7 @@ local CardPlate = require(ReplicatedStorage.Shared.Home.CardPlate)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local ArrangeCamera = require(script.Parent.ArrangeCamera)
 local ArrangeHand = require(script.Parent.ArrangeHand)
+local PlaceAim = require(script.Parent.PlaceAim)
 local ArrangeRing = require(script.Parent.ArrangeRing)
 local ArrangeTurn = require(script.Parent.ArrangeTurn)
 local ArrangeTaps = require(script.Parent.ArrangeTaps)
@@ -260,64 +260,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	----------------------------------------------------------------------------------------------
 	-- The judge, as the server's
 
-	-- Builds the room's judge and loads what's set out in it from what the server drew.
+	-- Builds the room's judge and loads what's set out in it from what the server drew
+	-- (`PlaceAim.room`, the one judge Arrange and placing by hand share).
 	local function build(): Arrange.Room?
 		local unit = home
-		local n = if unit then unit:GetAttribute(Arrange.SlotAttribute) else nil
-		local slot = if type(n) == "number" then Arrange.slot(n) else nil
-		if not (unit and slot) then
-			return nil
-		end
-		-- the home's size, as the server set it from the holder's save (S5-03h1)
-		local sized = unit:GetAttribute(Spots.SizeAttribute)
-		local r =
-			Arrange.room(slot, Lobby.Origin, if type(sized) == "string" then sized else Spots.Start)
-		table.clear(tops)
-		local waiting: { { id: string, on: string, at: Vector3, model: Model } } = {}
-		local folder = placed()
-		local children: { Instance } = if folder then folder:GetChildren() else {}
-		for _, m in children do
-			local id, on, at =
-				m:GetAttribute(Spots.IdAttribute),
-				m:GetAttribute(Arrange.OnAttribute),
-				m:GetAttribute(Arrange.AtAttribute)
-			if
-				m:IsA("Model")
-				and m:GetAttribute(Spots.OwnerAttribute) == me.UserId
-				and type(id) == "string"
-				and type(on) == "string"
-				and typeof(at) == "Vector3"
-			then
-				table.insert(waiting, { id = id, on = on, at = at, model = m })
-			end
-		end
-		-- what stands on another find goes in after it
-		local progress = true
-		while progress and #waiting > 0 do
-			progress = false
-			for i = #waiting, 1, -1 do
-				local w = waiting[i]
-				local shape = Arrange.shapeOf(w.id)
-				if shape and (r.frames[w.on] or r.placements:poseOf(w.on)) then
-					r.placements:place(
-						w.id,
-						shape,
-						{ on = w.on, x = w.at.X, y = w.at.Y, turn = w.at.Z }
-					)
-					local size = Arranged.bounds(w.model)
-					if size then
-						r.heights[w.id] = size.Y
-					end
-					if shape.top then
-						tops[w.id] = true
-					end
-					table.remove(waiting, i)
-					progress = true
-				end
-			end
-		end
-		r.placements:takeEvents() -- the screen draws nothing from these
-		return r
+		return if unit then PlaceAim.room(unit, tops) else nil
 	end
 
 	-- The ring pops in round a selected thing (ArrangeRing), and the tray slides down out of the

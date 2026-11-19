@@ -48,8 +48,9 @@ function Takes.offer(model: Model, press: (player: Player) -> ()): ProximityProm
 	return p
 end
 
--- Whether `player` may take `model` now: not wrapped, alive, and within reach of it.
-function Takes.near(player: Player, model: Model): boolean
+-- Whether `player` may reach point `at` now: not wrapped, alive, and within `reach` studs of it.
+-- Take (below) and placing by hand (Arranging, S5-03j5a) both ask it.
+function Takes.within(player: Player, at: Vector3, reach: number): boolean
 	if Prompts.wrapped(player) then
 		return false
 	end
@@ -58,8 +59,12 @@ function Takes.near(player: Player, model: Model): boolean
 	if not (root and root:IsA("BasePart")) then
 		return false
 	end
-	local cf = model:GetBoundingBox()
-	return (root.Position - cf.Position).Magnitude <= Take.Reach + Take.Slack
+	return (root.Position - at).Magnitude <= reach
+end
+
+-- Whether `player` may take `model` now: not wrapped, alive, and within reach of it.
+function Takes.near(player: Player, model: Model): boolean
+	return Takes.within(player, model:GetBoundingBox().Position, Take.Reach + Take.Slack)
 end
 
 -- `model` taken by `player`: stamped, its button gone, and gone itself a moment later.

@@ -11002,3 +11002,35 @@ object a placement hits).
 - Seen in Studio Play at A16: a milk crate dragged into the shelf lit the shelf, the bump played
   once (Knock at pitch 0.74, volume 0.2), and both glows were gone after letting go (the crate
   floated back with the slide's whoosh).
+
+## D-463 Place a held find where you look, in your own home (S5-03j5a1, 2026-11-19)
+
+The moment: in your own home, holding the teddy, you look at the job box's top and a faint teddy
+sits there, snapped and turned to the room; Drop reads Place, and one press sets it down with the
+landing's knock and puff, as heavy as it is (the plan's "Placing by hand"; Grow a Garden's held
+egg or seed, Minecraft's outline, Animal Crossing's and The Sims' place-from-hand).
+- **One aim and judge, shared** (`src/client/PlaceAim.luau`): ArrangeHand's `aim`, `settle`,
+  `fitsAt`, `standAt`, `rides`, `areaOf` and ArrangeView's judge build (`PlaceAim.room`) moved out
+  whole into one module that takes a `Carried` (ArrangeHand's `Lifted` is one) and a ray. It names
+  no find: what a thing is comes from its rows. Arrange drags with it, the hand place aims with
+  it, and the recipes' "put on or into" (S5-03k, D-436 pick 7) starts from it.
+- **The screen** (`HandPlaceView`, owned by ToolView): only while you hold a find out of your own
+  box (a new per-slot mark, `HandPlace.slotAttribute`, written by Slots) and stand in your home.
+  It aims along the camera's look, settles on the grid (never Free), and shows a faint copy
+  (`HandPlace.Faint`, fading in, gliding between spots) where it fits and within `HandPlace.Reach`
+  (10 studs, a step past Take's 8); nowhere it fits, nothing shows and Drop drops as ever. No
+  green or red, no text. One RenderStepped, for that hold only. Pressed: the copy goes solid,
+  drops the last hair and lands with `Feedback.landing`'s thud, puff and tap (ArrangeHand's
+  `puff` and `inert` now module-level so both share them); refused or unanswered in 3 s, a fresh
+  faint copy aims again (the find never left your hand).
+- **The server** (`Arranging`'s `onHandPlace`, remote `HandPlace`): asks (on, x, y, turn), never a
+  name: what's in your hand is the server's to know (`Slots:heldFromBox`: out of your own box, not
+  taken up the climb, not on a trip, not in its pack). Rate first, then type and range
+  (`Spots.ask`), then ownership (your own home, your held find) and reach (`Takes.within`, Reach
+  plus `Slack` 3, refused `Spots.Refusals.Far`), then the same `place` as Arrange's (limit, the
+  judge, the mirror's wall), which on success takes it out of your hand (`Slots:setDown`) in the
+  same step: never in your hand and set out at once, never neither. A cracked find going down
+  settles its crack as one going back in the box does ("Back"). Lune: `tests/handplace.spec`.
+- **My defaults** (OWNER.md): the find faces the room's door (turn 0), Reach 10, the faint 0.6.
+- **Split** (context): j5a1 this, built and green; j5a2 sees it in Studio Play at A16 and
+  captures it.

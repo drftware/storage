@@ -23,6 +23,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local ArrangeBlockers = require(script.Parent.ArrangeBlockers)
 local ArrangeGuides = require(script.Parent.ArrangeGuides)
+local PlaceAim = require(script.Parent.PlaceAim)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
 local Feedback = require(ReplicatedStorage.Shared.Home.Feedback)
@@ -73,13 +74,6 @@ BUMP.pitch = (Arrange.Knock.pitch or 1) * 0.7
 BUMP.volume = (Arrange.Knock.volume or 0.5) * 0.5
 BUMP.length = 0.3
 
--- How far past a room area's edge a finger still aims at it (studs): a find dragged toward a
--- wall slides along it, flush, rather than stopping short. Tops don't use it: a find stands on a
--- top only with its middle over it (`Snapping.over`, D-455).
-local REACH = 2.5
--- How much nearer along the finger's ray (studs) another top has to be than the one a find
--- stands on to take it: two tops of a height side by side don't trade it back and forth.
-local TIE = 0.25
 -- A find lifted off the floor or out of the tray, as a ghost the finger drags.
 export type Lifted = {
 	what: string, -- what Place sends: the id set out when it's moved, the find's name from the box
@@ -226,9 +220,44 @@ function ArrangeHand.play(spec: Arrange.Sound, parent: Instance)
 end
 local play = ArrangeHand.play
 
+-- A puff of dust where a thing lands: as much as its weight's band raises (`Feedback`). Shared
+-- with placing by hand (HandPlaceView).
+function ArrangeHand.puff(at: CFrame, band: Feedback.Band)
+	local p = Instance.new("Part")
+	p.Anchored = true
+	p.CanCollide = false
+	p.CanQuery = false
+	p.CanTouch = false
+	p.Transparency = 1
+	p.Size = Vector3.new(0.2, 0.2, 0.2)
+	p.CFrame = at
+	local e = Instance.new("ParticleEmitter")
+	e.Texture = "rbxasset://textures/particles/smoke_main.dds"
+	e.Color = ColorSequence.new(Color3.fromRGB(214, 202, 182))
+	e.LightEmission = 0
+	e.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.55),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	e.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.3 * band.spread),
+		NumberSequenceKeypoint.new(1, 1.1 * band.spread),
+	})
+	e.Lifetime = NumberRange.new(0.4, 0.7)
+	e.Speed = NumberRange.new(2, 3.5)
+	e.Drag = 6
+	e.SpreadAngle = Vector2.new(90, 90)
+	e.EmissionDirection = Enum.NormalId.Top
+	e.Rate = 0
+	e.Parent = p
+	p.Parent = Workspace.CurrentCamera
+	e:Emit(band.motes)
+	Debris:AddItem(p, 1.2)
+end
+
 -- Makes `model` scenery the screen alone sees: never collides, touched, picked or sat on, and
 -- shows no buttons.
-local function inert(model: Model)
+function ArrangeHand.inert(model: Model)
 	for _, d in model:GetDescendants() do
 		if
 			d:IsA("Seat")
@@ -249,6 +278,8 @@ local function inert(model: Model)
 	end
 end
 
+local inert = ArrangeHand.inert
+
 -- Hides or shows a drawn find on this screen only.
 local function hide(model: Model, hidden: boolean)
 	for _, d in model:GetDescendants() do
@@ -266,9 +297,6 @@ function ArrangeHand.new(options: Options): Hand
 	local lifted: Lifted? = nil
 	local follow: RBXScriptConnection? = nil
 	local lastTick = 0
-	local snap = Brix.PlacementSnap.grid({ step = Arrange.Step, turn = Arrange.Turn })
-	-- Free (Alt, or the corner switch): exactly where the finger has it, to the whole degree.
-	local freeSnap = Brix.PlacementSnap.free({ turn = 1 })
 	-- Where a blocked thing may slide when let go, and where one set out with no finger starts.
 	local slideSearch = Brix.PlacementSearch.grid({ step = Arrange.Step, reach = Feel.SlideReach })
 	local startSearch = Brix.PlacementSearch.grid({ step = Arrange.Step, reach = Feel.StartReach })
@@ -290,136 +318,16 @@ function ArrangeHand.new(options: Options): Hand
 
 	-- The button's pop when pressed.
 
-	-- Whether `id` stands, however high up, on `base`.
-	local function rides(r: Arrange.Room, id: string, base: string): boolean
-		local on = id
-		for _ = 1, 32 do
-			local pose = r.placements:poseOf(on)
-			if not pose then
-				return false
-			elseif pose.on == base then
-				return true
-			end
-			on = pose.on
-		end
-		return false
-	end
-
-	-- The area under screen point `at` that the lifted find fits, nearest first, and the point on
-	-- it (`x`, `y` from its middle). Nil over nothing it fits.
+	-- The shared aim and judge (PlaceAim), with this hand's camera, tops and Free.
+	local fitsAt = PlaceAim.fitsAt
+	local standAt = PlaceAim.standAt
 	local function aim(r: Arrange.Room, l: Lifted, at: Vector2): (string?, number, number)
 		local camera = Workspace.CurrentCamera
 		if not camera then
 			return nil, 0, 0
 		end
-		local ray = camera:ScreenPointToRay(at.X, at.Y)
-		local best: string? = nil
-		local nearest, bx, by = math.huge, 0, 0
-		-- something hung from the ceiling follows the finger over the floor under it, as The Sims
-		-- hangs a ceiling light from the tile you point at: the corner camera looks down on the
-		-- room, so the ceiling itself is seldom on the screen (S5-03g4d)
-		local under = r.frames.Floor
-		-- the top the find stands on now: it holds a little past its edge, and wins a near tie
-		local held = if l.pose then l.pose.on else nil
-		local heldBest = false
-		-- a thing that hangs only on walls slides along them at the height it hangs (D-458): the
-		-- finger picks the wall and how far along, however high or low it is (over the floor, the
-		-- wall the finger's ray leaves the room through); `WallHang.height` keeps the height
-		local hangs = WallHang.only(l.shape.fits, Spots.Kinds.Wall)
-		local function try(on: string, f: CFrame, area: Brix.PlacementArea, top: boolean)
-			if not table.find(l.shape.fits, area.kind) then
-				return
-			end
-			local plane = if area.kind == Spots.Kinds.Ceiling and under then under else f
-			local n = plane.YVector
-			local facing = ray.Direction:Dot(n)
-			if facing > -1e-4 then
-				return -- seen from behind or edge on
-			end
-			local t = (plane.Position - ray.Origin):Dot(n) / facing
-			local mine = top and on == held
-			if
-				t <= 0
-				or t
-					>= (if heldBest then nearest - TIE elseif mine then nearest + TIE else nearest)
-			then
-				return
-			end
-			local p = f:PointToObjectSpace(ray.Origin + ray.Direction * t)
-			local x, y = p.X, -p.Z
-			if top then
-				if not Snapping.over(x, y, area.width, area.depth, mine) then
-					return -- a find stands on a top only with its middle over it (D-455)
-				end
-			elseif
-				math.abs(x) > area.width / 2 + REACH
-				or (not hangs and math.abs(y) > area.depth / 2 + REACH)
-			then
-				return
-			end
-			best, nearest, bx, by, heldBest = on, t, x, y, mine
-		end
-		for on, f in r.frames do
-			local area = r.placements:areaOf(on)
-			if area then
-				try(on, f, area, false)
-			end
-		end
-		for id in tops do
-			if id ~= l.id and not rides(r, id, l.id) then
-				local shape = Arrange.shapeOf(id)
-				local f = Arrange.frameOn(r, id)
-				if shape and shape.top and f then
-					try(id, f, shape.top, true)
-				end
-			end
-		end
-		local area = if hangs and best then r.placements:areaOf(best) else nil
-		if area then
-			local pose = l.pose
-			local was = if pose then r.placements:areaOf(pose.on) else nil
-			local kept = if pose and was and was.kind == Spots.Kinds.Wall then pose.y else nil
-			by = WallHang.height(by, kept, area.depth, l.shape.depth)
-		end
-		return best, bx, by
+		return PlaceAim.aim(r, l, camera:ScreenPointToRay(at.X, at.Y), tops)
 	end
-
-	-- The area `on`'s size, a room's or a find's top.
-	local function areaOf(r: Arrange.Room, on: string): Brix.PlacementArea?
-		local area = r.placements:areaOf(on)
-		if area then
-			return area
-		end
-		local shape = Arrange.shapeOf(on)
-		return if shape then shape.top else nil
-	end
-
-	-- `x`, `y` on `area` snapped by `snapper` (the grid, or Free) and kept inside it, `l` turned
-	-- `turn`: kept in by the reach of its footprint so turned, square on or askew, as Brix's judge
-	-- measures it (S5-03j2b2b). Answers where it stands and its turn, how far its middle may go
-	-- from the area's each way, and its reach across and deep.
-	local function snapIn(
-		snapper: Brix.PlacementSnap,
-		area: Brix.PlacementArea,
-		l: Lifted,
-		x: number,
-		y: number,
-		turn: number
-	): (number, number, number, number, number, number, number)
-		local _, _, turned = snapper:snap(area, l.shape, x, y, turn) -- (the turn's snap alone)
-		local rx, ry = Turning.reach(l.shape.width, l.shape.depth, turned)
-		local hx, hy = math.max(0, area.width / 2 - rx), math.max(0, area.depth / 2 - ry)
-		local sx, sy, st =
-			snapper:snap(area, l.shape, math.clamp(x, -hx, hx), math.clamp(y, -hy, hy), turn)
-		return math.clamp(sx, -hx, hx), math.clamp(sy, -hy, hy), st, hx, hy, rx, ry
-	end
-
-	-- Where `l` settles with the finger at `x`, `y` on area `on`, as The Sims 4 settles a thing
-	-- you drag (D-455): on the grid (Free: as it is) and inside the area; a piece with a back
-	-- pushed to a wall turns its back to it as it arrives and sits flush; lined up with its
-	-- neighbours where an edge or middle comes within `Snapping.Line` (the lines kept in
-	-- `l.lines`); then the mirror leans on its wall and the job box keeps its lid's room. Free
-	-- skips the wall and the lines. No tables made but the pose answered.
 	local function settle(
 		r: Arrange.Room,
 		l: Lifted,
@@ -427,73 +335,7 @@ function ArrangeHand.new(options: Options): Hand
 		x: number,
 		y: number
 	): Brix.PlacementPose?
-		local area = areaOf(r, on)
-		if not area then
-			return nil
-		end
-		local free = options.free()
-		local snapper = if free then freeSnap else snap
-		local px, py, pt, hx, hy, rx, ry = snapIn(snapper, area, l, x, y, l.turn)
-		if on ~= "Floor" then
-			l.wall = nil
-		elseif l.backs and not free then
-			local wall = Snapping.wall(area, px, py, rx, ry, pt, l.wall)
-			local turn = Snapping.turned(pt, wall, l.wall)
-			if turn ~= pt then -- arrived at a wall: its back to it, then the grid at that turn
-				l.turn = turn
-				px, py, pt, hx, hy, rx, ry = snapIn(snapper, area, l, x, y, turn)
-			end
-			l.wall = wall
-			if wall then
-				px, py = Snapping.flush(area, wall, px, py, rx, ry)
-			end
-		end
-		local pose = { on = on, x = px, y = py, turn = pt }
-		local kind, lines = l.starter, l.lines
-		if free or (kind and Layout.Lean[kind]) then
-			lines.count = 0
-		else
-			r.placements:align(l.id, l.shape, pose, Snapping.Line, lines)
-			local across: ("x" | "y")? = if l.wall then Snapping.across(l.wall) else nil
-			pose.x, pose.y, lines.count =
-				Snapping.lineUp(px, py, lines.x, lines.y, hx, hy, across, lines.guides, lines.count)
-		end
-		local floor = r.placements:areaOf("Floor")
-		if kind and floor and Layout.Lean[kind] then
-			-- the mirror finds the wall nearest the finger and turns its back to it (D-348)
-			local leant = Layout.leanTo(kind, pose, floor)
-			if leant then
-				l.turn = leant.turn
-				return leant
-			end
-		elseif kind and floor then
-			return Layout.clearOf(kind, pose, floor) -- the job box keeps its lid's room
-		end
-		return pose
-	end
-
-	-- Whether `l` may stand at `pose`: Brix's judge, and the mirror against a wall, as the
-	-- server's.
-	local function fitsAt(r: Arrange.Room, l: Lifted, pose: Brix.PlacementPose): boolean
-		if r.placements:check(l.id, l.shape, pose) ~= nil then
-			return false
-		end
-		local kind, floor = l.starter, r.placements:areaOf("Floor")
-		return not (kind and floor) or Layout.stands(kind, pose, floor)
-	end
-
-	-- Where the find's pivot stands at `pose`, and the area's normal (out of it, into the room).
-	local function standAt(r: Arrange.Room, l: Lifted, pose: Brix.PlacementPose): (CFrame?, Vector3)
-		local a = Arrange.frameOn(r, pose.on)
-		if not a then
-			return nil, Vector3.yAxis
-		end
-		local t = Arranged.pose(a, pose.x, pose.y, pose.turn)
-		local kind = l.starter
-		if kind then -- by its spec box, as the server draws it (the mirror keeps its lean)
-			return Arrange.starterPivot(t, kind), t.YVector
-		end
-		return Arranged.pivot(t, l.spot, l.size, l.centre), t.YVector
+		return PlaceAim.settle(r, l, on, x, y, options.free())
 	end
 
 	----------------------------------------------------------------------------------------------
@@ -773,7 +615,7 @@ function ArrangeHand.new(options: Options): Hand
 			shrink = nil,
 			backs = piece ~= nil and not Snapping.Flat[piece.id] and not Layout.Lean[piece.id],
 			wall = nil,
-			lines = { x = 0, y = 0, count = 0, guides = {} },
+			lines = PlaceAim.lines(),
 			before = nil,
 			finished = nil,
 		}
@@ -982,39 +824,7 @@ function ArrangeHand.new(options: Options): Hand
 		lifted = nil
 	end
 
-	-- A puff of dust where a thing lands: as much as its weight's band raises (`Feedback`).
-	local function puff(at: CFrame, band: Feedback.Band)
-		local p = Instance.new("Part")
-		p.Anchored = true
-		p.CanCollide = false
-		p.CanQuery = false
-		p.CanTouch = false
-		p.Transparency = 1
-		p.Size = Vector3.new(0.2, 0.2, 0.2)
-		p.CFrame = at
-		local e = Instance.new("ParticleEmitter")
-		e.Texture = "rbxasset://textures/particles/smoke_main.dds"
-		e.Color = ColorSequence.new(Color3.fromRGB(214, 202, 182))
-		e.LightEmission = 0
-		e.Transparency = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 0.55),
-			NumberSequenceKeypoint.new(1, 1),
-		})
-		e.Size = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 0.3 * band.spread),
-			NumberSequenceKeypoint.new(1, 1.1 * band.spread),
-		})
-		e.Lifetime = NumberRange.new(0.4, 0.7)
-		e.Speed = NumberRange.new(2, 3.5)
-		e.Drag = 6
-		e.SpreadAngle = Vector2.new(90, 90)
-		e.EmissionDirection = Enum.NormalId.Top
-		e.Rate = 0
-		e.Parent = p
-		p.Parent = Workspace.CurrentCamera
-		e:Emit(band.motes)
-		Debris:AddItem(p, 1.2)
-	end
+	local puff = ArrangeHand.puff
 
 	-- The riders settle as their piece lands (S5-03j2b2c, D-338): each copy in the ghost jolts up
 	-- off the piece and drops back with a clink, a beat after the one before, bounces once lower,

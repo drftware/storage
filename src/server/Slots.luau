@@ -80,6 +80,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Chip = require(ReplicatedStorage.Shared.Finds.Chip)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
+local HandPlace = require(ReplicatedStorage.Shared.Home.HandPlace)
 local Pack = require(ReplicatedStorage.Shared.Finds.Pack)
 local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
 local Head = require(ReplicatedStorage.Shared.Finds.Head)
@@ -243,6 +244,13 @@ export type Slots = Brix.System & {
 	-- world (the ladder leaned on a front): Slots keeps it, carried by nobody and lying nowhere, its
 	-- body anchored where it was, for the caller to place. Its id and model, or nil.
 	place: (self: any, player: Player, key: string) -> (string?, Model?),
+	-- The name (`named`: a Gold's "Teddy:Gold") of the find in `player`'s hand when it's out of
+	-- their own job box, never taken up the climb and not in its pack (S5-03j5a, D-463): one they
+	-- may set down in their home by hand. Nil otherwise.
+	heldFromBox: (self: any, player: Player) -> string?,
+	-- Takes that find (`heldFromBox`) out of `player`'s hand and back into their box, quietly, for
+	-- Arranging to set it out in the same step (Place by hand). Whether there was one.
+	setDown: (self: any, player: Player) -> boolean,
 	-- Puts placed tool `id` back in `player`'s hand, as a pick-up (their hands must be free of a
 	-- big tool and have room). Nil if it did, else the refusal to show ("" to refuse silently).
 	handBack: (self: any, player: Player, id: string) -> string?,
@@ -376,6 +384,12 @@ local function named(t: Tool): string
 		return Gold.key(t.key)
 	end
 	return if t.sealed or t.torn then Seal.key(t.key) else t.key
+end
+
+-- Whether `t` is a find out of UserId `home`'s own job box that they may set down at home by
+-- hand (S5-03j5a): never taken up the climb, not going on a trip, not in its pack.
+local function ownBox(t: Tool, home: number): boolean
+	return t.home == home and not (t.up or t.away or t.sealed or t.torn)
 end
 
 type Hand = {
@@ -602,6 +616,11 @@ function Slots.new(): Slots
 			end
 			if sealChanged and not sealed then
 				player:SetAttribute(Seal.slotAttribute(i), nil)
+			end
+			-- out of their own box, never up the climb, not in its pack: theirs to set down by hand
+			local own = if t and ownBox(t, player.UserId) then true else nil
+			if player:GetAttribute(HandPlace.slotAttribute(i)) ~= own then
+				player:SetAttribute(HandPlace.slotAttribute(i), own)
 			end
 			local uses = if t and t.uses then t.uses else 0
 			if player:GetAttribute(Wear.slotAttribute(i)) ~= uses then
@@ -2117,6 +2136,48 @@ function Slots.new(): Slots
 		t.model:Destroy()
 		publish(player)
 		changed:fire({ player = player, kind = "Spend" })
+		return true
+	end
+
+	-- The tool in `player`'s hand when it's a find out of their own job box that never went up the
+	-- climb and isn't in its pack: only such a find can be set down in their home by hand.
+	local function ownHeld(player: Player): Tool?
+		local id = Carry.held(handOfPlayer(player).carry)
+		local t = if id then tools[id] else nil
+		if t and ownBox(t, player.UserId) then
+			return t
+		end
+		return nil
+	end
+
+	function system.heldFromBox(_: any, player: Player): string?
+		local t = ownHeld(player)
+		return if t then named(t) else nil
+	end
+
+	function system.setDown(_: any, player: Player): boolean
+		local t = ownHeld(player)
+		if not t then
+			return false
+		end
+		Carry.release(handOfPlayer(player).carry)
+		tools[t.id] = nil
+		unoffer(t)
+		if t.chipped then -- back in the box first: a crack it took while out comes home with it
+			taken:fire({
+				home = player.UserId,
+				name = named(t),
+				how = "Back",
+				cracked = true,
+				torn = false,
+			})
+		end
+		t.owner = nil
+		stow(t)
+		t.model:Destroy()
+		dress(player)
+		publish(player)
+		changed:fire({ player = player, kind = "Place" })
 		return true
 	end
 

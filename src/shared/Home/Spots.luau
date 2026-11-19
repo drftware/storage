@@ -133,6 +133,7 @@ Spots.Refusals = table.freeze({
 	Kept = "kept",
 	Wall = "wall", -- a leaning piece (the mirror) set with its back to no wall (`Layout.stands`)
 	NotShelved = "notShelved", -- a lift out of a cubby that no longer holds that find (S5-03i2b)
+	Far = "far", -- set by hand somewhere farther from you than `HandPlace.Reach` (S5-03j5a)
 })
 
 -- The longest name or id a screen may send, and how far from an area's middle a pose may be.

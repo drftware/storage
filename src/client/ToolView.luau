@@ -63,8 +63,10 @@ local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local FreeCursor = require(script.Parent.FreeCursor)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
+local HandPlace = require(ReplicatedStorage.Shared.Home.HandPlace)
 local Pack = require(ReplicatedStorage.Shared.Finds.Pack)
 local Seal = require(ReplicatedStorage.Shared.Finds.Seal)
+local HandPlaceView = require(script.Parent.HandPlaceView)
 local HandRoom = require(script.Parent.HandRoom)
 local InFlight = require(script.Parent.InFlight)
 local Hands = require(ReplicatedStorage.Shared.Hands)
@@ -592,6 +594,14 @@ function ToolView.new(
 ): (Brix.System, Hand)
 	local connections: { RBXScriptConnection } = {}
 	local ui: Hud? = nil
+	-- Placing a held find where you look in your own home (S5-03j5a, D-463): Drop reads Place
+	-- while its faint copy shows, and one press sets it there.
+	local handPlace = HandPlaceView.new(function(showing: boolean)
+		local h = ui
+		if h then
+			h.drop.Text = if showing then HandPlace.Verb else "Drop"
+		end
+	end)
 	local besideButton: GuiButton? = nil
 	local nameShown = 0
 	local switchRemote: RemoteEvent? = nil
@@ -923,6 +933,8 @@ function ToolView.new(
 			}):Play()
 		end
 		h.drop.Visible = held ~= ""
+		-- in your own home a find out of your box shows where it would go; Drop reads Place there
+		handPlace.hold(held, if pocketed then 0 else slot)
 		-- a Give prompt on each friend only while you hold something
 		for _, g in gives do
 			g.prompt.Enabled = held ~= ""
@@ -1117,6 +1129,8 @@ function ToolView.new(
 	local function drop()
 		if not alive() or heldKey() == "" then
 			return
+		elseif handPlace.place() then
+			return -- set down where you look (S5-03j5a): the faint copy's spot
 		end
 		local r = dropRemote
 		if r then
@@ -1685,6 +1699,10 @@ function ToolView.new(
 				connections,
 				player:GetAttributeChangedSignal(Seal.slotAttribute(i)):Connect(refresh)
 			)
+			table.insert(
+				connections,
+				player:GetAttributeChangedSignal(HandPlace.slotAttribute(i)):Connect(refresh)
+			)
 		end
 		-- the server agreed (or overruled): its word from here
 		local function settled()
@@ -1889,6 +1907,7 @@ function ToolView.new(
 
 	function system.stop(_: any)
 		RunService:UnbindFromRenderStep(RENDER)
+		handPlace.destroy()
 		for _, name in ACTIONS do
 			ContextActionService:UnbindAction(name)
 		end
