@@ -10476,3 +10476,17 @@ would cost a session about 35k tokens of its context (`docs/STUDIO.md`). So:
   partition meshes shows the neighbours' units; letting the eye out of the slot needs those
   meshes hidden for you alone), so it's decided by looking, in S5-03j1b.
 - Not seen yet: the swoop, every drag, the fades. Nothing in the camera's code changed.
+
+## D-441: A blocked drop slides along a grid search; guide lines come from Brix's align (ENG-26c, Nov 18)
+
+- Letting go where a piece is blocked asks Brix's `placements:nearestFree(id, shape, pose, search)`
+  with `Brix.PlacementSearch.grid({ step, reach })`: grid spots nearest the finger first, the same
+  tie order on every machine, the turn kept, the same area only. Nil means nothing near is free, and
+  the piece floats back (a tray card back into the tray). j2 picks the reach (default to try: 3 studs
+  at the half-stud grid) and, for a find let go on a top, may ask again on the floor below.
+- While dragging, `placements:align(id, shape, pose, tolerance, alignment)` settles the piece onto a
+  neighbour's edge or middle and gives up to six guide lines; j3 keeps one answer per drag and a
+  pool of six faint lines, so a drag allocates nothing. The area's own walls aren't guides: j3's
+  snapper turns backs to walls itself.
+- Both are pure and only advise: the client still checks the settled pose, the server judges it.
+

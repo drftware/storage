@@ -3316,11 +3316,14 @@ Done when players watch the results to the end and change their perks between cl
       **Acceptance:** seen in Studio Play at A16 size, captured; walls fade from every side;
       check green.
       Tried Nov 18 (D-440): Studio was running this morning's code (Rojo not connected), so the
-      camera couldn't be seen. Waits on `OWNER.md` (connect Rojo); ENG-26c goes first, then this.
+      camera couldn't be seen. Rojo connected later that night: Studio has the camera now.
       Also question D-439's "an XL home's side walls don't fade" once it's seen (D-440).
-    - [ ] **ENG-26c Nearest free spot and guides, in Brix.** Placements answers the nearest free
+    - [x] **ENG-26c Nearest free spot and guides, in Brix.** Placements answers the nearest free
       pose to a blocked one within a reach, and the guide lines where a footprint's edge or
       middle meets a neighbour's on the same area. Suite cases first; the pin moves.
+      Done (D-441): Brix `3cceb24` and `b8f5d71`, pinned. `nearestFree(id, shape, pose, search)`
+      with `Brix.PlacementSearch.grid({ step, reach })`; `align(id, shape, pose, tolerance, into)`
+      answers the settled x, y and up to six guide lines. Both pure; j2 and j3 wire them.
     - [ ] **S5-03j2 Drag it, let go.** Touch and drag anything (finds, furniture, the home's
       own pieces, cubby finds); it hangs a thumb's offset above the finger with a soft shadow
       under it; let go places it (the Place button goes, D-436); blocked slides to the nearest

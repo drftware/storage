@@ -5,15 +5,6 @@ nowhere else.
 
 ## Now
 
-- [ ] **Connect Rojo so Studio gets tonight's room editor code** (S5-03j1b, Nov 18). Studio is
-  running this morning's scripts: Arrange still has its old fixed camera, and Brix's new hand
-  reader and orbit camera aren't in the place, so the build camera can't be seen or tuned until
-  Studio has them. Nothing was lost; it's only not synced.
-  1. In a terminal in this folder, run `rojo serve` and leave it running.
-  2. In Studio, open the Rojo plugin (Plugins tab) and click Connect.
-  3. Look for: in the Explorer, `StarterPlayer.StarterPlayerScripts.Client.ArrangeCamera` and
-     `ReplicatedStorage.Shared.Home.BuildView` now exist. Leave it connected; the next session
-     that needs Studio (S5-03j1b) checks for them first.
 - [ ] **Push Brix before you push this game** (S5-03a3a, D-273): the game now pins Brix at
   `482368f` (the plots each player's home comes from), which is only on this Mac. In `../engine`,
   `git push origin main`, then this repository. Pushed the other way round, a fresh clone can't find
