@@ -127,9 +127,11 @@ Arrange.Feel = table.freeze({
 	Stretch = 1.08,
 	-- Its shadow on the surface where it would land: this much bigger than its footprint, and this
 	-- dark in the middle (0 none, 1 black), fading out through these rounded layers (shares of its
-	-- size), so its edge is soft.
-	ShadowSize = 1.15,
-	ShadowDark = 0.45,
+	-- size), so its edge is soft. Seen from the build camera's steep corner the thing hides the
+	-- middle, so the ring round it is what shows: at 1.15 and 0.45 it was a faint smudge on the
+	-- tiles at phone size (S5-03j2a2's captures); 1.35 and 0.6 rim a lifted crate plainly.
+	ShadowSize = 1.35,
+	ShadowDark = 0.6,
 	ShadowLayers = { 1, 0.78, 0.56 },
 	-- The puff of dust as it lands: this many motes.
 	Puff = 10,

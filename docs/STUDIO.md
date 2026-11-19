@@ -3672,3 +3672,11 @@ verified: a doc page, Studio, or "untested".
 - **Tapping a placed find from the MCP:** `WorldToScreenPoint` of its bounding box's middle (the
   input's own space, what `ScreenPointToRay` takes), plus 47 across: `user_mouse_input` down, a
   few `moveTo`s, then capture before the up (S5-03j1d3b).
+- **A drag must be one `user_mouse_input` call** (S5-03j2a2): a press left down at the end of one
+  call and released in the next arrives cancelled (Studio's window lets go of focus between
+  calls, `WindowFocusReleased`, and the camera cancels the drag), so the thing floats back. To
+  capture mid-drag, start a background Bash first (`sleep 2; screencapture ...`), then one call:
+  down, a few `moveTo`s, a 3000 ms `wait`, up.
+- **The wheel zooms the build camera through the unit's facade** (S5-03j2a2): ten notches put the
+  eye behind `Units.Unit1.Colliders.FacadeRight` (a wall in the face, the finds' outlines through
+  it). Four notches on a Medium home is a clean close view (a crate about 29 points across).

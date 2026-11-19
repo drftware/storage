@@ -10655,3 +10655,22 @@ the room lifts it with today's drag (Turn, Place, the tray away).
     stacking to 45% dark; Studio's built-in textures have no soft blob (`glow.png` is a
     starburst). It moves only when the thing's spot changes.
   - The thumb's offset is 60 points for a touch, none for a mouse; the stretch is 1.08 times.
+
+- **D-449 The hand as seen in Studio: a shadow that shows, nothing in the way mid-drag, the tray
+  takes things back** (S5-03j2a2). Seen in Play at the A16's size on a Medium home: a tapped card
+  glides out and lands, a dragged find rides a thumb above the finger and lands, over the shelf it
+  goes red and hops to the floor beside it, tap, Turn, tap the room lands it turned. Three things
+  were off at phone size and are fixed:
+  - The build camera looks steeply down, so the lifted thing hides the middle of its shadow and
+    only the ring round it shows. At 1.15 times the footprint and 45% dark that ring was a faint
+    smudge; at 1.35 and 60% it rims a lifted crate plainly on the tiles (`Feel.ShadowSize`,
+    `ShadowDark`).
+  - Mid-drag, the × / Put away / Turn buttons sat where the floor near the finger was; they now
+    hide while a finger carries the thing, as The Sims clears its buttons mid-drag, and the tray
+    stays away (`showVerbs(l, true)`).
+  - A card dragged up and brought back down over the tray was placed where it last hovered,
+    because a finger over nothing keeps the last spot. Let go anywhere over the tray's place, a
+    thing floats back (a card into its card, a find to where it stood), as a card dragged back
+    to the inventory does in Animal Crossing's room editor (`Options.overTray`).
+  Left for later (HANDOFF's Queue): at the default view a crate is about 16 points across on a
+  Medium home; zoomed in by the wheel the eye passes through the unit's facade.

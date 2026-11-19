@@ -308,11 +308,12 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 
 	-- The verbs pop in at the corner while a find is lifted, and the tray slides down out of the
 	-- way so the floor by the door shows; it slides back up when the find is set down or let go.
-	local function showVerbs(l: ArrangeHand.Lifted?)
+	-- While a finger is `carrying` it, the verbs stay hidden: nothing but the thing and its shadow.
+	local function showVerbs(l: ArrangeHand.Lifted?, carrying: boolean?)
 		local v = verbs
 		if v then
 			local was = v.Visible
-			v.Visible = l ~= nil
+			v.Visible = l ~= nil and not carrying
 			local scale = v:FindFirstChildOfClass("UIScale")
 			if scale and l and not was then
 				scale.Scale = 0.8
@@ -354,6 +355,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		showVerbs = showVerbs,
 		follow = function(x: number, y: number)
 			buildCam.follow(x, y)
+		end,
+		-- Below the tray's top where it rests (10 off the foot, `TRAY` tall), in gui points.
+		overTray = function(_: number, y: number): boolean
+			local tall = if gui then gui.AbsoluteSize.Y else 280
+			return y >= tall - (10 + TRAY)
 		end,
 	})
 	pickThing, toHand = hand.pick, hand.intent

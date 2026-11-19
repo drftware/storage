@@ -3408,7 +3408,15 @@ Done when players watch the results to the end and change their perks between cl
       `nearestFree` within `Feel.SlideReach` or floats back; a tapped card and Set out land on
       their own after `Feel.SetOut`; thumb offset, stretch, one shadow part; Place is gone.
       Check green, untested in Studio.
-    - [ ] **S5-03j2a2 The hand seen in Studio.** Step 6 of j2a, and fixes: Studio Play at A16
+    - [x] **S5-03j2a2 The hand seen in Studio** (D-449): seen in Play at A16 size, Medium home,
+      captured to `docs/art/s5-03j2a-*.png`: a tapped card glides out and lands; a find dragged
+      by a finger rides 60 points above it and lands; let go over the shelf it goes red, then hops
+      to the floor beside it; a card dragged up and let go over the tray floats back; tap, Turn,
+      tap the room lands it turned. Fixed: the shadow was a faint smudge (now 1.35 times the
+      footprint, 0.6 dark); the buttons hid the floor mid-drag (now hidden while carried, the
+      tray staying away); a card let go over the tray was placed (now floats back). Check green.
+      The ticket's lines, as written:
+      Studio Play at A16
       size, Medium home. `CameraTest` "left" from a find's screen point (STUDIO.md's "Tapping a
       placed find") drags it to free floor: it lifts with the stretch, hangs above the point with
       its shadow under it, lands with a knock when let go. Drag it onto a blocked spot (the

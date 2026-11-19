@@ -87,11 +87,15 @@ export type Options = {
 	remote: (name: string) -> RemoteEvent?,
 	-- Whether the room holds all it can (a card won't lift, a cubby find won't come out).
 	full: () -> boolean,
-	-- The screen's buttons for a lifted find, shown for `l`, or put away for nil.
-	showVerbs: (l: Lifted?) -> (),
+	-- The screen's buttons for a lifted find, shown for `l`, or put away for nil; while a finger
+	-- `carrying` it, the buttons hide but the tray stays out of the way.
+	showVerbs: (l: Lifted?, carrying: boolean?) -> (),
 	-- A thing is carried under gui point `x`, `y` this frame: near the screen's edge the build
 	-- camera slides that way (`ArrangeCamera.follow`).
 	follow: (x: number, y: number) -> (),
+	-- Whether gui point `x`, `y` is over the tray's place (the tray is away while a thing is
+	-- carried): a thing let go there floats back, a card's into its card.
+	overTray: (x: number, y: number) -> boolean,
 }
 
 -- The hand, as ArrangeView and the build camera call it.
@@ -1085,8 +1089,11 @@ function ArrangeHand.new(options: Options): Hand
 	end
 
 	-- A finger (a touch when `touch`) at gui point `x`, `y` takes the lifted thing along.
+	-- Nothing but the thing and its shadow while a finger carries it, as The Sims clears its
+	-- buttons mid-drag: a tapped thing's buttons go as it's dragged (S5-03j2a2's captures).
 	local function carry(touch: boolean, x: number, y: number)
 		carrying = true
+		showVerbs(lifted, true)
 		thumb = if touch then Feel.Thumb else 0
 		move(x, y)
 	end
@@ -1137,7 +1144,7 @@ function ArrangeHand.new(options: Options): Hand
 			move(i.x, i.y)
 		elseif i.kind == "dragEnded" then
 			if carrying and l then
-				if i.cancelled then
+				if i.cancelled or options.overTray(i.x, i.y) then
 					slideBack(l)
 				else
 					drop(l)
@@ -1172,11 +1179,16 @@ function ArrangeHand.new(options: Options): Hand
 		end
 	end
 
-	-- The carrying finger let go: the thing lands, hops free, or floats back.
+	-- The carrying finger let go: the thing lands, hops free, or floats back (always back when
+	-- let go over the tray's place, as a card dragged up and brought back down changes nothing).
 	local function release()
 		local l = lifted
 		if carrying and l then
-			drop(l)
+			if options.overTray(fingerX, fingerY) then
+				slideBack(l)
+			else
+				drop(l)
+			end
 		end
 		carrying = false
 	end

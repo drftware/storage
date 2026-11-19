@@ -70,6 +70,17 @@ nowhere else.
      Look for the same as above, and that drag right turns the view right, as Roblox's own camera.
   8. Tell me if the landing view is too far, too high or too steep: `Arrange.Camera`'s `Clear`
      (how far past the walls it stands), `FocusUp` and `Settle` are the numbers.
+- [ ] **Arrange's hand, with your thumb** (S5-03j2a2, D-448, D-449; seen in Studio Play at A16
+  size with the MCP's finger, not a real thumb). On your phone, in your home, tap Arrange:
+  1. Put your thumb on a find in the room and drag. Look for: it comes up with a little swell and
+     a whoosh and rides above your thumb, never under it, with a dark soft ring on the floor
+     round where it would land; the buttons and the tray are out of the way while you drag.
+  2. Let go on free floor. Look for: it drops onto its spot with a knock. Then drag it onto the
+     shelf and let go: it goes red, then hops to the floor beside it.
+  3. Drag a card up out of the tray, then back down onto the tray and let go: it floats back
+     into its card and nothing is set out. Tap a card: it glides out and lands by itself.
+  4. Tell me: is 60 points above the thumb right, or too far? Is a crate big enough to grab at
+     the view Arrange opens with on a Medium or bigger home (about 16 points across in Studio)?
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as
