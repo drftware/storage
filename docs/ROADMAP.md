@@ -3448,7 +3448,12 @@ Done when players watch the results to the end and change their perks between cl
         one more out of your box at the free spot beside it, turned the same, selected; shown
         while your box holds one past this (`boxCount`). The verbs bar and its × are gone from
         ArrangeView (a tap on the room lets go).
-      - [ ] **S5-03j2b1b The ring seen in Studio.** Studio Play at A16 (685 by 338), Medium home:
+      - [x] **S5-03j2b1b The ring seen in Studio** (D-451; seen in Play at A16, Medium,
+        `docs/art/s5-03j2b-*.png`; fixed: Turn's arrow now goes the way the thing turns, Put
+        away an open box, the ring off Done and the limit bar, a fresh one let go by a tap on
+        the room and put back by Put away, four turns home, the ring kept with a thing whose top
+        is off the screen; the camera holds still through a drag).
+        Studio Play at A16 (685 by 338), Medium home:
         tap a find (it comes up a hair with its ring over it); Turn (clicks round, spins a little
         past and back); Another on a find your box holds more of (one lands beside it, selected);
         Put away; tap the room (the ring goes, it lands); the ring follows a camera slide and a
@@ -3463,6 +3468,23 @@ Done when players watch the results to the end and change their perks between cl
         while held; Alt, or a Free switch in a corner, places off the grid at any angle (check
         Arranging, Brix's judge and the save take any angle; widen them with a spec if not);
         riders settle with a little bounce as their piece lands (D-338). Seen in Studio at A16.
+        Split before starting (S5-03j2b1b's session; one session each):
+        - [ ] **S5-03j2b2a Any angle, pure.** A pure `Turning` in `src/shared/Home` with Lune
+          specs first: the turn a twist gives (a start turn plus the twist's angle, snapped to
+          quarters unless free; quarters whole, so a run of Turn presses and a twist agree).
+          Then check whether Arranging (the server), Brix's judge (`Placements`, turned
+          footprints) and the save take any angle, not only 0, 90, 180, 270: grep their turn
+          handling, write a failing spec for each that refuses, widen it. If Brix needs it,
+          that's a Brix ticket by Brix's AGENTS.md, then the pin moves (D-252).
+        - [ ] **S5-03j2b2b Twist, R and the wheel, Free.** In ArrangeHand: a second finger's
+          twist while dragging (Brix Gestures' `intent` "twist" with a target) turns the
+          carried thing by `Turning`; R and the wheel while held turn it a quarter; Alt held,
+          or a round Free switch in a corner (an icon, off by default), places off the grid
+          at any angle. Seen in Studio at A16 (R and the wheel on a desktop device; the twist
+          goes to OWNER.md's phone steps).
+        - [ ] **S5-03j2b2c Riders settle.** What stands on a piece moves with it (D-338) and
+          settles with a little bounce as its piece lands, each a beat after the last. Seen in
+          Studio at A16 with a find on the table.
     - [ ] **S5-03j3 Snapping.** A pure snapper in `src/shared/Home` with Lune specs: the
       half-stud grid; furniture against a wall turns its back to it; a find dragged over a top
       hops onto it with a tock and back down off it; guide lines from ENG-26c drawn faint; wall

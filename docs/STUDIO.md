@@ -3677,6 +3677,16 @@ verified: a doc page, Studio, or "untested".
   calls, `WindowFocusReleased`, and the camera cancels the drag), so the thing floats back. To
   capture mid-drag, start a background Bash first (`sleep 2; screencapture ...`), then one call:
   down, a few `moveTo`s, a 3000 ms `wait`, up.
+- **`WorldToScreenPoint`'s second value is "on the screen", not "ahead of the camera"**
+  (S5-03j2b1b): a point past the screen's edge in front of the camera reads false. To ask
+  whether a point is behind the camera, test the returned depth (`p.Z <= 0`).
+  (`ToolView.luau` near line 1293 reads `WorldToViewportPoint`'s the same way: check it.)
+- **Watching something too quick to capture** (S5-03j2b1b): a Client `execute_luau` that
+  `task.spawn`s a `RenderStepped` sampler writing into a `StringValue` returns at once; drive the
+  input, then read the value back in a second call. It caught Turn's 5-degree overshoot and
+  proved the camera still through a drag. Studio's Play ran about 15 frames a second tonight.
+- **The MCP's touch indicator is drawn off the touch:** the yellow hand in captures sits right of
+  and below where the press landed; trust the 47-point rule, not the hand.
 - **The wheel zooms the build camera through the unit's facade** (S5-03j2a2): ten notches put the
   eye behind `Units.Unit1.Colliders.FacadeRight` (a wall in the face, the finds' outlines through
   it). Four notches on a Medium home is a clean close view (a crate about 29 points across).

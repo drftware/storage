@@ -71,6 +71,10 @@ export type Lifted = {
 	asking: string?, -- "place" or "away" while the server's answer is awaited
 	shelf: number?, -- the shelf's spot it was lifted out of (S5-03i2b), sent with Place and Put away
 	shrink: number?, -- out of a cubby: the size it stood there, as a share of its own
+	-- A run of Turn presses: where it began and where the last one left it. Each turn settles from
+	-- where the run began, so a turn that pushed the thing off a wall is undone by turning back
+	-- (four quarter turns bring it home, S5-03j2b1b); a move starts a new run.
+	turnRun: { from: Brix.PlacementPose, to: Brix.PlacementPose? }?,
 }
 
 -- What the hand needs from the screen that owns it.
@@ -846,10 +850,13 @@ function ArrangeHand.new(options: Options): Hand
 		l.turn = (l.turn + Arrange.Turn) % 360
 		local pose, was = l.pose, l.target
 		if pose then
-			local fresh = settle(r, l, pose.on, pose.x, pose.y)
+			local run = l.turnRun
+			local from = if run and run.to == pose then run.from else pose
+			local fresh = settle(r, l, from.on, from.x, from.y)
 			if fresh then
 				lastTick = os.clock() -- the ratchet, not the step's tick
 				setPose(r, l, fresh)
+				l.turnRun = { from = from, to = l.pose }
 			end
 		end
 		local axis, angle = (l.target.Rotation * was.Rotation:Inverse()):ToAxisAngle()
@@ -863,6 +870,11 @@ function ArrangeHand.new(options: Options): Hand
 	-- Put away: the find shrinks back toward the tray; the server's answer puts it in the box.
 	local function awayNow()
 		local l = lifted
+		if l and not (l.original or l.asking or l.kept or carrying) then
+			showRing(nil) -- one fresh out of the box (Another once too often) floats back into it
+			slideBack(l)
+			return
+		end
 		local ask = remote(Spots.PutAwayRemote)
 		if not (l and l.original and ask) or l.asking or l.kept then
 			return -- the job box holds everything: it has no Put away
@@ -1181,7 +1193,9 @@ function ArrangeHand.new(options: Options): Hand
 			carrying = false
 		elseif i.kind == "tap" or i.kind == "doubleTap" then
 			local t = i.target
-			if l and (l.asking or t == l.ghost or t == l.original) then
+			-- (a thing fresh out of the box has no original: a tap on the bare room, no target,
+			-- must still let it go)
+			if l and (l.asking or (t ~= nil and (t == l.ghost or t == l.original))) then
 				return
 			end
 			if l then

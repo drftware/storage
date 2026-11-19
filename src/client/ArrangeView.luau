@@ -321,7 +321,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 				-- straight out of the box is still counted there)
 				local left = (boxCount[l.name] or 0) - (if l.original then 0 else 1)
 				which = {
-					away = l.original ~= nil and not l.kept,
+					away = not l.kept, -- one fresh out of the box floats back into it
 					turn = not (l.starter and Layout.Lean[l.starter]), -- the mirror turns itself
 					another = not l.kept and not full and left > 0,
 				}
@@ -1212,7 +1212,15 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 		showTab(onTab, false)
 
-		-- The round buttons round a selected thing (S5-03j2b1): Put away, Turn, Another.
+		-- The round buttons round a selected thing (S5-03j2b1): Put away, Turn, Another, kept off
+		-- Done and the limit bar (filled in place: the ring lays out while the camera moves).
+		local doneBox: Ring.Box = { left = 0, top = 0, right = 0, bottom = 0 }
+		local limitBox: Ring.Box = { left = 0, top = 0, right = 0, bottom = 0 }
+		local keepClear = { doneBox, limitBox }
+		local function boxOf(o: GuiObject, into: Ring.Box)
+			local at, size = o.AbsolutePosition, o.AbsoluteSize
+			into.left, into.top, into.right, into.bottom = at.X, at.Y, at.X + size.X, at.Y + size.Y
+		end
 		buttonRing = ArrangeRing.new({
 			parent = g,
 			colour = PANEL,
@@ -1231,6 +1239,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			area = function(): Ring.Box
 				local size = g.AbsoluteSize
 				return { left = 0, top = 0, right = size.X, bottom = size.Y }
+			end,
+			avoid = function(): { Ring.Box }
+				boxOf(done, doneBox)
+				boxOf(m, limitBox)
+				return keepClear
 			end,
 		})
 		return g

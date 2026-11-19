@@ -104,6 +104,47 @@ do
 	)
 end
 
+-- Kept clear of the screen's own buttons (S5-03j2b1b): Done top right, the limit bar top left on
+-- the A16. A row over the thing that would cover one goes under the thing instead; one clear of
+-- them stays over it.
+do
+	local done: Ring.Box = { left = 567, top = 14, right = 671, bottom = 62 }
+	local limit: Ring.Box = { left = 14, top = 14, right = 190, bottom = 50 }
+	local avoid: Ring.Options =
+		{ size = SIZE, gap = GAP, sag = SAG, margin = MARGIN, avoid = { done, limit } }
+	local function hits(p: Ring.Point, b: Ring.Box): boolean
+		return p.x + R > b.left and p.x - R < b.right and p.y + R > b.top and p.y - R < b.bottom
+	end
+
+	local underDone: Ring.Box = { left = 560, top = 100, right = 640, bottom = 150 }
+	local _, plain = Ring.place(underDone, 3, SCREEN, O)
+	ok(plain == "above", "with nothing to avoid, over the thing under Done")
+	local at, side = Ring.place(underDone, 3, SCREEN, avoid)
+	ok(side == "below", "under the thing when over it would cover Done")
+	ok(near(at[2].y - R, underDone.bottom + GAP), "a gap clear of the thing's foot")
+	for i, p in at do
+		ok(not hits(p, done) and not hits(p, limit), `button {i} clear of Done and the limit bar`)
+	end
+
+	local middle: Ring.Box = { left = 330, top = 100, right = 380, bottom = 150 }
+	local top, over = Ring.place(middle, 3, SCREEN, avoid)
+	ok(over == "above", "over a thing high in the middle, between them")
+	ok(near(top[2].y + R, middle.top - GAP), "still a gap over it")
+
+	local underLimit: Ring.Box = { left = 60, top = 90, right = 120, bottom = 140 }
+	local low, under = Ring.place(underLimit, 2, SCREEN, avoid)
+	ok(under == "below", "under the thing when over it would cover the limit bar")
+	for i, p in low do
+		ok(not hits(p, limit), `button {i} clear of the limit bar`)
+	end
+
+	-- Nowhere clear: the old place, over the thing, on the screen.
+	local all: Ring.Options =
+		{ size = SIZE, gap = GAP, sag = SAG, margin = MARGIN, avoid = { SCREEN } }
+	local _, stuck = Ring.place(middle, 3, SCREEN, all)
+	ok(stuck == "above", "with nowhere clear, over the thing as before")
+end
+
 print(`ring: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

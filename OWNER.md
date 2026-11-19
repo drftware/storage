@@ -81,17 +81,22 @@ nowhere else.
      into its card and nothing is set out. Tap a card: it glides out and lands by itself.
   4. Tell me: is 60 points above the thumb right, or too far? Is a crate big enough to grab at
      the view Arrange opens with on a Medium or bigger home (about 16 points across in Studio)?
-- [ ] **Arrange's ring of buttons, with your thumb** (S5-03j2b1, D-450; after S5-03j2b1b sees it
-  in Studio). On your phone, in your home, tap Arrange, then tap a find without dragging:
+- [ ] **Arrange's ring of buttons, with your thumb** (S5-03j2b1, D-450, D-451; seen in Studio
+  Play at A16 size, `docs/art/s5-03j2b-*.png`; the sound, the pinch and your thumb weren't).
+  On your phone, in your home, tap Arrange, then tap a find without dragging:
   1. Look for: it comes up a hair with a little swell, and round buttons pop in over it: Put
-     away (an arrow into a box), Turn (a curved arrow), and a plus if your box holds another.
-     They sit over the thing, not under your thumb, and stay with it as you slide or pinch.
+     away (an arrow into an open box), Turn (a curved arrow going round the way the thing
+     turns), and a plus if your box holds another. They sit over the thing, or under it when
+     it's high on the screen, never over Done or the count, and stay with it as you pinch.
   2. Tap Turn a few times. Look for: a click-click and a quick spin a little past each quarter.
+     Turn a shelf on a wall four times: it ends back on its wall where it stood.
   3. Tap the plus. Look for: the find settles, and one more of the same comes out beside it,
-     turned the same way, with the ring round it. Tap the room: the ring goes and it lands.
-  4. Tell me: can you tell the three icons apart without words? My defaults, yours to change:
-     the × is gone (a tap on the room lets go); Turn sits in the middle; the plus is hidden when
-     your box has no more of that find.
+     turned the same way, with the ring round it. Tap Put away on that one: it floats back into
+     the box. Tap the plus again, then the room: the ring goes and it lands.
+  4. Tell me: can you tell the three icons apart without words, and are they easy to hit? My
+     defaults, yours to change: the × is gone (a tap on the room lets go); Turn sits in the
+     middle; the plus is hidden when your box has no more of that find; one you just took out
+     has Put away too.
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

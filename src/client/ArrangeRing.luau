@@ -36,6 +36,8 @@ export type Options = {
 	another: () -> (),
 	-- The part of the screen the ring may use, in gui points.
 	area: () -> Ring.Box,
+	-- The screen's own buttons the ring keeps off (Done, the limit bar), in gui points.
+	avoid: (() -> { Ring.Box })?,
 }
 
 export type ArrangeRing = {
@@ -71,7 +73,8 @@ local function bar(
 	return f
 end
 
--- Turn: a ring with a gap at its top right and an arrowhead going round clockwise.
+-- Turn: a ring with a gap at its top left and an arrowhead going round anticlockwise, the way a
+-- quarter turn goes as the camera sees it from above (S5-03j2b1b).
 local function turnIcon(b: GuiObject, ink: Color3, colour: Color3)
 	local ring = Instance.new("Frame")
 	ring.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -89,21 +92,24 @@ local function turnIcon(b: GuiObject, ink: Color3, colour: Color3)
 	ring.Parent = b
 	local gap = Instance.new("Frame") -- the gap the arrow points across
 	gap.AnchorPoint = Vector2.new(0.5, 0.5)
-	gap.Position = UDim2.new(0.5, 9, 0.5, -7)
+	gap.Position = UDim2.new(0.5, -9, 0.5, -7)
 	gap.Size = UDim2.fromOffset(10, 10)
 	gap.BackgroundColor3 = colour
 	gap.BorderSizePixel = 0
 	gap.ZIndex = 2
 	gap.Parent = b
-	bar(b, ink, 8, 3, 3.5, -12.5, 35)
-	bar(b, ink, 8, 3, 3.5, -7.5, -35)
+	bar(b, ink, 8, 3, -3.5, -12.5, -35)
+	bar(b, ink, 8, 3, -3.5, -7.5, 35)
 end
 
--- Put away: an arrow down into an open box.
+-- Put away: an arrow down into an open box, its flaps folded out (without them it read as a
+-- download tray at phone size, S5-03j2b1b).
 local function awayIcon(b: GuiObject, ink: Color3)
 	bar(b, ink, 22, 3, 0, 10)
 	bar(b, ink, 3, 10, -9.5, 6)
 	bar(b, ink, 3, 10, 9.5, 6)
+	bar(b, ink, 3, 8, -12.1, -2.1, -40)
+	bar(b, ink, 3, 8, 12.1, -2.1, 40)
 	bar(b, ink, 3, 13, 0, -6)
 	bar(b, ink, 9, 3, -2.8, -1, 40)
 	bar(b, ink, 9, 3, 2.8, -1, -40)
@@ -164,8 +170,8 @@ function ArrangeRing.new(options: Options): ArrangeRing
 	local ringOptions: Ring.Options =
 		{ size = Feel.RingSize, gap = Feel.RingGap, sag = Feel.RingSag, margin = Feel.RingMargin }
 
-	-- Lays the shown buttons round the thing's box on the screen; hides them while it's behind
-	-- the camera.
+	-- Lays the shown buttons round the thing's box on the screen; hides them while any of it is
+	-- behind the camera.
 	local function layout()
 		local t, camera = thing, Workspace.CurrentCamera
 		if not (t and camera and t.Parent) then
@@ -181,8 +187,10 @@ function ArrangeRing.new(options: Options): ArrangeRing
 					if i // 2 % 2 == 0 then -h.Y else h.Y,
 					if i // 4 == 0 then -h.Z else h.Z
 				)
-			local p, ahead = camera:WorldToScreenPoint(corner)
-			if not ahead then
+			-- (the second value WorldToScreenPoint gives means on the screen, not ahead: a tall
+			-- thing's top off the screen's edge still gets its ring, S5-03j2b1b)
+			local p = camera:WorldToScreenPoint(corner)
+			if p.Z <= 0 then
 				holder.Visible = false
 				return
 			end
@@ -190,6 +198,7 @@ function ArrangeRing.new(options: Options): ArrangeRing
 			right, bottom = math.max(right, p.X), math.max(bottom, p.Y)
 		end
 		holder.Visible = true
+		ringOptions.avoid = if options.avoid then options.avoid() else nil
 		local at = Ring.place(
 			{ left = left, top = top, right = right, bottom = bottom },
 			#shown,

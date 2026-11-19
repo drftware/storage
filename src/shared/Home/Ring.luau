@@ -7,8 +7,9 @@
 	They make one row bowed over the thing's box on the screen: a gap clear of its top, the ends
 	dipping down round it so the row hugs it without covering it. Over the thing is clear of the
 	thumb that tapped it, which comes up from below. With no room above (the thing high on the
-	screen) the row sits under it, bowed up; slid sideways, it stays on the screen. Pure: points in,
-	points out. ArrangeRing calls it each time the thing or the camera moves.
+	screen, or over it would cover one of the screen's own buttons, `avoid`) the row sits under it,
+	bowed up; slid sideways, it stays on the screen. Pure: points in, points out. ArrangeRing calls
+	it each time the thing or the camera moves.
 ]]
 
 export type Box = { left: number, top: number, right: number, bottom: number }
@@ -17,7 +18,10 @@ export type Options = {
 	size: number, -- a button's width and height (points)
 	gap: number, -- between buttons, and between the row and the thing
 	sag: number, -- how far each step out from the middle the row bows round the thing
-	margin: number, -- kept clear inside the area's edges
+	margin: number, -- kept clear inside the area's edges, and round each `avoid` box
+	-- Parts of the screen the row keeps off (Done, the limit bar): it goes the other side of the
+	-- thing when that side is clear, else it stays where it would have gone.
+	avoid: { Box }?,
 }
 
 local Ring = {}
@@ -69,6 +73,40 @@ function Ring.place(box: Box, count: number, area: Box, o: Options): ({ Point },
 		x += left - first
 	elseif last > right then
 		x -= last - right
+	end
+	-- off the screen's own buttons: the other side of the thing when it fits there and is clear
+	local avoid = o.avoid
+	if avoid and #avoid > 0 then
+		local function blocked(rowY: number, rowSide: "above" | "below"): boolean
+			local d = if rowSide == "above" then 1 else -1
+			for i = 1, count do
+				local k = i - 1 - half
+				local px, py = x + k * step, rowY + d * o.sag * k * k
+				for _, b in avoid do
+					if
+						px + r > b.left - o.margin
+						and px - r < b.right + o.margin
+						and py + r > b.top - o.margin
+						and py - r < b.bottom + o.margin
+					then
+						return true
+					end
+				end
+			end
+			return false
+		end
+		if blocked(y, side) then
+			local flip: "above" | "below" = if side == "above" then "below" else "above"
+			local fy = if flip == "above" then box.top - o.gap - r else box.bottom + o.gap + r
+			local dip = if flip == "above" then bow else -bow
+			if
+				math.min(fy, fy + dip) >= low
+				and math.max(fy, fy + dip) <= high
+				and not blocked(fy, flip)
+			then
+				side, y = flip, fy
+			end
+		end
 	end
 	local dir = if side == "above" then 1 else -1 -- the ends dip toward the thing
 	for i = 1, count do

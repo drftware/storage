@@ -10699,3 +10699,27 @@ the room lifts it with today's drag (Turn, Place, the tray away).
   that session's own wheel zoom between captures (its notes: wheel 4 for a close view). The
   Studio check in S5-03j2b1b confirms it.
 
+- **D-451 The ring seen in Studio: what read wrong and what changed** (S5-03j2b1b). Seen in
+  Studio Play at A16 size on a Medium home (`docs/art/s5-03j2b-*.png`): a tap selects with the
+  ring popping in, Turn, Another, Put away, a tap on the room landing it, the ring under a find
+  high on the screen, the ring following a camera slide and a zoom. Fixed on the way:
+  - Turn's arrow went clockwise while a quarter turn goes anticlockwise as the camera sees it
+    from above (`turnNow` adds 90 degrees of yaw): the icon is mirrored, so the arrow says which
+    way the thing will go.
+  - Put away's arrow into an open tray read as a download button at phone size: the box now has
+    its flaps folded out.
+  - The ring could cover Done and the limit bar (its area was the whole screen): `Ring.place`
+    takes `avoid` boxes and goes the other side of the thing when that side is clear; in the
+    middle of the screen it still sits over the thing, clear of the thumb.
+  - A find fresh out of the box (Another) couldn't be let go by a tap on the room (the tap's
+    nil target matched its nil original), and had no Put away. Now a tap lets it land, and
+    Put away floats it back into the box (`slideBack`), so pressing Another once too often is
+    undone in one tap.
+  - Turning a shelf on a wall pushed it off the wall (the turned footprint clamped into the
+    room) and the push stuck, so four turns left it three studs out. A run of Turn presses now
+    settles from where the run began (`Lifted.turnRun`): four turns bring it home.
+  - The ring hid whenever any corner of the thing left the screen, since `WorldToScreenPoint`'s
+    second value means on the screen, not ahead of the camera: now only depth hides it.
+  The conductor's question is answered: through one drag with no wheel the camera held still
+  (a per-frame log: no slide, turn or zoom from lift to landing). S5-03j2a2's differing frames
+  were its own wheel zoom between captures.
