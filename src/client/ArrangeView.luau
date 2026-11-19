@@ -59,6 +59,7 @@ local ArrangeCamera = require(script.Parent.ArrangeCamera)
 local ArrangeHand = require(script.Parent.ArrangeHand)
 local ArrangeRing = require(script.Parent.ArrangeRing)
 local ArrangeTurn = require(script.Parent.ArrangeTurn)
+local ArrangeUndo = require(script.Parent.ArrangeUndo)
 local LooksTab = require(script.Parent.LooksTab)
 local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
@@ -180,6 +181,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	local buttonRing: ArrangeRing.ArrangeRing? = nil
 	-- R, Alt and the Free switch under Done (ArrangeTurn).
 	local turnKeys: ArrangeTurn.ArrangeTurn? = nil
+	-- Undo and Redo beside Done (ArrangeUndo).
+	local undoKeys: ArrangeUndo.ArrangeUndo? = nil
 	local boxCount: { [string]: number } = {}
 	local cards: { [string]: TextButton } = {}
 	-- The tray's three tabs (FINDS, ROOM: the paint tab, FRONT: your door; LooksTab's pages),
@@ -317,6 +320,10 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	-- way so the floor by the door shows; it slides back up when the thing is set down or let go.
 	-- While a finger is `carrying` it, the ring stays hidden: nothing but the thing and its shadow.
 	local function showRing(l: ArrangeHand.Lifted?, carrying: boolean?)
+		local u = undoKeys
+		if u then
+			task.defer(u.refresh) -- once the hand has settled what it holds
+		end
 		local o = buttonRing
 		if o then
 			local which: ArrangeRing.Which? = nil
@@ -370,6 +377,18 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		free = function(): boolean
 			local t = turnKeys
 			return t ~= nil and t.free()
+		end,
+		changed = function(
+			name: string,
+			idBefore: string?,
+			before: Brix.PlacementPose?,
+			idAfter: string?,
+			after: Brix.PlacementPose?
+		)
+			local u = undoKeys
+			if u then
+				u.record(name, idBefore, before, idAfter, after)
+			end
 		end,
 	})
 	pickThing, toHand = hand.pick, hand.intent
@@ -887,6 +906,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		if turnKeys then
 			turnKeys.open(true)
 		end
+		if undoKeys then
+			undoKeys.open(true)
+		end
 		local ask = remote(Arrange.BoxRemote)
 		if ask then
 			ask:FireServer()
@@ -907,6 +929,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		attachTabs(nil)
 		if turnKeys then
 			turnKeys.open(false)
+		end
+		if undoKeys then
+			undoKeys.open(false)
 		end
 		still(false)
 		body(false)
@@ -1233,7 +1258,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		local doneBox: Ring.Box = { left = 0, top = 0, right = 0, bottom = 0 }
 		local limitBox: Ring.Box = { left = 0, top = 0, right = 0, bottom = 0 }
 		local freeBox: Ring.Box = { left = 0, top = 0, right = 0, bottom = 0 }
-		local keepClear = { doneBox, limitBox, freeBox }
+		local undoBox: Ring.Box = { left = 0, top = 0, right = 0, bottom = 0 }
+		local redoBox: Ring.Box = { left = 0, top = 0, right = 0, bottom = 0 }
+		local keepClear = { doneBox, limitBox, freeBox, undoBox, redoBox }
 		local function boxOf(o: GuiObject, into: Ring.Box)
 			local at, size = o.AbsolutePosition, o.AbsoluteSize
 			into.left, into.top, into.right, into.bottom = at.X, at.Y, at.X + size.X, at.Y + size.Y
@@ -1275,6 +1302,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 				if keys then
 					boxOf(keys.button, freeBox)
 				end
+				local u = undoKeys
+				if u then
+					boxOf(u.buttons[1], undoBox)
+					boxOf(u.buttons[2], redoBox)
+				end
 				return keepClear
 			end,
 		})
@@ -1292,6 +1324,25 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			changed = function()
 				hand.freeChanged()
 			end,
+		})
+		undoKeys = ArrangeUndo.new({
+			parent = g,
+			at = UDim2.new(1, -128, 0, 14), -- Done's row, left of it (104 wide, a 10-point gap)
+			colour = PANEL,
+			rim = RIM,
+			ink = INK,
+			press = press,
+			lifted = function(): (boolean, boolean)
+				local l = hand.lifted()
+				return l ~= nil, l ~= nil and l.asking ~= nil
+			end,
+			putBack = function()
+				local l = hand.lifted()
+				if l and not l.asking then
+					hand.slideBack(l)
+				end
+			end,
+			replay = hand.replay,
 		})
 		return g
 	end
@@ -1522,6 +1573,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 				if t then
 					t.destroy()
 					turnKeys = nil
+				end
+				local u = undoKeys
+				if u then
+					u.destroy()
+					undoKeys = nil
 				end
 				gui:Destroy()
 				gui = nil

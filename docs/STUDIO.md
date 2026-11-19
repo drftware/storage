@@ -3630,6 +3630,11 @@ verified: a doc page, Studio, or "untested".
   character to (62, 3, 479) (slot 1, Unit1). The button sits at gui (622, 4), 46 square: click
   (692, 27). Done is at gui (567, 14), 104 by 48: click (666, 38). Clicks land 47 points left of
   where they're sent across, none down.
+- **Clicking a gui button from the phone crop** (S5-03j4a): gui = crop + (45, -47), and a click
+  is gui + (47, 0); the hand cursor drawn in the crop is not where the click landed. Ctrl+Z works
+  through `user_keyboard_input` (keyDown LeftControl, keyPress Z, keyUp). A left mouse drag on a
+  find at the close view turned the camera rather than lifting it, and CameraTest's `"drag"` didn't
+  lift it either: undoing a plain move wasn't driven.
 - **Captures:** `screencapture -l <window> -x -o` of Studio's window, then the `sips` crop above:
   672 by 314, about 300 tokens to look at. Half scale for `docs/art` is `sips -Z 336`.
 

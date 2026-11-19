@@ -153,6 +153,13 @@ nowhere else.
   the handle riding up with it under your thumb, the room's camera holding still; tap the empty
   room and it sets down there. Tell me if the handle is too big next to a small sign (my default:
   the ring's 52-point size, for thumbs), and whether it should sit somewhere else.
+- [ ] **Try it: Undo and Redo** (S5-03j4a, D-460). On your phone, open Arrange and drag the bed
+  to another corner, then tap the left arrow beside Done: the bed should lift and glide back with
+  its thud; tap the right arrow and it goes again. Set a crate out of the tray, tap Undo: it
+  shrinks into your box; Redo pops it back onto the same spot. Look for: the arrows asleep when
+  there's nothing to do, never a dead tap. On a keyboard, Ctrl+Z and Ctrl+Y do the same. Two
+  defaults to judge: a find taken out of a shelf cubby and undone goes into the job box, not its
+  cubby; undoing a Put away brings back the piece alone, not what stood on it.
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

@@ -3546,7 +3546,8 @@ Done when players watch the results to the end and change their perks between cl
         `WallHang.along` turns the finger's move into studs up the wall, `raise` steps it, a tick
         per step; the thing stays selected, as after Turn. Seen in Studio at A16: the neon sign
         lifted two steps (-2.5 to -1.45 on the wall's grid) and placed.
-    - [ ] **S5-03j4 Undo, and every action answers.** Split (Nov 19, S5-03j3c2's session):
+    - [ ] **S5-03j4 Undo, and every action answers.** j4a done (Nov 19, D-460): Brix's UndoList,
+      `Home/History`, the hand's `replay`, two buttons by Done, Ctrl+Z / Ctrl+Y. Split (Nov 19, S5-03j3c2's session):
       **j4a** undo and redo (the undo list, Brix's if it's generic, D-252; the buttons; the
       server takes each undo as an ordinary Place or Put away); **j4b** the feedback table's
       rows below. Undo and redo while Arrange is open (a

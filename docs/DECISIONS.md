@@ -10923,3 +10923,30 @@ the room lifts it with today's drag (Turn, Place, the tray away).
   `-raised-closeup.png` (full scale).
 - **Not seen:** a touch drag on a real phone, Free (Alt) on the handle, the handle with the sign
   turned edge on to the camera.
+
+## D-460: Undo and Redo in Arrange (S5-03j4a, Nov 19)
+
+- **The moment, The Sims 4's build mode:** shove the bed into the wrong corner, tap Undo and it
+  glides back; Redo sends it again. Two round buttons in Done's row, left of it (48 points, a
+  curved arrow each way, no words), asleep while there's nothing to do; Ctrl+Z, Ctrl+Y and
+  Ctrl+Shift+Z (Cmd too). Only while Arrange is open; closing forgets the list.
+- **The list is Brix's** (`Brix.UndoList`, ENG-28c, Brix E-086; the pin moves to `e62e218`): a
+  plain two-sided list of the game's own steps. `Home/History` (pure, specs) holds what a step is:
+  a thing and where it stood before and after (no place: the box). A thing keeps one record across
+  its steps, so when an undo brings it out of the box under a new id, older steps follow it.
+- **No new remote:** each undo or redo is the ordinary Place or Put away, sent by the hand itself
+  (`ArrangeHand.replay`): it lifts the thing as a finger would, glides it on LAND and lands it with
+  its knock or thud; out of the box it pops up over its spot at `Feel.UndoPop` and drops in; into
+  the box it shrinks as Put away does. Only accepted changes are recorded (`answered`); a refused
+  undo floats back as any refused move does and its step is dropped. One ask at a time.
+- **Undo with a thing selected** puts it back where it was (the change not yet made), before any
+  step is taken back. Redo then sleeps until it's let go.
+- **Defaults (OWNER.md):** a find taken out of a cubby is recorded as out of the box, so undoing
+  it puts it in the job box, not back in its cubby; undoing a Put away brings back the piece alone,
+  not what stood on it. 100 steps kept.
+- **Seen in Studio at A16 (Small, Unit1):** a milk crate set out from its card (4/25), Ctrl+Z
+  shrank it into the box (3/25, Undo asleep, Redo lit), a Redo tap popped it back onto its spot
+  (4/25). Captures `docs/art/s5-03j4a-undone.png`, `-redone.png` (half scale) and
+  `-buttons-closeup.png`, `-buttons-undone-closeup.png` (full scale). **Not seen:** undoing a
+  plain move (the drag couldn't be driven from the MCP at that view; the move path is the same
+  lift, set and Place the redo used, and the history spec covers its steps), a refused undo.

@@ -27,6 +27,7 @@ local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Home = require(ReplicatedStorage.Shared.Home)
+local History = require(ReplicatedStorage.Shared.Home.History)
 local HomeSpecs = require(ReplicatedStorage.Shared.Home.Specs)
 local Layout = require(ReplicatedStorage.Shared.Home.Layout)
 local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
@@ -110,6 +111,11 @@ export type Lifted = {
 	backs: boolean,
 	wall: number?,
 	lines: Brix.PlacementAlignment,
+	-- Where it stood when lifted (nil: out of the box or a cubby), for undo (S5-03j4a).
+	before: Brix.PlacementPose?,
+	-- An undo or redo carried out by the hand (`replay`): told the server's word once, instead
+	-- of the change being recorded as a new step.
+	finished: ((ok: boolean, id: string?) -> ())?,
 }
 
 -- What the hand needs from the screen that owns it.
@@ -138,6 +144,15 @@ export type Options = {
 	-- Whether Free is on (Alt held, or the corner switch, ArrangeTurn): the carried thing goes
 	-- off the grid, where the finger has it, at any whole degree (S5-03j2b2b).
 	free: () -> boolean,
+	-- A change the server accepted (S5-03j4a): what was `idBefore` at `before` is now `idAfter` at
+	-- `after`; nil, nil is the box. Undo and redo's own asks aren't reported.
+	changed: (
+		name: string,
+		idBefore: string?,
+		before: Brix.PlacementPose?,
+		idAfter: string?,
+		after: Brix.PlacementPose?
+	) -> (),
 }
 
 -- The hand, as ArrangeView and the build camera call it.
@@ -176,6 +191,11 @@ export type Hand = {
 	stopFollow: () -> (),
 	-- Free went on or off: a carried thing settles again at once, onto the grid or off it.
 	freeChanged: () -> (),
+	-- Undo or Redo (S5-03j4a): carries `ask` out as a finger would, lifting the thing and setting
+	-- it on `ask.to` (or putting it away), with the usual glide and knock. False when it can't
+	-- start (something is lifted, the thing isn't drawn, the room is full); otherwise `finished`
+	-- hears the server's word once.
+	replay: (ask: History.Ask, finished: (ok: boolean, id: string?) -> ()) -> boolean,
 }
 
 local ArrangeHand = {}
@@ -637,7 +657,17 @@ function ArrangeHand.new(options: Options): Hand
 	end
 
 	-- Lets the ghost go: gone, the drawn find shown again (unless it was put away).
+	-- Tells an undo or redo carried out on `l` the server's word, once.
+	local function finish(l: Lifted, ok: boolean, id: string?)
+		local f = l.finished
+		if f then
+			l.finished = nil
+			f(ok, id)
+		end
+	end
+
 	local function letGo(l: Lifted, showOriginal: boolean)
+		finish(l, false, nil) -- (kept, it was told already)
 		if lifted == l then
 			lifted = nil
 			stopFollow()
@@ -715,6 +745,8 @@ function ArrangeHand.new(options: Options): Hand
 			backs = piece ~= nil and not Snapping.Flat[piece.id] and not Layout.Lean[piece.id],
 			wall = nil,
 			lines = { x = 0, y = 0, count = 0, guides = {} },
+			before = nil,
+			finished = nil,
 		}
 		lifted = l
 		carrying = false
@@ -734,6 +766,7 @@ function ArrangeHand.new(options: Options): Hand
 			end
 			local pose = r.placements:poseOf(id)
 			if pose then
+				l.before = { on = pose.on, x = pose.x, y = pose.y, turn = pose.turn }
 				l.turn = pose.turn
 				-- lifted off a wall, it starts against it: the first move keeps the turn it has
 				local floor = r.placements:areaOf("Floor")
@@ -1268,6 +1301,18 @@ function ArrangeHand.new(options: Options): Hand
 				if mine.shape.top then
 					tops[id] = true
 				end
+				if mine.finished then
+					finish(mine, true, id)
+				else
+					local from = mine.original ~= nil and mine.shelf == nil
+					options.changed(
+						mine.name,
+						if from then mine.id else nil,
+						if from then mine.before else nil,
+						id,
+						{ on = pose.on, x = pose.x, y = pose.y, turn = pose.turn }
+					)
+				end
 				settleOnto(mine, id)
 			else
 				slideBack(mine)
@@ -1282,8 +1327,14 @@ function ArrangeHand.new(options: Options): Hand
 					r.heights[each] = nil
 					tops[each] = nil
 				end
-				if r.placements:poseOf(mine.id) then -- out of a cubby, it was never set out here
+				local stood = r.placements:poseOf(mine.id)
+				if stood then -- out of a cubby, it was never set out here
 					away(mine.id)
+				end
+				if mine.finished then
+					finish(mine, true, nil)
+				elseif stood then
+					options.changed(mine.name, mine.id, mine.before, nil, nil)
 				end
 				r.placements:takeEvents()
 				letGo(mine, false)
@@ -1571,6 +1622,50 @@ function ArrangeHand.new(options: Options): Hand
 		end)
 	end
 
+	-- Undo or Redo (S5-03j4a, D-460): the thing is lifted as a finger would lift it and sent on
+	-- the ordinary ask, so the server judges it as any move. Moved, it glides from where it
+	-- stands onto `ask.to` and lands with its knock or thud; out of the box, it pops up just over
+	-- its spot and drops in; into the box, it shrinks away as Put away does.
+	local function replay(ask: History.Ask, finished: (ok: boolean, id: string?) -> ()): boolean
+		local r = options.room()
+		local to, id = ask.to, ask.id
+		if lifted or carrying or not r then
+			return false
+		end
+		if id then
+			local folder = placed()
+			local drawn = if folder then folder:FindFirstChild(id) else nil
+			if not (drawn and drawn:IsA("Model")) then
+				return false
+			end
+			liftDrawn(drawn)
+		elseif to then
+			liftBoxed(ask.name, nil, nil)
+		end
+		local l = lifted
+		if not l or (id and l.id ~= id) then
+			return false
+		end
+		l.finished = finished
+		if not to then
+			awayNow()
+			return true
+		end
+		setPose(r, l, { on = to.on, x = to.x, y = to.y, turn = to.turn })
+		l.turn = to.turn
+		if not (l.pose and l.fits) then
+			slideBack(l) -- taken since: it floats back, and the step is dropped
+			return true
+		end
+		if not id then
+			local whole = l.ghost:GetScale()
+			l.ghost:PivotTo(l.target + Vector3.yAxis * Feel.Hover)
+			grow(l.ghost, whole * Feel.UndoPop, whole)
+		end
+		placeNow()
+		return true
+	end
+
 	-- A card dragged up out of the tray: `key` lifts out of your box under gui point `at` and the
 	-- finger (a touch when `touch`) carries it.
 	local function carryBoxed(key: string, at: Vector2, touch: boolean)
@@ -1643,6 +1738,7 @@ function ArrangeHand.new(options: Options): Hand
 		raiseBy = raiseBy,
 		raiseStop = raiseStop,
 		answered = answered,
+		replay = replay,
 		stopFollow = stopFollow,
 		freeChanged = freeChanged,
 	}

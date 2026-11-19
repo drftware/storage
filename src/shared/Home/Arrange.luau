@@ -125,6 +125,9 @@ Arrange.Feel = table.freeze({
 	-- A thing lifted under the finger swells this much (times its size) and settles back at once:
 	-- the small stretch of something picked up.
 	Stretch = 1.08,
+	-- A thing Undo or Redo brings out of the box pops up over its spot at this share of its size
+	-- and grows as it drops in (S5-03j4a): it plainly comes from somewhere, not out of thin air.
+	UndoPop = 0.45,
 	-- A thing tapped and selected (S5-03j2b1) rides only a hair over its spot (studs), so it
 	-- reads as picked out yet still where it stands; dragged, it rises to `Hover`.
 	Hair = 0.2,

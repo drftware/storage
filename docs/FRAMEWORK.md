@@ -44,8 +44,9 @@ the other zones (sphere, polygon, any-of, grown), the floor pathing and the sphe
 
 ## What Brix has built since the pin
 
-These are in the pin (moved to `3e9a2bb` for ENG-28b, OrbitCamera's `eyeArea` and `aim`, used by
-the build camera, D-443), still not used here.
+These are in the pin (moved to `e62e218` for ENG-28c, `UndoList`, used by Arrange's Undo and Redo,
+D-460; before that `3e9a2bb` for ENG-28b, OrbitCamera's `eyeArea` and `aim`, D-443), still not used
+here.
 Moving the pin is its own small step, taken when a ticket first needs something newer.
 
 | Brix piece | State in Brix | This game's use |

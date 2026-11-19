@@ -2,39 +2,40 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-19, S5-03j3c2 done: the height handle (D-459) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
+**Updated:** 2026-11-19, S5-03j4a done: Undo and Redo (D-460) · **Checks:** green · **Git:** `main`, not pushed; Brix `e62e218`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; search its heading). Order now: S5-03j4a, j4b, j5 to j7, ENG-29, k1 to k6.
-- **The height handle** (D-459): an up-down button over a selected wall thing (`Ring.handle`);
-  its drag goes to the hand's `raiseStart`/`raiseBy`/`raiseStop` (`WallHang.along`, `raise`,
-  `settle`). Seen in Studio at A16, `docs/art/s5-03j3c2-handle-*.png`.
+  only; search its heading). Order now: S5-03j4b, j5 to j7, ENG-29, k1 to k6.
+- **Undo and Redo** (D-460): Brix's `UndoList` (ENG-28c) under `Home/History` (pure, specs);
+  `ArrangeUndo` draws two buttons in Done's row and takes Ctrl+Z / Ctrl+Y; the hand's `replay`
+  sends each as an ordinary Place or Put away. Seen in Studio for a set-out; a plain move's undo
+  wasn't driven (STUDIO.md: the MCP's drag turns the camera at the close view).
 - **Studio has tonight's code** (`rojo serve`, port 34872): restart Play to run edits.
 - **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j4a Undo and redo
-The moment: you shove the bed into the wrong corner, tap Undo and it glides back; Redo sends it
-again, as The Sims 4's build mode undo. Only while Arrange is open; closing forgets the list.
-1. The plan doc's undo lines (search "Undo" in the doc's room editor section) and ROADMAP's
-   S5-03j4 lines. Check Brix (`../engine/src`, `docs/FRAMEWORK.md`) for an undo list: none
-   exists today. A plain undo/redo list is generic, so build it in Brix by its AGENTS.md (neutral
-   name, contract, suite, module page, its own commit), then move `vendor/brix` (D-252);
-   `git -C ../engine status --short` must be clean first.
-2. What one entry holds: a thing's id and its pose before and after (or "in the box" for a set
-   out or put away), read from the hand's moves (`placeNow` ~996, `awayNow` ~1184, `another`
-   ~1545, and the answer in `answered` ~1251: record only what the server accepted).
-3. Undo and Redo send ordinary Place or Put away asks (no new remote): the server judges them as
-   any move, so a spot taken since is refused and the entry dropped, with the refusal's usual
-   answer. A find from the box undone back to the box is a Put away.
-4. Two round buttons beside Done (ArrangeView ~1238, kept clear by the ring's `avoid`), icons not
-   words (a curved arrow each way), dim when there's nothing to undo; Ctrl+Z / Ctrl+Y on a
-   keyboard. The thing glides on the usual LAND tween with its knock or thud.
-5. Studio at A16: move a crate, Undo, Redo; capture half scale plus a close-up of the buttons.
-**Acceptance:** green, Brix's suite too; the list's specs; undo and redo seen in Studio.
-**Read first:** ROADMAP S5-03j4 (grep it); `ArrangeHand.luau` 996-1050, 1184-1200, 1251-1300;
-`ArrangeView.luau` 1232-1300; `src/server/Arranging.luau` 1-60; `../engine/AGENTS.md`.
+## Next task: S5-03j4b Every action answers
+The moment: each thing you do in Arrange answers in hand and ear, as The Sims 4's build mode
+does: a lift's little rise, a thud that sounds as heavy as the bed is, a find put away flying into
+its tray card, a blocked spot showing what blocks it.
+1. Read the plan doc's feedback table (search "Every action answers" in the room editor section)
+   and ROADMAP's S5-03j4 lines. List each row against what the hand does today (lift, drag, onto
+   a table, blocked, turn, place, put away, undo) and build only what's missing.
+2. Blocked: the thing in the way glows (a Highlight on the drawn blocker, Brix's Placements
+   answers who blocks: check its refusal); cleared as the ghost moves off.
+3. Place: the thud by weight, read from the find's or piece's catalog heft (`Catalog`, rows), never
+   a name; a few weight bands in Config, each a sound and a puff size.
+4. Put away: the ghost flies into its tray card (screen point of the card) and the card bumps,
+   instead of shrinking where it stood. Undo's replay goes through the same path.
+5. Phone taps: Roblox's newer haptics only after checking create.roblox.com (write what you learn
+   in STUDIO.md); otherwise leave it and say so in OWNER.md.
+6. Studio at A16: a blocked drag, a heavy and a light place, a put away; half-scale shots and
+   full-scale close-ups (clicks: STUDIO.md's crop rule).
+**Acceptance:** green; each row built or listed in ROADMAP with why; seen in Studio.
+**Read first:** ROADMAP S5-03j4 (grep it); the plan doc's feedback table; `ArrangeHand.luau`
+`placeNow` and `awayNow` (grep them); `src/shared/Home/Arrange.luau` 80-160 (Feel); `docs/STUDIO.md`
+"Clicking a gui button from the phone crop"; DECISIONS D-460.
 
 ## Queue (next sessions, the owner's ticket order)
 0. A tray card's drag isn't Gestures': the wheel zooms, no twist (route the wheel, D-453).
