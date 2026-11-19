@@ -10723,3 +10723,27 @@ the room lifts it with today's drag (Turn, Place, the tray away).
   The conductor's question is answered: through one drag with no wheel the camera held still
   (a per-frame log: no slide, turn or zoom from lift to landing). S5-03j2a2's differing frames
   were its own wheel zoom between captures.
+- **D-452 Any angle: how a twist turns a thing, and what keeps a free angle honest**
+  (S5-03j2b2a). `Home/Turning` is the one place a turn is worked out on the screen:
+  - A twist turns the thing the way the fingers turn on the screen. Brix's Gestures report a
+    twist clockwise on the screen and Brix's Placements turn a footprint anticlockwise as one
+    looks at its face, so the turn goes down by the twist. A camera looking at a face from behind
+    (the ceiling from above) must hand the twist over negated.
+  - On the grid a twist shows the nearest quarter to where the fingers have it, counted from the
+    room's own square, not from where the thing stood: the grid snap already squares a thing set
+    off the grid on its first drag, so a 37-degree chair touched with Free off comes square. A
+    Turn press on the grid goes on to the next quarter (37 to 90); with Free a quarter on from
+    wherever it is (37 to 127). From a quarter both agree with a quarter's twist.
+  - Free stops at whole degrees (our default; the doc says "any angle"): a turn of 37.28 saves
+    as 37, compares exactly, and nobody can see a part degree.
+  - What takes any angle already: the server's ask (any number, brought round), Brix's judge
+    (turned rectangles tested on their own edges; its suite covers 30 and 45 degrees), the save
+    (any number from -360 to 360, a spec keeps 37.5), and the drawn find (`Arranged.pose` turns
+    the way Brix turns, so the footprint judged is the box seen: `arranged.spec` checks every
+    drawn corner at 37 degrees on the floor, a wall and the ceiling against Brix's own check, and
+    fails if the drawing turns the other way). No Brix change was needed.
+  - What refused: the job box's lid room (D-348) only measured a square turn, so at 37 degrees it
+    could stand with its lid against the wall. Now the lid's room is measured from both corners of
+    its back straight back to the nearest wall, at any turn (both walls count in a corner), and
+    the box pushed nearer slides out along its own front. The mirror leans only when square: at
+    any other angle it leans on nothing and is refused, as before.

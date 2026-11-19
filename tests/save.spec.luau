@@ -123,6 +123,16 @@ do
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
+-- A find set out with Free at any angle (S5-03j2b2a) keeps its turn to the part degree.
+do
+	local data = played()
+	data.placed.rows[1].turn = 37.5
+	local stored, problem = format:encode(data)
+	ok(stored ~= nil, `a turn of 37.5 can be stored ({problem})`)
+	local back = if stored then format:decode(15, stored) else nil
+	ok(back ~= nil and back.placed.rows[1].turn == 37.5, "and comes back 37.5")
+end
+
 -- What the shape refuses is never stored.
 do
 	local function refused(what: string, change: (data: any) -> ())

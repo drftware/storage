@@ -223,6 +223,42 @@ do
 	ok(Spots.askId("Floor") == nil and Spots.askId(nil) == nil, "a put-away naming none: refused")
 end
 
+-- Any angle (S5-03j2b2a): a find set out with Free at 37 degrees passes the server's ask and
+-- Brix's judge, which holds it to its footprint turned 37 degrees: what's under the turned
+-- corner is taken, what only the square footprint would cover is free, and a save keeps 37.
+do
+	local what, pose = Spots.ask("RCCar", "Floor", 0, 0, 37)
+	ok(what == "RCCar" and pose ~= nil and pose.turn == 37, "an ask at 37 keeps 37")
+	local _, part = Spots.ask("RCCar", "Floor", 0, 0, -322.5)
+	ok(part ~= nil and near(part.turn, 37.5), "a part degree, brought round")
+	local set = Brix.Placements.new({
+		areas = { Floor = { kind = Spots.Kinds.Floor, width = 10, depth = 10 } },
+		limit = 10,
+	})
+	local car = Spots.shape("RCCar", { 2, 0.5, 1 }) -- 2 across, 1 front to back
+	ok(set:place("RCCar#1", car, pose :: Spots.Pose) == nil, "Brix takes it at 37")
+	local kept = set:poseOf("RCCar#1")
+	ok(kept ~= nil and kept.turn == 37, "and keeps 37")
+	local probe = Spots.shape("Teddy", { 0.05, 0.05, 0.05 })
+	local function at(x: number, y: number): Spots.Pose
+		return { on = "Floor", x = x, y = y, turn = 0 }
+	end
+	-- the turned corner reaches (0.50, 1.00); unturned it would stop at y 0.5
+	ok(set:check("Teddy#1", probe, at(0.45, 0.95)) == "overlaps", "under the turned corner: taken")
+	-- unturned it would cover (0.95, -0.45); turned 37 that's clear of it
+	ok(set:check("Teddy#1", probe, at(0.95, -0.45)) == nil, "where only square would reach: free")
+	local saved = set:save()
+	local again = Brix.Placements.new({
+		areas = { Floor = { kind = Spots.Kinds.Floor, width = 10, depth = 10 } },
+		limit = 10,
+	})
+	again:load(saved, function(): Spots.Shape?
+		return car
+	end)
+	local back = again:poseOf("RCCar#1")
+	ok(back ~= nil and back.turn == 37, "saved and loaded, still 37")
+end
+
 -- Saved rows trimmed to what you own: past it, or naming no find, back in the box.
 do
 	local rows: { Save.PlacedRow } = {

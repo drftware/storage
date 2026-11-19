@@ -33,6 +33,7 @@ local HomeSpecs = require("./Specs")
 local Save = require("../Save")
 local Sizes = require("./Sizes")
 local Spots = require("./Spots")
+local Turning = require("./Turning")
 
 local Layout = {}
 
@@ -490,22 +491,38 @@ export type Pose = { on: string, x: number, y: number, turn: number }
 -- The floor's size, as Brix and `Spots.room` give it.
 export type Floor = { width: number, depth: number }
 
--- How far piece `kind` at `pose` stands with its back off the wall behind it, nil when it faces
--- no wall square. A piece's back is its box's far side from the way it faces: the back wall at
--- turn 0, the left wall at 90, the door's wall at 180, the right wall at 270.
-local function backGap(kind: string, pose: Pose, floor: Floor): number?
-	local half = (Spots.pieceBox(kind) or Spots.Unknown)[3] / 2
-	local turn = pose.turn % 360
-	if turn == 0 then
-		return pose.y - half + floor.depth / 2
-	elseif turn == 90 then
-		return floor.width / 2 - (pose.x + half)
-	elseif turn == 180 then
-		return floor.depth / 2 - (pose.y + half)
-	elseif turn == 270 then
-		return pose.x - half + floor.width / 2
+-- How far one corner of a piece's back, at `px`, `py` on floor `floor`, has straight back (the
+-- way `bx`, `by` its back faces) before a wall.
+local function roomFrom(px: number, py: number, bx: number, by: number, floor: Floor): number
+	local room = math.huge
+	if bx > 0 then
+		room = (floor.width / 2 - px) / bx
+	elseif bx < 0 then
+		room = (-floor.width / 2 - px) / bx
 	end
-	return nil
+	if by > 0 then
+		room = math.min(room, (floor.depth / 2 - py) / by)
+	elseif by < 0 then
+		room = math.min(room, (-floor.depth / 2 - py) / by)
+	end
+	return room
+end
+
+-- How far piece `kind` at `pose` stands with its back off the walls behind it: from each corner
+-- of its back straight back to the nearest wall, the nearer of the two. A piece's back is its
+-- box's far side from the way it faces: the back wall at turn 0, the left wall at 90, the door's
+-- wall at 180, the right wall at 270; set at any angle with Free (S5-03j2b2a), it backs onto a
+-- corner and both its walls count.
+local function backGap(kind: string, pose: Pose, floor: Floor): number
+	local box = Spots.pieceBox(kind) or Spots.Unknown
+	local c, s = Turning.facing(pose.turn)
+	local bx, by = s, -c -- the way its back faces
+	local w, d = box[1] / 2, box[3] / 2
+	local x, y = pose.x + d * bx, pose.y + d * by -- its back's middle
+	return math.min(
+		roomFrom(x + w * c, y + w * s, bx, by, floor),
+		roomFrom(x - w * c, y - w * s, bx, by, floor)
+	)
 end
 
 -- Whether piece `kind` may stand at `pose` in a room with floor `floor`: a leaning piece
@@ -520,11 +537,12 @@ function Layout.stands(kind: string, pose: Pose, floor: Floor): boolean
 	local lean = Layout.Lean[kind]
 	if not lean then
 		return true
-	elseif pose.on ~= "Floor" or pose.turn % 360 == 180 then
-		return false -- on the rug or a top, or against the door, it would lean on nothing
 	end
-	local gap = backGap(kind, pose, floor)
-	return gap ~= nil and math.abs(gap - lean) <= Layout.LeanSlack
+	local turn = Turning.round(pose.turn)
+	if pose.on ~= "Floor" or turn % Turning.Quarter ~= 0 or turn == 180 then
+		return false -- on the rug or a top, turned off square, or against the door: it leans on nothing
+	end
+	return math.abs(backGap(kind, pose, floor) - lean) <= Layout.LeanSlack
 end
 
 -- `pose` for piece `kind` (`Clear`) pushed out from the wall behind it, so its back stands at
@@ -537,18 +555,9 @@ function Layout.clearOf(kind: string, pose: Pose, floor: Floor): Pose
 		return pose
 	end
 	local push = clear - gap
-	local turn = pose.turn % 360
-	local x, y = pose.x, pose.y
-	if turn == 0 then
-		y += push
-	elseif turn == 90 then
-		x -= push
-	elseif turn == 180 then
-		y -= push
-	else
-		x += push
-	end
-	return { on = pose.on, x = x, y = y, turn = pose.turn }
+	-- out along its front, the way its back doesn't face, at whatever turn it stands
+	local c, sn = Turning.facing(pose.turn)
+	return { on = pose.on, x = pose.x - sn * push, y = pose.y + c * push, turn = pose.turn }
 end
 
 -- `pose` for leaning piece `kind` carried to the wall nearest its middle (the back wall or a

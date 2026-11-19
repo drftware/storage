@@ -156,6 +156,59 @@ do
 	ok(same(lights.UpVector, Vector3.new(0, 1, 0)), "the lights hang below their clips")
 end
 
+-- Any angle can't cheat (S5-03j2b2a): a find set out with Free at 37 degrees is drawn turned the
+-- way Brix turns its footprint, so the footprint Brix judges is the box you see. Every corner of
+-- the box as drawn, on the floor, a wall and the ceiling, lies under the footprint (a speck just
+-- inside it is refused) and nothing past it does (a speck just outside is free).
+do
+	local Brix = require("../vendor/brix/src")
+	for _, case in
+		{
+			{ on = "Floor", find = "RCCar", box = Vector3.new(2, 0.5, 1) },
+			{ on = "BackWall", find = "NeonSign", box = Vector3.new(2.4, 1.2, 0.3) },
+			{ on = "LeftWall", find = "NeonSign", box = Vector3.new(2.4, 1.2, 0.3) },
+			{ on = "Ceiling", find = "DiscoBall", box = Vector3.new(1.5, 1, 0.5) },
+		}
+	do
+		local area = room[case.on]
+		local a = Arranged.area(face, area)
+		local shape = Spots.shape(case.find, { case.box.X, case.box.Y, case.box.Z })
+		local speck = { width = 0.01, depth = 0.01, fits = { area.kind } }
+		local set = Brix.Placements.new({
+			areas = { [case.on] = { kind = area.kind, width = area.width, depth = area.depth } },
+			limit = 2,
+		})
+		local px, py = 1.5, -1
+		local pose = { on = case.on, x = px, y = py, turn = 37 }
+		ok(set:place("it", shape, pose) == nil, `{case.on}: set out at 37`)
+		local drawn = Arranged.box(Arranged.pose(a, px, py, 37), Spots.spot(case.find), case.box)
+		local inside, outside = 0, 0
+		for _, sx in { -1, 1 } do
+			for _, sy in { -1, 1 } do
+				for _, sz in { -1, 1 } do
+					local corner = drawn
+						* Vector3.new(sx * case.box.X / 2, sy * case.box.Y / 2, sz * case.box.Z / 2)
+					local p = a:PointToObjectSpace(corner) -- on the area: x across, y = -Z
+					local dx, dy = p.X - px, -p.Z - py
+					local far = math.sqrt(dx * dx + dy * dy)
+					local function speckAt(by: number): string?
+						local x, y = px + dx * (far + by) / far, py + dy * (far + by) / far
+						return set:check("speck", speck, { on = case.on, x = x, y = y, turn = 0 })
+					end
+					if speckAt(-0.04) == "overlaps" then
+						inside += 1
+					end
+					if speckAt(0.05) == nil then
+						outside += 1
+					end
+				end
+			end
+		end
+		ok(inside == 8, `{case.on}: every corner drawn is under the footprint ({inside} of 8)`)
+		ok(outside == 8, `{case.on}: nothing past a corner is ({outside} of 8)`)
+	end
+end
+
 print(`arranged.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

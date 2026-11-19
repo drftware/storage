@@ -3469,7 +3469,8 @@ Done when players watch the results to the end and change their perks between cl
         Arranging, Brix's judge and the save take any angle; widen them with a spec if not);
         riders settle with a little bounce as their piece lands (D-338). Seen in Studio at A16.
         Split before starting (S5-03j2b1b's session; one session each):
-        - [ ] **S5-03j2b2a Any angle, pure.** A pure `Turning` in `src/shared/Home` with Lune
+        - [x] **S5-03j2b2a Any angle, pure.** Done (D-452): `Home/Turning`; the ask, Brix's judge,
+          the save and the drawing took any angle already; the job box's lid room widened. A pure `Turning` in `src/shared/Home` with Lune
           specs first: the turn a twist gives (a start turn plus the twist's angle, snapped to
           quarters unless free; quarters whole, so a run of Turn presses and a twist agree).
           Then check whether Arranging (the server), Brix's judge (`Placements`, turned
@@ -3481,7 +3482,10 @@ Done when players watch the results to the end and change their perks between cl
           carried thing by `Turning`; R and the wheel while held turn it a quarter; Alt held,
           or a round Free switch in a corner (an icon, off by default), places off the grid
           at any angle. Seen in Studio at A16 (R and the wheel on a desktop device; the twist
-          goes to OWNER.md's phone steps).
+          goes to OWNER.md's phone steps). From j2b2a: the snap is `Brix.PlacementSnap.free({
+          turn = 1 })` while Free is on; `settle`'s clamp swaps width and depth only at quarters
+          (use Brix's turned reach, |cos| and |sin|); negate the twist when the camera sees the
+          face from behind (the ceiling from above); a click each time `Turning.nearest` changes.
         - [ ] **S5-03j2b2c Riders settle.** What stands on a piece moves with it (D-338) and
           settles with a little bounce as its piece lands, each a beat after the last. Seen in
           Studio at A16 with a find on the table.

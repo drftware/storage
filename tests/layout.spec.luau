@@ -335,6 +335,43 @@ do
 	local mid = { on = "Floor", x = 0, y = 0, turn = 90 }
 	ok(Layout.stands("JobBox", mid, floor) and Layout.clearOf("JobBox", mid, floor) == mid, "mid")
 	ok(Layout.clearOf("Shelf", flush, floor) == flush, "only the box keeps clear")
+
+	-- Free, at any angle (S5-03j2b2a): the lid swings up behind the box whatever its turn, so its
+	-- room is a strip as wide as the box and `BoxOff` deep behind its back, all on the floor. At
+	-- 37 degrees its back faces down `y` and a little across: pushed against the back wall, it
+	-- has no room; pushed out along its front, it stands with its lid's room exact.
+	local wide = (Spots.pieceBox("JobBox") :: { number })[1]
+	local t = math.rad(37)
+	local c, s = math.cos(t), math.sin(t)
+	-- its lowest corner on the back wall: the back corner on the side its back leans to
+	local lowest = deep / 2 * c + wide / 2 * s
+	local askew = { on = "Floor", x = 0, y = -floor.depth / 2 + lowest, turn = 37 }
+	ok(not Layout.stands("JobBox", askew, floor), "37 degrees, its corner on the back wall")
+	local out = Layout.clearOf("JobBox", askew, floor)
+	ok(out.turn == 37, "pushed out, it keeps its turn")
+	ok(near(out.x, askew.x - Layout.BoxOff * s), "pushed along its front, across a little")
+	ok(near(out.y, askew.y + Layout.BoxOff * c), "and out from the wall")
+	ok(Layout.stands("JobBox", out, floor), "and stands there")
+	local hair = { on = "Floor", x = out.x, y = out.y - 0.1, turn = 37 }
+	ok(not Layout.stands("JobBox", hair, floor), "a hair nearer: no room")
+	local free = { on = "Floor", x = 0, y = 0, turn = 37 }
+	ok(Layout.stands("JobBox", free, floor), "37 degrees mid-room")
+	ok(Layout.clearOf("JobBox", free, floor) == free, "and left where it is")
+	-- in a corner at 45: its back points into the corner, so both walls count
+	local diag = math.sqrt(0.5)
+	local reach = (wide + deep) / 2 * diag -- how far its footprint reaches along x and y
+	local corner = {
+		on = "Floor",
+		x = floor.width / 2 - reach - 0.01,
+		y = -floor.depth / 2 + reach + 0.01,
+		turn = 45,
+	}
+	ok(not Layout.stands("JobBox", corner, floor), "45 degrees, its back in a corner")
+	ok(Layout.stands("JobBox", Layout.clearOf("JobBox", corner, floor), floor), "pushed out")
+	ok(
+		not Layout.stands("Mirror", { on = "Floor", x = 0, y = 0, turn = 37 }, floor),
+		"a mirror at 37 leans on nothing"
+	)
 end
 
 -- Shrinking (S5-03i1c2, D-349): the test save's XL arrangement (the shelf off-centre on the back
