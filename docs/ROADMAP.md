@@ -3655,7 +3655,7 @@ Done when players watch the results to the end and change their perks between cl
     recipe; a fixed vocabulary of starts, stage ends, results and looks; thousands of rows by
     one lookup; nothing ticks; cheat-proof; checked by check.sh. Precedents: Stardew Valley's
     incubator and its 1.6 machine data, Grow a Garden's eggs and plants, Adopt Me's eggs.
-    - [ ] **ENG-29 Recipes, in Brix.** Rows in, checked and filed at load (by what they're used
+    - [x] **ENG-29 Recipes, in Brix.** Rows in, checked and filed at load (by what they're used
       on, then what's held: kind, then tags); `start`, `advance(record, now, event)` with
       catch-up across any gap, `due(record)`; stages ended by time, presses, things nearby,
       things given and named events; results become, make, use up, give back, chance (from a
@@ -3668,8 +3668,12 @@ Done when players watch the results to the end and change their perks between cl
         test-only rows that use every word (a seed through three stages, a cell charged, flour
         and a jug combined at once, a chance with a "nothing" outcome, a music box that starts
         over at dawn, a switch, a rag polishing a statue).
-      - [ ] **ENG-29b Records: a recipe under way.** `start`, `advance` with catch-up, `due`, a
-        chance rolled from the record's seed, `again`; on the book, against `RecipeRecord`.
+      - [x] **ENG-29b Records: a recipe under way.** Done Nov 19 (D-475), Brix `0b8c775`, the pin
+        moved. `book:start(id, now, seed)` answers a record and a step; `book:due(record)`;
+        `book:advance(record, now, happening?, into?)` catches up any gap from each stage's end (a
+        week offline passes exactly its stages and rounds), counts a press, a thing near, a thing
+        given or an event (`counted`, `usedUp`), rolls chances from the record's seed (same on a
+        rejoin), restarts `again` rows; about 1.2 µs and 0 bytes per advance.
     - [ ] **S5-03k1 Recipe rows and the save.** The game's rows in one data module (the hatch
       first: egg tag + Incubator, Place, Warming 2 h, Wobbling 10 min, becomes Chick beside);
       tags with each find's catalog row (`art/finds/rows.py`, never the generated file); Lune

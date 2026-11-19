@@ -11350,3 +11350,20 @@ game's. What later recipe tickets build on:
   playing 20 seconds), so S5-03k6 folds Switch, Play and Wind in as press rows with no new words.
 - The doc's "a thing of a kind next to it" and "a lit lamp within reach" are one end, `near`, with
   how near and what counts as lit left to the game (S5-03k2 reports what's near).
+
+## D-475: A recipe under way runs on Brix's records; nothing ticks (ENG-29b, Nov 19)
+
+Brix `0b8c775` (its E-088); the pin moved from `e4b0dd1`.
+- **A record per thing:** `book:start(id, now, seed)` answers a `RecipeRecord` (recipe, stage,
+  began, done, seed) that the save keeps as plain data (S5-03k1, under its spot's id), and a step:
+  a recipe with no stages (two things combined at once) ends right there.
+- **No ticking:** `book:due(record)` is when a timed stage ends. The server keeps one due list for
+  loaded homes and advances a record when its time comes, when a player does something to it, or
+  on load (S5-03k2). Catch-up starts each stage at the last one's end, so an egg left warming over
+  a two-hour logoff is exactly as far along as if you'd watched (Stardew Valley's incubator).
+- **Happenings:** `press` (a verb, empty hands), `near` (a find id; how near is the game's),
+  `given` (a find id held and a verb), `event` (a name). The step says whether it `counted`, so a
+  press the stage doesn't want can still be answered on screen, and `usedUp` when the game takes
+  the held find. Results come resolved: chances rolled from the record's seed (a rejoin rolls the
+  same; no reroll by rejoining), `again` already applied.
+- A row ending in `again` with no stages is now a problem (`cannotEnd`).
