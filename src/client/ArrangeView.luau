@@ -47,6 +47,8 @@ local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local FreeCursor = require(script.Parent.FreeCursor)
 local Feedback = require(ReplicatedStorage.Shared.Home.Feedback)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
+local Group = require(ReplicatedStorage.Shared.Home.Group)
+local History = require(ReplicatedStorage.Shared.Home.History)
 local FurnitureTab = require(script.Parent.FurnitureTab)
 local Grades = require(ReplicatedStorage.Shared.Grades)
 local Home = require(ReplicatedStorage.Shared.Home)
@@ -57,6 +59,7 @@ local CardPlate = require(ReplicatedStorage.Shared.Home.CardPlate)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local ArrangeBox = require(script.Parent.ArrangeBox)
 local ArrangeCamera = require(script.Parent.ArrangeCamera)
+local ArrangeGroup = require(script.Parent.ArrangeGroup)
 local ArrangeHand = require(script.Parent.ArrangeHand)
 local PlaceAim = require(script.Parent.PlaceAim)
 local ArrangeRing = require(script.Parent.ArrangeRing)
@@ -318,6 +321,36 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 	end
 
+	-- The card's middle, kept inside the tray's list (a card scrolled out of sight takes the
+	-- list's nearest edge); a thing with no card yet (the box held none) flies to the list's
+	-- middle, where the new card comes in.
+	local function cardAt(name: string): Vector2?
+		local t, s = tray, list
+		if not (gui and t and s and t.Visible and s.Visible and onTab == FINDS) then
+			return nil
+		end
+		local lo, size = s.AbsolutePosition, s.AbsoluteSize
+		local c = cards[name]
+		if not c then
+			return lo + size / 2
+		end
+		local mid = c.AbsolutePosition + c.AbsoluteSize / 2
+		return Vector2.new(
+			math.clamp(mid.X, lo.X, lo.X + size.X),
+			math.clamp(mid.Y, lo.Y, lo.Y + size.Y)
+		)
+	end
+	local function bump(name: string)
+		local c = cards[name]
+		if not c then
+			return
+		end
+		local sc = c:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")
+		sc.Parent = c
+		sc.Scale = Feedback.Bump
+		TweenService:Create(sc, POP, { Scale = 1 }):Play()
+	end
+
 	-- The hand: everything that lifts, carries and sets down (ArrangeHand).
 	local hand = ArrangeHand.new({
 		room = function(): Arrange.Room?
@@ -342,35 +375,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		tap = function(t: Feedback.Tap)
 			taps.tap(t)
 		end,
-		-- The card's middle, kept inside the tray's list (a card scrolled out of sight takes the
-		-- list's nearest edge); a thing with no card yet (the box held none) flies to the list's
-		-- middle, where the new card comes in.
-		cardAt = function(name: string): Vector2?
-			local t, s = tray, list
-			if not (gui and t and s and t.Visible and s.Visible and onTab == FINDS) then
-				return nil
-			end
-			local lo, size = s.AbsolutePosition, s.AbsoluteSize
-			local c = cards[name]
-			if not c then
-				return lo + size / 2
-			end
-			local mid = c.AbsolutePosition + c.AbsoluteSize / 2
-			return Vector2.new(
-				math.clamp(mid.X, lo.X, lo.X + size.X),
-				math.clamp(mid.Y, lo.Y, lo.Y + size.Y)
-			)
-		end,
-		bump = function(name: string)
-			local c = cards[name]
-			if not c then
-				return
-			end
-			local sc = c:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")
-			sc.Parent = c
-			sc.Scale = Feedback.Bump
-			TweenService:Create(sc, POP, { Scale = 1 }):Play()
-		end,
+		cardAt = cardAt,
+		bump = bump,
 		free = function(): boolean
 			local t = turnKeys
 			return t ~= nil and t.free()
@@ -390,6 +396,10 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	})
 	-- Several at once (ArrangeBox): a finger held on the bare room and dragged boxes things; a tap,
 	-- or a drag on a thing, lets the box's things go (moving them together is S5-03j6b).
+	-- Whether the group (below) is moving or waiting: then no box starts.
+	local groupBusy: () -> boolean = function(): boolean
+		return false
+	end
 	local selectBox = ArrangeBox.new({
 		gui = function(): ScreenGui?
 			return gui
@@ -403,13 +413,80 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			taps.tap(t)
 		end,
 		busy = function(): boolean
-			return hand.lifted() ~= nil
+			return hand.lifted() ~= nil or groupBusy()
 		end,
 	})
-	pickThing, toBox = hand.pick, selectBox.intent
+	-- The lit things carried, turned and put away as one (ArrangeGroup).
+	local several = ArrangeGroup.new({
+		room = function(): Arrange.Room?
+			return room
+		end,
+		tops = tops,
+		placed = placed,
+		sounds = sounds,
+		remote = remote,
+		tap = function(t: Feedback.Tap)
+			taps.tap(t)
+		end,
+		ids = selectBox.ids,
+		dim = selectBox.dim,
+		clear = selectBox.clear,
+		ring = function(thing: Model?, which: ArrangeRing.Which?)
+			local u = undoKeys
+			if u then
+				task.defer(u.refresh)
+			end
+			local o = buttonRing
+			if o then
+				o.show(thing, which)
+			end
+			local t = tray
+			if t and open then
+				TweenService:Create(t, QUICK, {
+					-- (kept away while the group is carried, as for one thing)
+					Position = UDim2.new(0.5, 0, 1, if thing or groupBusy() then AWAY else -10),
+				}):Play()
+			end
+		end,
+		follow = function(x: number, y: number)
+			buildCam.follow(x, y)
+		end,
+		cardAt = cardAt,
+		bump = bump,
+		changed = function(changes: { History.Change })
+			local u = undoKeys
+			if u then
+				u.recordGroup(changes)
+			end
+		end,
+	})
+	groupBusy = several.busy
+	-- A drag that began on a lit thing belongs to the group until it ends.
+	local groupDrag = false
+	pickThing = hand.pick
+	toBox = function(i: Brix.GestureIntent<Model>): boolean
+		local took = selectBox.intent(i)
+		if i.kind == "dragEnded" then
+			several.shown() -- the box let go: the ring comes round what it lit
+		end
+		return took
+	end
 	toHand = function(i: Brix.GestureIntent<Model>)
+		if i.kind == "dragBegan" and not hand.lifted() and several.owns(i.target) then
+			groupDrag = true
+		end
+		if groupDrag then
+			several.intent(i)
+			if i.kind == "dragEnded" then
+				groupDrag = false
+			end
+			return
+		elseif several.busy() then
+			return -- the group is landing or waiting for its answer
+		end
 		if i.kind == "tap" or i.kind == "doubleTap" or i.kind == "dragBegan" then
 			selectBox.clear()
+			several.hide()
 		end
 		hand.intent(i)
 	end
@@ -948,6 +1025,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		pending = nil
 		dragInput = nil
 		selectBox.clear()
+		several.hide()
 		attachTabs(nil)
 		if turnKeys then
 			turnKeys.open(false)
@@ -1294,10 +1372,18 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			ink = INK,
 			press = press,
 			away = function()
-				hand.awayNow()
+				if several.active() then
+					several.awayNow()
+				else
+					hand.awayNow()
+				end
 			end,
 			turn = function()
-				hand.turnNow()
+				if several.active() then
+					several.turnNow()
+				else
+					hand.turnNow()
+				end
 			end,
 			another = function()
 				hand.another()
@@ -1341,7 +1427,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			lit = HONEY,
 			press = press,
 			turn = function()
-				hand.turnNow()
+				if several.active() then
+					several.turnNow()
+				else
+					hand.turnNow()
+				end
 			end,
 			changed = function()
 				hand.freeChanged()
@@ -1356,7 +1446,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			press = press,
 			lifted = function(): (boolean, boolean)
 				local l = hand.lifted()
-				return l ~= nil, l ~= nil and l.asking ~= nil
+				return l ~= nil, (l ~= nil and l.asking ~= nil) or several.busy()
 			end,
 			putBack = function()
 				local l = hand.lifted()
@@ -1364,7 +1454,18 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 					hand.slideBack(l)
 				end
 			end,
-			replay = hand.replay,
+			-- a group's step (`more`) is carried out by the group, one thing's by the hand
+			replay = function(
+				ask: History.Ask,
+				finished: (ok: boolean, id: string?, more: { string? }?) -> ()
+			): boolean
+				if ask.more and #ask.more > 0 then
+					return several.replay(ask, finished)
+				end
+				return hand.replay(ask, function(ok: boolean, id: string?)
+					finished(ok, id, nil)
+				end)
+			end,
 		})
 		return g
 	end
@@ -1564,6 +1665,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 				local folder = ReplicatedStorage:WaitForChild(Spots.RemoteFolder, 60)
 				local answer = folder and folder:WaitForChild(Spots.AnswerRemote, 60)
 				local box = folder and folder:WaitForChild(Arrange.BoxRemote, 60)
+				local groupAnswer = folder and folder:WaitForChild(Group.Remote, 60)
 				if not running then
 					return
 				end
@@ -1578,6 +1680,17 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 				end
 				if box and box:IsA("RemoteEvent") then
 					table.insert(connections, box.OnClientEvent:Connect(onBox))
+				end
+				if groupAnswer and groupAnswer:IsA("RemoteEvent") then
+					-- any: a remote's arguments, checked in `answered`
+					table.insert(
+						connections,
+						groupAnswer.OnClientEvent:Connect(
+							function(verb: any, refusal: any, ids: any)
+								several.answered(verb, refusal, ids)
+							end
+						)
+					)
 				end
 			end)
 			-- whether you stand in your home, four times a second (the button's only step)

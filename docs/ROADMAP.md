@@ -3599,7 +3599,11 @@ Done when players watch the results to the end and change their perks between cl
       ask and History's group step (D-468: `Home/Group`, the `ArrangeGroup` remote,
       `History.recordGroup`); - [ ] **j6b2** the screen: a drag on a lit thing carries the group
       (`ArrangeGroup` module, one ghost per root), its ring (Turn, Put away), its feel, its undo,
-      seen in Studio Play at A16.
+      seen in Studio Play at A16. j6b2 split (Nov 19, its own session): - [x] **j6b2a** built and
+      green (D-469: `ArrangeGroup`, `ArrangeBox.dim`, `ArrangeUndo.recordGroup`); - [ ] **j6b2b**
+      seen in Studio Play at A16 and captured: a boxed three dragged, landed, refused, turned, put
+      away, undone and redone; fixes from what's seen. Polish by name: a shadow under each
+      carried ghost; an undone group Put away's finds popping up out of the box.
     - [ ] **S5-03j7 The editor seen whole.** Every row of the feedback table checked in Studio
       Play at A16 size and captured; fixes; ArrangeView's leftovers removed; OWNER.md's phone
       steps written. From the conductor's look at this run's captures (Nov 19): (1) at phone size

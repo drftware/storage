@@ -11179,3 +11179,35 @@ its ring, its feel, seen in Studio). The client half alone is a full session's w
   both as they stood (the room is tight there: each crate alone at those places is refused too);
   a half turn swapped them, both turned 180, in one move; the crate against the job box refused
   the pair and nothing moved; both put away together, then set out again by name as one ask.
+
+## D-469 Several things on the screen: the group's drag, Turn, Put away and undo (S5-03j6b2a, Nov 19)
+
+S5-03j6b2 was split in its own session at the context cap: **j6b2a** (this) the screen built and
+green, its client loading clean in Studio Play; **j6b2b** seen in Studio Play at A16, captured,
+and fixed from what's seen.
+- **`ArrangeGroup`** (client, names no find) carries the lit things as one. A drag that begins on
+  a lit thing lifts one ghost per root (riders copied inside, as the hand's lift) into one model
+  with one Highlight, so green or red paints them all at once; the drawn things hide and the box's
+  glows dim (`ArrangeBox.dim`). The finger's slide is read on the floor's plane (the thumb's
+  offset as the hand's), snapped to `Arrange.Step`, and becomes `Group.moved` from the grab point.
+- **Judged by the room's own judge, not a copy:** `Group.apply` is tried on `room.placements` and,
+  if it fits, applied back with the things' first places (that always fits: it's how the room
+  stood), then `takeEvents`. One judge, the server's rules exactly; no second room to keep in step.
+  The client-only rules (`PlaceAim.fitsAt`: the mirror, the job box's lid) aren't asked of a group:
+  the server's word still decides, and a refused group floats back.
+- **No snapping or sliding to free for a group** (the sensible default): it moves on the grid by
+  the finger only; blocked, all float back. Turning backs to walls and the guide lines stay the
+  single thing's.
+- **Landing:** each ghost drops onto its spot and thuds by its own weight, heaviest first, 0.05 s
+  apart (three knocks read as three things), each with its puff; the group ask goes as
+  they drop, and the ghosts give way once the drawn things stand there. The lit selection stays after a move (ids
+  don't change), so Turn can be pressed again, as The Sims keeps its selection.
+- **The ring for a group:** after the box lets go, the ring hugs an unseen part the size of the lit
+  things' box, with Turn and Put away only (no Put away if the job box is lit). Its Turn (and R)
+  swings them a quarter about their middle with the ratchet and lands as one ask; refused, the
+  group shows red a beat and floats back. Put away flies each to its card, one after another.
+- **Undo:** an accepted group is `ArrangeUndo.recordGroup`; an undo or redo with `more` goes to
+  `ArrangeGroup.replay` (one group ask: moves glide, set-outs from the box appear when the server
+  draws them), and its answer's ids go back through `answered(ok, id, more)`.
+- **Polish by name (ROADMAP):** a group's shadow under each ghost while carried; set-outs of an
+  undone group Put away popping up out of the box as the hand's do.

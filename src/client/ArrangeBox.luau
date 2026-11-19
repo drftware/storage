@@ -54,6 +54,9 @@ export type ArrangeBox = {
 	ids: () -> { string },
 	-- Lets go of the selection: the glows fade.
 	clear: () -> (),
+	-- The glows hidden (`on`) while the group's ghosts stand in for the lit things as they move
+	-- (ArrangeGroup), and back after.
+	dim: (on: boolean) -> (),
 }
 
 local ArrangeBox = {}
@@ -275,6 +278,11 @@ function ArrangeBox.new(options: Options): ArrangeBox
 			return table.clone(roots)
 		end,
 		clear = clear,
+		dim = function(on: boolean)
+			for _, h in glows do
+				h.Enabled = not on
+			end
+		end,
 	}
 end
 

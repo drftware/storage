@@ -45,8 +45,12 @@ export type Options = {
 	lifted: () -> (boolean, boolean),
 	-- Puts the selected thing back where it was (a change not yet made).
 	putBack: () -> (),
-	-- Carries an undo or redo out (`Hand.replay`).
-	replay: (ask: History.Ask, finished: (ok: boolean, id: string?) -> ()) -> boolean,
+	-- Carries an undo or redo out (`Hand.replay`, or a group's `ArrangeGroup.replay`): `finished`
+	-- hears the server's word once, with the group's other things' ids in `more`.
+	replay: (
+		ask: History.Ask,
+		finished: (ok: boolean, id: string?, more: { string? }?) -> ()
+	) -> boolean,
 }
 
 export type ArrangeUndo = {
@@ -60,6 +64,8 @@ export type ArrangeUndo = {
 		idAfter: string?,
 		after: History.Pose?
 	) -> (),
+	-- Several changes the server accepted as one group ask: one step (`History.recordGroup`).
+	recordGroup: (changes: { History.Change }) -> (),
 	-- A thing was selected or let go: Undo lights to put it back, Redo sleeps.
 	refresh: () -> (),
 	-- The two buttons, for the ring to keep off.
@@ -173,8 +179,8 @@ function ArrangeUndo.new(options: Options): ArrangeUndo
 		if not ask then
 			return
 		end
-		local started = options.replay(ask, function(ok: boolean, id: string?)
-			history.answered(ok, id)
+		local started = options.replay(ask, function(ok: boolean, id: string?, more: { string? }?)
+			history.answered(ok, id, more)
 			refresh()
 		end)
 		if not started then
@@ -285,6 +291,12 @@ function ArrangeUndo.new(options: Options): ArrangeUndo
 		)
 			if shown then
 				history.record(name, idBefore, before, idAfter, after)
+				refresh()
+			end
+		end,
+		recordGroup = function(changes: { History.Change })
+			if shown then
+				history.recordGroup(changes)
 				refresh()
 			end
 		end,
