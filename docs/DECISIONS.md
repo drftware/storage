@@ -11367,3 +11367,40 @@ Brix `0b8c775` (its E-088); the pin moved from `e4b0dd1`.
   the held find. Results come resolved: chances rolled from the record's seed (a rejoin rolls the
   same; no reroll by rejoining), `again` already applied.
 - A row ending in `again` with no stages is now a problem (`cannotEnd`).
+
+## D-476 The game's recipe rows, tags on finds, the no-names check and the save (S5-03k1, 2026-11-19)
+
+- **Rows are data in one module**, `src/shared/Home/RecipeRows.luau`: `Rows`, `Looks`, `Events`
+  and `Coming` above a marker line (`-- ===== Code:`), and below it code that names no find,
+  recipe or look (`kinds`, `worth`, `book(Brix)`). Only the hatch ships.
+- **The plan doc's row is written in Brix's words, not the doc's sketch.** The doc writes the hatch
+  as `become = "Chick", where = "beside"`; Brix's `become` turns a thing where it is (the egg would
+  stay in the incubator) and has no place, so the hatch is `useUp` of "in" then `make` Chick `at`
+  "beside": the egg is gone, a chick comes out beside it. The doc's per-stage look of a glow and a
+  sound (Warming) and a growing wobble (Wobbling) are two named looks, `warming` and `wobbling`,
+  each a set of parts from a closed list (`motion`, `glow`, `sound`, `grows`). The doc wins on
+  what happens; Brix's contract on how it's written.
+- **Tags live on each find's catalog row** (`art/finds/rows.py` `tags`, lowercase words, carried
+  into the generated `Finds/Rows`; `Finds/Game.Row.tags`). Kinds are every kit find, every
+  furniture piece (no tags yet; a piece's tags go on its `Furniture` row when one needs one) and
+  every kind still `Coming`.
+- **`Coming`** holds kinds a shipped row names before their art exists (Incubator, Egg tagged
+  "egg", Chick), each with a default worth. The spec fails once a real row of the same name
+  lands, so S5-03k3 deletes each entry as it builds it. Trap for later: kinds are one namespace,
+  and `NeonSign` is both a kit find and a furniture piece; a row naming it can't tell which.
+- **The no-names check** is `tests/reciperows.spec`: every `.luau` file under `src` whose name holds
+  "Recipe" is read (RecipeRows only below its marker), comments left out, and fails if it names a
+  kit find, the first four finds, a furniture piece, a coming kind, a recipe id or a look. Proven
+  once by adding `"Chick"` to RecipeMoney (it failed), then reverted. Later recipe files keep
+  "Recipe" in their name so the check reads them (RecipesView, Recipes on the server).
+- **A look naming a motion its find doesn't have** (the doc's third check) waits for S5-03k3: no
+  egg or incubator art has motions yet.
+- **Money:** `Home/RecipeMoney.report(rows, kinds, worth)` gives cash an hour for each row with timed
+  stages (the cheapest thing its `held` takes, results' worth, chances by odds), and the spec fails
+  any shipped row above `RecipeMoney.Ceiling`, a floor 1 gate's pay an hour (10). The hatch makes
+  about 8.3.
+- **Save version 16** adds `recipes`: under a spot's id (`placed`'s row id), Brix's plain
+  `RecipeRecord` fields plus `inside`, the find put in by name. A find inside has left `finds` in
+  the same save step (S5-03k2 does the step). The migration from 15 adds an empty map and touches
+  nothing else; save.spec proves a v15 save loads with every field as it was.
+

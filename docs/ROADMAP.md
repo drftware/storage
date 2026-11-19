@@ -3674,7 +3674,9 @@ Done when players watch the results to the end and change their perks between cl
         week offline passes exactly its stages and rounds), counts a press, a thing near, a thing
         given or an event (`counted`, `usedUp`), rolls chances from the record's seed (same on a
         rejoin), restarts `again` rows; about 1.2 µs and 0 bytes per advance.
-    - [ ] **S5-03k1 Recipe rows and the save.** The game's rows in one data module (the hatch
+    - [x] **S5-03k1 Recipe rows and the save.** Done Nov 19 (D-476): `Home/RecipeRows` (the hatch
+      only, `Coming` kinds till k3), `tags` on finds' catalog rows, `Home/RecipeMoney` and its
+      ceiling, `tests/reciperows.spec` with the no-names check, save version 16 `recipes`. Was: The game's rows in one data module (the hatch
       first: egg tag + Incubator, Place, Warming 2 h, Wobbling 10 min, becomes Chick beside);
       tags with each find's catalog row (`art/finds/rows.py`, never the generated file); Lune
       specs that fail a bad row (unknown find, unknown motion, a stage that can't end); a money
@@ -3684,12 +3686,14 @@ Done when players watch the results to the end and change their perks between cl
       home's holder, reach, what's really held, rate limit), applied in one save step (never lost
       or doubled, as D-350); one due list per server for loaded homes; catch-up on load; each
       stage on the drawn thing as attributes for every screen; Studio-only `RecipeTest` hook to
-      skip time.
+      skip time. Keep "Recipe" in each new file's name so the no-names check reads it.
     - [ ] **S5-03k3 Egg, incubator, chick.** Their art the unit's way (finds kit for the egg and
       chick, the home's build for the incubator), each with the motions the stages name (the
       egg's wobble and crack, the incubator's lamp, the chick's tumble); the egg dealt on climbs
       at a grade the catalog gives; the incubator sold at the counter; the chick set out like
-      any find. Judge each at phone size.
+      any find. Judge each at phone size. Delete each kind from `RecipeRows.Coming` as its real row lands
+      (the egg's catalog row gets `tags = ["egg"]`); add the check that a look's `motion` is one the
+      thing's art kit has.
     - [ ] **S5-03k4 Recipes on screen.** The verb shows on a thing only while you hold what one
       of its recipes takes, near it (the incubator's lamp brightens as you come close holding an
       egg); each stage's look from its row (motion, glow, sound, growing toward the end), worked

@@ -56,6 +56,14 @@ local function played(): Save.Data
 	data.furniture.MilkCrate = 2
 	data.homeSize = "Large"
 	data.placedSize = "Medium"
+	data.recipes["Incubator#1"] = {
+		recipe = "hatch",
+		stage = 2,
+		began = 1794700500,
+		done = 0,
+		seed = 4503599627370495,
+		inside = "Egg",
+	}
 	return data
 end
 
@@ -79,9 +87,10 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 15.
+-- A new player: nothing yet, at version 16.
 do
-	ok(format:latest() == 15, "the save is at version 15")
+	ok(format:latest() == 16, "the save is at version 16")
+	ok(next(format:fresh().recipes) == nil, "a new player has no recipe under way")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -119,7 +128,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(15, stored)
+	local back, decodeProblem = format:decode(16, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -129,7 +138,7 @@ do
 	data.placed.rows[1].turn = 37.5
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a turn of 37.5 can be stored ({problem})`)
-	local back = if stored then format:decode(15, stored) else nil
+	local back = if stored then format:decode(16, stored) else nil
 	ok(back ~= nil and back.placed.rows[1].turn == 37.5, "and comes back 37.5")
 end
 
@@ -374,7 +383,7 @@ do
 		card = "Chalk",
 	}
 	local kept = format:encode(dressed)
-	local dressedBack = format:decode(15, kept)
+	local dressedBack = format:decode(16, kept)
 	ok(
 		dressedBack ~= nil
 			and dressedBack.looks.paper == "Leaves"
@@ -417,7 +426,7 @@ do
 	)
 	local laid = Save.fresh()
 	laid.starterLaid = true
-	local laidBack = format:decode(15, format:encode(laid))
+	local laidBack = format:decode(format:latest(), format:encode(laid))
 	ok(laidBack ~= nil and laidBack.starterLaid == true, "a laid home stays laid")
 	-- Version 14 as the DataStore holds it (Nov 18): the stencil over the door, nothing bought.
 	-- It comes back owning no styles (S5-03g3d, D-360); a bought one is kept.
@@ -430,9 +439,40 @@ do
 	)
 	local styled = Save.fresh()
 	styled.cards.Neon = 1700000000
-	local styledBack = format:decode(15, format:encode(styled))
+	local styledBack = format:decode(format:latest(), format:encode(styled))
 	ok(styledBack ~= nil and styledBack.cards.Neon == 1700000000, "a bought style is kept")
-	local newer, newerProblem = format:decode(16, v1)
+	-- Version 15 as the DataStore holds it (Nov 19): a home with a bought style and nothing under
+	-- way. It loads untouched, with no recipes (S5-03k1, D-476); a recipe under way is kept whole.
+	local v15 = table.clone(v14)
+	v15.cards = { Neon = 1700000000 }
+	local fifteen, fifteenProblem = format:decode(15, v15)
+	ok(
+		fifteen ~= nil
+			and next(fifteen.recipes) == nil
+			and fifteen.cards.Neon == 1700000000
+			and fifteen.starterLaid == true
+			and fifteen.homeSize == "Medium"
+			and fifteen.placed.rows[1].id == "Boombox#1",
+		`version 15 loads untouched with no recipes under way ({fifteenProblem})`
+	)
+	if fifteen then
+		local rest = table.clone(fifteen :: any)
+		rest.recipes = nil
+		ok(same(rest, v15), "version 15 loads with every field it had, as it was")
+	end
+	local hatching = Save.fresh()
+	hatching.recipes["Incubator#1"] =
+		{ recipe = "hatch", stage = 1, began = 1794700000.5, done = 0, seed = 7, inside = "Egg" }
+	local hatchingBack = format:decode(16, format:encode(hatching))
+	ok(
+		hatchingBack ~= nil and same(hatchingBack.recipes, hatching.recipes),
+		"a recipe under way is kept whole, under its spot's id"
+	)
+	local bad = Save.fresh()
+	bad.recipes["Incubator#1"] =
+		{ recipe = "hatch", stage = 0, began = 0, done = 0, seed = 1, inside = "" }
+	ok(format:encode(bad) == nil, "a recipe at no stage is never written")
+	local newer, newerProblem = format:decode(17, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 

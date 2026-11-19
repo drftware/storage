@@ -51,6 +51,27 @@ nowhere else.
   3. An egg warms for 2 hours, then wobbles for 10 minutes before it hatches.
   4. A find you Take keeps its spot (a faint outline) until you set it somewhere else or leave
      your home.
+- [ ] **The hatch's numbers, and the other recipes I'd suggest** (S5-03k1, D-476; pure data and
+  tests, nothing on screen yet). My defaults, yours to change before S5-03k3 builds the egg and
+  chick:
+  1. The egg is Uncommon, worth 12 cash; the chick is Rare, worth 30 (`Home/RecipeRows`'
+     `Coming`). So a hatch turns 12 into 30 over 2 hours 10 minutes: about 8 cash an hour.
+  2. No recipe may earn more than 10 cash an hour from the clock alone, a floor 1 gate's pay
+     (`RecipeMoney.Ceiling`). A test fails any row above it. Raise it if you want home machines
+     to be a reason to log in; too high and they replace the climb.
+  3. The egg goes into the incubator and is gone from your finds while it warms (no taking it back
+     out); the chick comes out beside the incubator, into your box if there's no room.
+  New recipes I'd suggest, each one row of data and none built till you say so (each copies a
+  hit game):
+  1. **A seed in a pot** (Grow a Garden): plant it, water it twice with a watering can, stand a
+     lamp near, and it grows into a potted plant you can set out.
+  2. **A dead battery on a charger** (Lethal Company's charger): wind the charger three times,
+     and after your next climb the battery comes back charged.
+  3. **A hen that lays** (Stardew Valley's coop): a hen set out lays an egg beside it every few
+     hours, on its own, so the hatch keeps going.
+  4. **A mystery box on the crate** (Pet Simulator's eggs, with the odds shown before you start):
+     leave it a minute and it opens, maybe to a chick, maybe empty. No Robux speed-up on it ever
+     (Roblox's rule on paid random items).
 - [ ] **Arrange's build camera, with your fingers and a gamepad** (S5-03j1b, D-442; seen in
   Studio Play at Galaxy A16 size on a Small home, turned with a stand-in for the mouse; pinch,
   twist, tilt and sticks can't be driven from Studio). Stand in your home and tap Arrange:

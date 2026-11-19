@@ -32,7 +32,7 @@ GRADES = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Secret"]  # Grades
 # Big: a floor's big find (S4-05b2a), held low in both arms, a walk of its own
 SIZES = ["Small", "Medium", "Large", "Big"]
 ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "lit", "fragile", "grip", "heft", "size",
-       "bothHands", "walkSpeed", "pickUp", "drop", "verb", "press"]
+       "bothHands", "walkSpeed", "pickUp", "drop", "verb", "press", "tags"]
 NEEDED = ["key", "catalog", "name", "grade", "worth", "grip", "heft", "size", "pickUp", "drop"]
 PRESS = ["verb", "on", "more", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down",
          "walks", "lays"]
@@ -40,6 +40,9 @@ LAYS = ["length", "sound"]
 STEP = ["motion", "loop", "sound", "hit", "cues", "lands"]
 SOUND = ["id", "from", "length", "volume", "pitch", "slows"]
 SLOWS = ["at", "stop", "fade"]
+# A tag is a plain lowercase word a recipe row matches by (S5-03k1, D-476): "egg" on every egg
+# puts each one in the hatch with no new row (Stardew Valley 1.6's context tags).
+TAG = re.compile(r"^[a-z]+$")
 
 
 def fail(msg):
@@ -201,6 +204,12 @@ def rows():
                 fail(f"{where}: found lit takes no press (D-229)")
             if g.get("fragile") and not re.search(rf'Name = "{key}_{g["fragile"]}"', art):
                 fail(f"{where}: fragile names {g['fragile']!r}, no part of its art (Finds/Sets/{luau_set}.luau)")
+            tags = g.get("tags")
+            if tags is not None:
+                if not (isinstance(tags, list) and tags and all(isinstance(t, str) and TAG.match(t) for t in tags)):
+                    fail(f"{where}: tags is a list of plain lowercase words")
+                if len(set(tags)) != len(tags):
+                    fail(f"{where}: a tag listed twice")
             row = {
                 "key": key,
                 "set": luau_set,
@@ -221,6 +230,7 @@ def rows():
                 "drop": sound(where, g["drop"]),
                 "verb": p["verb"] if p else g.get("verb"),
                 "press": p,
+                "tags": list(tags) if tags else None,
             }
             out.append({k: v for k, v in row.items() if v is not None})
     return out

@@ -58,6 +58,11 @@
 	  and the rest, as rows you arrange (S5-03i1a, D-346). False in a new save and in one laid
 	  before: the server lays them as it sets the home up (`Home.Layout`: a size's layout, or where
 	  they stood) and writes it true.
+	- `recipes`: each recipe under way in your home (S5-03k1, D-476), under the id of the spot it
+	  runs on (`placed`'s row id, "Incubator:Furniture#1"): Brix's plain `RecipeRecord` (which recipe from
+	  `Home.RecipeRows`, its stage, when that stage began, presses or gifts so far, the seed its
+	  chance rolls from) and `inside`, the find put in it by name ("" when nothing was). A find
+	  inside is no longer in `finds`: it left your hands into the thing, in the same save step.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -93,6 +98,16 @@ export type PlacedRow = { id: string, on: string, x: number, y: number, turn: nu
 -- Everything set out in your home: Brix's saved form (`Brix.PlacementsSaved`).
 export type Placed = { form: number, rows: { PlacedRow } }
 
+-- A recipe under way on one spot: Brix's `RecipeRecord` fields as they are, and what's inside.
+export type Recipe = {
+	recipe: string,
+	stage: number,
+	began: number,
+	done: number,
+	seed: number,
+	inside: string,
+}
+
 export type Data = {
 	cash: number,
 	finds: Counts,
@@ -119,6 +134,7 @@ export type Data = {
 	placedSize: string,
 	starterLaid: boolean,
 	cards: Stamps,
+	recipes: { [string]: Recipe },
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -171,6 +187,7 @@ function Save.fresh(): Data
 		placedSize = Sizes.Start,
 		starterLaid = false, -- the server lays the home's own pieces as it sets it up (D-346)
 		cards = {}, -- the stencil is everyone's; the rest are bought (D-360)
+		recipes = {}, -- nothing under way (D-476)
 	}
 end
 
@@ -182,6 +199,8 @@ Save.ShelfMost = 24
 -- The most finds any home holds set out (the XL unit's limit, D-259 idea 15): what the save holds
 -- at most. `Spots.Sizes` keeps every size's limit at or under it.
 Save.PlacedMost = 150
+-- The most recipes under way in one home: one per thing set out, at most.
+Save.RecipesMost = Save.PlacedMost
 
 -- The name a placed row's id carries (`Spots.id`: "Teddy#2", a Gold's "Teddy:Gold#1"), or nil.
 local function placedName(id: string): string?
@@ -809,6 +828,22 @@ function Save.format(brix: any): Format
 	fifteenthFields.cards = Schema.map(name, stamped)
 	local fifteenth = Schema.shape(fifteenthFields)
 
+	-- Version 16 (S5-03k1, Nov 19): version 15 plus each recipe under way, under its spot's id.
+	local sixteenthFields = table.clone(fifteenthFields)
+	sixteenthFields.recipes = Schema.map(
+		where,
+		Schema.shape({
+			recipe = name,
+			stage = Schema.number({ min = 1, max = 1000, integer = true }),
+			began = Schema.number({ min = 0 }),
+			done = Schema.number({ min = 0, integer = true }),
+			seed = Schema.number({ min = 0, max = 2 ^ 53, integer = true }),
+			inside = Schema.string({ maxLength = 80 }),
+		}),
+		{ maxCount = Save.RecipesMost }
+	)
+	local sixteenth = Schema.shape(sixteenthFields)
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -1035,6 +1070,15 @@ function Save.format(brix: any): Format
 				migrate = function(old: any): any
 					local after = table.clone(old)
 					after.cards = {} -- every home had the stencil alone (D-360)
+					return after
+				end,
+			},
+			{
+				schema = sixteenth,
+				-- any: a version 15 save as Brix hands it over, already checked against `fifteenth`
+				migrate = function(old: any): any
+					local after = table.clone(old)
+					after.recipes = {} -- nothing was under way before recipes (D-476)
 					return after
 				end,
 			},

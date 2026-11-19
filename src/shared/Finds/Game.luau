@@ -123,6 +123,9 @@ export type Row = {
 	-- its press's one word (the RC car's Drive, whose press is `Finds/Drive`); none: no press
 	verb: string?,
 	press: Press?, -- what its press plays (`Finds/Use`)
+	-- plain words a recipe matches it by ("egg"; `Home/RecipeRows`, D-476): a find joins every
+	-- recipe its tags name with no new row; none: it joins only recipes that name it
+	tags: { string }?,
 }
 
 return {}
