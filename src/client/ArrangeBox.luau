@@ -21,8 +21,10 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local ArrangeHand = require(script.Parent.ArrangeHand)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
+local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
 local Feedback = require(ReplicatedStorage.Shared.Home.Feedback)
 local Selection = require(ReplicatedStorage.Shared.Home.Selection)
+local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 
 local WASH = Color3.fromRGB(255, 244, 222) -- a warm white: picked, not judged (green and red are)
@@ -74,6 +76,9 @@ function ArrangeBox.new(options: Options): ArrangeBox
 	local lit: { string } = {}
 	local glows: { [string]: Highlight } = {}
 	local pitch = 1
+	-- Each drawn thing's own middle in its pivot's frame, measured once (its cubby finds left out:
+	-- a shelf's box would otherwise reach across the room and be boxed with what's in front of it).
+	local middles: { [Model]: Vector3 } = setmetatable({}, { __mode = "k" }) :: any
 
 	-- Every find of yours drawn in the room, its middle on the screen from the camera now.
 	local function findPoints()
@@ -91,7 +96,13 @@ function ArrangeBox.new(options: Options): ArrangeBox
 				and type(id) == "string"
 				and m:GetAttribute(Spots.OwnerAttribute) == me.UserId
 			then
-				local at = camera:WorldToScreenPoint(m:GetBoundingBox().Position)
+				local middle = middles[m]
+				if not middle then
+					local _, centre = Arranged.bounds(m, Shelf.Tag)
+					middle = centre or Vector3.zero
+					middles[m] = middle
+				end
+				local at = camera:WorldToScreenPoint(m:GetPivot() * middle)
 				table.insert(points, { id = id, x = at.X, y = at.Y, ahead = at.Z > 0 })
 			end
 		end

@@ -3585,7 +3585,7 @@ Done when players watch the results to the end and change their perks between cl
       Taken find's faint spot it snaps back into (D-465: `Tool.kept`, `HandPlace.snaps`); - [x] **j5b2** a held finger on one of your
       things opens Arrange with it lifted (D-466: `HomeHoldView`, `ArrangeView`'s `grab`,
       `ArrangeHand.carryHeld`).
-    - [ ] **S5-03j6 Several at once.** A box dragged round several things selects them; they
+    - [x] **S5-03j6 Several at once.** A box dragged round several things selects them; they
       move, turn and put away together; the server takes them as one move. Split (Nov 19, its
       own session): - [x] **j6a** the box and the selection's look (D-467: `Home/Selection`,
       `ArrangeBox`; a finger held on bare floor then dragged boxes things, each lights with a
@@ -3597,25 +3597,38 @@ Done when players watch the results to the end and change their perks between cl
       keeps the group as one step (one Undo puts all back). Its ring: Turn and Put away only.
       j6b split (Nov 19, its own session): - [x] **j6b1** the pure core, the server's one group
       ask and History's group step (D-468: `Home/Group`, the `ArrangeGroup` remote,
-      `History.recordGroup`); - [ ] **j6b2** the screen: a drag on a lit thing carries the group
+      `History.recordGroup`); - [x] **j6b2** the screen: a drag on a lit thing carries the group
       (`ArrangeGroup` module, one ghost per root), its ring (Turn, Put away), its feel, its undo,
       seen in Studio Play at A16. j6b2 split (Nov 19, its own session): - [x] **j6b2a** built and
-      green (D-469: `ArrangeGroup`, `ArrangeBox.dim`, `ArrangeUndo.recordGroup`); - [ ] **j6b2b**
+      green (D-469: `ArrangeGroup`, `ArrangeBox.dim`, `ArrangeUndo.recordGroup`); - [x] **j6b2b**
       seen in Studio Play at A16 and captured: a boxed three dragged, landed, refused, turned, put
-      away, undone and redone; fixes from what's seen. Polish by name: a shadow under each
+      away, undone and redone; fixes from what's seen (D-470: a shelf is boxed and ringed by its
+      own body, not its cubby finds; `docs/art/s5-03j6b2b-*`). Polish by name: a shadow under each
       carried ghost; an undone group Put away's finds popping up out of the box.
     - [ ] **S5-03j7 The editor seen whole.** Every row of the feedback table checked in Studio
       Play at A16 size and captured; fixes; ArrangeView's leftovers removed; OWNER.md's phone
-      steps written. From the conductor's look at this run's captures (Nov 19): (1) at phone size
-      the world buttons on neighbouring things overlap ("Open" and "Sit" on two crates,
-      `s5-03j5b2-kept-spot-closeup.png`, `s5-03j5a2-place-close.png`): fix it for every button,
-      by find for none (nudge overlapping ones apart, or show only the nearest thing's);
-      (2) never seen yet: the weighted landing (a heavy and a light place, thud and dust) and Put
-      away flying into its tray card (D-461); (3) the guide line between lined-up edges was too
-      faint at half scale (`s5-03j3b-crate-lined-up.png`): judge a full-scale close-up; (4) the
-      wall height handle sat beside the sign, not above it (`s5-03j3c2-handle-raised-closeup.png`):
-      say whether it reads right or move it; (5) Arrange still opens with the room small (a crate
-      ~16 points across, `s5-03j6a-selected.png`): open closer (D-449) and limit D's slide.
+      steps written. Split (Nov 19, the conductor; j6b2b's session):
+      - [ ] **j7a Seen whole, and the screen's fixes.** From the conductor's look at this run's
+        captures (Nov 19): (1) at phone size the world buttons on neighbouring things overlap
+        ("Open" and "Sit" on two crates, `s5-03j5b2-kept-spot-closeup.png`,
+        `s5-03j5a2-place-close.png`): fix it for every button, by find for none (nudge
+        overlapping ones apart, or show only the nearest thing's); (2) never seen yet: the
+        weighted landing (a heavy and a light place, thud and dust) and Put away flying into its
+        tray card (D-461; a burst capture misses the flight: sample it with a RenderStepped
+        logger); (3) the guide line between lined-up edges was too faint at half scale
+        (`s5-03j3b-crate-lined-up.png`): judge a full-scale close-up; (4) the wall height handle
+        sat beside the sign, not above it (`s5-03j3c2-handle-raised-closeup.png`): say whether it
+        reads right or move it; (5) Arrange still opens with the room small (a crate ~16 points
+        across, `s5-03j6a-selected.png`): open closer (D-449) and limit D's slide. Also from
+        j6b2b (D-470): a group's Turn refused, and Redo of a group Put away, not yet seen; the
+        carried group's soft green and the box's glow read faint at phone size
+        (`s5-03j6b2b-carried-green.png`).
+      - [ ] **j7b ArrangeView taken apart to wiring, and OWNER.md's phone steps.** (6)
+        `ArrangeView.luau` was meant to only shrink but grew this run from 1520 lines (f995fd6)
+        to 1744 (72ff873) as undo, box-select, hold-to-pick-up and the group were wired into it.
+        Move each piece's wiring into its own module (or a small `ArrangeWiring`) so ArrangeView
+        ends as the plan says: wiring only, well under 1520 lines. Behaviour unchanged; check.sh
+        and a Play pass prove it. Then OWNER.md's phone steps for the whole editor.
   - [ ] **S5-03k The recipe system: what one thing does to another** (the owner, Nov 18,
     D-436; D-188's "hatched pets live there"; the doc's "Part 2" section). One data row per
     recipe; a fixed vocabulary of starts, stage ends, results and looks; thousands of rows by

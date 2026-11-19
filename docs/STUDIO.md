@@ -3821,3 +3821,21 @@ verified: a doc page, Studio, or "untested".
   `mouseButtonUp` in the next.
 - **Reading the box:** the Frame is `PlayerGui...SelectBox`; the glows are Highlights named
   `ArrangeSelected` under `CurrentCamera`, each with its `Adornee`.
+
+## Driving the group in Play (S5-03j6b2b, Nov 19)
+
+- **Arrange's top buttons click at `AbsolutePosition` + half size + 47 across**, y unchanged:
+  Undo (453, 14, 48 square) clicks at (524, 38), Redo at (580, 38). The ring's buttons the same
+  way (`PlayerGui.Arrange` `Away`/`Turn`: read their `AbsolutePosition` each time, the ring moves
+  with the group). A click a point left of Undo's edge reads as a tap on the room and clears the
+  selection with no word.
+- **A box from the right floor to the left**, after `CameraTest "wheel", 3, 330, 100` from the
+  opening view of Medium: a press held 900 ms, then moves 150 ms apart, then the up in the same
+  call. Read what lit from the `ArrangeSelected` Highlights' `Adornee`, the ring's box from
+  `ArrangeGroupOutline`'s part size.
+- **Mid-drag and landing captures** from a background `sleep 3.4; cap; sleep 2.6; cap` started
+  just before one `user_mouse_input` call that presses, moves 60 points at once, waits 3500 ms,
+  and lets go.
+- **The shelf's model holds its cubby finds**, and in this save two of them stand 8 and 12 studs
+  in front of it: `GetBoundingBox` on the shelf reaches mid-room. Measure a thing by
+  `Arranged.bounds(model, Shelf.Tag)` (D-470).

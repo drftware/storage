@@ -28,6 +28,7 @@ local ArrangeHand = require(script.Parent.ArrangeHand)
 local ArrangeRing = require(script.Parent.ArrangeRing)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
+local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
 local Feedback = require(ReplicatedStorage.Shared.Home.Feedback)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local Group = require(ReplicatedStorage.Shared.Home.Group)
@@ -166,7 +167,12 @@ function ArrangeGroup.new(options: Options): ArrangeGroup
 		for _, id in ids do
 			local m = drawnOf(id)
 			if m then
-				local cf, size = m:GetBoundingBox()
+				-- its own box, not its cubby finds' (they can stand well off a shelf)
+				local size, centre = Arranged.bounds(m, Shelf.Tag)
+				if not (size and centre) then
+					continue
+				end
+				local cf = m:GetPivot() * CFrame.new(centre)
 				local h = size / 2
 				for i = 0, 7 do
 					local c = cf

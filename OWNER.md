@@ -211,6 +211,17 @@ nowhere else.
   leaves the sign where it hangs: only the floor things slide and turn together (a sign can't
   slide across the floor). The other way would slide it along its own wall by the same amount.
   Say which you want; you'll see it once S5-03j6b2 lets you drag a group.
+- [ ] **Feel it: move three things as one** (S5-03j6b2b, D-470; seen in Studio Play at A16, not
+  on a phone). In Arrange at home, box two crates and a lamp (as above), then:
+  1. Drag one of the lit crates: all three lift together, soft green. Push them onto the job box:
+     all three turn red. Let go there: they float back, nothing moved.
+  2. Drag them again onto clear floor and let go: they land one after another, heaviest first, a
+     thud each. Press Undo once: all three go back. Redo: they move again.
+  3. Press the turn button under them: all three swing a quarter round their middle together.
+  4. Press Put away: each flies to its card. Undo: all three come back where they stood.
+  Look for: the knocks read as three things landing, not a rattle; the green and the lit glow
+  are easy to see at phone size (they read faint in Studio); the buttons under the group don't
+  cover what you're looking at.
 - [ ] **Feel it: what's in the way glows** (S5-03j4b2, D-462; seen in Studio Play at A16, not on
   a phone). On your phone, open Arrange and drag a milk crate into the shelf, slowly:
   1. The moment it presses in, the crate goes red, the shelf flares soft red and stays faintly

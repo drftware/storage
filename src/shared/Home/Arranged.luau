@@ -83,14 +83,31 @@ function Arranged.box(t: CFrame, spot: string, size: Vector3): CFrame
 	return t * CFrame.new(0, size.Y / 2, 0)
 end
 
+-- Whether part `d` of `model` belongs to something standing in it rather than to the model's own
+-- body: a nested Model tagged `held` (a shelf's cubby finds, `Shelf.Tag`).
+local function heldIn(model: Model, d: Instance, held: string?): boolean
+	if not held then
+		return false
+	end
+	local m = d:FindFirstAncestorWhichIsA("Model")
+	while m and m ~= model do
+		if m:HasTag(held) then
+			return true
+		end
+		m = m:FindFirstAncestorWhichIsA("Model")
+	end
+	return false
+end
+
 -- The box round a model's visible parts in its pivot's frame: its size and its middle. Nil when
--- nothing in it can be seen.
-function Arranged.bounds(model: Model): (Vector3?, Vector3?)
+-- nothing in it can be seen. With `held` (a tag), what stands in it under that tag is left out, so
+-- a shelf is measured as the shelf: its cubby finds can be drawn well off it (S5-03j6b2b).
+function Arranged.bounds(model: Model, held: string?): (Vector3?, Vector3?)
 	local pivot = model:GetPivot()
 	local low = Vector3.one * math.huge
 	local high = -low
 	for _, d in model:GetDescendants() do
-		if d:IsA("BasePart") and d.Transparency < 1 then
+		if d:IsA("BasePart") and d.Transparency < 1 and not heldIn(model, d, held) then
 			local cf = pivot:ToObjectSpace(d.CFrame)
 			local h = d.Size / 2
 			for _, sx in { -1, 1 } do

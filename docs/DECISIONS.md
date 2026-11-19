@@ -11211,3 +11211,29 @@ and fixed from what's seen.
   draws them), and its answer's ids go back through `answered(ok, id, more)`.
 - **Polish by name (ROADMAP):** a group's shadow under each ghost while carried; set-outs of an
   undone group Put away popping up out of the box as the hand's do.
+
+## D-470 The group seen in Studio, and a shelf measured by its own body (S5-03j6b2b, Nov 19)
+
+Seen in Studio Play at A16 (Medium home, two milk crates and a moon lamp set out together),
+captured to `docs/art/s5-03j6b2b-*`:
+- **A box round the three lit the shelf too.** The box lights what has its middle inside, and
+  the shelf's middle was its whole model's box, which took in its cubby finds. Two of them (the
+  stained-glass lamp, the walking robot) were drawn 8 and 12 studs out in front of it, so the
+  shelf's "middle" sat mid-room. Fixed generally, by tag, naming no find: `Arranged.bounds(model,
+  held)` leaves out what stands in a thing under a tag (`Shelf.Tag`), and both the box's points
+  (`ArrangeBox`, measured once per drawn thing in its pivot's frame, so nothing allocates while
+  the box stretches) and the group's ring (`ArrangeGroup.ringRound`) measure a thing by its own
+  body. After it the same box lit only the crates and the lamp. Why the cubby finds stand off the
+  shelf is the shelf's own bug, queued (HANDOFF).
+- **Proven on the server and the screen:** a drag on one lit crate carried all three (white edge,
+  soft green fill, as the hand's); pushed onto the job box all three went red and floated back,
+  the rows unchanged; let go on free floor all three moved by the same step in one ask; one Undo
+  put all three back, Redo moved them again; the ring's Turn swung them a quarter about their
+  middle as one ask (turns 180 to 270 and 0 to 90, places rotated round the middle); Put away
+  sent all three to the tray (the crate card to ×3, the room's count 4 to 1); Undo brought them
+  back to the same spots and turns.
+- **Not seen:** a group's Turn refused, Redo of a group Put away, and the flight into the cards
+  (quicker than a capture). They go to S5-03j7a with the conductor's notes. The group's soft green
+  reads faint at phone size, as the box's glow does (D-467): one polish line in j7a.
+- **S5-03j7 split** (the conductor, Nov 19): j7a the editor seen whole and the screen's fixes;
+  j7b ArrangeView taken apart to wiring (it grew to 1744 lines this run) and OWNER.md's phone steps.
