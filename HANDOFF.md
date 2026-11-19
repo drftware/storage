@@ -2,50 +2,48 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-19, S5-03j2b done: turning seen in Studio, riders hop (D-454) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
+**Updated:** 2026-11-19, S5-03j3a done: the snapper, pure (D-455) · **Checks:** green · **Git:** `main`, not pushed; Brix `3e9a2bb`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; search its heading). Order now: S5-03j3a, b, c, j4 to j7, ENG-29, k1 to k6.
-- **Turning is seen working in Studio** (D-454): R, the wheel mid-drag, Alt, the Free switch, a
-  free twist kept off the grid through a rejoin. **Riders hop** as their piece lands
-  (`Home/Settle`, ArrangeHand's `bounce`), seen with two finds on the job box.
+  only; search its heading). Order now: S5-03j3a2, j3b, j3c, j4 to j7, ENG-29, k1 to k6.
+- **`Home/Snapping` is pure and specced, not wired** (D-455): only arriving at a wall turns a
+  piece; walls and tops hold a little past where they took hold; never the door's wall.
 - **Studio has tonight's code** (`rojo serve`, port 34872): restart Play to run edits.
 - **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j3a The snapper, pure
-The moment: a chair pushed toward a wall swings its back to it; a cup dragged over the table
-hops up onto it; the thing lines up with its neighbours as faint lines flash (The Sims 4).
-1. Read the plan doc's snapping lines and its feedback table's "onto a table" row (docs tools,
-   search the heading). ROADMAP's S5-03j3 holds the split (a pure, b seen and heard, c walls).
-2. How settle snaps now: `ArrangeHand.settle` (line ~313), `PlacementSnap.grid` and
-   `Turning`; how a find picks its top today (`Arrange.frameOn`, `Spots.pieceTop`).
-3. Specs first, `tests/snapping.spec.luau`, then `src/shared/Home/Snapping.luau` (pure, a
-   header comment, small typed interface): the half-stud grid; a piece near a wall (within a
-   reach, a Feel number) turns its back to that wall, Free aside; which top a find over a piece
-   stands on and when it steps back down (a little give so it doesn't flicker at the edge).
-4. Guide lines: Brix's `placements:align` (ENG-26c), one answer kept per drag (zero allocation);
-   Snapping says which lines to draw; drawing them is b's.
-5. Wire into `settle`; keep ArrangeView only wiring. If budget allows, see a crate pushed to a
-   wall turn its back in Studio at A16 (CameraTest "carry", STUDIO.md).
-**Acceptance:** specs pass; near a wall a piece faces out, over the job box a find stands on it.
-**Read first:** ROADMAP's S5-03j3; the plan doc's snapping section; Brix
-`vendor/brix/docs/modules/Placements.md` lines 35-55 (align); `ArrangeHand.settle` by line
-range; `src/shared/Home/Turning.luau` (a pure module's pattern); `Layout.backGap` (walls).
+## Next task: S5-03j3a2 The snapper in the hand
+The moment: a crate pushed toward the back wall swings its back to it and sits flush; a cup
+dragged over the job box hops up onto it, and back down once clearly off the edge (The Sims 4).
+1. `ArrangeHand.Lifted` gains `backs: boolean` (furniture by `Furniture.ofPlaced(l.name)`, not
+   `Snapping.Flat`, not a `Layout.Lean` kind), `wall: number?`, and `lines:
+   Brix.PlacementAlignment` (`{ x = 0, y = 0, count = 0, guides = {} }`, made once per lift).
+2. In `lift`, where a placed thing's pose is read (~line 613): `l.wall = Snapping.wall(...)`
+   from that pose with `at` nil, so a piece lifted off a wall starts against it and never turns.
+3. `settle` (~313): after the grid and clamp, on "Floor", not Free, `l.backs`: `wall =
+   Snapping.wall(floor, x, y, rx, ry, turn, l.wall)`; `l.turn = Snapping.turned(l.turn, wall,
+   l.wall)`; if the turn changed, snap and clamp again with it; `l.wall = wall`; against a wall,
+   `Snapping.flush`. Then (not Free, not the mirror) `r.placements:align(l.id, l.shape, pose,
+   Snapping.Line, l.lines)` and `Snapping.lineUp(..., across = wall and Snapping.across(wall))`,
+   writing the count back into `l.lines.count`; Free or the mirror: count 0. Layout's lean and
+   clear stay last (the job box turns, then keeps its lid's room).
+4. `aim` (~238): tops by `Snapping.over(x, y, w, d, l.pose ~= nil and l.pose.on == id)`
+   instead of `REACH`; on a near tie in ray distance the current top wins. Rooms keep `REACH`.
+5. Studio at A16 (CameraTest "carry", STUDIO.md; aim with `WorldToViewportPoint`; read state
+   with execute_luau): a crate turns and sits flush at the back wall; R there keeps its turn.
+**Acceptance:** green; both moments seen in Studio (the job box's find too), in `docs/art/`.
+**Read first:** `src/shared/Home/Snapping.luau` (whole, ~200 lines); `ArrangeHand.luau` lines
+200-345 (aim, settle) and 595-620 (lift's pose); DECISIONS D-455; ROADMAP's S5-03j3a2 and j3b.
 
 ## Queue (next sessions, the owner's ticket order)
-0. A card dragged up out of the tray is the tray's own drag, not Gestures', so the wheel zooms
-   and a second finger can't twist it (R and Free work): route the wheel to the hand while a
-   tray drag carries (D-453). After S5-03j2: at the view Arrange opens with, a crate is about 16 points across on a Medium
-   home (D-449): the camera's fit may want to open closer; the wheel zooms the eye through the
-   unit's facade (`Colliders.FacadeRight`; STUDIO.md). D held 0.35 s slides the room half off
-   the screen (black beyond): the slide may want a limit. The yellow sliver at Arrange's right
-   edge is the minimap's "You" marker shown while its window is away (D-447): hide it. Drop the
-   unread `ArrangeCamera.Room.slot` and `slotBox` (D-443); rename `BuildView.eyeBox` (D-444).
-   Projections from `ViewportSize` by hand land 10 points low on a notched phone: use `lens`'s
-   screen (D-446). `ToolView.luau` ~1293 reads `WorldToViewportPoint`'s on-screen flag as
-   "ahead" (D-451). Arrange reopens on the last tab: does the doc want that?
+0. A tray card's drag isn't Gestures': the wheel zooms, no twist (route the wheel, D-453).
+   At Arrange's opening view a crate is ~16 points across (D-449): open closer; the wheel zooms
+   through the facade (STUDIO.md). D held slides the room half off screen: limit it. Hide the
+   minimap's "You" sliver (D-447). Drop `ArrangeCamera.Room.slot`, `slotBox` (D-443); rename
+   `BuildView.eyeBox` (D-444). Hand projections land 10 points low on a notch: use `lens`
+   (D-446). `ToolView.luau` ~1293 reads the on-screen flag as "ahead" (D-451). Arrange reopens
+   on the last tab: does the doc want that? `aim`'s room `REACH` stays 2.5 (D-455).
    After S5-03j and k: S5-03g2b's three "Polish:" lines (D-326 to D-328), then g3b.
 1. Small's doorway's inside boards are oak, not the picked paint (D-355). Sitting (D-353):
    cross-legged on the blanket needs our own animation; lying on the bed.

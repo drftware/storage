@@ -10799,3 +10799,30 @@ the room lifts it with today's drag (Turn, Place, the tray away).
   second finger mid-drag, since the MCP's mouse can't hold and roll. Its points are viewport
   points (`WorldToViewportPoint`), not `WorldToScreenPoint`'s: a press aimed by the latter missed
   the crate and dragged the camera instead.
+
+## D-455 The snapper's rules (S5-03j3a, 2026-11-19)
+
+- **What:** `Home/Snapping`, pure, with `tests/snapping.spec.luau` (58 checks): which wall a
+  piece on the floor is against (`wall`), the flush spot (`flush`), the turn that gives it
+  (`turned`), whether a find stands on a top (`over`), and which of Brix's line-up moves and
+  guide lines hold (`lineUp`, `drop`). Not yet wired: S5-03j3a2 puts it in `ArrangeHand.settle`
+  and `aim` (the session reached 180k context before the wiring, so the ticket was split).
+- **Only arriving turns.** A piece turns its back to a wall as it comes within `Reach` (1 stud,
+  from its edge) and stays against it until `Give` (0.5) further off. A turn given at the wall
+  stays; one lifted already against a wall starts against it, so lifting never turns it. This is
+  how "help, never a fight" reads in code: The Sims 4 turns a piece as you drag it to a wall,
+  and Alt (our Free) skips it.
+- **Corners.** The nearest wall within reach; walls within `Give` of it go to the one the
+  piece's back already faces most. Held against one wall, it keeps it right into the corner and
+  goes over only once pulled `Give` past the first wall's reach.
+- **Which walls:** back, left and right; never the door's (the roll-up door). Which pieces:
+  furniture that isn't flat (`Snapping.Flat`: the rug, the blanket), not finds, not the mirror
+  (it leans by `Layout.leanTo`). The job box turns, then `Layout.clearOf` keeps its lid's room.
+  Defaults, in OWNER.md.
+- **Tops.** A find stands on a top when its middle is over it (no reach past the edge, unlike
+  today's 2.5-stud `REACH` in `aim`, which makes finds hop onto tables they only pass near), and
+  stays on it until `Over` (0.4) past the edge.
+- **Line-up.** Brix's `align` at `Line` (0.25) tolerance; a side's move is taken only if it keeps
+  the thing in its area and, against a wall, along the wall, never off it; a side not taken drops
+  its guide lines in place (no allocation).
+- **The grid** stays Brix's `PlacementSnap.grid` at `Arrange.Step`; Snapping doesn't copy it.

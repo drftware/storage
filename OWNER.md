@@ -119,6 +119,17 @@ nowhere else.
      back with a small clink, the next one a beat later, a tiny second bounce, then still (S5-03j2b2c,
      D-454). Tell me: does the hop read on your phone, or is it too small to see from Arrange's
      view (my default: a jump of 0.16 studs, a small jolt; I can make it bigger)?
+- [ ] **Decide: which things snap to a wall** (S5-03j3a, D-455; the rules are written and tested,
+  not yet in the game, so nothing to try until S5-03j3a2). My defaults, any of which is a word to
+  change:
+  1. A piece of furniture pushed within a stud of the back wall or a side wall swings round so its
+     back is to the wall and slides flush against it, as in The Sims 4. It turns only as it
+     arrives: turn it yourself while it's against the wall and it keeps your turn.
+  2. The door's wall never counts: nothing backs onto the roll-up door.
+  3. Finds never turn to a wall, since you set your collection at the angle you like. The rug and
+     the blanket never turn either (they lie flat, no back). Everything else you buy does.
+  4. A find hops onto a table only when its middle is over the table, and steps back down only
+     once it's dragged 0.4 studs past the edge, so it doesn't flicker on and off.
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

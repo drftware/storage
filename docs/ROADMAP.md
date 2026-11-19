@@ -3518,11 +3518,16 @@ Done when players watch the results to the end and change their perks between cl
       hops onto it with a tock and back down off it; guide lines from ENG-26c drawn faint; wall
       things slide along their wall, a handle raises and lowers them. Split (S5-03j2b2b2's
       session; one session each):
-      - [ ] **S5-03j3a The snapper, pure.** `Home/Snapping` with Lune specs first: the half-stud
-        grid; a piece dragged near a wall turns its back to it (within a reach, Free aside);
-        which top a find dragged over hops onto and when it steps back down; Brix's `align`
-        (ENG-26c) for guide lines, one answer per drag. Wire into `ArrangeHand.settle`; the tock
-        and the faint lines can wait for b.
+      - [x] **S5-03j3a The snapper, pure.** Done (D-455): `Home/Snapping` and its spec (58
+        checks): the wall a piece is against (held past its reach, corners to the wall it faces,
+        never the door's), flush, only arriving turns it; a find on a top by its middle, held
+        `Over` past the edge; which of Brix `align`'s moves and lines hold. Not wired (context).
+      - [ ] **S5-03j3a2 The snapper in the hand.** Wire `Snapping` into `ArrangeHand`: `settle`
+        (floor, not Free, a piece with a back: `wall`, `turned` into `l.turn`, re-grid, `flush`;
+        then `align` into a per-lift `Brix.PlacementAlignment` and `lineUp`), `aim` (tops by
+        `over`, not `REACH`), lift (`l.wall` from where it stood). Seen in Studio at A16: a crate
+        pushed to the back wall turns its back and sits flush; a find over the job box stands on
+        it and steps down past its edge.
       - [ ] **S5-03j3b Seen and heard.** The tock as a find hops onto a top and back down; the
         guide lines drawn faint from a pool of six (no allocation per drag); seen in Studio at A16.
       - [ ] **S5-03j3c Wall things.** A wall thing slides along its wall as dragged; a handle
