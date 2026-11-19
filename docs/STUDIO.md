@@ -3741,3 +3741,19 @@ verified: a doc page, Studio, or "untested".
 - **Aim at the plane you mean:** a viewport point made from a world point above the floor lands
   the floor ray further from the camera. For a top, aim at a point on the top's plane; work the
   top's axis out from two finds on it, and recompute it after either moves.
+
+## Phone taps (S5-03j4b1, Nov 19)
+
+- **`HapticEffect`** (create.roblox.com, checked Nov 19): an Instance with `Type`
+  (`Enum.HapticEffectType`: Custom, UIHover, UIClick, UINotification, GameplayExplosion,
+  GameplayCollision), `Looped`, `Position`, `Radius`, `Play()`, `Stop()`, `Ended`, and for Custom
+  `SetWaveformKeys({ FloatCurveKey })` (time in milliseconds, value 0 to 1) and
+  `GetWaveformKeys()`. Phones with haptics (most iPhones, Pixels, Galaxies), PlayStation and Xbox
+  pads, Quest controllers. Made, keyed and played from a Client `execute_luau` in Studio Play
+  without error (nothing to feel there). Parented under the camera, client side.
+- **Driving Arrange from the MCP at A16:** a click on a tray card at gui + (47, 0) sets it out
+  (the milk crate: click 107, 224). A logger on `game.DescendantAdded` for Sounds (id, pitch,
+  volume) and ParticleEmitters proves which band landed. `CameraTest`'s `"tap"` at a crate's
+  screen point picked the job box in front of it instead, and a later capture showed the camera
+  at an odd steep angle with the tray hidden: selecting a given thing by tap is not reliable yet.
+

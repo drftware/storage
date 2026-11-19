@@ -3547,7 +3547,17 @@ Done when players watch the results to the end and change their perks between cl
         per step; the thing stays selected, as after Turn. Seen in Studio at A16: the neon sign
         lifted two steps (-2.5 to -1.45 on the wall's grid) and placed.
     - [ ] **S5-03j4 Undo, and every action answers.** j4a done (Nov 19, D-460): Brix's UndoList,
-      `Home/History`, the hand's `replay`, two buttons by Done, Ctrl+Z / Ctrl+Y. Split (Nov 19, S5-03j3c2's session):
+      `Home/History`, the hand's `replay`, two buttons by Done, Ctrl+Z / Ctrl+Y. j4b1 done (Nov
+      19, D-461): weight bands from each row's `heft` (`Home/Feedback`; furniture rows gained a
+      heft), the thud and dust by band, phone taps (`ArrangeTaps`, HapticEffect), Put away flies
+      into its tray card and the card bumps. **j4b2 next:** the blocker glows. Brix first
+      (ENG-26d, in `../engine` by its AGENTS.md): Placements gains `blocking(id, shape, pose,
+      into?) -> { Id }` (the things on the pose's area whose footprints it overlaps; fills `into`,
+      allocating nothing, so a drag may ask each move), a contract promise and suite cases; move
+      the pin. Then the hand: while the ghost is red, a Highlight on each drawn blocker (soft red,
+      fading in over 0.1 s), cleared as the ghost moves off or lands; one soft dull knock the
+      moment it turns red (the table's "once"), no tap. Polish left in this row (later, by name):
+      the place's squash (non-uniform, per part), a drag's tilt with its speed. Split (Nov 19, S5-03j3c2's session):
       **j4a** undo and redo (the undo list, Brix's if it's generic, D-252; the buttons; the
       server takes each undo as an ordinary Place or Put away); **j4b** the feedback table's
       rows below. Undo and redo while Arrange is open (a

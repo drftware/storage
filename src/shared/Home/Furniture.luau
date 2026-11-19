@@ -39,6 +39,9 @@ export type Piece = {
 	cap: number, -- the most of it one player may own
 	starter: boolean?, -- every home's own, never sold (D-346): one each, laid by `Home.Layout`
 	kept: boolean?, -- never put away: the job box holds everything else (D-345)
+	-- How heavy it is, 0 to 1, as a find's catalog `heft`: how it lands when set down in Arrange
+	-- (`Feedback`: its thud, its dust, its phone tap).
+	heft: number,
 }
 
 -- Why a buy can't happen: not a piece, not in this week's stock, owned as many as you may, or
@@ -51,7 +54,14 @@ export type Wallet = { cash: number, furniture: { [string]: number } }
 -- One floor's pay at its gate, the first floor's: the yardstick every price is counted in.
 local GATE = Pay.forFloor(1)
 
-local function row(id: string, name: string, floors: number, stands: Stands, cap: number): Piece
+local function row(
+	id: string,
+	name: string,
+	floors: number,
+	stands: Stands,
+	cap: number,
+	heft: number
+): Piece
 	return table.freeze({
 		id = id,
 		name = name,
@@ -59,6 +69,7 @@ local function row(id: string, name: string, floors: number, stands: Stands, cap
 		price = GATE * floors,
 		stands = stands,
 		cap = cap,
+		heft = heft,
 	})
 end
 
@@ -68,21 +79,21 @@ end
 -- as a player would (seats round a table, a bed or two, a few lights) without one buying the
 -- counter bare. All defaults for the owner (`OWNER.md`).
 Furniture.Pieces = table.freeze({
-	row("MilkCrate", "Milk crate", 3, "Floor", 6), -- a seat and a stand: the first thing anyone buys
-	row("Blanket", "Blanket", 4, "Floor", 4), -- a floor cushion round the coffee table
-	row("FoldingTable", "Folding table", 6, "Floor", 2), -- a table to gather round
-	row("Pallet", "Pallet", 8, "Floor", 2), -- the coffee table
-	row("SteelShelf", "Steel shelf", 10, "Floor", 3), -- four tiers of finds on show
-	row("CampBed", "Camp bed", 15, "Floor", 2), -- the sleepover: a good climb's pay
-	row("StringLights", "String lights", 18, "Ceiling", 4), -- warm bulbs across the ceiling
-	row("NeonSign", "Neon moon", 25, "Wall", 2), -- the glowing moon: saved up for
+	row("MilkCrate", "Milk crate", 3, "Floor", 6, 0.3), -- a seat and a stand: the first thing anyone buys
+	row("Blanket", "Blanket", 4, "Floor", 4, 0.12), -- a floor cushion round the coffee table
+	row("FoldingTable", "Folding table", 6, "Floor", 2, 0.55), -- a table to gather round
+	row("Pallet", "Pallet", 8, "Floor", 2, 0.7), -- the coffee table
+	row("SteelShelf", "Steel shelf", 10, "Floor", 3, 0.85), -- four tiers of finds on show
+	row("CampBed", "Camp bed", 15, "Floor", 2, 0.6), -- the sleepover: a good climb's pay
+	row("StringLights", "String lights", 18, "Ceiling", 4, 0.1), -- warm bulbs across the ceiling
+	row("NeonSign", "Neon moon", 25, "Wall", 2, 0.4), -- the glowing moon: saved up for
 }) :: { Piece }
 
 -- Every home's own pieces (D-345, D-346): furniture you arrange like what you bought, one of each,
 -- never sold, laid in a new or grown home by `Home.Layout`. The job box moves but is never put
 -- away, since it holds everything else. The ceiling bulb and the light switch stay with the room.
 Furniture.Starter = table.freeze((function(): { Piece }
-	local function starter(id: string, name: string, kept: boolean?): Piece
+	local function starter(id: string, name: string, heft: number, kept: boolean?): Piece
 		return table.freeze({
 			id = id,
 			name = name,
@@ -92,16 +103,17 @@ Furniture.Starter = table.freeze((function(): { Piece }
 			cap = 1,
 			starter = true,
 			kept = kept,
+			heft = heft,
 		})
 	end
 	return {
-		starter("JobBox", "Job box", true),
-		starter("Shelf", "Shelf"),
-		starter("Mirror", "Mirror"),
-		starter("Rail", "Clothes rail"),
-		starter("Rug", "Rug"),
-		starter("Beanbag", "Beanbag"),
-		starter("FloorLamp", "Floor lamp"),
+		starter("JobBox", "Job box", 0.95, true),
+		starter("Shelf", "Shelf", 0.8),
+		starter("Mirror", "Mirror", 0.5),
+		starter("Rail", "Clothes rail", 0.5),
+		starter("Rug", "Rug", 0.2),
+		starter("Beanbag", "Beanbag", 0.3),
+		starter("FloorLamp", "Floor lamp", 0.4),
 	}
 end)()) :: { Piece }
 

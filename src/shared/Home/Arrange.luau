@@ -162,8 +162,6 @@ Arrange.Feel = table.freeze({
 	-- A carried thing moving to a surface this much higher or lower (studs) hops onto it with a
 	-- tock (the floor to the job box's top is 2.7; a rug's 0.05 is no hop at all).
 	Hop = 0.3,
-	-- The puff of dust as it lands: this many motes.
-	Puff = 10,
 	-- The limit bar fills or empties over this long (seconds) as a Place or Put away is answered,
 	-- and slides in from above as Arrange opens over `Rise`.
 	Fill = 0.35,

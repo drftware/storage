@@ -24,6 +24,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local ArrangeGuides = require(script.Parent.ArrangeGuides)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
+local Feedback = require(ReplicatedStorage.Shared.Home.Feedback)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Home = require(ReplicatedStorage.Shared.Home)
@@ -46,10 +47,6 @@ local QUICK = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Ou
 local LAND = TweenInfo.new(Feel.Land, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local BACK = TweenInfo.new(Feel.Back, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 
--- A piece of furniture set down: the find's knock, lower and fuller, a heavy thing on concrete.
-local THUD: Arrange.Sound = table.clone(Arrange.Knock)
-THUD.pitch = (Arrange.Knock.pitch or 1) * 0.68
-THUD.volume = (Arrange.Knock.volume or 0.5) * 1.3
 -- Free's soft tick every 15 degrees of a twist: the step's tick, fainter and higher, so a turn
 -- by eye still feels its way round without the grid's ratchet (S5-03j2b2b).
 local SOFT: Arrange.Sound = table.clone(Arrange.Tick)
@@ -141,6 +138,13 @@ export type Options = {
 	-- Whether gui point `x`, `y` is over the tray's place (the tray is away while a thing is
 	-- carried): a thing let go there floats back, a card's into its card.
 	overTray: (x: number, y: number) -> boolean,
+	-- A phone tap (ArrangeTaps; nothing off a phone).
+	tap: (tap: Feedback.Tap) -> (),
+	-- Where the tray card for `name` is now (gui points, its middle), or where it would come in,
+	-- for a thing put away to fly into; nil when the tray isn't showing.
+	cardAt: (name: string) -> Vector2?,
+	-- The card for `name` bumps as a thing lands in it.
+	bump: (name: string) -> (),
 	-- Whether Free is on (Alt held, or the corner switch, ArrangeTurn): the carried thing goes
 	-- off the grid, where the finger has it, at any whole degree (S5-03j2b2b).
 	free: () -> boolean,
@@ -272,6 +276,7 @@ function ArrangeHand.new(options: Options): Hand
 		if now - lastTick > 0.04 then
 			lastTick = now
 			play(sound or Arrange.Tick, sounds())
+			options.tap(if sound == TOCK then Feedback.Taps.Tap else Feedback.Taps.Tick)
 		end
 	end
 
@@ -778,6 +783,7 @@ function ArrangeHand.new(options: Options): Hand
 			end
 		end
 		play(Arrange.Lift, sounds())
+		options.tap(Feedback.Taps.Light)
 		showRing(l)
 		startFollow()
 	end
@@ -952,8 +958,8 @@ function ArrangeHand.new(options: Options): Hand
 		lifted = nil
 	end
 
-	-- A puff of dust where a find lands.
-	local function puff(at: CFrame)
+	-- A puff of dust where a thing lands: as much as its weight's band raises (`Feedback`).
+	local function puff(at: CFrame, band: Feedback.Band)
 		local p = Instance.new("Part")
 		p.Anchored = true
 		p.CanCollide = false
@@ -971,8 +977,8 @@ function ArrangeHand.new(options: Options): Hand
 			NumberSequenceKeypoint.new(1, 1),
 		})
 		e.Size = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 0.3),
-			NumberSequenceKeypoint.new(1, 1.1),
+			NumberSequenceKeypoint.new(0, 0.3 * band.spread),
+			NumberSequenceKeypoint.new(1, 1.1 * band.spread),
 		})
 		e.Lifetime = NumberRange.new(0.4, 0.7)
 		e.Speed = NumberRange.new(2, 3.5)
@@ -982,7 +988,7 @@ function ArrangeHand.new(options: Options): Hand
 		e.Rate = 0
 		e.Parent = p
 		p.Parent = Workspace.CurrentCamera
-		e:Emit(Feel.Puff)
+		e:Emit(band.motes)
 		Debris:AddItem(p, 1.2)
 	end
 
@@ -1057,9 +1063,11 @@ function ArrangeHand.new(options: Options): Hand
 		t.Completed:Once(function()
 			cf:Destroy()
 			if l.ghost.Parent then
-				play(if Furniture.ofPlaced(l.name) then THUD else Arrange.Knock, sounds())
+				local band = Feedback.landing(l.name) -- how heavy it is, from its row
+				play(band.thud, sounds())
+				options.tap(band.tap)
 				local stand = Arrange.frameOn(r, pose.on)
-				puff(if stand then Arranged.pose(stand, pose.x, pose.y, pose.turn) else at)
+				puff(if stand then Arranged.pose(stand, pose.x, pose.y, pose.turn) else at, band)
 				bounce(l)
 				TweenService
 					:Create(l.highlight, QUICK, { OutlineTransparency = 1, FillTransparency = 1 })
@@ -1072,6 +1080,7 @@ function ArrangeHand.new(options: Options): Hand
 	-- A ratchet's click-click, as its pawl jumps a tooth: each quarter a turn clicks into.
 	local function ratchet()
 		play(Arrange.Ratchet, sounds())
+		options.tap(Feedback.Taps.Tick)
 		task.delay(0.07, play, Arrange.Ratchet, sounds())
 	end
 
@@ -1213,7 +1222,50 @@ function ArrangeHand.new(options: Options): Hand
 		end
 	end
 
-	-- Put away: the find shrinks back toward the tray; the server's answer puts it in the box.
+	-- Put away's flight (the plan's row: "shrinks and flies down into its tray card"): the ghost
+	-- flies from where it stands to its card's point on screen, shrinking as it goes, then pops in
+	-- and the card bumps. The card's point is read each step, so a camera still easing keeps it on
+	-- the card. With no tray showing it shrinks where it stands, as before.
+	local function flyAway(l: Lifted)
+		local ghost, name = l.ghost, l.name
+		local whole = ghost:GetScale()
+		local from = ghost:GetPivot()
+		local turned = from.Rotation
+		local seconds = if options.cardAt(name) then Feedback.Fly else Feel.Back
+		local share = Instance.new("NumberValue")
+		share.Changed:Connect(function(t: number)
+			if not ghost.Parent then
+				return
+			end
+			local camera = Workspace.CurrentCamera
+			local card = options.cardAt(name)
+			if card and camera then
+				local ray = camera:ScreenPointToRay(card.X, card.Y)
+				local to = ray.Origin + ray.Direction * Feedback.FlyDepth
+				ghost:PivotTo(CFrame.new(from.Position:Lerp(to, t)) * turned)
+				ghost:ScaleTo(whole * (1 - (1 - Feedback.FlyEnd) * t))
+			elseif t < 0.98 then
+				ghost:ScaleTo(whole * (1 - t))
+			end
+		end)
+		local t = TweenService:Create(
+			share,
+			TweenInfo.new(seconds, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+			{ Value = 1 }
+		)
+		t.Completed:Once(function()
+			share:Destroy()
+			ghost.Parent = nil -- gone; the answer lets it go
+			if options.cardAt(name) then
+				play(Feedback.Pop, sounds())
+				options.tap(Feedback.Taps.Tap)
+				options.bump(name)
+			end
+		end)
+		t:Play()
+	end
+
+	-- Put away: the find flies into its tray card; the server's answer puts it in the box.
 	local function awayNow()
 		local l = lifted
 		if l and not (l.original or l.asking or l.kept or carrying) then
@@ -1240,19 +1292,7 @@ function ArrangeHand.new(options: Options): Hand
 		end)
 		play(Arrange.Slide, sounds())
 		l.highlight.Enabled = false
-		local scale = Instance.new("NumberValue")
-		scale.Value = 1
-		scale.Changed:Connect(function(v: number)
-			if v > 0.02 and l.ghost.Parent then
-				l.ghost:ScaleTo(v)
-			end
-		end)
-		local t = TweenService:Create(scale, BACK, { Value = 0.05 })
-		t.Completed:Once(function()
-			scale:Destroy()
-			l.ghost.Parent = nil -- gone; the answer lets it go
-		end)
-		t:Play()
+		flyAway(l)
 	end
 
 	-- Waits (briefly) for the server's drawn find to stand where the ghost landed, then lets the
@@ -1433,7 +1473,9 @@ function ArrangeHand.new(options: Options): Hand
 		local t = TweenService:Create(cf, LAND, { Value = l.from })
 		t.Completed:Once(function()
 			cf:Destroy()
-			play(if Furniture.ofPlaced(l.name) then THUD else Arrange.Knock, sounds())
+			local band = Feedback.landing(l.name)
+			play(band.thud, sounds())
+			options.tap(band.tap)
 			if #l.copies > 0 then
 				bounce(l)
 				task.delay(Settle.length(#l.copies), letGo, l, true)

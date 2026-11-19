@@ -160,6 +160,21 @@ nowhere else.
   there's nothing to do, never a dead tap. On a keyboard, Ctrl+Z and Ctrl+Y do the same. Two
   defaults to judge: a find taken out of a shelf cubby and undone goes into the job box, not its
   cubby; undoing a Put away brings back the piece alone, not what stood on it.
+- [ ] **Feel it: things land as heavy as they are, and fly into the tray** (S5-03j4b1, D-461;
+  the landings heard in Studio Play at A16 size, the flight and the taps not seen there). On your
+  phone, open Arrange:
+  1. Tap the milk crate's card: it lands with a knock and a little dust, and your phone gives a
+     firm tap. Drag the job box a step: a low, loud thump and a bigger cloud, and a stronger tap.
+     Set out a teddy: a high, quiet tick of a landing, a wisp of dust, a soft tap.
+  2. Drag anything across the floor: a faint tick in your hand for each step, never a buzz.
+     Lift onto the job box's top: one clear tap. Turn: a tick per quarter.
+  3. Tap a crate, then Put away: it flies down into its card in the tray, shrinking, the card
+     bumps and pops. Undo it and Redo it: the same flight.
+  Look for: heavier things sound and feel heavier, every time; a phone without haptics simply
+  gives none. My defaults, yours to change: each piece's weight (`Furniture`, e.g. the job box
+  0.95, a blanket 0.12), the four bands and the taps' strengths (`Home/Feedback`), and the pop
+  (the panel's click, low). Also: in the Small room the pallet and the camp bed float back when
+  their card is tapped (no free spot near the middle): tell me if that's a full room or a bug.
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

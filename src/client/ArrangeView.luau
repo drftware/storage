@@ -46,6 +46,7 @@ local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
 local BoxPanel = require(ReplicatedStorage.Shared.Home.BoxPanel)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local FreeCursor = require(script.Parent.FreeCursor)
+local Feedback = require(ReplicatedStorage.Shared.Home.Feedback)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local FurnitureTab = require(script.Parent.FurnitureTab)
 local Grades = require(ReplicatedStorage.Shared.Grades)
@@ -59,6 +60,7 @@ local ArrangeCamera = require(script.Parent.ArrangeCamera)
 local ArrangeHand = require(script.Parent.ArrangeHand)
 local ArrangeRing = require(script.Parent.ArrangeRing)
 local ArrangeTurn = require(script.Parent.ArrangeTurn)
+local ArrangeTaps = require(script.Parent.ArrangeTaps)
 local ArrangeUndo = require(script.Parent.ArrangeUndo)
 local LooksTab = require(script.Parent.LooksTab)
 local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
@@ -183,6 +185,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	local turnKeys: ArrangeTurn.ArrangeTurn? = nil
 	-- Undo and Redo beside Done (ArrangeUndo).
 	local undoKeys: ArrangeUndo.ArrangeUndo? = nil
+	-- The phone taps (ArrangeTaps), made as they're first felt.
+	local taps = ArrangeTaps.new()
 	local boxCount: { [string]: number } = {}
 	local cards: { [string]: TextButton } = {}
 	-- The tray's three tabs (FINDS, ROOM: the paint tab, FRONT: your door; LooksTab's pages),
@@ -373,6 +377,38 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		overTray = function(_: number, y: number): boolean
 			local tall = if gui then gui.AbsoluteSize.Y else 280
 			return y >= tall - (10 + TRAY)
+		end,
+		tap = function(t: Feedback.Tap)
+			taps.tap(t)
+		end,
+		-- The card's middle, kept inside the tray's list (a card scrolled out of sight takes the
+		-- list's nearest edge); a thing with no card yet (the box held none) flies to the list's
+		-- middle, where the new card comes in.
+		cardAt = function(name: string): Vector2?
+			local t, s = tray, list
+			if not (gui and t and s and t.Visible and s.Visible and onTab == FINDS) then
+				return nil
+			end
+			local lo, size = s.AbsolutePosition, s.AbsoluteSize
+			local c = cards[name]
+			if not c then
+				return lo + size / 2
+			end
+			local mid = c.AbsolutePosition + c.AbsoluteSize / 2
+			return Vector2.new(
+				math.clamp(mid.X, lo.X, lo.X + size.X),
+				math.clamp(mid.Y, lo.Y, lo.Y + size.Y)
+			)
+		end,
+		bump = function(name: string)
+			local c = cards[name]
+			if not c then
+				return
+			end
+			local sc = c:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")
+			sc.Parent = c
+			sc.Scale = Feedback.Bump
+			TweenService:Create(sc, POP, { Scale = 1 }):Play()
 		end,
 		free = function(): boolean
 			local t = turnKeys
@@ -1579,6 +1615,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 					u.destroy()
 					undoKeys = nil
 				end
+				taps.destroy()
 				gui:Destroy()
 				gui = nil
 			end

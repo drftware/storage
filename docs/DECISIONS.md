@@ -10950,3 +10950,29 @@ the room lifts it with today's drag (Turn, Place, the tray away).
   `-buttons-closeup.png`, `-buttons-undone-closeup.png` (full scale). **Not seen:** undoing a
   plain move (the drag couldn't be driven from the MCP at that view; the move path is the same
   lift, set and Place the redo used, and the history spec covers its steps), a refused undo.
+
+## D-461 Every action answers, from each thing's weight (S5-03j4b1, Nov 19)
+
+- **The ticket split** (context): j4b1 is the weighted landing, the put away's flight and the
+  phone taps; **j4b2** is the blocker's glow, which needs a new question of Brix's Placements
+  ("which things are in the way of this pose?") built in `../engine` by its rules (D-252).
+  Placements only answers *that* a pose overlaps today, not *what*.
+- **Weight is data.** Every piece of furniture now has a `heft` (0 to 1) on its counter row, as
+  every find already has on its catalog row; `Home/Feedback.heft(name)` reads one or the other,
+  never a name. Four bands (Light, Medium, Heavy, Hefty) each pick a thud (the knock pitched down
+  and louder as they climb), a puff of dust (more motes, spread wider) and a phone tap. A new find
+  or piece lands right with its row alone. Replaces the hand's old "furniture thuds, finds knock".
+- **Phone taps** use Roblox's `HapticEffect` (checked on create.roblox.com and made in Studio
+  Play): one Custom effect per `Feedback.Taps` entry, a constant pulse of its strength and
+  length, made on first use and kept (`ArrangeTaps`). Played only when the last input was Touch,
+  so a mouse feels nothing and a gamepad doesn't buzz on every grid step.
+- **Put away flies to its card**: the ghost lerps from where it stands to the card's point on
+  screen (re-read each step, a ray `FlyDepth` studs out), shrinking to `FlyEnd`, then the pop,
+  a tap and the card's bump. A thing with no card yet aims at the tray list's middle; with the
+  tray hidden or on another tab it shrinks where it stands, as before. Undo's replay goes
+  through `awayNow`, so it flies too.
+- **Not done:** the place row's "squash" (the plan's "a drop with a squash"): ScaleTo is uniform,
+  so a squash needs the ghost's parts scaled on one axis; listed in ROADMAP. The Lift row's
+  "rises to the finger, shadow appears" and Drag's tilt with speed are as before (the tilt is
+  not built; ROADMAP).
+
