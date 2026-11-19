@@ -3595,9 +3595,23 @@ Done when players watch the results to the end and change their perks between cl
       away sends each to its card, judged all or none by the client's judge; one server ask
       carrying several moves (`PlaceMany`), checked as Place is and judged all or none; History
       keeps the group as one step (one Undo puts all back). Its ring: Turn and Put away only.
+      j6b split (Nov 19, its own session): - [x] **j6b1** the pure core, the server's one group
+      ask and History's group step (D-468: `Home/Group`, the `ArrangeGroup` remote,
+      `History.recordGroup`); - [ ] **j6b2** the screen: a drag on a lit thing carries the group
+      (`ArrangeGroup` module, one ghost per root), its ring (Turn, Put away), its feel, its undo,
+      seen in Studio Play at A16.
     - [ ] **S5-03j7 The editor seen whole.** Every row of the feedback table checked in Studio
       Play at A16 size and captured; fixes; ArrangeView's leftovers removed; OWNER.md's phone
-      steps written.
+      steps written. From the conductor's look at this run's captures (Nov 19): (1) at phone size
+      the world buttons on neighbouring things overlap ("Open" and "Sit" on two crates,
+      `s5-03j5b2-kept-spot-closeup.png`, `s5-03j5a2-place-close.png`): fix it for every button,
+      by find for none (nudge overlapping ones apart, or show only the nearest thing's);
+      (2) never seen yet: the weighted landing (a heavy and a light place, thud and dust) and Put
+      away flying into its tray card (D-461); (3) the guide line between lined-up edges was too
+      faint at half scale (`s5-03j3b-crate-lined-up.png`): judge a full-scale close-up; (4) the
+      wall height handle sat beside the sign, not above it (`s5-03j3c2-handle-raised-closeup.png`):
+      say whether it reads right or move it; (5) Arrange still opens with the room small (a crate
+      ~16 points across, `s5-03j6a-selected.png`): open closer (D-449) and limit D's slide.
   - [ ] **S5-03k The recipe system: what one thing does to another** (the owner, Nov 18,
     D-436; D-188's "hatched pets live there"; the doc's "Part 2" section). One data row per
     recipe; a fixed vocabulary of starts, stage ends, results and looks; thousands of rows by

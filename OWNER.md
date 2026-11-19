@@ -206,6 +206,11 @@ nowhere else.
   faint from the opening view). Moving them together comes next (S5-03j6b). My defaults, yours to
   change: the box starts after Gestures' stock hold (0.5 s); a thing is in when its
   middle is.
+- [ ] **Decide: does a thing on a wall move with a boxed group?** (S5-03j6b1, D-468.) When you box
+  a neon sign on the wall together with crates on the floor and drag the crates, my default
+  leaves the sign where it hangs: only the floor things slide and turn together (a sign can't
+  slide across the floor). The other way would slide it along its own wall by the same amount.
+  Say which you want; you'll see it once S5-03j6b2 lets you drag a group.
 - [ ] **Feel it: what's in the way glows** (S5-03j4b2, D-462; seen in Studio Play at A16, not on
   a phone). On your phone, open Arrange and drag a milk crate into the shelf, slowly:
   1. The moment it presses in, the crate goes red, the shelf flares soft red and stays faintly

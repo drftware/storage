@@ -69,6 +69,7 @@ local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
 local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
+local Group = require(ReplicatedStorage.Shared.Home.Group)
 local HandPlace = require(ReplicatedStorage.Shared.Home.HandPlace)
 local Holding = require(ReplicatedStorage.Shared.Home.Holding)
 local Layout = require(ReplicatedStorage.Shared.Home.Layout)
@@ -140,6 +141,7 @@ function Arranging.new(): ArrangingSystem
 	local answerRemote: RemoteEvent? = nil
 	local boxRemote: RemoteEvent? = nil
 	local handRemote: RemoteEvent? = nil -- HandPlace: asked with (on, x, y, turn), answers (id, refusal)
+	local groupRemote: RemoteEvent? = nil -- Group: asked with (verb, list), answers (verb, refusal, ids)
 	local frontOffice: FrontOffice.FrontOffice? = nil
 	local saving: Saving.SavingSystem? = nil
 	local slots: Slots.Slots? = nil
@@ -330,7 +332,8 @@ function Arranging.new(): ArrangingSystem
 	-- removed ones taken away. The room's own things are never drawn. `moved` as `draw`'s.
 	local function apply(home: HomeSet, owner: Player, moved: boolean)
 		for _, e in home.placements:takeEvents() do
-			if e.kind == "removed" then
+			-- lifted and set down again in one change (a group's move, S5-03j6b1): it moved
+			if e.kind == "removed" and not home.placements:poseOf(e.id) then
 				local drawn = home.drawn[e.id]
 				if drawn then
 					Sits.stand(drawn.model)
@@ -455,7 +458,10 @@ function Arranging.new(): ArrangingSystem
 	-- it stands as and "", or "" and the refusal.
 	-- `fromHand` (S5-03j5a, D-463): `what` is the find in their hand, out of their own box
 	-- (`Slots:heldFromBox`), not one in the box; set out, it leaves their hand in the same step.
-	local function place(
+	-- Sets `what` at `pose` in the judge as Place does, without writing the save or drawing it
+	-- (`place` and `placeMany` do that once it all stands). The id it stands as and "", or "" and
+	-- the refusal, and then nothing changed.
+	local function setDown(
 		player: Player,
 		what: string,
 		pose: Brix.PlacementPose,
@@ -516,10 +522,113 @@ function Arranging.new(): ArrangingSystem
 		if fromHand and slots then
 			slots:setDown(player) -- out of their hand as it's set out: never both, never neither
 		end
+		return id, ""
+	end
+
+	local function place(
+		player: Player,
+		what: string,
+		pose: Brix.PlacementPose,
+		fromHand: boolean?
+	): (string, string)
+		local id, refusal = setDown(player, what, pose, fromHand)
+		local home = homes[player]
+		local data = if saving then saving:data(player) else nil
+		if refusal == "" and home and data then
+			keep(home, data)
+			apply(home, player, true)
+			drawnSignal:fire(player)
+		end
+		return id, refusal
+	end
+
+	-- A group Place (S5-03j6b1): every thing of `entries` at its place as one change, all or none.
+	-- A thing set out moves (its riders with it, `Group.apply`); a find's name is set out from the
+	-- box (an undone group Put away). "" and each one's id in order, or the refusal and nothing
+	-- changed on the server or anyone's screen.
+	local function placeMany(player: Player, entries: { Group.Entry }): (string, { string })
+		local home = homes[player]
+		local data = if saving then saving:data(player) else nil
+		if not (home and data) or home.stale then
+			return Spots.Refusals.NotYours, {}
+		end
+		local floor = home.placements:areaOf("Floor")
+		local moves: { Group.Member } = {}
+		local back: { Group.Member } = {}
+		for _, e in entries do
+			local kind = Layout.kind(e.what)
+			if kind and floor and not Layout.stands(kind, e.to, floor) then
+				return Spots.Refusals.Wall, {} -- the mirror leans on a wall (D-348), as Place
+			end
+			local was = if Spots.name(e.what) then home.placements:poseOf(e.what) else nil
+			if was then
+				table.insert(moves, { id = e.what, pose = e.to })
+				table.insert(back, { id = e.what, pose = was })
+			elseif Spots.name(e.what) then
+				return "notPlaced", {}
+			end
+		end
+		local refusal = if #moves > 0 then Group.apply(home.placements, moves, shapeOf) else nil
+		local ids: { string } = {}
+		local fresh: { string } = {}
+		if not refusal then
+			for _, e in entries do
+				if Spots.name(e.what) then
+					table.insert(ids, e.what)
+					continue
+				end
+				local id, no = setDown(player, e.what, e.to)
+				if no ~= "" then
+					refusal = no
+					break
+				end
+				table.insert(ids, id)
+				table.insert(fresh, id)
+				keep(home, data) -- the next from the box is counted with this one out
+			end
+		end
+		if refusal then
+			for i = #fresh, 1, -1 do
+				Spots.lift(home.placements, fresh[i])
+			end
+			if #moves > 0 then
+				Group.apply(home.placements, back, shapeOf) -- their own places: always free
+			end
+			home.placements:takeEvents() -- nothing changed: nothing to draw
+			keep(home, data)
+			return refusal, {}
+		end
 		keep(home, data)
 		apply(home, player, true)
 		drawnSignal:fire(player)
-		return id, ""
+		return "", ids
+	end
+
+	-- A group Put away (S5-03j6b1): every thing of `ids` back in the box with what stands on it,
+	-- all or none. "" or the refusal, and then nothing changed.
+	local function putAwayMany(player: Player, ids: { string }): string
+		local home = homes[player]
+		local data = if saving then saving:data(player) else nil
+		if not (home and data) or home.stale then
+			return Spots.Refusals.NotYours
+		end
+		for _, id in ids do
+			if not home.placements:poseOf(id) then
+				return "notPlaced"
+			end
+			local kind = Layout.kind(id)
+			local piece = if kind then Furniture.byId(kind) else nil
+			if piece and piece.kept then
+				return Spots.Refusals.Kept -- the job box moves, never away
+			end
+		end
+		for _, id in ids do
+			Spots.lift(home.placements, id) -- nil when it rode on one already gone
+		end
+		keep(home, data)
+		apply(home, player, true)
+		drawnSignal:fire(player)
+		return ""
 	end
 
 	-- Place by hand (S5-03j5a, D-463): the find in `player`'s hand set at `pose` in their own
@@ -751,6 +860,36 @@ function Arranging.new(): ArrangingSystem
 		end
 	end
 
+	-- Group(verb, list): several things as one (S5-03j6b1). "place" with a list of
+	-- `{ what, on, x, y, turn }`, or "away" with a list of ids; answered once on the same remote
+	-- with (verb, refusal, ids). Rate first, then type and range (`Group.ask`), then ownership.
+	local function onGroup(player: Player, verb: unknown, list: unknown)
+		if not limit:take(player, os.clock()) then
+			return
+		end
+		local refusal: string?, ids: { string } = nil, {}
+		if verb == "place" then
+			local entries = Group.ask(list)
+			if entries then
+				refusal, ids = placeMany(player, entries)
+			end
+		elseif verb == "away" then
+			local each = Group.askIds(list)
+			if each then
+				refusal = putAwayMany(player, each)
+			end
+		end
+		if refusal == nil then
+			return -- not a well-formed ask: no answer
+		end
+		if groupRemote then
+			groupRemote:FireClient(player, verb, refusal, ids)
+		end
+		if refusal == "" then
+			sendBox(player)
+		end
+	end
+
 	local function onPutAway(player: Player, id: unknown, spot: unknown)
 		if not limit:take(player, os.clock()) then
 			return
@@ -842,6 +981,9 @@ function Arranging.new(): ArrangingSystem
 			local hand = remote(HandPlace.Remote)
 			handRemote = hand
 			table.insert(connections, hand.OnServerEvent:Connect(onHandPlace))
+			local group = remote(Group.Remote)
+			groupRemote = group
+			table.insert(connections, group.OnServerEvent:Connect(onGroup))
 			local box = remote(Arrange.BoxRemote)
 			boxRemote = box
 			table.insert(connections, box.OnServerEvent:Connect(onBox))
@@ -857,6 +999,8 @@ function Arranging.new(): ArrangingSystem
 			-- `:Invoke(player, "take", id)` presses find `id`'s Take as them (S5-03i2a);
 			-- `:Invoke(player, "hand", on, x, y, turn)` sets the find in their hand there, as a
 			-- HandPlace ask does, within reach (S5-03j5a);
+			-- `:Invoke(player, "group", list)` asks a group Place as the screen does (S5-03j6b1) and
+			-- answers (refusal or "", ids); `:Invoke(player, "groupAway", ids)` a group Put away;
 			-- `:Invoke(player, "fromShelf", spot, on, x, y, turn)` sets the find on their shelf's
 			-- `spot` there, and `:Invoke(player, "shelfAway", spot)` puts it in the box (S5-03i2b).
 			-- No client reaches it.
@@ -914,6 +1058,15 @@ function Arranging.new(): ArrangingSystem
 					elseif verb == "putAway" then
 						local w = Spots.askId(a)
 						return if w then putAway(player, w) else "badAsk"
+					elseif verb == "group" then
+						local entries = Group.ask(a)
+						if not entries then
+							return "badAsk"
+						end
+						return placeMany(player, entries)
+					elseif verb == "groupAway" then
+						local ids = Group.askIds(a)
+						return if ids then putAwayMany(player, ids) else "badAsk"
 					elseif verb == "rows" then
 						local data = if saving then saving:data(player) else nil
 						return if data then data.placed.rows else nil,

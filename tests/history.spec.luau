@@ -141,6 +141,59 @@ do
 	ok(not h.canUndo() and not h.canRedo() and not h.waiting(), "clear forgets everything")
 end
 
+-- A group (S5-03j6b1): moved together is one step; undo asks for all of them at once, and one
+-- answer follows every thing; a group put away and undone sets each out by name, and the new ids
+-- the answer gives are followed by the redo; a refused group drops its one step.
+do
+	local h = fresh()
+	h.recordGroup({
+		{ name = "Crate", idBefore = "Crate#1", before = A, idAfter = "Crate#1", after = B },
+		{ name = "Lamp", idBefore = "Lamp#1", before = B, idAfter = "Lamp#1", after = C },
+	})
+	local ask = h.undo()
+	ok(ask ~= nil and ask.id == "Crate#1" and ask.to == A, "a group undo asks for the first")
+	local more = if ask then ask.more else nil
+	ok(more ~= nil and #more == 1 and more[1].id == "Lamp#1" and more[1].to == B, "and the rest")
+	h.answered(true, "Crate#1", { "Lamp#1" })
+	ok(h.canRedo() and not h.canUndo(), "the whole group is one step")
+	local again = h.redo()
+	ok(
+		again ~= nil and again.to == B and again.more ~= nil and again.more[1].to == C,
+		"redone as one"
+	)
+	h.answered(true, "Crate#1", { "Lamp#1" })
+end
+do
+	local h = fresh()
+	h.recordGroup({
+		{ name = "Crate", idBefore = "Crate#1", before = A },
+		{ name = "Lamp", idBefore = "Lamp#1", before = B },
+	})
+	local ask = h.undo()
+	ok(
+		ask ~= nil and ask.id == nil and ask.name == "Crate" and ask.to == A,
+		"a group put away undone sets out by name"
+	)
+	ok(
+		ask ~= nil and ask.more ~= nil and ask.more[1].id == nil and ask.more[1].name == "Lamp",
+		"every one of it"
+	)
+	h.answered(true, "Crate#4", { "Lamp#2" })
+	local redo = h.redo()
+	ok(redo ~= nil and redo.id == "Crate#4" and redo.to == nil, "redone, it puts away the new ids")
+	ok(redo ~= nil and redo.more ~= nil and redo.more[1].id == "Lamp#2", "each followed")
+	h.answered(false)
+	ok(
+		not h.canUndo() and not h.canRedo() and not h.waiting(),
+		"a refused group drops its one step"
+	)
+end
+do
+	local h = fresh()
+	h.recordGroup({})
+	ok(not h.canUndo(), "an empty group is no step")
+end
+
 print(string.format("history: %d checks, %d failed", checks, failures))
 if failures > 0 then
 	error("history spec failed")

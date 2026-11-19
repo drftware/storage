@@ -11146,3 +11146,36 @@ the camera lifting to it, and the lamp is already in your fingers; drag and let 
   tap on the floor cleared them; a quick drag slid the camera 4.75 studs with no box. Captures:
   `docs/art/s5-03j6a-box.png`, `-selected.png`. At the opening view's size the glow is faint on
   the crates (D-449's small view); j7 judges it closer.
+
+## D-468 Several things move as one: the group's core, its server ask and its undo (S5-03j6b1, Nov 19)
+
+S5-03j6b was split in its own session: **j6b1** (this) the pure core, the server's one group ask
+and History's group step; **j6b2** the screen (dragging, turning and putting away the lit group,
+its ring, its feel, seen in Studio). The client half alone is a full session's work.
+- **`Home/Group`** (pure, names no find; `tests/group.spec.luau`): `moved` slides the group's
+  floor things by (dx, dy); `turned` swings them a quarter turn about the middle of the box round
+  their places, each turned with it (a place dx, dy from the middle goes to -dy, dx, as
+  `Arranged.pose` turns). `ask`/`askIds` read a screen's list (1 to 24 entries, nothing else, no
+  thing twice, each as a single Place's). `apply` is the move, all or none: every thing lifted
+  with its riders first, each set down, the riders put back on its top; one refusal and all of
+  it is put back exactly. Lifting first means group members never block each other, so two can
+  swap places, which one-at-a-time moves can't.
+- **Things on a wall in a group stay where they hang** (default, in OWNER.md): only the floor
+  things slide and turn. Riders aren't group members; they ride, as with one thing.
+- **One remote, `ArrangeGroup`**: the screen fires ("place", list of `{ what, on, x, y, turn }`)
+  or ("away", ids); the server answers once on it with (verb, refusal or "", ids in order). Rate
+  first, then type and range, then ownership. A "place" entry naming a find or piece from the box
+  is set out (an undone group Put away) through Place's own checks (`setDown`, split out of
+  `place`); any refusal lifts those again and puts the moves back, so nothing changes on the
+  server or anyone's screen (its events are dropped). "away" checks every id first (set out, not
+  the job box), then lifts each.
+- **Drawing a group's move**: `apply` no longer destroys a model whose thing was removed and set
+  down again in the same change: it's drawn moved.
+- **History's group step**: `recordGroup` keeps several accepted changes as one step; its undo
+  or redo is one Ask whose `more` holds the rest (all moves and set-outs, or all put-aways), and
+  `answered(ok, id, more)` follows each thing's new id.
+- **Seen in Studio Play** (server, through `ArrangeTest` "group" and "groupAway", Medium home):
+  the two milk crates slid together; a quarter turn of the pair was refused "overlaps" and left
+  both as they stood (the room is tight there: each crate alone at those places is refused too);
+  a half turn swapped them, both turned 180, in one move; the crate against the job box refused
+  the pair and nothing moved; both put away together, then set out again by name as one ask.

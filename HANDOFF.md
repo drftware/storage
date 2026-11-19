@@ -2,44 +2,44 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-19, S5-03j6a done: a held finger on bare floor boxes several things (D-467) · **Checks:** green · **Git:** `main`, not pushed; Brix `cea1259`.
+**Updated:** 2026-11-19, S5-03j6b1 done: the group's core, its one server ask, its undo step (D-468) · **Checks:** green · **Git:** `main`, not pushed; Brix `cea1259`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; search its heading). Order now: S5-03j6b, j7, ENG-29, k1 to k6.
-- **The box is in** (S5-03j6a, D-467): a finger held on bare floor then dragged draws a box
-  (`ArrangeBox`, pure core `Home/Selection`); what it reaches glows and stays lit; a tap or a
-  drag on a thing clears it. Seen in Studio Play at A16. Nothing moves together yet.
+  only; search its heading). Order now: S5-03j6b2, j7 (its ROADMAP line holds the conductor's
+  five capture notes), ENG-29, k1 to k6.
+- **A group's half is in, the server's** (S5-03j6b1, D-468): `Home/Group` (pure: `moved`,
+  `turned`, `ask`, `apply` all or none, riders ride, two can swap); the `ArrangeGroup` remote
+  ("place" list or "away" ids, one answer (verb, refusal, ids)); `History.recordGroup` and
+  `Ask.more`. Seen in Studio Play through `ArrangeTest` "group"/"groupAway". No screen uses it yet.
 - **Studio:** `rojo serve` in sync; Edit, unsaved; Play spawns you outside home (STUDIO.md).
 - **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j6b Several at once, moved as one
+## Next task: S5-03j6b2 Several at once, on the screen
 The moment: three things lit by the box; you drag the crate and the lamp and rug come along,
-keeping their places round it; let go and all three land with one thud each, as one move; one
-Undo puts all three back. As The Sims 4's build-mode multi-select.
-1. A drag beginning on a lit thing (`selectBox.ids()`) carries the group: its own module (say
-   `ArrangeGroup`), one ghost per root, offsets kept, all judged by the client's judge; blocked
-   anywhere, the group floats back (all or none). Split it first if it won't fit.
-2. A pure core in `src/shared/Home/` with Lune specs: the group's poses after a move by (dx, dy)
-   and after a quarter turn about the group's middle (each thing's turn plus 90), all on the
-   floor area; things on a wall or a top in a group: a sensible default (only the floor roots
-   move; note it in OWNER.md).
-3. The ring for a group: Turn and Put away only (ArrangeRing's `which`), round the group's middle.
-4. The server: one new ask in `src/server/Arranging.luau` (beside its remotes) carrying several
-   moves; checked as Place is (type, range, ownership, reach, rate) and judged all or none on a
-   copy of the placements before any lands; one answer. Put away together likewise.
-5. History (`Home/History`): a group as one step; undo replays the group's asks as one.
-6. Feedback per the doc's table (each lands with its thud by weight; put away flies each to its
-   card); seen in Studio Play at A16 and captured to `docs/art/s5-03j6b-*`.
+keeping their places round it; let go and all three land, each with its thud by weight, as one
+move; one Undo puts all three back. As The Sims 4's build-mode multi-select.
+1. A drag beginning on a lit thing (`selectBox.ids()`, ArrangeView ~409) carries the group: a
+   new client module `ArrangeGroup` (keep ArrangeView only wiring), one ghost per root (riders'
+   copies inside as `ArrangeHand.lift` does), places from `Group.moved` by the finger's slide on
+   the floor; judged on the client's judge with `Group.apply` on a copy, or check each against
+   the room minus the group; green or red all together. Blocked: all float back.
+2. Let go: fire `Group.Remote` ("place", list); on the answer, land all (thud by weight, as
+   `drop`) or float all back. A thing on a wall stays (OWNER.md asks the owner).
+3. The ring round the group's middle: Turn (`Group.turned`, quarters) and Put away only
+   (ArrangeRing's `which`); Put away sends ("away", ids), each flies to its card.
+4. Undo: `History.recordGroup` on an accepted group; ArrangeUndo/`ArrangeHand.replay` send an
+   Ask with `more` as one group ask and call `answered(ok, id, more)` with the answer's ids.
+5. Seen in Studio Play at A16 and captured to `docs/art/s5-03j6b2-*`.
 **Acceptance:** green; a boxed three dragged land as one ask; one Undo puts all three back; a
 refused group changes nothing on the server or the screen.
-**Read first:** ROADMAP `j6b`; `src/client/ArrangeBox.luau` (whole, 300 lines);
-`src/client/ArrangeHand.luau` 574-660 (`lift`), 1330-1350 (`drop`), 1509-1550 (`replay`);
-`src/shared/Home/History.luau` 1-60; `src/server/Arranging.luau` 820-850 (its remotes).
+**Read first:** `src/shared/Home/Group.luau` (whole); `src/client/ArrangeBox.luau` 40-60 (its
+interface); `src/client/ArrangeView.luau` 385-415; `src/client/ArrangeHand.luau` 574-660 (`lift`),
+1330-1350 (`drop`), 1509-1550 (`replay`); `src/client/ArrangeUndo.luau` 1-70; D-468.
 
 ## Queue (next sessions, the owner's ticket order)
-0. After j6b: j7. The box's glow is faint from the opening view (D-467). Polish by name: the place's squash, a drag's tilt. The huge held-find view at
+0. After j6b2: j7. The box's glow is faint from the opening view (D-467). Polish by name: the place's squash, a drag's tilt. The huge held-find view at
    the bottom left hides the crates at phone size. Pallet and camp bed cards float back in the
    Small room (D-461). A tray card's drag isn't Gestures': the wheel zooms, no twist (D-453).
    Arrange's opening view: crates ~16 points across (D-449). D held slides the room half off
