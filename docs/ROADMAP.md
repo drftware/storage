@@ -3586,7 +3586,15 @@ Done when players watch the results to the end and change their perks between cl
       things opens Arrange with it lifted (D-466: `HomeHoldView`, `ArrangeView`'s `grab`,
       `ArrangeHand.carryHeld`).
     - [ ] **S5-03j6 Several at once.** A box dragged round several things selects them; they
-      move, turn and put away together; the server takes them as one move.
+      move, turn and put away together; the server takes them as one move. Split (Nov 19, its
+      own session): - [x] **j6a** the box and the selection's look (D-467: `Home/Selection`,
+      `ArrangeBox`; a finger held on bare floor then dragged boxes things, each lights with a
+      warm glow and a rising tick; a tap or a drag on a thing lets them go); - [ ] **j6b** moving,
+      turning and putting away the group together: a drag on any lit thing carries all of them
+      (one ghost per root, riders inside as now), Turn turns the group about its middle, Put
+      away sends each to its card, judged all or none by the client's judge; one server ask
+      carrying several moves (`PlaceMany`), checked as Place is and judged all or none; History
+      keeps the group as one step (one Undo puts all back). Its ring: Turn and Put away only.
     - [ ] **S5-03j7 The editor seen whole.** Every row of the feedback table checked in Studio
       Play at A16 size and captured; fixes; ArrangeView's leftovers removed; OWNER.md's phone
       steps written.

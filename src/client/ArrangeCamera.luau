@@ -71,6 +71,10 @@ export type Options = {
 	-- The hand's intents, in gui points: every one with a thing for its target, and every tap (a
 	-- tap on the empty room sets down what the hand holds).
 	hand: (intent: Brix.GestureIntent<Model>) -> (),
+	-- A finger held still on the bare room, then dragged (S5-03j6a): the box that selects several
+	-- things, in gui points. Told the drag's "dragBegan" and answers whether it takes the drag
+	-- (false: the camera slides, as before); then told its moves and its end.
+	box: (intent: Brix.GestureIntent<Model>) -> boolean,
 	-- The band of the screen no menu covers: its top and bottom, in viewport points.
 	clear: () -> (number, number),
 }
@@ -506,7 +510,42 @@ function ArrangeCamera.new(options: Options): Camera
 		options.hand(i)
 	end
 
+	-- Whether the box has the drag on the bare room now (S5-03j6a): its moves and end are its.
+	local boxing = false
+
+	-- A held drag's intent for the box, its point moved into gui points (as `toHand`).
+	local function toBox(i: Brix.GestureIntent<Model>): boolean
+		if i.kind == "dragBegan" or i.kind == "dragMoved" or i.kind == "dragEnded" then
+			i.y -= GuiService:GetGuiInset().Y
+		end
+		return options.box(i)
+	end
+
+	-- Whether the box takes `i`: the moves and end of a drag it has, or a held drag beginning on the
+	-- bare room that it wants (while the room shows).
+	local function boxed(i: Brix.GestureIntent<Model>): boolean
+		if boxing then
+			if i.kind == "dragMoved" or i.kind == "dragEnded" then
+				boxing = i.kind == "dragMoved"
+				toBox(i)
+				return true
+			end
+			return false
+		end
+		if i.kind ~= "dragBegan" or not i.held or i.target ~= nil then
+			return false
+		end
+		if not orbit or shot or closing then
+			return false
+		end
+		boxing = toBox(i)
+		return boxing
+	end
+
 	local function apply(i: Brix.GestureIntent<Model>)
+		if boxed(i) then
+			return
+		end
 		local o = orbit
 		if not o or shot or closing then
 			return
@@ -785,6 +824,7 @@ function ArrangeCamera.new(options: Options): Camera
 		table.clear(mouseDown)
 		gestures:cancel()
 		gestures:takeIntents() -- a cancelled drag's end, unheard
+		boxing = false -- (the screen clears its box as it closes)
 	end
 
 	local function stopDip()

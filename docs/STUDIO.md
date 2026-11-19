@@ -3807,3 +3807,17 @@ verified: a doc page, Studio, or "untested".
   macOS crop (`sips --cropOffset 360 356 -c 314 672`). `screen_capture` timed out again; the macOS
   capture worked, but only with Studio brought to the front first (`osascript ... activate`):
   in the back it hands back the last drawn frame.
+
+## Boxing several things in Play (S5-03j6a, Nov 19)
+
+- **Getting home first:** Play spawns you at (0, 3, 450), outside your home, and the Arrange
+  button does nothing there. A Server `execute_luau` `p.Character:PivotTo(CFrame.new(64, 3.5,
+  478))` puts you inside Unit1's Medium home; then click (681, 37).
+- **The MCP's steps lag about 0.3 s each:** a press then a 10-point move then more reads as a
+  hold (the hold ripened before the first move landed). To drive a quick drag, make the first
+  move past the slop at once (60 points); to drive a held drag, wait 800 ms after the press.
+- **A held press can be left down across calls:** `mouseButtonDown` and moves in one call, read
+  and capture, then `moveTo` (needed again: a lone `mouseButtonUp` is refused) and
+  `mouseButtonUp` in the next.
+- **Reading the box:** the Frame is `PlayerGui...SelectBox`; the glows are Highlights named
+  `ArrangeSelected` under `CurrentCamera`, each with its `Adornee`.

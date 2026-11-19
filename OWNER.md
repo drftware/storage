@@ -195,6 +195,17 @@ nowhere else.
   4. With a friend over, hold on one of their things in your home and in theirs: nothing happens.
   Look for: the hold never fires by accident while you look round, and the rise doesn't make you
   lose the lamp. My default, yours to change: the hold's length (0.45 s, `Arrange.Feel.HoldOpen`).
+- [ ] **Try it: box several things at once** (S5-03j6a, D-467; seen in Studio Play at A16, not on
+  a phone). On your phone, open Arrange in your home:
+  1. Hold a finger still on bare floor for about half a second, then drag: a soft white box opens
+     from where you held. Sweep it over the two milk crates and the job box. Each lights up warm
+     white as the box reaches its middle, with a tick that climbs a little with each one.
+  2. Let go: the box fades and the three stay lit. Tap bare floor: they go dark.
+  3. A quick drag on the floor (no hold) still slides the room, as before.
+  Look for: the hold doesn't fight sliding the room; the glow is easy to see at phone size (it's
+  faint from the opening view). Moving them together comes next (S5-03j6b). My defaults, yours to
+  change: the box starts after Gestures' stock hold (0.5 s); a thing is in when its
+  middle is.
 - [ ] **Feel it: what's in the way glows** (S5-03j4b2, D-462; seen in Studio Play at A16, not on
   a phone). On your phone, open Arrange and drag a milk crate into the shelf, slowly:
   1. The moment it presses in, the crate goes red, the shelf flares soft red and stays faintly

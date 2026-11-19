@@ -55,6 +55,7 @@ local Ring = require(ReplicatedStorage.Shared.Home.Ring)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local CardPlate = require(ReplicatedStorage.Shared.Home.CardPlate)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
+local ArrangeBox = require(script.Parent.ArrangeBox)
 local ArrangeCamera = require(script.Parent.ArrangeCamera)
 local ArrangeHand = require(script.Parent.ArrangeHand)
 local PlaceAim = require(script.Parent.PlaceAim)
@@ -207,6 +208,12 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		return nil
 	end
 	local toHand: (i: Brix.GestureIntent<Model>) -> () = function(_: Brix.GestureIntent<Model>) end
+	-- The box that selects several things (ArrangeBox, S5-03j6a), set once it's made below.
+	local toBox: (i: Brix.GestureIntent<Model>) -> boolean = function(
+		_: Brix.GestureIntent<Model>
+	): boolean
+		return false
+	end
 	-- The build camera (S5-03j1a): it swoops up as Arrange opens, the hands move it, and it hands
 	-- a press that takes a thing, and every tap, to the hand (S5-03j2a).
 	local buildCam = ArrangeCamera.new({
@@ -218,6 +225,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end,
 		hand = function(i: Brix.GestureIntent<Model>)
 			toHand(i)
+		end,
+		box = function(i: Brix.GestureIntent<Model>): boolean
+			return toBox(i)
 		end,
 		-- Under the top bar and over the tray's tabs where they rest (the tray 10 off the foot,
 		-- `TRAY` tall, its 44-point tabs 6 above it), in viewport points (D-443).
@@ -378,7 +388,31 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			end
 		end,
 	})
-	pickThing, toHand = hand.pick, hand.intent
+	-- Several at once (ArrangeBox): a finger held on the bare room and dragged boxes things; a tap,
+	-- or a drag on a thing, lets the box's things go (moving them together is S5-03j6b).
+	local selectBox = ArrangeBox.new({
+		gui = function(): ScreenGui?
+			return gui
+		end,
+		room = function(): Arrange.Room?
+			return room
+		end,
+		placed = placed,
+		sounds = sounds,
+		tap = function(t: Feedback.Tap)
+			taps.tap(t)
+		end,
+		busy = function(): boolean
+			return hand.lifted() ~= nil
+		end,
+	})
+	pickThing, toBox = hand.pick, selectBox.intent
+	toHand = function(i: Brix.GestureIntent<Model>)
+		if i.kind == "tap" or i.kind == "doubleTap" or i.kind == "dragBegan" then
+			selectBox.clear()
+		end
+		hand.intent(i)
+	end
 
 	----------------------------------------------------------------------------------------------
 	-- The tray: what's in your job box
@@ -913,6 +947,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		open = false
 		pending = nil
 		dragInput = nil
+		selectBox.clear()
 		attachTabs(nil)
 		if turnKeys then
 			turnKeys.open(false)

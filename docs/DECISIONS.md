@@ -11120,3 +11120,29 @@ the camera lifting to it, and the lamp is already in your fingers; drag and let 
   buttons step aside near the aim. Not fixed here: it touches every home button's view.
 - **My default** (OWNER.md): 0.45 s for the hold.
 
+
+## D-467 · Several at once: a held finger on bare floor draws the box (S5-03j6a, Nov 19)
+
+- **The gesture**: a finger (or the left button) held still on bare floor for Gestures' hold
+  time, then dragged, draws the box. Brix's Gestures already answers a still press with "hold"
+  then a "dragBegan" marked `held`, so no new intent (no ENG ticket): `ArrangeCamera` hands a held
+  drag with no thing under it to the box (`box` option) and a quick drag still slides the camera.
+  Proven: The Sims 4 Mobile and Animal Crossing's room editor both select several by hold then
+  drag; Bloxburg's multi-select box.
+- **What it takes**: a thing is in when its middle (bounding box centre) on the screen is inside
+  the box and ahead of the camera (`Home/Selection.inside`). Things riding on a taken base count
+  through it (`roots`), and what lights up is the roots and every rider on them (`lit`): a box
+  round the lamp alone takes the lamp; round the crate it takes the crate and the lamp on it.
+  Read from the room's placements only: no find named.
+- **The look**: a soft warm-white box with a rounded edge fades in past 14 points; each taken
+  thing gets a warm-white Highlight (fill 0.78, outline solid), warm because green and red are
+  the judge's colours. A tick per joining thing, each 5% higher (up to 1.5x), and a light tap.
+  At most 24 glow (Roblox draws 31 Highlights; the hand and the blocker glows need theirs).
+- **For now** (until j6b): a tap anywhere or a drag that lifts one thing lets the box's things
+  go; the box won't start while the hand holds something (the held drag slides the camera).
+- **Seen in Studio Play at A16** (Medium home, opening view): a held drag from the floor round
+  the two milk crates and the job box drew the box (315, 38, 80 by 57), lit exactly those three
+  with three rising ticks (1.68, 1.76, 1.84); let go, the box faded and the three stayed lit; a
+  tap on the floor cleared them; a quick drag slid the camera 4.75 studs with no box. Captures:
+  `docs/art/s5-03j6a-box.png`, `-selected.png`. At the opening view's size the glow is faint on
+  the crates (D-449's small view); j7 judges it closer.

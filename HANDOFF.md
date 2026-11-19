@@ -2,44 +2,44 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-19, S5-03j5b2 done: hold a finger on your thing, Arrange opens with it lifted (D-466) · **Checks:** green · **Git:** `main`, not pushed; Brix `cea1259`.
+**Updated:** 2026-11-19, S5-03j6a done: a held finger on bare floor boxes several things (D-467) · **Checks:** green · **Git:** `main`, not pushed; Brix `cea1259`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; search its heading). Order now: S5-03j6, j7, ENG-29, k1 to k6.
-- **Placing by hand is whole** (S5-03j5, D-463 to D-466): a held find shows where you look and
-  Place sets it; a Taken find keeps a faint spot it snaps back into; a finger held 0.45 s on one
-  of your things (`HomeHoldView`) opens Arrange with it lifted under that finger
-  (`ArrangeView`'s `grab`, `ArrangeHand.carryHeld`). All seen in Studio Play at A16, captured to
-  `docs/art/s5-03j5b2-*` (`screen_capture` still times out; STUDIO.md's newest section).
-- **Studio:** `rojo serve` (34872) in sync; Studio in Edit, place unsaved. Capture with macOS.
+  only; search its heading). Order now: S5-03j6b, j7, ENG-29, k1 to k6.
+- **The box is in** (S5-03j6a, D-467): a finger held on bare floor then dragged draws a box
+  (`ArrangeBox`, pure core `Home/Selection`); what it reaches glows and stays lit; a tap or a
+  drag on a thing clears it. Seen in Studio Play at A16. Nothing moves together yet.
+- **Studio:** `rojo serve` in sync; Edit, unsaved; Play spawns you outside home (STUDIO.md).
 - **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j6 Several at once
-The moment: in Arrange you drag a box round the crate and the lamp on it and the rug; all three
-light up selected; drag any one and they move together, turn together, put away together, and
-the server takes them as one move (one undo). As The Sims 4's build-mode multi-select.
-1. Read the plan's "Several at once" section and its feedback rows (the doc wins over ROADMAP).
-2. Split it in ROADMAP first if it won't fit (likely: j6a the box drag and the selection's look on
-   screen, a pure selection core with Lune specs; j6b moving, turning and putting away together;
-   j6c the server's one move and one undo step). Do one green piece.
-3. The box drag: which gesture starts it must not fight the camera's slide (Brix Gestures; ENG-27
-   may need a new intent: if so, build it in `../engine` by Brix's AGENTS.md, then move the pin).
-4. Each piece in its own module (a pure `Selection` core in `src/shared/Home/`); ArrangeView
-   only wires. Names no find: what moves together is read from the placements and catalog rows.
-5. The server: one ask carrying several moves, judged all or none (checked as Place is: type,
-   range, ownership, reach, rate): a group never half-lands, and History keeps it as one step.
-6. Feedback per the doc's table; seen in Studio Play at A16, captured to `docs/art/s5-03j6-*`.
-**Acceptance:** green; a box round three things selects exactly those; they land as one; one Undo
-puts all three back; a refused group changes nothing.
-**Read first:** the plan's "Several at once"; ROADMAP S5-03j6 (grep `S5-03j6`);
-`src/client/ArrangeHand.luau` 1330-1360 (`drop`) and 1509-1560 (`replay`);
-`src/shared/Home/History.luau` 1-60; `src/server/Arranging.luau` 820-850 (its remotes);
-`vendor/brix/docs/modules/Gestures.md`.
+## Next task: S5-03j6b Several at once, moved as one
+The moment: three things lit by the box; you drag the crate and the lamp and rug come along,
+keeping their places round it; let go and all three land with one thud each, as one move; one
+Undo puts all three back. As The Sims 4's build-mode multi-select.
+1. A drag beginning on a lit thing (`selectBox.ids()`) carries the group: its own module (say
+   `ArrangeGroup`), one ghost per root, offsets kept, all judged by the client's judge; blocked
+   anywhere, the group floats back (all or none). Split it first if it won't fit.
+2. A pure core in `src/shared/Home/` with Lune specs: the group's poses after a move by (dx, dy)
+   and after a quarter turn about the group's middle (each thing's turn plus 90), all on the
+   floor area; things on a wall or a top in a group: a sensible default (only the floor roots
+   move; note it in OWNER.md).
+3. The ring for a group: Turn and Put away only (ArrangeRing's `which`), round the group's middle.
+4. The server: one new ask in `src/server/Arranging.luau` (beside its remotes) carrying several
+   moves; checked as Place is (type, range, ownership, reach, rate) and judged all or none on a
+   copy of the placements before any lands; one answer. Put away together likewise.
+5. History (`Home/History`): a group as one step; undo replays the group's asks as one.
+6. Feedback per the doc's table (each lands with its thud by weight; put away flies each to its
+   card); seen in Studio Play at A16 and captured to `docs/art/s5-03j6b-*`.
+**Acceptance:** green; a boxed three dragged land as one ask; one Undo puts all three back; a
+refused group changes nothing on the server or the screen.
+**Read first:** ROADMAP `j6b`; `src/client/ArrangeBox.luau` (whole, 300 lines);
+`src/client/ArrangeHand.luau` 574-660 (`lift`), 1330-1350 (`drop`), 1509-1550 (`replay`);
+`src/shared/Home/History.luau` 1-60; `src/server/Arranging.luau` 820-850 (its remotes).
 
 ## Queue (next sessions, the owner's ticket order)
-0. After j6: j7. Polish by name: the place's squash, a drag's tilt. The huge held-find view at
+0. After j6b: j7. The box's glow is faint from the opening view (D-467). Polish by name: the place's squash, a drag's tilt. The huge held-find view at
    the bottom left hides the crates at phone size. Pallet and camp bed cards float back in the
    Small room (D-461). A tray card's drag isn't Gestures': the wheel zooms, no twist (D-453).
    Arrange's opening view: crates ~16 points across (D-449). D held slides the room half off
