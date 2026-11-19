@@ -10898,3 +10898,28 @@ the room lifts it with today's drag (Turn, Place, the tray away).
 - **Not seen:** the neon moon furniture piece (`NeonSign:Furniture`, the tray card) was not
   dragged; it is the same row's shape, so it takes the same path.
 
+## D-459 The height handle (S5-03j3c2, 2026-11-19)
+
+- **What:** a selected thing that hangs only on walls (`WallHang.only` on its shape's `fits`,
+  never an id) gets a fourth round button, an up-down arrow, as The Sims 4's wall-height handle.
+  `Ring.handle` (pure) puts it just over the thing's screen box, or beside it (right, else left)
+  when there's no room over it; the ring's row then lays out round the thing and the handle
+  together, so the two never overlap. Its drag is its own (InputBegan on the button, then
+  UserInputService), so Gestures never sees it and the camera holds still.
+- **Studs from points:** at the press, the hand projects the wall point the thing hangs at and
+  one stud above it; `WallHang.along` measures the finger's move along that screen line (a wall
+  seen askew still works; edge on gives nothing). Then `raise` (step `Arrange.Step`, 0 with
+  Free), `settle`, `setPose`: a tick per height it moves to, from setPose's own tick.
+- **Let go keeps it selected,** as after Turn (the ticket said "as Turn's does"); tapping the room
+  places it the usual way. The handle grows a little while held.
+- **Grid:** settle's snap counts from the wall's edge, so heights land on that grid (-1.45 on
+  Medium's left wall, not -1.5), and x snaps onto it too. `raise`'s steps from the middle are
+  then corrected by settle; one tick per settled change, so it reads right.
+- **Seen in Studio at A16 (Medium, Unit1):** the neon sign at -2.5 on the left wall, tapped:
+  the handle sat over it with the row under (first view), and beside it with the sign near the
+  screen's top (second view). Dragged 16 points up (15 points a stud there): a press click and
+  two ticks, the ghost up 1.05; tapped the room: placed at -1.45, outline white throughout.
+  Captures `docs/art/s5-03j3c2-handle-selected.png`, `-raised.png` (half scale) and
+  `-raised-closeup.png` (full scale).
+- **Not seen:** a touch drag on a real phone, Free (Alt) on the handle, the handle with the sign
+  turned edge on to the camera.

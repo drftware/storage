@@ -12,7 +12,7 @@
 	its width across and its height up (`Spots.shape`).
 
 	Pure: numbers in, numbers out, nothing allocated. ArrangeHand calls `only` and `height` as the
-	finger aims (`aim`), and `raise` as the height handle is dragged. Its spec:
+	finger aims (`aim`), and `raise` and `along` as the height handle is dragged. Its spec:
 	tests/wallhang.spec.luau.
 ]]
 
@@ -61,6 +61,19 @@ function WallHang.raise(from: number, by: number, step: number, depth: number, t
 		end
 	end
 	return math.clamp(to, -most, most)
+end
+
+-- How many studs up the wall a finger has dragged the height handle (S5-03j3c2): the finger's
+-- move `dx`, `dy` (screen points) measured along where one stud up the wall shows on the screen,
+-- `ux`, `uy` (points; down the screen is +y, so up the wall is usually -y). Seen from below or
+-- askew it still follows the wall. 0 when the wall's up is edge on to the camera (under a point
+-- a stud).
+function WallHang.along(dx: number, dy: number, ux: number, uy: number): number
+	local seen = ux * ux + uy * uy
+	if not (seen >= 1) or seen == math.huge then
+		return 0
+	end
+	return (dx * ux + dy * uy) / seen
 end
 
 return table.freeze(WallHang)

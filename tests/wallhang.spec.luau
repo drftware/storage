@@ -73,6 +73,17 @@ do
 	ok(near(WallHang.raise(1, -9, 0, DEPTH, TALL), -3), "free stops at the bottom")
 end
 
+-- The handle's drag in studs: measured along where a stud up the wall shows on the screen.
+do
+	ok(near(WallHang.along(0, -60, 0, -30), 2), "a finger 60 up, a stud 30 up the screen: two")
+	ok(near(WallHang.along(0, 45, 0, -30), -1.5), "down the screen: down the wall")
+	ok(near(WallHang.along(40, 0, 0, -30), 0), "sideways: no height")
+	ok(near(WallHang.along(30, -30, 30, -30), 1), "a wall seen askew: along its up")
+	ok(WallHang.along(0, -60, 0, -0.5) == 0, "a wall edge on: nothing")
+	ok(WallHang.along(0, -60, 0 / 0, 1) == 0, "nonsense: nothing")
+	ok(WallHang.along(0, -60, math.huge, 0) == 0, "endless: nothing")
+end
+
 print(string.format("wallhang: %d checks, %d failed", checks, failures))
 if failures > 0 then
 	error("wallhang spec failed")

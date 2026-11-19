@@ -146,6 +146,13 @@ nowhere else.
   at the height it hung, never dropping toward your thumb, and goes round the corner at the same
   height. Tell me if it should follow your thumb up and down instead (my default: it keeps its
   height; the height handle comes next, S5-03j3c2).
+- [ ] **Try it: lift a wall thing with its handle** (S5-03j3c2, D-459). On your phone, open
+  Arrange and tap the neon moon on its wall: a round button with an up-down arrow sits just over
+  it (beside it when the moon is near the top of your screen). Hold that button and slide your
+  thumb up, then down. Look for: the moon climbs the wall a click at a time (half a stud each),
+  the handle riding up with it under your thumb, the room's camera holding still; tap the empty
+  room and it sets down there. Tell me if the handle is too big next to a small sign (my default:
+  the ring's 52-point size, for thumbs), and whether it should sit somewhere else.
 - [ ] **Switch and press fast, on your phone** (F-G1e6q2, D-400; Studio has no lag to show
   it). In the live game on your phone, carry two lights (say a camp lantern and a tea light),
   hold the tea light, then tap the lantern's slot and tap the press button straight after, as

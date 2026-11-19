@@ -6,6 +6,12 @@
 	your box, The Sims' eyedropper). Icons, no words; each 52 points, over the phone's 48-point
 	target. A tap on the empty room lets the thing go and the ring with it.
 
+	A thing that hangs on a wall also gets the height handle (S5-03j3c2, D-459): a round button
+	with an up-down arrow just over it (`Ring.handle`), the row then going over both. Dragged, it
+	lifts or lowers the thing along the wall, as The Sims 4's wall-height handle does: its drag is
+	its own (the button sinks the press, so the build camera never pans meanwhile), measured from
+	where the finger went down, and the handle rides up with the thing under the finger.
+
 	The row hugs the thing on the screen (`Ring.place`, pure) and moves with it and the camera:
 	it steps only while shown, and lays out again only when the camera or the thing has moved.
 	ArrangeView makes one with its gui and shows it for the hand's selected thing.
@@ -13,6 +19,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
@@ -22,7 +29,16 @@ local Feel = Arrange.Feel
 local POP = TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
 -- Which buttons the selected thing has.
-export type Which = { away: boolean, turn: boolean, another: boolean }
+export type Which = { away: boolean, turn: boolean, another: boolean, raise: boolean }
+
+-- The height handle's drag, as the hand takes it: `start` as the finger goes down (false: no
+-- drag, the thing isn't on a wall), `move` with how far it has gone since (screen points), `stop`
+-- as it lifts.
+export type Raise = {
+	start: () -> boolean,
+	move: (dx: number, dy: number) -> (),
+	stop: () -> (),
+}
 
 export type Options = {
 	parent: Instance, -- the screen's gui
@@ -34,6 +50,7 @@ export type Options = {
 	away: () -> (),
 	turn: () -> (),
 	another: () -> (),
+	raise: Raise,
 	-- The part of the screen the ring may use, in gui points.
 	area: () -> Ring.Box,
 	-- The screen's own buttons the ring keeps off (Done, the limit bar), in gui points.
@@ -115,6 +132,15 @@ local function awayIcon(b: GuiObject, ink: Color3)
 	bar(b, ink, 9, 3, 2.8, -1, -40)
 end
 
+-- The height handle: an arrow pointing up and down.
+local function raiseIcon(b: GuiObject, ink: Color3)
+	bar(b, ink, 3, 22, 0, 0)
+	bar(b, ink, 9, 3, -2.8, -7.5, -40)
+	bar(b, ink, 9, 3, 2.8, -7.5, 40)
+	bar(b, ink, 9, 3, -2.8, 7.5, 40)
+	bar(b, ink, 9, 3, 2.8, 7.5, -40)
+end
+
 -- Another: a plus.
 local function anotherIcon(b: GuiObject, ink: Color3)
 	bar(b, ink, 22, 4, 0, 0)
@@ -129,7 +155,7 @@ function ArrangeRing.new(options: Options): ArrangeRing
 	holder.Active = false
 	holder.Parent = options.parent
 
-	local function button(name: string, act: () -> ()): TextButton
+	local function button(name: string, act: (() -> ())?): TextButton
 		local b = Instance.new("TextButton")
 		b.Name = name
 		b.Text = ""
@@ -148,10 +174,12 @@ function ArrangeRing.new(options: Options): ArrangeRing
 		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		stroke.Parent = b
 		Instance.new("UIScale").Parent = b
-		b.Activated:Connect(function()
-			options.press(b)
-			act()
-		end)
+		if act then
+			b.Activated:Connect(function()
+				options.press(b)
+				act()
+			end)
+		end
 		b.Parent = holder
 		return b
 	end
@@ -162,6 +190,74 @@ function ArrangeRing.new(options: Options): ArrangeRing
 	turnIcon(turn, options.ink, options.colour)
 	local another = button("Another", options.another)
 	anotherIcon(another, options.ink)
+	local handle = button("Raise", nil)
+	raiseIcon(handle, options.ink)
+
+	-- The handle's drag: the press that began it, where it went down, and the two connections
+	-- that follow it (made as it goes down, gone as it lifts).
+	local raising: InputObject? = nil
+	local raisedFrom = Vector2.zero
+	local raiseWatch: { RBXScriptConnection } = {}
+	local function endRaise()
+		for _, c in raiseWatch do
+			c:Disconnect()
+		end
+		table.clear(raiseWatch)
+		if raising then
+			raising = nil
+			local scale = handle:FindFirstChildOfClass("UIScale")
+			if scale then
+				TweenService:Create(scale, POP, { Scale = 1 }):Play()
+			end
+			options.raise.stop()
+		end
+	end
+	local function same(input: InputObject, down: InputObject): boolean
+		return input == down
+			or (
+				input.UserInputType == Enum.UserInputType.MouseMovement
+				and down.UserInputType == Enum.UserInputType.MouseButton1
+			)
+	end
+	handle.InputBegan:Connect(function(input: InputObject)
+		local t = input.UserInputType
+		if
+			raising
+			or not (t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1)
+			or not options.raise.start()
+		then
+			return
+		end
+		raising = input
+		raisedFrom = Vector2.new(input.Position.X, input.Position.Y)
+		options.press(handle)
+		local scale = handle:FindFirstChildOfClass("UIScale")
+		if scale then -- held: a little bigger, under the finger
+			TweenService:Create(scale, POP, { Scale = 1.12 }):Play()
+		end
+		table.insert(
+			raiseWatch,
+			UserInputService.InputChanged:Connect(function(moved: InputObject)
+				local down = raising
+				if down and same(moved, down) then
+					options.raise.move(
+						moved.Position.X - raisedFrom.X,
+						moved.Position.Y - raisedFrom.Y
+					)
+				end
+			end)
+		)
+		table.insert(
+			raiseWatch,
+			UserInputService.InputEnded:Connect(function(up: InputObject)
+				local down = raising
+				if down and up == down then
+					endRaise()
+				end
+			end)
+		)
+	end)
+	local raiseShown = false
 
 	local shown: { TextButton } = {}
 	local thing: Model? = nil
@@ -199,12 +295,16 @@ function ArrangeRing.new(options: Options): ArrangeRing
 		end
 		holder.Visible = true
 		ringOptions.avoid = if options.avoid then options.avoid() else nil
-		local at = Ring.place(
-			{ left = left, top = top, right = right, bottom = bottom },
-			#shown,
-			options.area(),
-			ringOptions
-		)
+		local area = options.area()
+		local box = { left = left, top = top, right = right, bottom = bottom }
+		local hp = if raiseShown then Ring.handle(box, area, ringOptions) else nil
+		if hp then
+			handle.Position = UDim2.fromOffset(hp.x, hp.y)
+			local r = Feel.RingSize / 2 -- the row goes round the thing and the handle together
+			box.left, box.right = math.min(left, hp.x - r), math.max(right, hp.x + r)
+			box.top, box.bottom = math.min(top, hp.y - r), math.max(bottom, hp.y + r)
+		end
+		local at = Ring.place(box, #shown, area, ringOptions)
 		for i, b in shown do
 			local p = at[i]
 			if p then
@@ -235,9 +335,15 @@ function ArrangeRing.new(options: Options): ArrangeRing
 				table.insert(shown, another)
 			end
 		end
-		for _, b in { away, turn, another } do
-			local on = table.find(shown, b) ~= nil
-			if on and not table.find(was, b) then -- pops in round the thing
+		local wasRaise = raiseShown
+		raiseShown = t ~= nil and which ~= nil and which.raise
+		if not raiseShown then
+			endRaise()
+		end
+		for _, b in { away, turn, another, handle } do
+			local on = if b == handle then raiseShown else table.find(shown, b) ~= nil
+			local before = if b == handle then wasRaise else table.find(was, b) ~= nil
+			if on and not before then -- pops in round the thing
 				local scale = b:FindFirstChildOfClass("UIScale")
 				if scale then
 					scale.Scale = 0.5
@@ -246,7 +352,7 @@ function ArrangeRing.new(options: Options): ArrangeRing
 			end
 			b.Visible = on
 		end
-		if #shown == 0 then
+		if #shown == 0 and not raiseShown then
 			stop()
 			return
 		end
@@ -272,6 +378,7 @@ function ArrangeRing.new(options: Options): ArrangeRing
 	return {
 		show = show,
 		destroy = function()
+			endRaise()
 			stop()
 			holder:Destroy()
 		end,

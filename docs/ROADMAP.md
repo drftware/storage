@@ -3540,11 +3540,16 @@ Done when players watch the results to the end and change their perks between cl
         any height (the wall its ray leaves the room through). Seen in Studio at A16 (Medium): the
         neon sign dragged with the finger down by the job box went along the left wall, round the
         corner onto the back wall and back, at 6.05 studs throughout, and landed flush.
-      - [ ] **S5-03j3c2 The height handle.** A small round button above a selected wall thing
-        (ArrangeRing's look); dragged up or down it raises or lowers only its height by
-        `WallHang.raise` (grid steps, Free by eye), a tick per step, as The Sims 4's wall-height
-        handle; seen in Studio at A16 and captured with a close-up.
-    - [ ] **S5-03j4 Undo, and every action answers.** Undo and redo while Arrange is open (a
+      - [x] **S5-03j3c2 The height handle.** Done (D-459;
+        `docs/art/s5-03j3c2-handle-*.png`): a round up-down button over a selected wall thing
+        (`Ring.handle`; beside it with no room above), its own drag (`ArrangeRing`'s `Raise`),
+        `WallHang.along` turns the finger's move into studs up the wall, `raise` steps it, a tick
+        per step; the thing stays selected, as after Turn. Seen in Studio at A16: the neon sign
+        lifted two steps (-2.5 to -1.45 on the wall's grid) and placed.
+    - [ ] **S5-03j4 Undo, and every action answers.** Split (Nov 19, S5-03j3c2's session):
+      **j4a** undo and redo (the undo list, Brix's if it's generic, D-252; the buttons; the
+      server takes each undo as an ordinary Place or Put away); **j4b** the feedback table's
+      rows below. Undo and redo while Arrange is open (a
       pure undo list, Lune specs; the server takes each undo as an ordinary move). Every row of
       the doc's feedback table: lift, drag, onto a table, blocked (the blocker glows), turn,
       place (thud by weight, `Catalog` heft), put away (flies into its tray card), undo; phone

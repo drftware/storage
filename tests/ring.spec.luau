@@ -145,6 +145,29 @@ do
 	ok(stuck == "above", "with nowhere clear, over the thing as before")
 end
 
+-- The height handle: just over the thing, else beside it; always on the screen.
+do
+	local box: Ring.Box = { left = 300, top = 150, right = 380, bottom = 220 }
+	local p = Ring.handle(box, SCREEN, O)
+	ok(p ~= nil and near(p.x, 340) and near(p.y + R, box.top - GAP), "over the thing, a gap clear")
+
+	local high: Ring.Box = { left = 300, top = 20, right = 380, bottom = 90 }
+	local side = Ring.handle(high, SCREEN, O)
+	ok(side ~= nil and near(side.x - R, high.right + GAP), "high up: beside it, on its right")
+	ok(side ~= nil and near(side.y, 55), "at its middle height")
+
+	local corner: Ring.Box = { left = 600, top = 10, right = 680, bottom = 60 }
+	local left = Ring.handle(corner, SCREEN, O)
+	ok(left ~= nil and near(left.x + R, corner.left - GAP), "no room right: on its left")
+	ok(left ~= nil and left.y - R >= MARGIN, "kept on the screen")
+
+	local edge: Ring.Box = { left = -40, top = 200, right = 20, bottom = 260 }
+	local kept = Ring.handle(edge, SCREEN, O)
+	ok(kept ~= nil and near(kept.x, MARGIN + R), "slid onto the screen across")
+
+	ok(Ring.handle({ left = 0 / 0, top = 0, right = 1, bottom = 1 }, SCREEN, O) == nil, "nonsense")
+end
+
 print(`ring: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

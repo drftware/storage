@@ -116,4 +116,36 @@ function Ring.place(box: Box, count: number, area: Box, o: Options): ({ Point },
 	return out, side
 end
 
+-- Where the height handle sits for a thing that hangs on a wall (S5-03j3c2, D-459): a button
+-- just over `box`, its middle over the thing's, a gap clear of its top, kept inside `area`. With
+-- no room over it (the thing high on the screen) it sits beside the thing, its right side (else
+-- its left), at its middle height. ArrangeRing lays the row round the thing and the handle
+-- together, so the row goes over the handle. Nil for nonsense.
+function Ring.handle(box: Box, area: Box, o: Options): Point?
+	if
+		not (finite(box.left) and finite(box.top) and finite(box.right) and finite(box.bottom))
+		or not (finite(area.left) and finite(area.top) and finite(area.right) and finite(
+			area.bottom
+		))
+		or not (o.size > 0 and finite(o.size) and finite(o.gap) and finite(o.margin))
+	then
+		return nil
+	end
+	local r = o.size / 2
+	local low, high = area.top + o.margin + r, area.bottom - o.margin - r
+	local left, right = area.left + o.margin + r, area.right - o.margin - r
+	local x, y = (box.left + box.right) / 2, box.top - o.gap - r
+	if y < low then
+		y = (box.top + box.bottom) / 2
+		x = box.right + o.gap + r
+		if x > right then
+			x = box.left - o.gap - r
+		end
+	end
+	return {
+		x = math.clamp(x, left, math.max(left, right)),
+		y = math.clamp(y, low, math.max(low, high)),
+	}
+end
+
 return Ring

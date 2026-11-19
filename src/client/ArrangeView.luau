@@ -62,6 +62,7 @@ local ArrangeTurn = require(script.Parent.ArrangeTurn)
 local LooksTab = require(script.Parent.LooksTab)
 local Sizes = require(ReplicatedStorage.Shared.Home.Sizes)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
+local WallHang = require(ReplicatedStorage.Shared.Home.WallHang)
 local ToolPicture = require(script.Parent.ToolPicture)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
@@ -327,6 +328,8 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 					away = not l.kept, -- one fresh out of the box floats back into it
 					turn = not (l.starter and Layout.Lean[l.starter]), -- the mirror turns itself
 					another = not l.kept and not full and left > 0,
+					-- the height handle, for a thing that hangs on a wall (read from its shape)
+					raise = WallHang.only(l.shape.fits, Spots.Kinds.Wall),
 				}
 			end
 			o.show(if which and l then l.ghost else nil, which)
@@ -1250,6 +1253,17 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			another = function()
 				hand.another()
 			end,
+			raise = {
+				start = function(): boolean
+					return hand.raiseStart()
+				end,
+				move = function(dx: number, dy: number)
+					hand.raiseBy(dx, dy)
+				end,
+				stop = function()
+					hand.raiseStop()
+				end,
+			},
 			area = function(): Ring.Box
 				local size = g.AbsoluteSize
 				return { left = 0, top = 0, right = size.X, bottom = size.Y }

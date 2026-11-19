@@ -163,6 +163,13 @@ export type Hand = {
 	turnNow: () -> (),
 	awayNow: () -> (),
 	another: () -> (),
+	-- The height handle (S5-03j3c2, D-459), for a selected thing that hangs on a wall: `raiseStart`
+	-- as the finger goes down on it (false: nothing to raise), `raiseBy` with the finger's move
+	-- since (screen points), `raiseStop` as it lifts. The thing stays selected, as after Turn;
+	-- letting it go places it the usual way.
+	raiseStart: () -> boolean,
+	raiseBy: (dx: number, dy: number) -> (),
+	raiseStop: () -> (),
 	-- The server's answer to a Place or a Put away.
 	answered: (what: unknown, id: unknown, refusal: unknown) -> (),
 	-- Stops the lifted thing's follow.
@@ -1112,6 +1119,58 @@ function ArrangeHand.new(options: Options): Hand
 		ratchet()
 	end
 
+	-- The height handle's drag (S5-03j3c2, D-459): the height the thing hung at as the finger went
+	-- down, and where one stud up its wall shows on the screen then (the camera holds still: the
+	-- handle's button sinks the press). Nil between drags.
+	local raiseFrom: number? = nil
+	local raiseUp = Vector2.zero
+
+	local function raiseStart(): boolean
+		local r, l, camera = options.room(), lifted, Workspace.CurrentCamera
+		local pose = if l then l.pose else nil
+		local area = if r and pose then r.placements:areaOf(pose.on) else nil
+		local f = if r and pose then Arrange.frameOn(r, pose.on) else nil
+		if
+			not (r and l and pose and area and f and camera)
+			or l.asking
+			or carrying
+			or area.kind ~= Spots.Kinds.Wall
+		then
+			return false
+		end
+		-- the wall point the thing hangs at and one stud above it (a wall's `y` runs up it, the
+		-- frame's -Z), both to the screen
+		local at = f * Vector3.new(pose.x, 0, -pose.y)
+		local a = camera:WorldToScreenPoint(at)
+		local b = camera:WorldToScreenPoint(at - f.ZVector)
+		if a.Z <= 0 or b.Z <= 0 then
+			return false
+		end
+		raiseFrom, raiseUp = pose.y, Vector2.new(b.X - a.X, b.Y - a.Y)
+		twistFrom = nil
+		return true
+	end
+
+	local function raiseBy(dx: number, dy: number)
+		local r, l, from = options.room(), lifted, raiseFrom
+		local pose = if l then l.pose else nil
+		local area = if r and pose then r.placements:areaOf(pose.on) else nil
+		if not (r and l and pose and area and from) or l.asking then
+			return
+		end
+		local by = WallHang.along(dx, dy, raiseUp.X, raiseUp.Y)
+		local step = if options.free() then 0 else Arrange.Step
+		local y = WallHang.raise(from, by, step, area.depth, l.shape.depth)
+		local fresh = settle(r, l, pose.on, pose.x, y)
+		if fresh and (fresh.y ~= pose.y or fresh.x ~= pose.x) then
+			setPose(r, l, fresh) -- its tick: one per height it moves to
+		end
+	end
+
+	local function raiseStop()
+		raiseFrom = nil
+	end
+
 	-- Free went on or off: a carried thing settles again where the finger has it, on the grid or
 	-- off it, and a twist going on starts over from there.
 	local function freeChanged()
@@ -1580,6 +1639,9 @@ function ArrangeHand.new(options: Options): Hand
 		turnNow = turnNow,
 		awayNow = awayNow,
 		another = another,
+		raiseStart = raiseStart,
+		raiseBy = raiseBy,
+		raiseStop = raiseStop,
 		answered = answered,
 		stopFollow = stopFollow,
 		freeChanged = freeChanged,

@@ -3724,6 +3724,15 @@ verified: a doc page, Studio, or "untested".
   { hold = 12 }` in a `task.spawn` holds it mid-drag while you sample the ghost and capture. Keep
   the finger off the screen's edges or the camera slides under it. Studio's window now sits at
   x 0 (window 25030); the same `sips` crop still finds the phone.
+- **Facing a wall thing head on (S5-03j3c2):** the build camera's tilt stops at a look 0.49
+  down and the wheel moves along the look, so a thing high on a wall stays near the screen's
+  top. Hang it low (`"place", "NeonSign#1", "LeftWall", 0, -2.5, 0`), then from Arrange's
+  opening view: `"right", 330, 150, -300, 0, 1`, `"wheel", -3`, `"wheel", 2, 300, 30`, then
+  `"right", 330, 200, 196, 0, 1` (look now -Z, at Medium's left wall) and three `"right", 330,
+  200, 0, -60, 0.6`. A left `"drag"` on the room only slides it sideways. CameraTest's `"tap"`
+  did not select the sign; a `user_mouse_input` click 47 points right of its screen point did.
+  Hold the handle with `mouseButtonDown` and several `moveTo`s, sample, then `mouseButtonUp`
+  (it needs a `moveTo` first in the same call).
 - **Aim at the plane you mean:** a viewport point made from a world point above the floor lands
   the floor ray further from the camera. For a top, aim at a point on the top's plane; work the
   top's axis out from two finds on it, and recompute it after either moves.
