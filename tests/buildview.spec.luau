@@ -116,36 +116,76 @@ ok(
 	"a hair past (a trim's lip): none"
 )
 
--- fit: the home view stands as near as the whole room fits the clear band (S5-03j1d2)
+-- fit: the home view stands as near as the room's floor fills the clear band (S5-03j1d2; snug,
+-- the walls' tops free, S5-03j1d3)
 local A16 = {
 	width = 685,
-	tall = 338,
+	tall = 359,
 	tanHalf = math.tan(math.rad(35)),
 	top = 58,
 	bottom = 186,
 	roof = 0,
 	edge = 6,
 }
-local small, smallAim = BuildView.fit(4.4, 6, 1, 4, 4, 0.6, 0.95, A16)
-local large = BuildView.fit(8, 11, 1, 4, 4, 0.6, 0.95, A16)
+-- Where the floor's corners show down the screen, as the camera draws them: the eye `d` from the
+-- focus (`below` over the floor), looking from `heading` down at `tilt`, pitched on so the focus
+-- shows `at` down the screen.
+local function floorSpan(
+	halfX: number,
+	halfZ: number,
+	below: number,
+	d: number,
+	at: number,
+	heading: number,
+	tilt: number,
+	screen: typeof(A16)
+): (number, number)
+	local half = screen.tall / 2
+	local sa, ca = math.sin(heading), math.cos(heading)
+	local bx, by, bz = sa * math.cos(tilt), math.sin(tilt), -ca * math.cos(tilt)
+	local p = tilt + math.atan((half - at) / half * screen.tanHalf)
+	local fx, fy, fz = -sa * math.cos(p), -math.sin(p), ca * math.cos(p)
+	local rx, rz = -ca, -sa
+	local ux, uy, uz = -fy * rz, rz * fx - rx * fz, rx * fy
+	local highest, lowest = math.huge, -math.huge
+	for i = 0, 3 do
+		local x = if i % 2 == 0 then halfX else -halfX
+		local z = if i < 2 then halfZ else -halfZ
+		local qx, qy, qz = x - bx * d, -below - by * d, z - bz * d
+		local depth = qx * fx + qy * fy + qz * fz
+		local y = half - (qx * ux + qy * uy + qz * uz) / depth * half / screen.tanHalf
+		highest, lowest = math.min(highest, y), math.max(lowest, y)
+	end
+	return highest, lowest
+end
+local small = BuildView.fit(4, 3.9, 1, 4, 0.6, 0.95, A16)
+local large, largeAim = BuildView.fit(8, 9.9, 1, 4, 0.6, 0.95, A16)
 ok(small > 5 and large > small, "a bigger room stands the eye further back")
+local up, down = floorSpan(8, 9.9, 1, large, largeAim, 0.6, 0.95, A16)
 ok(
-	smallAim > 122 and smallAim < 186,
-	"what stands on the floor rises above it: the focus shows lower"
+	math.abs(down - up - (186 - 58 - 12)) < 0.5,
+	`the floor fills the band's height snugly: {up} to {down}`
 )
+ok(math.abs((up + down) / 2 - 122) < 1, `the floor sits in the band's middle: {up} to {down}`)
 local tall =
-	{ width = 685, tall = 338, tanHalf = A16.tanHalf, top = 20, bottom = 318, roof = 0, edge = 6 }
-ok((BuildView.fit(4.4, 6, 1, 4, 4, 0.6, 0.95, tall)) < small, "a taller band lets it come nearer")
+	{ width = 685, tall = 359, tanHalf = A16.tanHalf, top = 20, bottom = 318, roof = 0, edge = 6 }
+ok((BuildView.fit(4, 3.9, 1, 4, 0.6, 0.95, tall)) < small, "a taller band lets it come nearer")
+local roofed =
+	{ width = 685, tall = 359, tanHalf = A16.tanHalf, top = 58, bottom = 186, roof = 50, edge = 6 }
+ok(
+	(BuildView.fit(4, 3.9, 1, 4, 0.6, 0.95, roofed)) > small,
+	"what stands on the floor kept under the roof stands the eye further back"
+)
+ok(
+	math.abs(
+		BuildView.fit(4, 3.9, 1, 0, 0.6, 0.95, roofed) - BuildView.fit(4, 3.9, 1, 0, 0.6, 0.95, A16)
+	) < 1e-3,
+	"a bare floor isn't held back by the roof: the walls' tops never count"
+)
 -- straight down on a flat floor, the band mid-screen: the floor's edges touch the band's
 local flat =
 	{ width = 2000, tall = 400, tanHalf = 0.5, top = 100, bottom = 300, roof = 0, edge = 0 }
-local roofed =
-	{ width = 685, tall = 338, tanHalf = A16.tanHalf, top = 58, bottom = 186, roof = 40, edge = 6 }
-ok(
-	(BuildView.fit(4.4, 6, 1, 4, 10, 0.6, 0.95, roofed)) > small,
-	"tall walls kept under the roof stand the eye further back"
-)
-local d, at = BuildView.fit(5, 5, 1, 0, 0, 0, math.pi / 2, flat)
+local d, at = BuildView.fit(5, 5, 1, 0, 0, math.pi / 2, flat)
 ok(math.abs(d - 19) < 1e-3 and math.abs(at - 200) < 1e-3, `straight down: {d} {at}`)
 
 print(`buildview: {checks - failures}/{checks} passed`)

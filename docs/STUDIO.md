@@ -3653,3 +3653,12 @@ verified: a doc page, Studio, or "untested".
   the movable walls are `Walls.<side>.Steel` (1 thick) and `.Face`; the camera masks all their runs.
 - **A camera set by `execute_luau` stays put while Arrange's camera rests** (it writes nothing once
   still): handy for trying a pose before coding it.
+- **`Camera.ViewportSize` is the safe area, not the screen the camera draws** (S5-03j1d3a,
+  D-446; create.roblox.com, Camera.ViewportSize): the camera renders the full screen and measures
+  `FieldOfView` on it. Studio's A16 draws 779 by 359 round a 685 by 338 safe area, top-aligned
+  (a ScreenGui with `ScreenInsets` None and `IgnoreGuiInset` reads 779 by 359 at -47, -58), so
+  `WorldToViewportPoint` puts the view's middle at y 179.5, not 169. Anything that projects by
+  hand from `ViewportSize` lands low; `ArrangeCamera.lens` measures the drawn screen instead. The
+  47 points each side are also why MCP clicks land 47 points left of where they're sent.
+- **`CameraTest` "frame"** (Client, while Arrange is open): the band, the floor's corners' reach
+  down and across, the walls' tops and the eye's distance, in viewport points.

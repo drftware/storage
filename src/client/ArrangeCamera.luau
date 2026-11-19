@@ -123,7 +123,7 @@ end
 -- The orbit for `room`: its focus kept over the floor inside the walls, starting on the home view:
 -- from a front corner on the side the player stands (`from`, their eyes, in the room's frame;
 -- `BuildView.homeView`), high over the open-topped room at `HomeTilt` (D-444), as near as the
--- whole room fits the clear band of `screen` (`BuildView.fit`, S5-03j1d2). Also answers where
+-- room's floor fills the clear band of `screen` (`BuildView.fit`, S5-03j1d2, D-446). Also answers where
 -- down the band the focus shows (0 its top, 1 its bottom) so the room sits in its middle, and
 -- the box the eye may stand in: `Around` past the walls, or out to the home view if that's further.
 local function orbitFor(
@@ -149,7 +149,6 @@ local function orbitFor(
 		s.Z / 2,
 		Cam.FocusUp,
 		math.min(Cam.FitHigh, s.Y),
-		s.Y,
 		angle,
 		Cam.HomeTilt,
 		screen
@@ -234,6 +233,13 @@ function ArrangeCamera.new(options: Options): Camera
 	-- The room's frame (its middle at the origin) and its half size, kept while open.
 	local roomFrame = CFrame.identity
 	local half = Vector3.zero
+	-- The screen as the camera draws it (S5-03j1d3, D-446): `ViewportSize` is the device's safe
+	-- area, but the camera draws the whole screen round it and measures its field of view on that
+	-- (create.roblox.com, Camera.ViewportSize). On the A16 the drawn screen is 779 by 359 round a
+	-- 685 by 338 safe area, so an orbit told 338 set the room 10 points low and 6% small. The
+	-- orbit and the fit take the drawn screen: `drawnWide` across (its middle at half that, in
+	-- viewport points), `drawnTall` high, a viewport point `drawnDown` lower on it.
+	local drawnWide, drawnTall, drawnDown = 685, 338, 0
 
 	local function setFade(w: Wall, value: number)
 		w.written = value
@@ -431,18 +437,39 @@ function ArrangeCamera.new(options: Options): Camera
 			return
 		end
 		local top, bottom = options.clear()
-		local y, w = top + (bottom - top) * aimAt, camera.ViewportSize.X
+		local y, w = top + (bottom - top) * aimAt + drawnDown, drawnWide
 		if math.abs(y - aimedY) > 0.5 or math.abs(w - aimedW) > 0.5 then
 			aimedY, aimedW = y, w
 			o:aim(w / 2, y)
 		end
 	end
 
+	-- Measures the drawn screen (above) from where the camera's middle and the top of its field
+	-- of view show in viewport points: any camera pose will do.
+	local function lens()
+		local camera = Workspace.CurrentCamera
+		if not camera then
+			return
+		end
+		local cf = camera.CFrame
+		local reach = math.tan(math.rad(camera.FieldOfView) / 2)
+		local mid = camera:WorldToViewportPoint(cf.Position + cf.LookVector)
+		local top = camera:WorldToViewportPoint(cf.Position + cf.LookVector + cf.UpVector * reach)
+		local halfTall = mid.Y - top.Y
+		if halfTall > 1 and mid.X > 1 then
+			drawnWide, drawnTall, drawnDown = 2 * mid.X, 2 * halfTall, halfTall - mid.Y
+		else
+			local view = camera.ViewportSize
+			drawnWide, drawnTall, drawnDown = view.X, view.Y, 0
+		end
+	end
+
 	local function screen()
 		local camera = Workspace.CurrentCamera
 		local o = orbit
+		lens()
 		if camera and o then
-			o:screen(camera.ViewportSize.X, camera.ViewportSize.Y, math.rad(camera.FieldOfView))
+			o:screen(drawnWide, drawnTall, math.rad(camera.FieldOfView))
 		end
 	end
 
@@ -462,10 +489,10 @@ function ArrangeCamera.new(options: Options): Camera
 				o:flick(i.vx, i.vy)
 			end
 		elseif i.kind == "pinch" then
-			o:zoom(i.scale, i.x, i.y)
+			o:zoom(i.scale, i.x, if i.y then i.y + drawnDown else nil)
 		elseif i.kind == "twist" then
 			if i.target == nil then
-				o:turn(i.angle, i.x, i.y)
+				o:turn(i.angle, i.x, if i.y then i.y + drawnDown else nil)
 			end
 		elseif i.kind == "tilt" then
 			o:tilt(i.amount)
@@ -733,7 +760,8 @@ function ArrangeCamera.new(options: Options): Camera
 	-- feeds Gestures exactly what a mouse would: `"right", x, y, dx, dy, seconds` drags with the
 	-- right button, `"wheel", notches, x, y` rolls the wheel, `"tap", x, y` taps (twice quickly
 	-- is the reset). `"state"` answers the eye, the look point and each wall's fade (left, right,
-	-- back, front) as one line. Points are viewport points, as Gestures takes them.
+	-- back, front) as one line; `"frame"` where the floor's corners and the walls' tops show
+	-- against the clear band. Points are viewport points, as Gestures takes them.
 	local test: BindableFunction? = nil
 	if RunService:IsStudio() then
 		local hook = Instance.new("BindableFunction")
@@ -792,6 +820,41 @@ function ArrangeCamera.new(options: Options): Camera
 					table.concat(fades, "/"),
 					tostring(o:resting())
 				)
+			elseif verb == "frame" then
+				-- Where the room shows (S5-03j1d3): the floor's corners' and the walls' tops'
+				-- reach on screen against the clear band, in viewport points.
+				local cam = Workspace.CurrentCamera
+				local o = orbit
+				if not (cam and o) then
+					return "closed"
+				end
+				local _, look = o:view()
+				local top, bottom = options.clear()
+				local up, down, left, right, roof =
+					math.huge, -math.huge, math.huge, -math.huge, math.huge
+				for i = 0, 7 do
+					local x = if i % 2 == 0 then half.X else -half.X
+					local z = if i % 4 < 2 then half.Z else -half.Z
+					local y = if i < 4 then -half.Y else half.Y
+					local p = cam:WorldToViewportPoint(roomFrame * Vector3.new(x, y, z))
+					if i < 4 then
+						up, down = math.min(up, p.Y), math.max(down, p.Y)
+						left, right = math.min(left, p.X), math.max(right, p.X)
+					else
+						roof = math.min(roof, p.Y)
+					end
+				end
+				return string.format(
+					"band %.0f..%.0f floor y %.0f..%.0f x %.0f..%.0f walls' tops %.0f distance %.1f",
+					top,
+					bottom,
+					up,
+					down,
+					left,
+					right,
+					roof,
+					(cam.CFrame.Position - fromVector(look)).Magnitude
+				)
 			end
 			return nil
 		end
@@ -823,13 +886,13 @@ function ArrangeCamera.new(options: Options): Camera
 			-- With the world gone (D-444) the eye may stand anywhere within `Around` of the walls
 			-- (a gap of −Around reaches that far past every one), or out to the home view.
 			local top, bottom = options.clear()
-			local view = cam.ViewportSize
+			lens()
 			orbit, aimAt = orbitFor(r, roomFrame:PointToObjectSpace(cam.CFrame.Position), {
-				width = view.X,
-				tall = view.Y,
+				width = drawnWide,
+				tall = drawnTall,
 				tanHalf = math.tan(math.rad(cam.FieldOfView) / 2),
-				top = top,
-				bottom = bottom,
+				top = top + drawnDown,
+				bottom = bottom + drawnDown,
 				roof = Cam.Roof,
 				edge = Cam.Edge,
 			})
@@ -924,7 +987,7 @@ function ArrangeCamera.new(options: Options): Camera
 			local o = orbit
 			if o and not shot and not closing then
 				local inset = GuiService:GetGuiInset()
-				o:follow(x, y + inset.Y)
+				o:follow(x, y + inset.Y + drawnDown)
 			end
 		end,
 		destroy = function()

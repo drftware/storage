@@ -133,14 +133,14 @@ Arrange.Camera = table.freeze({
 	FocusUp = 1,
 	-- The home view looks in from a front corner (D-444): the corner `Clear` studs past each near
 	-- wall (radians off straight in come from that), or turned `Slant` where it can't. It stands
-	-- as near as the whole room fits the band the tray and top bar leave clear (S5-03j1d2): the
-	-- floor and what stands on it up to `FitHigh` studs (furniture; the far walls' tops may run
-	-- on above, no higher than `Roof` points from the screen's top, where the top bar's middle is
-	-- free), `Edge` points inside the band and the screen's sides.
+	-- as near as the room's floor fills the band the tray and top bar leave clear, snugly
+	-- (S5-03j1d2, D-446): the floor `Edge` points inside the band and the screen's sides; what
+	-- stands on it up to `FitHigh` studs (a shelf at the back) kept on screen, `Roof` points and
+	-- `Edge` more under its top; the far walls' tops may run past the top (a pinch out shows them).
 	Clear = 5,
 	Slant = 0.4,
 	FitHigh = 5,
-	Roof = 6,
+	Roof = 0,
 	Edge = 6,
 	-- The home view looks down this steeply (radians from level, D-444): a dollhouse look into the
 	-- open-topped room, the far walls standing and the floor whole.

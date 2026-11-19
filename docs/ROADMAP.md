@@ -3340,12 +3340,20 @@ Done when players watch the results to the end and change their perks between cl
       as the room fits the band, its far walls under the top bar's free middle (`BuildView.fit`);
       the limit bar to the top left; world buttons off while open; the light a touch up. Done
       (D-445): seen on Small and XL, `docs/art/s5-03j1d2-small.png`, `-xl.png`.
-    - [ ] **S5-03j1d3 The build camera on Medium and Large, its shots and its close.** Studio Play
-      at A16 size: Medium and Large opened and captured (`CameraTest` "state" and "right" drags
-      round the circle: the masks fade with their walls); the front tab's dip to the door and,
-      after a card chip, the hall dip; Done's swoop back into your eyes, the world back as it
-      lands; WASD on a desktop device. Then a tap on a find still lifts it (today's drag), so
-      S5-03j2 starts from a working base. **Acceptance:** each seen and captured; check green.
+    - [x] **S5-03j1d3a The floor fills the band, on the screen the camera draws.** The home
+      view now stands as near as the room's floor fills the band, snugly (the far walls' tops may
+      run off the top; what stands on the floor up to 5 studs stays on screen); the orbit, aim
+      and fit take the whole screen the camera draws (Roblox's `ViewportSize` is the safe area:
+      on the A16 everything sat 10 points low and 6% small). Done (D-446): Small, Medium and
+      Large seen at A16 size, `docs/art/s5-03j1d3-small.png`, `-medium.png`, `-large.png`;
+      Done's close seen (your eyes, prompts and light back). Split at the run's context line.
+    - [ ] **S5-03j1d3b The build camera's turn, its shots and a lift.** Studio Play at A16 size:
+      on Medium and Large, `CameraTest` "right" drags round the circle (the masks fade with their
+      walls, no dark slab in front of the room); XL's home view captured; the front tab's dip to
+      the door and, after a card chip, the hall dip; WASD on a desktop device; then a tap on a
+      find in the room still lifts it (today's drag), so S5-03j2 starts from a working base.
+      Verification only: fix what's broken, anything bigger goes to S5-03j2's lines.
+      **Acceptance:** each seen and captured; check green.
     - [x] **ENG-26c Nearest free spot and guides, in Brix.** Placements answers the nearest free
       pose to a blocked one within a reach, and the guide lines where a footprint's edge or
       middle meets a neighbour's on the same area. Suite cases first; the pin moves.

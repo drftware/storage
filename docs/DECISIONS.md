@@ -10587,3 +10587,28 @@ Seen in Studio Play at A16 size on a Small and an XL home (`docs/art/s5-03j1d2-s
 - **The light rose a touch** (`Light` 140, 131, 118; was 118, 110, 100): barely seen in a capture,
   kept as asked. The room's faces read; the bulb is what makes them warm.
 - Not yet seen: Medium and Large, the front tab's dips, Done's swoop, WASD (S5-03j1d3).
+
+## D-446 The floor fills the band, measured on the screen the camera draws (S5-03j1d3a, Nov 18)
+
+Seen in Studio Play at A16 size on Small, Medium and Large (`docs/art/s5-03j1d3-*.png`).
+- **The camera draws more screen than `ViewportSize` says.** Roblox's `Camera.ViewportSize` is the
+  device's safe area; the camera renders the whole screen round it and measures `FieldOfView` on
+  that (create.roblox.com, Camera.ViewportSize). Studio's A16 draws 779 by 359 round a 685 by 338
+  safe area, top-aligned. Told 338, Brix's orbit and `BuildView.fit` put the room 10 points low
+  and 6% small, its near corner under the band. `ArrangeCamera.lens` now measures the drawn screen
+  from where the camera's middle and the top of its field of view show in viewport points (any
+  pose will do) and gives the orbit, `aim`, pinches, twists, `follow` and the fit that screen:
+  its middle across, its height, viewport points shifted down by any top offset. Brix's contract
+  (`screen(w, h, fov)`, the middle at half each) was right; only the wiring was wrong, so no Brix
+  change. Measured after: the floor's corners land exactly where the fit says.
+- **The home view fits the floor alone, snugly** (the conductor's word: both rooms sat small).
+  `BuildView.fit` now fills the band's height (less `Edge`) with the floor's four corners and
+  centres them in it; what stands on the floor up to `FitHigh` (5 studs, a shelf at the back)
+  only has to stay on screen, `Roof` (now 0) plus `Edge` under its top; the walls' tops no longer
+  count. Small comes in from 26 studs to 21 and Medium from 37 to 32, their far walls running up
+  off the screen (a pinch out shows the whole box); Large (48.5) and XL (68.5) keep their walls
+  whole, the band's height having bound them already. The floor still spans only about a fifth
+  of the A16's width: on a screen this wide the band's 128 points of height bind any room seen
+  from a corner at `HomeTilt`. A shallower tilt or a straight-on view would widen it; not tried.
+- **CameraTest "frame"** answers where the floor's corners and the walls' tops show against the
+  band, in viewport points, so a framing change is measured, not guessed from a capture.

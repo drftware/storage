@@ -15,8 +15,9 @@
 	  only the pieces flush with or beyond a wall's plane, so the floor, the lamp and furniture
 	  standing in the room never fade with a wall.
 	- `homeView` says which way the camera opens: from a front corner, so the room shows as a box.
-- `fit` says how far back it stands then: as near as the whole room fits the band of the screen
-  the tray and top bar leave clear (S5-03j1d2), so a Small home fills it as an XL does.
+- `fit` says how far back it stands then: as near as the room's floor fills the band of the
+  screen the tray and top bar leave clear (S5-03j1d2, snug in S5-03j1d3), so a Small home fills
+  it as an XL does.
 - `runs` says where a wall goes on past the room's corners (S5-03j1d2): a smaller home's walls
   run the XL's whole length (D-354), and the camera masks those ends so the room ends cleanly.
 ]]
@@ -143,10 +144,11 @@ function BuildView.runs(room: Box, wall: Box, least: number): { Box }
 	return out
 end
 
--- The screen the home view fits into: the viewport (points) and the tangent of half its height's
--- field of view; the clear band's top and bottom; the highest the walls' tops may reach (`roof`:
--- over the band's top, where the top bar's middle is free); and how many points to keep clear
--- inside the band and at the sides.
+-- The screen the home view fits into, as the camera draws it (the whole screen, not Roblox's
+-- safe area, D-446): its width (points) and height, and the tangent of half its height's field of
+-- view; the clear band's top and bottom; the highest what stands on the floor may reach (`roof`
+-- points from the screen's top); and how many points to keep clear inside the band and the roof
+-- and at the sides.
 export type Screen = {
 	width: number,
 	tall: number,
@@ -157,19 +159,20 @@ export type Screen = {
 	edge: number,
 }
 
--- Where the home view stands so the whole room fills `screen`'s band (S5-03j1d2): the floor,
--- reaching `halfX` and `halfZ` each way, `below` under the focus, and what stands on it up to
--- `high` over the floor; the walls' tops, `walls` over the floor, no higher than the roof. The eye looks from `heading` (radians off straight in through the door,
--- as `homeView` answers) down at `tilt`; the camera pitches on as Brix's orbit does to show the
--- focus at an aim point mid-screen across. Answers the eye's distance from the focus, as near as
--- the room fits, and where down the screen the focus shows (points) so the room sits in the
--- band's middle: what stands on the floor rises above the focus, so the focus shows lower.
+-- Where the home view stands so the room's floor fills `screen`'s band snugly (S5-03j1d2, made
+-- snug in S5-03j1d3): the floor, reaching `halfX` and `halfZ` each way, `below` under the focus,
+-- fills the band's height or its width, whichever binds; what stands on it up to `high` over the
+-- floor stays on screen, no higher than the roof; the walls' tops may run on past the screen's top
+-- (a pinch out shows the whole box). The eye looks from `heading` (radians off straight in
+-- through the door, as `homeView` answers) down at `tilt`; the camera pitches on as Brix's orbit
+-- does to show the focus at an aim point mid-screen across. Answers the eye's distance from the
+-- focus, as near as the floor fits, and where down the screen the focus shows (points) so the
+-- floor sits in the band's middle.
 function BuildView.fit(
 	halfX: number,
 	halfZ: number,
 	below: number,
 	high: number,
-	walls: number,
 	heading: number,
 	tilt: number,
 	screen: Screen
@@ -185,8 +188,9 @@ function BuildView.fit(
 	local leftMost, rightMost = screen.edge, screen.width - screen.edge
 	local aim = (screen.top + screen.bottom) / 2
 	local roof = screen.roof + screen.edge
-	-- The room's highest and lowest point down the screen from `d` away with the focus at `at`;
-	-- nil when it can't fit across, stands behind the eye, or its walls reach over the roof.
+	-- The floor's highest and lowest point down the screen from `d` away with the focus at `at`;
+	-- nil when the floor or what stands on it can't fit across, stands behind the eye, or what
+	-- stands on it reaches over the roof.
 	local function span(d: number, at: number): (number?, number)
 		local v = (half - at) / half * screen.tanHalf
 		local p = tilt + math.atan(v)
@@ -194,34 +198,32 @@ function BuildView.fit(
 		local fx, fy, fz = -sa * cp, -sp, ca * cp
 		local ux, uy, uz = -fy * rz, rz * fx - rx * fz, rx * fy -- right × facing
 		local highest, lowest = math.huge, -math.huge
-		for i = 0, 11 do
+		for i = 0, 7 do
 			local x = if i % 2 == 0 then halfX else -halfX
 			local z = if i % 4 < 2 then halfZ else -halfZ
-			local tier = i // 4 -- the floor, what stands on it, the walls' tops
-			local y = (if tier == 0 then 0 elseif tier == 1 then high else walls) - below
+			local onFloor = i < 4 -- else what stands on it, `high` up
+			local y = (if onFloor then 0 else high) - below
 			local qx, qy, qz = x - bx * d, y - by * d, z - bz * d
 			local depth = qx * fx + qy * fy + qz * fz
 			if depth <= 0.01 then
 				return nil, 0
 			end
-			local sy = half - (qx * ux + qy * uy + qz * uz) / depth * scale
-			if tier == 2 then
-				if sy < roof then
-					return nil, 0
-				end
-				continue
-			end
 			local sx = screen.width / 2 + (qx * rx + qz * rz) / depth * scale
 			if sx < leftMost or sx > rightMost then
 				return nil, 0
 			end
-			highest, lowest = math.min(highest, sy), math.max(lowest, sy)
+			local sy = half - (qx * ux + qy * uy + qz * uz) / depth * scale
+			if onFloor then
+				highest, lowest = math.min(highest, sy), math.max(lowest, sy)
+			elseif sy < roof then
+				return nil, 0
+			end
 		end
 		return highest, lowest
 	end
 	local d = 500
-	-- Fit the distance, centre the room on it, and again: the pitch follows the aim a little.
-	for _ = 1, 3 do
+	-- Fit the distance, centre the floor on it, and again: the pitch follows the aim a little.
+	for _ = 1, 4 do
 		local lo, hi = 0.5, 500
 		for _ = 1, 40 do
 			local mid = (lo + hi) / 2

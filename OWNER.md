@@ -14,11 +14,15 @@ nowhere else.
   over your room, and everything else (the lobby, the neighbours) is gone, your room standing
   open-topped on a dark floor; it opens without a stutter, and the frame rate holds while you
   turn round it. Tap Done: you land back in your eyes with the lobby all there. Also (S5-03j1d2,
-  D-445): the whole room sits between the top bar and the tray, its walls ending at its corners
-  (no wall or floor running on into the dark), the limit bar top left across from Done, and no
-  Close, Slam or Open buttons showing while Arrange is open. My defaults, yours to change: the
-  dark floor's colour and the warm light (`Arrange.Camera.Void`, `Light`); a Small home's walls
-  shown whole, which leaves its floor about half the band (say if you'd rather lower walls).
+  D-445, D-446): the room's floor fills the gap between the top bar and the tray's tabs, centred
+  in it on any home size, its walls ending at its corners (no wall or floor running on into the
+  dark), the limit bar top left across from Done, and no Close, Slam or Open buttons showing
+  while Arrange is open. On a phone with a notch or a rounded screen, check the floor still sits
+  in that gap and a pinch zooms toward the spot between your fingers (the camera now measures
+  the whole screen it draws, not Roblox's safe area). My defaults, yours to change: the dark
+  floor's colour and the warm light (`Arrange.Camera.Void`, `Light`); on Small and Medium the
+  far walls' tops run up off the screen so the floor can fill the gap (pinch out to see them;
+  say if you'd rather the whole box showed and the floor sat smaller).
 - [ ] **The torch let down, and its switch beside the jump button** (L-11a2, D-435; seen in
   Studio Play on the Galaxy A16, not on a real phone or iPad). On your phone, then your iPad:
   1. Look at the bottom right. The torch's round switch now sits right of the jump button, at
