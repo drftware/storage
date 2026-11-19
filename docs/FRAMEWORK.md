@@ -44,7 +44,8 @@ the other zones (sphere, polygon, any-of, grown), the floor pathing and the sphe
 
 ## What Brix has built since the pin
 
-These are in the pin (moved to `e62e218` for ENG-28c, `UndoList`, used by Arrange's Undo and Redo,
+These are in the pin (moved to `cea1259` for ENG-26d, Placements' `blocking`, the things a drag presses
+into, lit up by Arrange's hand, D-462; before that `e62e218` for ENG-28c, `UndoList`, used by Arrange's Undo and Redo,
 D-460; before that `3e9a2bb` for ENG-28b, OrbitCamera's `eyeArea` and `aim`, D-443), still not used
 here.
 Moving the pin is its own small step, taken when a ticket first needs something newer.

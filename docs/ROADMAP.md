@@ -3546,11 +3546,13 @@ Done when players watch the results to the end and change their perks between cl
         `WallHang.along` turns the finger's move into studs up the wall, `raise` steps it, a tick
         per step; the thing stays selected, as after Turn. Seen in Studio at A16: the neon sign
         lifted two steps (-2.5 to -1.45 on the wall's grid) and placed.
-    - [ ] **S5-03j4 Undo, and every action answers.** j4a done (Nov 19, D-460): Brix's UndoList,
+    - [x] **S5-03j4 Undo, and every action answers.** j4b2 done (Nov 19, D-462): Brix's
+      `Placements.blocking` (ENG-26d), `ArrangeBlockers` lights what's in the way, one dull bump.
+      j4a done (Nov 19, D-460): Brix's UndoList,
       `Home/History`, the hand's `replay`, two buttons by Done, Ctrl+Z / Ctrl+Y. j4b1 done (Nov
       19, D-461): weight bands from each row's `heft` (`Home/Feedback`; furniture rows gained a
       heft), the thud and dust by band, phone taps (`ArrangeTaps`, HapticEffect), Put away flies
-      into its tray card and the card bumps. **j4b2 next:** the blocker glows. Brix first
+      into its tray card and the card bumps. The blocker glows (j4b2, done). Brix first
       (ENG-26d, in `../engine` by its AGENTS.md): Placements gains `blocking(id, shape, pose,
       into?) -> { Id }` (the things on the pose's area whose footprints it overlaps; fills `into`,
       allocating nothing, so a drag may ask each move), a contract promise and suite cases; move
@@ -3572,6 +3574,10 @@ Done when players watch the results to the end and change their perks between cl
       D-350). A find you Take keeps its spot (a faint outline) until set elsewhere or you leave
       your home; looking near it snaps back into it. Holding a finger on any of your things opens
       Arrange with it lifted. Elsewhere Drop is unchanged; nowhere to go, no Place (no text).
+      Split (Nov 19, S5-03j4b2's session): **j5a** the held find's see-through copy where you look
+      in your own home, judged by the hand's same judge, and Drop reading Place there, one new
+      server ask that sets it down (checked as Take is); **j5b** a Taken find's faint outline that
+      it snaps back into, and a held finger on one of your things opening Arrange with it lifted.
     - [ ] **S5-03j6 Several at once.** A box dragged round several things selects them; they
       move, turn and put away together; the server takes them as one move.
     - [ ] **S5-03j7 The editor seen whole.** Every row of the feedback table checked in Studio

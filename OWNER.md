@@ -160,6 +160,16 @@ nowhere else.
   there's nothing to do, never a dead tap. On a keyboard, Ctrl+Z and Ctrl+Y do the same. Two
   defaults to judge: a find taken out of a shelf cubby and undone goes into the job box, not its
   cubby; undoing a Put away brings back the piece alone, not what stood on it.
+- [ ] **Feel it: what's in the way glows** (S5-03j4b2, D-462; seen in Studio Play at A16, not on
+  a phone). On your phone, open Arrange and drag a milk crate into the shelf, slowly:
+  1. The moment it presses in, the crate goes red, the shelf flares soft red and stays faintly
+     lit, and you hear one dull bump. No buzz in your hand.
+  2. Keep dragging along the shelf: no more bumps. Slide it into the job box too: both glow.
+  3. Drag it clear: the glow fades at once. Let go while it's red: the glow goes as it floats or
+     slides away.
+  Look for: you can tell the shelf from the crate at phone size, and the glow doesn't hide what
+  the shelf looks like. My defaults, yours to change: the soft red, the flare and the faint hold
+  (`Arrange.Feel.Blocker*`), and the bump's pitch and volume (`BUMP` in `ArrangeHand`).
 - [ ] **Feel it: things land as heavy as they are, and fly into the tray** (S5-03j4b1, D-461;
   the landings heard in Studio Play at A16 size, the flight and the taps not seen there). On your
   phone, open Arrange:

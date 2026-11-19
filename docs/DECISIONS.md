@@ -10976,3 +10976,29 @@ the room lifts it with today's drag (Turn, Place, the tray away).
   "rises to the finger, shadow appears" and Drag's tilt with speed are as before (the tilt is
   not built; ROADMAP).
 
+
+## D-462 What's in the way lights up (S5-03j4b2, 2026-11-19)
+
+The plan's "blocked" row: drag the bed against the shelf and the bed goes red, and the shelf glows
+soft red, with one dull knock, so you see what's in the way without a word (The Sims 4 lights the
+object a placement hits).
+- **Brix answers what's in the way** (ENG-26d, Brix `cea1259`): `Placements.blocking(id, shape,
+  pose, into?)` gathers the things on the pose's area whose footprints overlap, in the order
+  placed, never the thing itself; fills a list passed in, so a drag allocates nothing (a bench
+  holds it at 0 bytes). Contract promise 11. The pin moved to `cea1259`.
+- **The glow is its own module**, `ArrangeBlockers`: four Highlights made once, moved between
+  things only as the set in the way changes. It finds each id's model by name in the placed
+  folder, so finds, furniture and the home's own pieces glow alike, with no code naming a thing.
+- **A flare, then a glow that stays** while you press into it: to `BlockerFlash` in 0.1 s, then
+  eased to a faint `BlockerHold`. The doc says it glows "a moment" and the ticket said "while the
+  ghost is red"; this does both. A softer red than the ghost's, so the eye tells the thing held
+  from the thing hit. Numbers in `Arrange.Feel.Blocker*`.
+- **Only "overlaps" lights anything**: red for a wall's edge or a wrong area has nothing to show.
+- **The bump** (`BUMP`, the knock at 0.7 pitch and half volume) plays when the glow first comes on
+  and takes that move's tick, as the tock does; moving from one blocker straight to another
+  without fitting in between doesn't bump again, so it's once per red spell. No phone tap.
+- **Cleared** in `stopFollow` and `letGo`, so a let-go, Put away, Done and an answered Place all
+  fade it out.
+- Seen in Studio Play at A16: a milk crate dragged into the shelf lit the shelf, the bump played
+  once (Knock at pitch 0.74, volume 0.2), and both glows were gone after letting go (the crate
+  floated back with the slide's whoosh).

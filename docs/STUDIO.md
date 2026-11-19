@@ -3757,3 +3757,18 @@ verified: a doc page, Studio, or "untested".
   screen point picked the job box in front of it instead, and a later capture showed the camera
   at an odd steep angle with the tray hidden: selecting a given thing by tap is not reliable yet.
 
+## Driving a drag, and the blocker glow (S5-03j4b2, Nov 19)
+
+- **A drag on a set-out thing works through `user_mouse_input` at A16**: `moveTo` the thing,
+  `mouseButtonDown`, a few `moveTo`s 100 ms apart, then leave the button down to capture or
+  inspect, and `moveTo` the same point before `mouseButtonUp` (an up with no position is
+  refused). A thing's click point: `Camera:WorldToViewportPoint` of its bounding box, minus the
+  58-point inset in y (`GuiService:GetGuiInset`), plus 47 in x.
+- **A ring button's click point from the phone crop** was about 55 points right of where it
+  landed this time (Studio's window now at 0, 30): aiming at Put away hit Turn beside it. Check
+  with a capture after each click.
+- **Put away's flight is quicker than `screencapture` can follow**: a burst at about 4 frames a
+  second caught the ring before and the tray after, never the flight between.
+- The ghost's own glow is a `Highlight` in the ghost; the blocker glows are `ArrangeBlocker`
+  Highlights under the camera, which a Client `execute_luau` can list with their `Adornee`.
+

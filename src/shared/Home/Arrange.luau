@@ -162,6 +162,21 @@ Arrange.Feel = table.freeze({
 	-- A carried thing moving to a surface this much higher or lower (studs) hops onto it with a
 	-- tock (the floor to the job box's top is 2.7; a rug's 0.05 is no hop at all).
 	Hop = 0.3,
+	-- What's in the way of a dragged thing that won't fit lights up (S5-03j4b2, D-462), as The
+	-- Sims 4 does: in this soft red, not the ghost's harder one, so the eye tells the thing you hold
+	-- from the thing you hit. It flares to `BlockerFlash` see-through (0 solid) over `BlockerFade`
+	-- seconds, then eases to a faint `BlockerHold` over `BlockerSettle`: a moment's flare you catch,
+	-- then a glow that stays while you press into it without hiding its colours. Its rim holds at
+	-- `BlockerOutline`. It fades out over `BlockerFade` as the drag moves off. At most
+	-- `BlockerMost` things glow at once (Roblox draws 31 Highlights in all; a drag rarely presses
+	-- into more than two).
+	BlockerColour = Color3.fromRGB(240, 120, 104),
+	BlockerFlash = 0.45,
+	BlockerHold = 0.75,
+	BlockerOutline = 0.3,
+	BlockerFade = 0.1,
+	BlockerSettle = 0.35,
+	BlockerMost = 4,
 	-- The limit bar fills or empties over this long (seconds) as a Place or Put away is answered,
 	-- and slides in from above as Arrange opens over `Rise`.
 	Fill = 0.35,

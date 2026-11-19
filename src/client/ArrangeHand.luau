@@ -21,6 +21,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local ArrangeBlockers = require(script.Parent.ArrangeBlockers)
 local ArrangeGuides = require(script.Parent.ArrangeGuides)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
@@ -64,6 +65,13 @@ local TOCK: Arrange.Sound = table.clone(Arrange.Knock)
 TOCK.pitch = (Arrange.Knock.pitch or 1) * 1.25
 TOCK.volume = (Arrange.Knock.volume or 0.5) * 0.35
 TOCK.length = 0.18
+-- A dragged thing first pressing into something (S5-03j4b2; the plan's "blocked" row, once per
+-- red spell, no phone tap): the knock, low and soft, a dull bump against the thing that now glows.
+-- It takes the step's tick's place for that move, as the tock does.
+local BUMP: Arrange.Sound = table.clone(Arrange.Knock)
+BUMP.pitch = (Arrange.Knock.pitch or 1) * 0.7
+BUMP.volume = (Arrange.Knock.volume or 0.5) * 0.5
+BUMP.length = 0.3
 
 -- How far past a room area's edge a finger still aims at it (studs): a find dragged toward a
 -- wall slides along it, flush, rather than stopping short. Tops don't use it: a find stands on a
@@ -496,6 +504,10 @@ function ArrangeHand.new(options: Options): Hand
 	local shadow: Part? = nil
 	-- The faint lines where it lines up with a neighbour (ArrangeGuides), laid on each move.
 	local guides = ArrangeGuides.new()
+	-- What's in the way of a red ghost, lit (ArrangeBlockers), and the list Brix fills on each
+	-- move to say what that is (kept for the hand's life, so a drag allocates nothing for it).
+	local blockers = ArrangeBlockers.new()
+	local inTheWay: { string } = table.create(Feel.BlockerMost)
 	local function shadowPart(): Part
 		local made = shadow
 		if made then
@@ -584,13 +596,23 @@ function ArrangeHand.new(options: Options): Hand
 		l.target = at + normal * (if carrying then Feel.Hover else Feel.Hair)
 		paint(l)
 		shade(r, l, pose)
+		-- red for pressing into something: light what it is (Brix's `blocking`, D-462)
+		if not l.fits and r.placements:check(l.id, l.shape, pose) == "overlaps" then
+			r.placements:blocking(l.id, l.shape, pose, inTheWay)
+		else
+			table.clear(inTheWay)
+		end
+		local bumped = blockers:show(inTheWay, placed())
 		local a = if carrying and l.lines.count > 0 then Arrange.frameOn(r, pose.on) else nil
 		if a then
 			guides:show(a, l.lines)
 		else
 			guides:hide()
 		end
-		if moved and was then
+		if bumped then
+			play(BUMP, sounds())
+			lastTick = os.clock() -- the bump is this move's one sound
+		elseif moved and was then
 			tick(if was.on ~= pose.on and hops(r, was.on, pose.on) then TOCK else nil)
 		end
 	end
@@ -613,6 +635,7 @@ function ArrangeHand.new(options: Options): Hand
 			part.Parent = nil
 		end
 		guides:hide()
+		blockers:clear()
 		if follow then
 			follow:Disconnect()
 			follow = nil
@@ -674,6 +697,7 @@ function ArrangeHand.new(options: Options): Hand
 	local function letGo(l: Lifted, showOriginal: boolean)
 		finish(l, false, nil) -- (kept, it was told already)
 		if lifted == l then
+			blockers:clear()
 			lifted = nil
 			stopFollow()
 			showRing(nil)
