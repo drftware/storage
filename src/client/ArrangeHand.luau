@@ -172,6 +172,10 @@ export type Hand = {
 	intent: (i: Brix.GestureIntent<Model>) -> (),
 	-- A card dragged up out of the tray at gui point `at`, carried by a touch or a mouse.
 	carryBoxed: (key: string, at: Vector2, touch: boolean) -> (),
+	-- A finger held on one of your things before Arrange opened (S5-03j5b2): `t` (a find set out,
+	-- or one in your shelf's cubby) lifts as a press on it would, and that finger (a touch when
+	-- `touch`) at gui point `at` carries it on. False if it didn't lift.
+	carryHeld: (t: Model, at: Vector2, touch: boolean) -> boolean,
 	-- The card's finger moved, and let go.
 	move: (x: number, y: number) -> (),
 	release: () -> (),
@@ -1556,6 +1560,20 @@ function ArrangeHand.new(options: Options): Hand
 		end
 	end
 
+	-- A finger held on thing `t` as Arrange opened (S5-03j5b2): it lifts as a drag on it would, and
+	-- the same finger carries it on, so the let-go, undo and the server's Place are the usual ones.
+	local function carryHeld(t: Model, at: Vector2, touch: boolean): boolean
+		if lifted or not take(t, at) then
+			return false
+		end
+		local l = lifted
+		if l then
+			stretch(l)
+		end
+		carry(touch, at.X, at.Y)
+		return true
+	end
+
 	-- The carrying finger let go: the thing lands, hops free, or floats back (always back when
 	-- let go over the tray's place, as a card dragged up and brought back down changes nothing).
 	local function release()
@@ -1603,6 +1621,7 @@ function ArrangeHand.new(options: Options): Hand
 		pick = pick,
 		intent = intent,
 		carryBoxed = carryBoxed,
+		carryHeld = carryHeld,
 		move = move,
 		release = release,
 		setOut = setOut,

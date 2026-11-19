@@ -3568,7 +3568,7 @@ Done when players watch the results to the end and change their perks between cl
       place (thud by weight, `Catalog` heft), put away (flies into its tray card), undo; phone
       taps through Roblox's newer vibration API only once checked on create.roblox.com
       (STUDIO.md).
-    - [ ] **S5-03j5 Placing by hand.** In your own home a held find shows a see-through copy
+    - [x] **S5-03j5 Placing by hand.** In your own home a held find shows a see-through copy
       where you look, snapped and judged by the same judge; the Drop button reads Place there and
       sets it on that spot in one server step (a new ask to Arranging, checked as Take is,
       D-350). A find you Take keeps its spot (a faint outline) until set elsewhere or you leave
@@ -3582,8 +3582,9 @@ Done when players watch the results to the end and change their perks between cl
       `HandPlaceView`, the `HandPlace` ask); - [x] **j5a2** seen in Studio Play at A16 and
       captured, fixes from what's seen (D-464: the look stops at what it hits, no slack past
       the room's edges, a breathing faint). j5b split (Nov 19, j5a2's session): - [x] **j5b1** a
-      Taken find's faint spot it snaps back into (D-465: `Tool.kept`, `HandPlace.snaps`); - [ ] **j5b2** a held finger on one of your
-      things opens Arrange with it lifted.
+      Taken find's faint spot it snaps back into (D-465: `Tool.kept`, `HandPlace.snaps`); - [x] **j5b2** a held finger on one of your
+      things opens Arrange with it lifted (D-466: `HomeHoldView`, `ArrangeView`'s `grab`,
+      `ArrangeHand.carryHeld`).
     - [ ] **S5-03j6 Several at once.** A box dragged round several things selects them; they
       move, turn and put away together; the server takes them as one move.
     - [ ] **S5-03j7 The editor seen whole.** Every row of the feedback table checked in Studio

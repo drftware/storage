@@ -57,6 +57,7 @@ local MinimapView = require(script.MinimapView)
 local MirrorView = require(script.MirrorView)
 local TryOnView = require(script.TryOnView)
 local ShelfView = require(script.ShelfView)
+local HomeHoldView = require(script.HomeHoldView)
 local HomeTakeView = require(script.HomeTakeView)
 local HomeUseView = require(script.HomeUseView)
 local HomeSitView = require(script.HomeSitView)
@@ -102,8 +103,9 @@ local keeperSounds, keeperHeard = KeeperSounds.new()
 local toolView, myHand = ToolView.new(needCursor, kick)
 local wrapView, lay = WrapView.new(myHand, kick)
 local findUseView, findUse = FindUseView.new(myHand)
--- the job box's Set out opens Arrange holding that piece of furniture (S5-03g4c2)
-local arrangeView, holdPiece = ArrangeView.new(needCursor)
+-- the job box's Set out opens Arrange holding that piece of furniture (S5-03g4c2); a finger held
+-- on one of your things at home opens it with that thing lifted (S5-03j5b2)
+local arrangeView, holdPiece, grabThing = ArrangeView.new(needCursor)
 -- the button's presses with a tool or find in hand other than the horn: each answers on your
 -- screen first (the wrap laid, the lantern clicking on)
 local presses: { [string]: () -> boolean } = { [Wrap.Key] = lay }
@@ -150,6 +152,8 @@ local host = Brix.Host.new({
 		{ slot = "shelfView", system = ShelfView.new() },
 		-- take a find straight from your shelf or where it's set out (S5-03i2a)
 		{ slot = "homeTakeView", system = HomeTakeView.new() },
+		-- hold a finger on one of your things and Arrange opens with it lifted (S5-03j5b2)
+		{ slot = "homeHoldView", system = HomeHoldView.new(grabThing) },
 		{ slot = "homeUseView", system = HomeUseView.new() },
 		-- sit on the crate, the beanbag, the blanket, the camp bed (S5-03i4)
 		{ slot = "homeSitView", system = HomeSitView.new() },

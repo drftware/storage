@@ -149,9 +149,13 @@ local play = ArrangeHand.play
 
 local ArrangeView = {}
 
--- The system, and `hold`: opens Arrange holding a piece of furniture from your box by its id,
--- rising from `from` (the job box) when given (S5-03g4c2).
-function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, from: CFrame?) -> ())
+-- The system; `hold`: opens Arrange holding a piece of furniture from your box by its id,
+-- rising from `from` (the job box) when given (S5-03g4c2); and `grab`: opens Arrange with one of
+-- your things lifted under the finger or mouse press `input` that was held on it (S5-03j5b2).
+function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, from: CFrame?) -> (), (
+	thing: Model,
+	input: InputObject
+) -> ())
 	local me = Players.LocalPlayer
 	local connections: { RBXScriptConnection } = {}
 	local unitWatch: { [Instance]: RBXScriptConnection } = {}
@@ -1475,6 +1479,24 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 	end
 
+	-- A finger held on one of your things while Arrange is shut (HomeHoldView, S5-03j5b2): Arrange
+	-- rises on the finds' tab and the thing comes up under that finger, which carries it on until
+	-- it lets go (this view's own `changed` and `ended`, as a card dragged out of the tray). Only
+	-- standing in your own home, and only when nothing else is lifted.
+	local function grab(thing: Model, input: InputObject)
+		if not running or open or hand.lifted() or not standingIn() then
+			return
+		end
+		if onTab ~= FINDS then
+			showTab(FINDS, false)
+		end
+		openNow()
+		local at = Vector2.new(input.Position.X, input.Position.Y)
+		if open and hand.carryHeld(thing, at, input.UserInputType == Enum.UserInputType.Touch) then
+			dragInput = input
+		end
+	end
+
 	local system: Brix.System = {
 		name = "ArrangeView",
 		start = function(_: any)
@@ -1568,7 +1590,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 			end
 		end,
 	}
-	return system, hold
+	return system, hold, grab
 end
 
 return ArrangeView

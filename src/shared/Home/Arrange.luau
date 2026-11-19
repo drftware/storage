@@ -177,6 +177,10 @@ Arrange.Feel = table.freeze({
 	BlockerFade = 0.1,
 	BlockerSettle = 0.35,
 	BlockerMost = 4,
+	-- A finger (or the mouse) held still this long (seconds) on one of your things at home, with
+	-- Arrange shut, opens Arrange with it lifted under that finger (S5-03j5b2, HomeHoldView): long
+	-- enough that a tap or a look round never trips it, short enough to feel like picking it up.
+	HoldOpen = 0.45,
 	-- The limit bar fills or empties over this long (seconds) as a Place or Put away is answered,
 	-- and slides in from above as Arrange opens over `Rise`.
 	Fill = 0.35,

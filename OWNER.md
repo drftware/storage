@@ -183,7 +183,18 @@ nowhere else.
      the still lamp is gone (it's forgotten once you step out).
   Look for: the snap is easy to hit with a glance and never steals a spot beside it. My defaults,
   yours to change: how faint the still copy is (0.78, `HandPlace.KeptFaint`), how near a look
-  snaps (1.25 studs, `HandPlace.Snap`), and that stepping out forgets it.
+  snaps (1.25 studs, `HandPlace.Snap`), and that stepping out forgets it. Seen in Studio (D-466):
+  the snap lands exactly, but on a crate the crate's own Sit and Open buttons sit over the spot.
+- [ ] **Try it: hold a finger on your lamp and Arrange opens with it lifted** (S5-03j5b2, D-466;
+  seen in Studio Play at A16 with one player, not on a phone). On your phone, in your home:
+  1. Press and hold on the moon lamp on the job box. After about half a second Arrange rises round
+     you and the lamp is already up under your finger; you hear the lift and feel a light tap.
+  2. Without lifting, drag it onto a crate and let go: it lands there with its knock.
+  3. A quick tap on the lamp still shows its Take; a hold on bare floor does nothing; turning your
+     look with a drag that starts on the lamp never opens Arrange.
+  4. With a friend over, hold on one of their things in your home and in theirs: nothing happens.
+  Look for: the hold never fires by accident while you look round, and the rise doesn't make you
+  lose the lamp. My default, yours to change: the hold's length (0.45 s, `Arrange.Feel.HoldOpen`).
 - [ ] **Feel it: what's in the way glows** (S5-03j4b2, D-462; seen in Studio Play at A16, not on
   a phone). On your phone, open Arrange and drag a milk crate into the shelf, slowly:
   1. The moment it presses in, the crate goes red, the shelf flares soft red and stays faintly

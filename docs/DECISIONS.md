@@ -11090,3 +11090,33 @@ The Sims' and Animal Crossing's picked-up furniture leaving its footprint to dro
   the spot within a second. `screen_capture` timed out twice, so no captures this session (the
   next screen ticket's capture should include the kept spot).
 - **My defaults** (OWNER.md): 0.78 faint, a 1.25-stud snap, forgotten as you step out.
+
+## D-466 Hold a finger on one of your things and Arrange opens with it lifted (S5-03j5b2, 2026-11-19)
+
+The moment: in your home you press and hold on the lamp on the job box; Arrange rises round you,
+the camera lifting to it, and the lamp is already in your fingers; drag and let go and it lands
+(the plan's "Placing by hand" item 3; The Sims' and Animal Crossing's press-and-hold pick-up).
+- **Its own module, `HomeHoldView`**, with its own Brix Gestures reader (the stock `hold`, after
+  `Arrange.Feel.HoldOpen` 0.45 s still, within Gestures' slop), so a tap, a look round or a walk
+  never trips it. Steps only while a press is down. Arrange's own reader isn't used: it listens
+  only while Arrange is open, and a press it never saw begin can't be handed to it.
+- **What's under the finger**: a ray from where you look, stopped by the first thing it meets (so
+  never through a wall, unlike Arrange's `pickAt`, which looks only at your placed things), up to
+  a model tagged `Spots.Tag` whose `PlacedOwner` is you and that isn't mid-Take. Names no find:
+  any set-out find or piece of furniture works. A cubby find isn't held this way yet (queued).
+- **The hand-over**: `ArrangeView`'s new `grab(thing, input)` (its third return) opens Arrange on
+  the finds' tab, only standing in your home with nothing lifted, then `ArrangeHand.carryHeld`
+  lifts the thing as a drag on it would (`take`, `stretch`, `carry`) and the held InputObject
+  becomes ArrangeView's `dragInput`, the same path a card dragged out of the tray uses. So the
+  drag, the let-go (over the tray floats it back), undo and the server's Place are unchanged.
+  Feedback is the lift's own: `Arrange.Lift`'s sound, `Feedback.Taps.Light`, the camera's rise.
+- **Seen in Studio Play at A16**: a hold on the moon lamp opened Arrange with the lamp lifted, a
+  drag carried it and the let-go placed it on a crate through the usual Place; a hold on bare
+  floor did nothing; let go over the tray it floated back. Captures in `docs/art/s5-03j5b2-*`.
+- **The kept spot (D-465), seen at last**: after a Take, looking near it snapped the aim copy
+  onto the exact pose (the still copy faded to 1). But the spot was on a milk crate, and the
+  crate's Sit and the job box's Open buttons sat right over it, hiding both copies at phone size
+  (`s5-03j5b2-kept-spot-closeup.png`). Queued: while a find is held at home, other things'
+  buttons step aside near the aim. Not fixed here: it touches every home button's view.
+- **My default** (OWNER.md): 0.45 s for the hold.
+

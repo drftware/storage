@@ -3794,3 +3794,16 @@ verified: a doc page, Studio, or "untested".
   right looks back into it: both copies' pivots then match and the still one reads 1. Moving the
   character 14 studs out along Z from (66.5, 3, 479.5) forgets `ToolKept1` within a second. A
   Server `"hand"` with the job box spot sets the lamp out again before Play stops.
+
+## Holding a finger on a thing in Play (S5-03j5b2, Nov 19)
+
+- **The MCP's x is 47 points right of gui x for holds too**: a press sent at (371, 104) arrives
+  as a Touch at gui (324, 104). To hold on a thing, take its `WorldToScreenPoint` and add 47 to
+  x. Missing this, the first hold landed on the job box under the lamp, not the lamp.
+- **Watching what a press hit**: a Client `execute_luau` can connect `InputBegan` into a `_G`
+  table (position, processed, what a ray from there hits) and read it back after the presses; it
+  dies with Play.
+- **The phone capture's points are gui points plus the top bar's 58 down** (x unchanged) in the
+  macOS crop (`sips --cropOffset 360 356 -c 314 672`). `screen_capture` timed out again; the macOS
+  capture worked, but only with Studio brought to the front first (`osascript ... activate`):
+  in the back it hands back the last drawn frame.
