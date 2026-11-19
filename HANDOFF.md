@@ -24,7 +24,7 @@ The moment: the whole editor on a phone, every press answering (The Sims 4).
 2. A group's Turn: in j7b1 a box of four in Medium's corner (job box, two crates, moon lamp)
    turned nothing and said nothing (D-472). Tell a quiet refusal from a turn that never reaches
    the server (`ArrangeGroup.turnNow`, the `ArrangeGroup` remote's answer); a refusal must answer
-   (the plan's table: a shake and a dull click), never nothing.
+   (a shake, a dull click), never nothing. Its ring stood below them (`s5-03j7b-boxed.png`).
 3. Judge at full scale: the guide line between lined-up edges (`s5-03j3b-crate-lined-up.png`);
    the wall height handle beside the sign (`s5-03j3c2-handle-raised-closeup.png`).
 4. Walk the plan doc's "Every action answers" table row by row; fix what's flat, each fix in
