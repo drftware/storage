@@ -2,45 +2,42 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-19, S5-03j7a done: crowded buttons, a nearer opening view, readable washes (D-471) · **Checks:** green · **Git:** `main`, not pushed; Brix `cea1259`.
+**Updated:** 2026-11-19, S5-03j7b1 done: ArrangeView taken apart to wiring, 1744 to 851 lines (D-472) · **Checks:** green · **Git:** `main`, not pushed; Brix `cea1259`.
 
 ## State
 - **The owner's priority (D-436):** Arrange rebuilt as a room editor (S5-03j), then recipes
   (S5-03k). Plan: https://claude.ai/artifact/Q83TRkqn8gsM9t5r8n1ZQU (docs tools, your section
-  only; search its heading). Order now: S5-03j7b, ENG-29 (a then b), k1 to k6.
-- **Seen in Play at A16 (D-471, `docs/art/s5-03j7a-*`):** where two things' buttons overlap,
-  only the nearest thing's show (`WorldButton.crowd`); Arrange opens nearer (`Camera.Open` 0.65,
-  a crate ~30 points; 0.5 rejected) and a slide stops half way to the walls (`SlideReach`); the
-  carried red reads plainly (`Feel.FitsWash`/`RefusedWash`, `Selection.Glow` 0.64).
-- **Studio:** `rojo serve` in sync (port 34872); Edit, unsaved; clicks in STUDIO.md's
-  "Buttons and the opening view in Play" and "Driving the group in Play".
+  only; search its heading). Order now: S5-03j7b2, ENG-29 (a then b), k1 to k6.
+- **ArrangeView is wiring only (D-472):** the tray and limit bar are `ArrangeTray` (its
+  `Palette` holds Arrange's colours), the front tab's camera `ArrangeFront`, your home
+  `ArrangeHome`, still and hidden `ArrangeStill`, the grid `ArrangeGrid`, the button
+  `ArrangeButton`. New screen pieces go in their own module; ArrangeView only grows by joins.
+- **Studio:** `rojo serve` in sync (port 34872); Edit, unsaved; clicks in STUDIO.md (grep "A Play pass").
 - **Climb run, on hold till S5-03j and k (Nov 18):** S5-01d's torch, S5-02b2c2, S4-06, S4-07, S5-04, S5-06.
 
-## Next task: S5-03j7b ArrangeView taken apart to wiring, then what j7a didn't reach
-The moment: the whole editor on a phone, every press answering (The Sims 4); and a file the
-recipe sessions can wire into without growing it.
-1. `src/client/ArrangeView.luau` is 1744 lines (was 1520 at f995fd6). Move each piece's wiring
-   (undo, box-select, hold-to-pick-up, the group) into its own module or a small `ArrangeWiring`,
-   so ArrangeView only wires parts together, well under 1520. Behaviour unchanged. check.sh
-   green after each move.
-2. A Play pass at A16 proving nothing changed: open, drag, land, Turn, Put away, Undo, a box.
-3. Carried from j7a (D-471), seen and captured: the weighted landing (a heavy and a light
-   place, thud and dust, D-461); Put away's flight into its card (a RenderStepped logger,
-   STUDIO.md "Watching something too quick"); a group's Turn refused; Redo of a group Put away;
-   the carried green (only the red was captured).
-4. Judge at full scale: the guide line between lined-up edges (`s5-03j3b-crate-lined-up.png`);
+## Next task: S5-03j7b2 What j7a didn't reach, and the editor's phone steps
+The moment: the whole editor on a phone, every press answering (The Sims 4).
+1. Seen and captured at A16 (`docs/art/s5-03j7b2-*`, half scale, looked at): the weighted
+   landing (a heavy and a light thing set down: thud and dust, D-461); Put away's flight into its
+   card (a RenderStepped logger, STUDIO.md "Watching something too quick"); Redo of a group Put
+   away; the carried green (only the red was captured in j7a).
+2. A group's Turn: in j7b1 a box of four in Medium's corner (job box, two crates, moon lamp)
+   turned nothing and said nothing (D-472). Tell a quiet refusal from a turn that never reaches
+   the server (`ArrangeGroup.turnNow`, the `ArrangeGroup` remote's answer); a refusal must answer
+   (the plan's table: a shake and a dull click), never nothing.
+3. Judge at full scale: the guide line between lined-up edges (`s5-03j3b-crate-lined-up.png`);
    the wall height handle beside the sign (`s5-03j3c2-handle-raised-closeup.png`).
-5. Walk the plan doc's "Every action answers" table row by row; fix what's flat.
-6. OWNER.md's phone steps for the whole editor, in one ordered block.
-If it won't fit, split j7b in ROADMAP (taking apart first, j7b1) and finish one green piece.
-**Acceptance:** green; ArrangeView well under 1520 lines and only wiring; captures to
-`docs/art/s5-03j7b-*` at half scale, looked at.
-**Read first:** ROADMAP's j7b lines (grep `j7b`); `src/client/ArrangeView.luau` (grep
-"local function" for its map, then by range); D-470 and D-471; STUDIO.md "Driving the group in
-Play"; the plan doc's "Every action answers".
+4. Walk the plan doc's "Every action answers" table row by row; fix what's flat, each fix in
+   the module that owns it (never back into ArrangeView).
+5. OWNER.md's phone steps for the whole editor in one ordered block (what Studio can't drive).
+**Acceptance:** green; every row of the table seen or listed in OWNER.md; captures looked at;
+ArrangeView no longer than 851 lines.
+**Read first:** ROADMAP's j7b lines (grep `j7b2`); D-461, D-470 to D-472; STUDIO.md "A Play
+pass through the whole editor" and "Watching something too quick"; the plan doc's "Every action
+answers"; `src/client/ArrangeGroup.luau` by grep (`turnNow`, `answered`).
 
 ## Queue (next sessions, the owner's ticket order)
-0. After j7b: ENG-29a. **The shelf's cubby finds stand off the shelf:** in the Studio save two
+0. After j7b2: ENG-29a. **The shelf's cubby finds stand off the shelf:** in the Studio save two
    (the stained-glass lamp, the walking robot, spots 3 and 6) are drawn 8 and 12 studs in front
    of Medium's shelf (D-470): `Shelves`' `spotAt` past this shelf's tiers? Polish by name: the
    place's squash, a drag's tilt, a group's ghost shadows. The held-find view hides the crates at

@@ -3851,3 +3851,18 @@ verified: a doc page, Studio, or "untested".
   just Arrange reopened. `WorldToViewportPoint` minus 58 in y is the click's y, plus 47 in x.
 - **A held drag over the shelf** (press at the crate, a 60-point move at once, 5 s held) with a
   background `sleep 4; capture` catches the carried wash; let go there and it hops beside.
+
+## A Play pass through the whole editor (S5-03j7b1, Nov 19)
+
+- **Clicks at the A16, Arrange open on the finds tab:** the first tray card's middle is (107,
+  224) (the tray at gui 14, 178); press there, step up through (110, 195) and (200, 150) to the
+  room, hold a second and let go to land it. The front tab clicks at (213, 150). Done at
+  (666, 38). A thing just landed in Medium's corner reads at about (354, 48): read it fresh with
+  `WorldToViewportPoint` (+47, -58).
+- **A box of four** in Medium's corner from the opening view: press (440, 120), hold 900 ms,
+  step to (340, 40) and let go. It lit the job box, two crates and the moon lamp.
+- **A turned ghost shows under the camera**, not in `Placed`: while a thing is selected, its
+  pivot in `Unit1.Placed` keeps the old angle and `CurrentCamera`'s model of the same name has
+  the new one.
+- **`screen_capture` timed out at once this session**; the window capture (`screencapture -l`,
+  the crop above, `sips -Z 343`) took a second each and never failed.

@@ -11264,3 +11264,32 @@ captured to `docs/art/s5-03j6b2b-*`:
     Put away's flight into its card, a group's Turn refused, Redo of a group Put away, the guide
     line at full scale, the wall height handle beside the sign, and the walk of the plan's
     feedback table.
+
+## D-472 ArrangeView taken apart to wiring (S5-03j7b1, Nov 19)
+
+- **ArrangeView went from 1744 lines to 851 and now only joins parts.** What it built itself
+  moved into six modules, each with a header and a small typed interface: the tray and the limit
+  bar (`ArrangeTray`, the biggest), the front tab's camera (`ArrangeFront`), your home and whether
+  you stand in it (`ArrangeHome`), standing still and hidden (`ArrangeStill`), the floor grid
+  (`ArrangeGrid`) and the Arrange button (`ArrangeButton`). What stays is wiring: the hand, the
+  box and the group made and routed (who takes a drag, a tap, the ring's Turn and Put away, an
+  undo step), the ring, Free and Undo made with the gui, open and close, the fingers' drag, and
+  the job box's Set out and the held thing's open.
+- **Why these cuts:** each is a piece a later ticket changes on its own (the tray gets the recipe
+  sessions' cards, the front tab its looks) without reading the rest. Arrange's colours now live
+  once, in `ArrangeTray.Palette`, which every button reads.
+- **The undo, box and group wiring stayed** in ArrangeView, though the ticket named them: what's
+  left of each is the few lines that pass one part's word to another, which is what ArrangeView
+  is for. Moving them into an `ArrangeWiring` would only have moved the joins.
+- **Behaviour unchanged, seen in Studio Play at A16:** the button in your home, open, a crate
+  card dragged up and landed (the bar 4/50 to 5/50), select (Put away and Turn, the tray aside),
+  Turn, Put away (back to 4/50), Undo (the crate back), a box of four with its ring, Done
+  (everything put back: touch controls, torch, tool wheel, camera, grid and box gone) and the front
+  tab's swing to the door. No script errors in Output. Captures `docs/art/s5-03j7b-*`.
+- **Seen, not explained:** the four boxed things' Turn (the job box, two crates, the moon lamp in
+  Medium's corner) changed nothing and said nothing. ArrangeGroup wasn't touched, so it's either
+  the quiet refusal j7a meant to see or a turn that never reaches the server; j7b2 tells them
+  apart.
+- **Seen in the captures, for j7b2:** with four boxed in Medium's corner the group's Turn button
+  stands well below them on the bare floor, and their lit glow hardly reads at half scale
+  (`s5-03j7b-boxed.png`).

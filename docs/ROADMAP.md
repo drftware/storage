@@ -3627,7 +3627,15 @@ Done when players watch the results to the end and change their perks between cl
         j6b2b (D-470): a group's Turn refused, and Redo of a group Put away, not yet seen; the
         carried group's soft green and the box's glow read faint at phone size
         (`s5-03j6b2b-carried-green.png`).
-      - [ ] **j7b ArrangeView taken apart to wiring, and OWNER.md's phone steps.** (6)
+      - [ ] **j7b ArrangeView taken apart to wiring, and OWNER.md's phone steps.** Split (Nov 19,
+        its own session): - [x] **j7b1** taken apart (D-472): ArrangeView 1744 to 851 lines, only
+        wiring; `ArrangeTray`, `ArrangeFront`, `ArrangeHome`, `ArrangeStill`, `ArrangeGrid`,
+        `ArrangeButton` out of it; seen unchanged in Studio Play at A16 (open, a card dragged up and
+        landed, select, Turn, Put away, Undo, a box of four, Done, the front tab;
+        `docs/art/s5-03j7b-*`). - [ ] **j7b2** what j7a didn't reach: the carried lines below
+        (from "Carried from j7a"), plus a group's Turn that changed nothing on four boxed things
+        in Medium's corner (seen in j7b1: refused, or not reaching? tell them apart; its ring stood well below them and their glow hardly read, `s5-03j7b-boxed.png`),
+        then OWNER.md's phone steps for the whole editor. Was: (6)
         `ArrangeView.luau` was meant to only shrink but grew this run from 1520 lines (f995fd6)
         to 1744 (72ff873) as undo, box-select, hold-to-pick-up and the group were wired into it.
         Move each piece's wiring into its own module (or a small `ArrangeWiring`) so ArrangeView
