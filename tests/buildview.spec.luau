@@ -89,6 +89,65 @@ do
 	ok(near(r5 * math.cos(a5), 15.5), "no further out than the hall allows")
 end
 
+-- runs: the ends of a wall past the room's corners (S5-03j1d2): a smaller home's walls run the
+-- XL's whole length (D-354), and those ends are masked so the room ends at its corners
+local room = { left = -5, right = 5, front = -6, back = 7 }
+local side = BuildView.runs(room, { left = 4, right = 5, front = -6, back = 15 }, 0.25)
+ok(
+	#side == 1
+		and near(side[1].left, 4)
+		and near(side[1].right, 5)
+		and near(side[1].front, 7)
+		and near(side[1].back, 15),
+	"a side wall's run behind the back wall"
+)
+local backRuns = BuildView.runs(room, { left = -10, right = 10, front = 6, back = 7 }, 0.25)
+ok(#backRuns == 2, "the back wall runs on past both side walls")
+ok(
+	near(backRuns[1].left, -10) and near(backRuns[1].right, -5) and near(backRuns[2].left, 5),
+	"each run from the corner to the wall's end"
+)
+ok(
+	#BuildView.runs(room, { left = -5, right = 5, front = 6, back = 7 }, 0.25) == 0,
+	"a wall within the corners: none"
+)
+ok(
+	#BuildView.runs(room, { left = 4, right = 5.2, front = -6, back = 7 }, 0.25) == 0,
+	"a hair past (a trim's lip): none"
+)
+
+-- fit: the home view stands as near as the whole room fits the clear band (S5-03j1d2)
+local A16 = {
+	width = 685,
+	tall = 338,
+	tanHalf = math.tan(math.rad(35)),
+	top = 58,
+	bottom = 186,
+	roof = 0,
+	edge = 6,
+}
+local small, smallAim = BuildView.fit(4.4, 6, 1, 4, 4, 0.6, 0.95, A16)
+local large = BuildView.fit(8, 11, 1, 4, 4, 0.6, 0.95, A16)
+ok(small > 5 and large > small, "a bigger room stands the eye further back")
+ok(
+	smallAim > 122 and smallAim < 186,
+	"what stands on the floor rises above it: the focus shows lower"
+)
+local tall =
+	{ width = 685, tall = 338, tanHalf = A16.tanHalf, top = 20, bottom = 318, roof = 0, edge = 6 }
+ok((BuildView.fit(4.4, 6, 1, 4, 4, 0.6, 0.95, tall)) < small, "a taller band lets it come nearer")
+-- straight down on a flat floor, the band mid-screen: the floor's edges touch the band's
+local flat =
+	{ width = 2000, tall = 400, tanHalf = 0.5, top = 100, bottom = 300, roof = 0, edge = 0 }
+local roofed =
+	{ width = 685, tall = 338, tanHalf = A16.tanHalf, top = 58, bottom = 186, roof = 40, edge = 6 }
+ok(
+	(BuildView.fit(4.4, 6, 1, 4, 10, 0.6, 0.95, roofed)) > small,
+	"tall walls kept under the roof stand the eye further back"
+)
+local d, at = BuildView.fit(5, 5, 1, 0, 0, 0, math.pi / 2, flat)
+ok(math.abs(d - 19) < 1e-3 and math.abs(at - 200) < 1e-3, `straight down: {d} {at}`)
+
 print(`buildview: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

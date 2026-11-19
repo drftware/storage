@@ -3335,17 +3335,17 @@ Done when players watch the results to the end and change their perks between cl
       (`ArrangeStage`), so the camera rises over the open-topped room to a dollhouse look from a
       front corner (`HomeTilt` 0.95), the near walls fading. Done (D-444): seen on a Small home,
       `docs/art/s5-03j1d-small-stage.png`; haze, blur and the bulb's distance cut handled.
-    - [ ] **S5-03j1d2 The build camera at the bar, on every size, and its fixed shots.** Studio
-      Play at A16 size. First, what D-444 left on a Small home: the sliding walls' long ends past
-      the room's corners stand in the dark (mask each run past a corner with a void-coloured Neon
-      box joined to that wall's fade group, a pure `BuildView` sum with a Lune spec); the light a
-      touch brighter (`Arrange.Camera.Light`); the home view's distance fitted so the whole floor
-      sits in the clear band (a pure fit from the floor's size, `HomeTilt` and the band); the
-      door's Close and Slam and the job box's Open hidden while Arrange is open. Then Medium,
-      Large and XL (`CameraTest` drags round the circle); the front tab's dip to the door and the
-      hall dip after a card chip; Done's swoop back into your eyes (the world back as it lands);
-      WASD. Ask of each capture whether a player sees their whole room and wants to place things.
-      **Acceptance:** each size seen and captured; check green.
+    - [x] **S5-03j1d2 The room fits the band and ends at its corners.** The walls' and the floor
+      paint's runs past the corners masked in the dark (`BuildView.runs`); the home view as near
+      as the room fits the band, its far walls under the top bar's free middle (`BuildView.fit`);
+      the limit bar to the top left; world buttons off while open; the light a touch up. Done
+      (D-445): seen on Small and XL, `docs/art/s5-03j1d2-small.png`, `-xl.png`.
+    - [ ] **S5-03j1d3 The build camera on Medium and Large, its shots and its close.** Studio Play
+      at A16 size: Medium and Large opened and captured (`CameraTest` "state" and "right" drags
+      round the circle: the masks fade with their walls); the front tab's dip to the door and,
+      after a card chip, the hall dip; Done's swoop back into your eyes, the world back as it
+      lands; WASD on a desktop device. Then a tap on a find still lifts it (today's drag), so
+      S5-03j2 starts from a working base. **Acceptance:** each seen and captured; check green.
     - [x] **ENG-26c Nearest free spot and guides, in Brix.** Placements answers the nearest free
       pose to a blocked one within a reach, and the guide lines where a footprint's edge or
       middle meets a neighbour's on the same area. Suite cases first; the pin moves.

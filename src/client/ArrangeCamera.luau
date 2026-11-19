@@ -23,6 +23,7 @@
 	camera, and does next to nothing once the camera and the walls are still.
 ]]
 local GuiService = game:GetService("GuiService")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -32,6 +33,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local BuildView = require(ReplicatedStorage.Shared.Home.BuildView)
+local Walls = require(ReplicatedStorage.Shared.Home.Walls)
 local ArrangeStage = require(script.Parent.ArrangeStage)
 
 local Feel = Arrange.Feel
@@ -118,23 +120,44 @@ local function blend(a: CFrame, b: CFrame, t: number): CFrame
 		* CFrame.Angles(pa + (pb - pa) * t, 0, 0)
 end
 
--- The orbit for `room`: its focus kept over the floor inside the walls, starting on the home view
--- (`BuildView.homeView`): out through the door, turned toward the side the player stands (`from`,
--- their eyes, in the room's frame), high over the open-topped room at `HomeTilt` (D-444).
-local function orbitFor(room: Room, eyeBox: BuildView.Box, from: Vector3): Brix.OrbitCamera
+-- The orbit for `room`: its focus kept over the floor inside the walls, starting on the home view:
+-- from a front corner on the side the player stands (`from`, their eyes, in the room's frame;
+-- `BuildView.homeView`), high over the open-topped room at `HomeTilt` (D-444), as near as the
+-- whole room fits the clear band of `screen` (`BuildView.fit`, S5-03j1d2). Also answers where
+-- down the band the focus shows (0 its top, 1 its bottom) so the room sits in its middle, and
+-- the box the eye may stand in: `Around` past the walls, or out to the home view if that's further.
+local function orbitFor(
+	room: Room,
+	from: Vector3,
+	screen: BuildView.Screen
+): (Brix.OrbitCamera, number, BuildView.Box)
 	local box = room.inside
 	local face, c, s = box.face, box.centre, box.size
 	local floor = c.Y - s.Y / 2
 	local focus = face * Vector3.new(c.X, floor + Cam.FocusUp, c.Z)
-	local angle, flat = BuildView.homeView(
+	local wide = BuildView.eyeBox(s.X / 2, s.Z / 2, -Cam.Around, Cam.Around)
+	local angle = BuildView.homeView(
 		s.X / 2,
 		s.Z / 2,
 		Cam.Clear,
-		eyeBox,
+		wide,
 		if from.X < 0 then -1 else 1,
 		Cam.Slant
 	)
-	local rise = flat * math.tan(Cam.HomeTilt)
+	local reach, aimAt = BuildView.fit(
+		s.X / 2,
+		s.Z / 2,
+		Cam.FocusUp,
+		math.min(Cam.FitHigh, s.Y),
+		s.Y,
+		angle,
+		Cam.HomeTilt,
+		screen
+	)
+	reach = math.max(reach, Cam.Near)
+	local flat, rise = reach * math.cos(Cam.HomeTilt), reach * math.sin(Cam.HomeTilt)
+	local out = math.max(Cam.Around, flat - math.min(s.X, s.Z) / 2 + 1)
+	local eyeBox = BuildView.eyeBox(s.X / 2, s.Z / 2, -out, out)
 	local eye = face
 		* Vector3.new(
 			c.X + flat * math.sin(angle),
@@ -178,7 +201,9 @@ local function orbitFor(room: Room, eyeBox: BuildView.Box, from: Vector3): Brix.
 		settle = Cam.Settle,
 		drift = Cam.Drift,
 		fadeDepth = Cam.FadeDepth,
-	})
+	}),
+		(aimAt - screen.top) / math.max(screen.bottom - screen.top, 1),
+		eyeBox
 end
 
 function ArrangeCamera.new(options: Options): Camera
@@ -206,10 +231,9 @@ function ArrangeCamera.new(options: Options): Camera
 	local walls: { Wall } = {}
 	local placedWatch: { RBXScriptConnection } = {}
 	local regather = false
-	-- The room's frame (its middle at the origin) and the eye's box in it, kept while open.
+	-- The room's frame (its middle at the origin) and its half size, kept while open.
 	local roomFrame = CFrame.identity
 	local half = Vector3.zero
-	local eyeBox: BuildView.Box = { left = 0, right = 0, front = 0, back = 0 }
 
 	local function setFade(w: Wall, value: number)
 		w.written = value
@@ -221,11 +245,40 @@ function ArrangeCamera.new(options: Options): Camera
 		end
 	end
 
+	local masks: { BasePart } = {}
 	local function clearWalls()
 		for _, w in walls do
 			setFade(w, 0)
 		end
 		table.clear(walls)
+		for _, m in masks do
+			m:Destroy()
+		end
+		table.clear(masks)
+	end
+
+	-- A dark box over a wall's run past the room's corner (S5-03j1d2): `run` flat in the room's
+	-- frame, `low` to `high` up it. Neon in the stage's floor colour draws flat whatever lights
+	-- it, so against that floor the run is gone and the room ends at its corners. Only this
+	-- screen has it (it hangs under the camera).
+	local function mask(run: BuildView.Box, low: number, high: number): BasePart
+		local hair = Cam.MaskHair
+		local m = Instance.new("Part")
+		m.Name = "ArrangeMask"
+		m.Anchored = true
+		m.CanCollide = false
+		m.CanQuery = false
+		m.CanTouch = false
+		m.CastShadow = false
+		m.Material = Enum.Material.Neon
+		m.Color = Cam.Void
+		m.Size = Vector3.new(run.right - run.left, high - low, run.back - run.front)
+			+ Vector3.one * hair * 2
+		m.CFrame = roomFrame
+			* CFrame.new((run.left + run.right) / 2, (low + high) / 2, (run.front + run.back) / 2)
+		m.Parent = Workspace.CurrentCamera
+		table.insert(masks, m)
+		return m
 	end
 
 	-- Sorts the unit's pieces onto its four walls: its own walls, door and paint by where they
@@ -268,14 +321,55 @@ function ArrangeCamera.new(options: Options): Camera
 				Cam.FrontBand
 			)
 		end
+		-- Each piece's flat box and height in the room's frame, kept to mask the walls' runs.
+		type Piece = { side: string?, box: BuildView.Box, low: number, high: number }
+		local pieces: { Piece } = {}
+		local function boxOf(part: BasePart): (BuildView.Box, number, number)
+			local cf = roomFrame:ToObjectSpace(part.CFrame)
+			local e = part.Size / 2
+			local r1, u1, l1 = cf.RightVector, cf.UpVector, cf.LookVector
+			local ex = math.abs(r1.X) * e.X + math.abs(u1.X) * e.Y + math.abs(l1.X) * e.Z
+			local ey = math.abs(r1.Y) * e.X + math.abs(u1.Y) * e.Y + math.abs(l1.Y) * e.Z
+			local ez = math.abs(r1.Z) * e.X + math.abs(u1.Z) * e.Y + math.abs(l1.Z) * e.Z
+			local p = cf.Position
+			return { left = p.X - ex, right = p.X + ex, front = p.Z - ez, back = p.Z + ez },
+				p.Y - ey,
+				p.Y + ey
+		end
+		-- The room's outer box: its walls' outer faces (the movable walls' steel when a smaller
+		-- home stands in the slot), the door's wall `FrontBand` out.
+		local outer: BuildView.Box =
+			{ left = -half.X, right = half.X, front = -half.Z - Cam.FrontBand, back = half.Z }
+		local movable = r.unit:FindFirstChild(Walls.Folder)
 		for _, d in r.unit:GetDescendants() do
 			if d:IsA("BasePart") and d.Transparency < 1 then
 				if placed and d:IsDescendantOf(placed) then
 					continue
 				end
 				local side = sideOfPart(d)
+				local b, low, high = boxOf(d)
+				-- the room's own pieces too: the floor's paint is the XL's whole floor
+				table.insert(pieces, { side = side, box = b, low = low, high = high })
 				if side then
 					add(side, d)
+					if movable and d:IsDescendantOf(movable) then
+						if side == "left" then
+							outer.right = math.max(outer.right, b.right)
+						elseif side == "right" then
+							outer.left = math.min(outer.left, b.left)
+						elseif side == "back" then
+							outer.back = math.max(outer.back, b.back)
+						end
+					end
+				end
+			end
+		end
+		for _, piece in pieces do
+			for _, run in BuildView.runs(outer, piece.box, Cam.MaskLeast) do
+				local m = mask(run, piece.low, piece.high)
+				local side = piece.side
+				if side then
+					add(side, m)
 				end
 			end
 		end
@@ -329,6 +423,7 @@ function ArrangeCamera.new(options: Options): Camera
 
 	-- Shows the focus in the middle of the clear band, told again only when the band moves.
 	local aimedY, aimedW = -1, -1
+	local aimAt = 0.5 -- where down the band the focus shows (0 its top), from the home view's fit
 	local function aim()
 		local camera = Workspace.CurrentCamera
 		local o = orbit
@@ -336,7 +431,7 @@ function ArrangeCamera.new(options: Options): Camera
 			return
 		end
 		local top, bottom = options.clear()
-		local y, w = (top + bottom) / 2, camera.ViewportSize.X
+		local y, w = top + (bottom - top) * aimAt, camera.ViewportSize.X
 		if math.abs(y - aimedY) > 0.5 or math.abs(w - aimedW) > 0.5 then
 			aimedY, aimedW = y, w
 			o:aim(w / 2, y)
@@ -425,11 +520,19 @@ function ArrangeCamera.new(options: Options): Camera
 		end
 	end
 
+	-- Whether prompts showed before Arrange hid them (S5-03j1d2): nil while they aren't hidden.
+	local promptsWere: boolean? = nil
+
 	local function finishClose()
 		closing = false
 		unbind()
 		clearWalls()
 		stage.drop()
+		local was = promptsWere
+		promptsWere = nil
+		if was ~= nil then
+			ProximityPromptService.Enabled = was
+		end
 		for _, c in placedWatch do
 			c:Disconnect()
 		end
@@ -708,13 +811,28 @@ function ArrangeCamera.new(options: Options): Camera
 				finishClose()
 			end
 			room = r
+			-- No world buttons while Arrange is open (the door's Close and Slam, the job box's
+			-- Open): your screen only (STUDIO.md, `ProximityPromptService.Enabled`).
+			if promptsWere == nil then
+				promptsWere = ProximityPromptService.Enabled
+			end
+			ProximityPromptService.Enabled = false
 			local inside = r.inside
 			roomFrame = inside.face * CFrame.new(inside.centre)
 			half = inside.size / 2
-			-- With the world gone (D-444) the eye may stand anywhere within `Around` of the walls:
-			-- a gap of −Around reaches that far past every one.
-			eyeBox = BuildView.eyeBox(half.X, half.Z, -Cam.Around, Cam.Around)
-			orbit = orbitFor(r, eyeBox, roomFrame:PointToObjectSpace(cam.CFrame.Position))
+			-- With the world gone (D-444) the eye may stand anywhere within `Around` of the walls
+			-- (a gap of −Around reaches that far past every one), or out to the home view.
+			local top, bottom = options.clear()
+			local view = cam.ViewportSize
+			orbit, aimAt = orbitFor(r, roomFrame:PointToObjectSpace(cam.CFrame.Position), {
+				width = view.X,
+				tall = view.Y,
+				tanHalf = math.tan(math.rad(cam.FieldOfView) / 2),
+				top = top,
+				bottom = bottom,
+				roof = Cam.Roof,
+				edge = Cam.Edge,
+			})
 			aimedY, aimedW = -1, -1
 			screen()
 			aim()

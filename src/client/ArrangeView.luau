@@ -1462,8 +1462,9 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 	-- Where the limit bar rests on tab `n`: over the room, or up off the screen on the front tab,
 	-- where it would cover the door's coil and has no finds to count (-60 still peeks into the
 	-- top bar's strip, which the gui doesn't own but draws over).
+	-- Top left, across from Done, so the band over the tray is the room's alone (S5-03j1d2).
 	local function meterAt(n: number): UDim2
-		return UDim2.new(0.5, 0, 0, if n == FRONT then -120 else 20)
+		return UDim2.fromOffset(14, if n == FRONT then -120 else 14)
 	end
 
 	-- The tray's height on tab `n`.
@@ -1596,7 +1597,7 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end
 		if m then
 			m.Visible = true
-			m.Position = UDim2.new(0.5, 0, 0, -60)
+			m.Position = UDim2.fromOffset(14, -60)
 			TweenService:Create(m, RISE, { Position = meterAt(onTab) }):Play()
 		end
 		if t then
@@ -1768,11 +1769,11 @@ function ArrangeView.new(need: FreeCursor.Need): (Brix.System, (piece: string, f
 		end)
 		doneButton = done
 
-		-- The limit bar, top middle while arranging: four squares (the Arrange button's), a track
+		-- The limit bar, top left while arranging: four squares (the Arrange button's), a track
 		-- that fills honey as you set finds out, and the count. Bloxburg's build budget bar.
 		local m = Instance.new("Frame")
-		m.AnchorPoint = Vector2.new(0.5, 0)
-		m.Position = UDim2.new(0.5, 0, 0, -60)
+		m.AnchorPoint = Vector2.new(0, 0)
+		m.Position = UDim2.fromOffset(14, -60)
 		m.Size = UDim2.fromOffset(176, 36)
 		m.BackgroundColor3 = PANEL
 		m.BackgroundTransparency = 0.1

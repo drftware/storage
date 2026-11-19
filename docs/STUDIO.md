@@ -3646,5 +3646,10 @@ verified: a doc page, Studio, or "untested".
   again. `ArrangeStage` clears the haze and blur and raises `Lighting.Ambient` while lifted.
 - **The slot's floor is the lobby's** (`Boards`, `Floor`): a unit model has no floor of its own, so
   hiding the lobby hides the room's floor too; the room's looks still show (D-444's capture).
+- **Capturing the phone** (S5-03j1d2): `screencapture -x -o -l <n>` with the window number from
+  Swift's `CGWindowListCopyWindowInfo` (25030 tonight; Studio at 0, 30, 1386 by 972), then
+  `sips --cropOffset 360 356 -c 314 672`. Fast, never hangs, unlike `screen_capture`.
+- **The floor's paint is the XL's whole floor** (`Looks.PanelFloor`, 19.75 by 29.6 on Unit1) and
+  the movable walls are `Walls.<side>.Steel` (1 thick) and `.Face`; the camera masks all their runs.
 - **A camera set by `execute_luau` stays put while Arrange's camera rests** (it writes nothing once
   still): handy for trying a pose before coding it.

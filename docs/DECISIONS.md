@@ -10562,3 +10562,28 @@ a Small room whole; take the roof off as The Sims does. Tried in Studio Play at 
   the corners stand in the dark (D-354), the room is a little dim and sits high in the band, and the
   door's Close and Slam still show. S5-03j1d2 takes these first, then the other sizes and shots.
 
+
+## D-445 The build camera fits your room to the band, and the room ends at its corners (S5-03j1d2, Nov 18)
+
+Seen in Studio Play at A16 size on a Small and an XL home (`docs/art/s5-03j1d2-small.png`, `-xl.png`).
+- **The walls' runs past the corners are masked.** A smaller home's walls run the XL's whole length
+  (D-354), and so does the floor's paint (`Looks.PanelFloor`, 19.75 by 29.6 on Unit1). While the
+  camera looks down, every piece of the unit that runs past the room's outer box (its movable walls'
+  steel faces, the door's wall `FrontBand` out) by more than `MaskLeast` gets a dark Neon box in the
+  stage floor's colour, `MaskHair` bigger (`BuildView.runs`, pure, specced; `ArrangeCamera.gather`).
+  A wall's mask joins that wall's fade group, so it fades with it; the floor's never fades. Neon
+  draws flat, so against the dark floor the runs are simply gone: a lit diorama on black.
+- **The home view stands as near as the whole room fits** (`BuildView.fit`, pure, specced): the floor
+  and what stands on it (`FitHigh` 5 studs) inside the clear band, the far walls' tops (the room's
+  height) no higher than `Roof` (6 points) from the screen's top, where the top bar's middle is
+  free. It also centres the room in the band by where the focus shows (the walls rise above the
+  focus, so the focus shows a little low): `ArrangeCamera.aim` keeps that place down the band.
+  Small stands 26 studs out, XL about 70; the eye's box widens to reach the home view when it's
+  further than `Around`. Small is bound by its 10-stud walls, so its floor is about half the band.
+- **The limit bar moved to the top left, across from Done**: in the top middle it sat inside the
+  band, over the room. The band is now the room's alone.
+- **World buttons are off while Arrange is open** (`ProximityPromptService.Enabled` false on your
+  screen, put back as it was on close; STUDIO.md's note). Seen: false while open.
+- **The light rose a touch** (`Light` 140, 131, 118; was 118, 110, 100): barely seen in a capture,
+  kept as asked. The room's faces read; the bulb is what makes them warm.
+- Not yet seen: Medium and Large, the front tab's dips, Done's swoop, WASD (S5-03j1d3).

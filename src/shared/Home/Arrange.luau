@@ -131,12 +131,17 @@ Arrange.Camera = table.freeze({
 	-- The point it circles stands this high off the floor (studs): low, so the floor under a
 	-- sliding finger keeps up with it, and the room's floor sits in the middle of the screen.
 	FocusUp = 1,
-	-- The home view stands this far out of the door (studs, D-443): the hall's whole reach, which
-	-- fits a Small room's floor into the band the tray and top bar leave clear (bigger rooms fill
-	-- it and run on past); and turns this far off straight in (radians), so the room shows as a
-	-- box, not a flat wall.
+	-- The home view looks in from a front corner (D-444): the corner `Clear` studs past each near
+	-- wall (radians off straight in come from that), or turned `Slant` where it can't. It stands
+	-- as near as the whole room fits the band the tray and top bar leave clear (S5-03j1d2): the
+	-- floor and what stands on it up to `FitHigh` studs (furniture; the far walls' tops may run
+	-- on above, no higher than `Roof` points from the screen's top, where the top bar's middle is
+	-- free), `Edge` points inside the band and the screen's sides.
 	Clear = 5,
 	Slant = 0.4,
+	FitHigh = 5,
+	Roof = 6,
+	Edge = 6,
 	-- The home view looks down this steeply (radians from level, D-444): a dollhouse look into the
 	-- open-topped room, the far walls standing and the floor whole.
 	HomeTilt = 0.95,
@@ -153,9 +158,14 @@ Arrange.Camera = table.freeze({
 	-- (studs, D-444), and the room stands on an even dark floor of this colour: calm, a little warm.
 	Stage = 120,
 	Void = Color3.fromRGB(20, 19, 22),
+	-- A smaller home's walls run the XL's whole length (D-354); while the camera looks down, each
+	-- run past the room's corners longer than `MaskLeast` studs is boxed in the floor's dark,
+	-- `MaskHair` bigger all round, so the room ends cleanly at its corners (S5-03j1d2).
+	MaskLeast = 0.5,
+	MaskHair = 0.06,
 	-- The ambient light meanwhile: a warm, even light, so the room reads from any distance on any
 	-- phone (the bulb isn't drawn from far off).
-	Light = Color3.fromRGB(118, 110, 100),
+	Light = Color3.fromRGB(140, 131, 118),
 	-- Seconds the camera takes to glide where your fingers sent it (shorter is snappier), and how
 	-- long a flick drifts on.
 	Settle = 0.3,
