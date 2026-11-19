@@ -136,6 +136,43 @@ do
 	ok(long ~= nil and #long == WorldButton.MaxWords, "long words cut")
 end
 
+-- crowding: two things' rows on top of each other show only the nearest's
+do
+	local function row(left: number, top: number, near: number): WorldButton.Row
+		return {
+			left = left,
+			top = top,
+			right = left + 100,
+			bottom = top + 48,
+			near = near,
+			crowded = false,
+		}
+	end
+	local far, close, apart = row(20, 0, 9), row(0, 10, 3), row(400, 0, 1)
+	local rows = { far, close, apart }
+	WorldButton.crowd(rows)
+	ok(not close.crowded and far.crowded, "the farther of two overlapping rows yields")
+	ok(not apart.crowded, "a row clear of the rest shows")
+	ok(rows[1] == apart and rows[3] == far, "nearest first")
+	-- just clear of the near row: a yielding row stays yielded, a showing one stays shown
+	far.left, far.right = close.right + 8, close.right + 108
+	far.near = 9
+	WorldButton.crowd(rows)
+	ok(far.crowded, "a hidden row needs to clear by more to come back")
+	far.crowded = false
+	WorldButton.crowd(rows)
+	ok(not far.crowded, "a shown row a little apart stays shown")
+	far.left, far.right = close.right + 20, close.right + 120
+	far.crowded = true
+	WorldButton.crowd(rows)
+	ok(not far.crowded, "well clear, it comes back")
+	-- a yielding row hides nothing behind it
+	local a, b, c = row(0, 0, 1), row(90, 0, 2), row(180, 0, 3)
+	local three = { c, b, a }
+	WorldButton.crowd(three)
+	ok(not a.crowded and b.crowded and not c.crowded, "only a row that shows crowds another")
+end
+
 print(`worldbutton: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

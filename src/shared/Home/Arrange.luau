@@ -149,6 +149,13 @@ Arrange.Feel = table.freeze({
 	-- tiles at phone size (S5-03j2a2's captures); 1.35 and 0.6 rim a lifted crate plainly.
 	ShadowSize = 1.35,
 	ShadowDark = 0.6,
+	-- A carried thing's (or group's) wash: soft green where it can stand, red where it can't, and
+	-- how see-through each is (1 clear). At 0.78 the green read faint at phone size (D-470's
+	-- captures); 0.6 tints a crate plainly and it still reads as itself (S5-03j7a).
+	Fits = Color3.fromRGB(126, 214, 150),
+	Refused = Color3.fromRGB(232, 92, 80),
+	FitsWash = 0.6,
+	RefusedWash = 0.45,
 	ShadowLayers = { 1, 0.78, 0.56 },
 	-- The guide lines where a dragged thing's edge or middle lines up with a neighbour's, as The
 	-- Sims 4 draws them: this wide (studs), this far off the surface so the floor never eats them,
@@ -215,6 +222,13 @@ Arrange.Camera = table.freeze({
 	-- The home view looks down this steeply (radians from level, D-444): a dollhouse look into the
 	-- open-topped room, the far walls standing and the floor whole.
 	HomeTilt = 0.95,
+	-- It opens this much of the snug fit's distance away (S5-03j7a): nearer, so a crate reads as
+	-- a crate on a phone (The Sims 4 opens build mode on the lot, not the whole map); the room's
+	-- edges are a slide or a pinch away.
+	Open = 0.65,
+	-- A slide (a finger, WASD) takes the point it circles at most this share of the way from the
+	-- room's middle to its walls: the far edge comes onto the screen, never the room half off it.
+	SlideReach = 0.5,
 	-- The nearest a pinch brings the eye (studs), and how far past the room's longer side it can
 	-- back away: enough to back out through the door and see the whole room.
 	Near = 4,

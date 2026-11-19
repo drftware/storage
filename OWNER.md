@@ -80,7 +80,14 @@ nowhere else.
   3. Drag a card up out of the tray, then back down onto the tray and let go: it floats back
      into its card and nothing is set out. Tap a card: it glides out and lands by itself.
   4. Tell me: is 60 points above the thumb right, or too far? Is a crate big enough to grab at
-     the view Arrange opens with on a Medium or bigger home (about 16 points across in Studio)?
+     the view Arrange opens with on a Medium or bigger home? (S5-03j7a opened it nearer: about
+     30 points across in Studio, `Arrange.Camera.Open` 0.65; 0.5 brought the near walls into
+     view. Hold D or slide a finger: the room's edge should come onto the screen, never half the
+     room off it, `SlideReach` 0.5.)
+  5. Walk up to two things side by side with different buttons (a crate's Sit beside the moon
+     lamp's Take): where their buttons would overlap on your screen, only the nearer thing's show,
+     and the other's come back as you step round (S5-03j7a, D-471). Tell me if one ever
+     flickers, or if the farther thing's button is the one you wanted.
 - [ ] **Arrange's ring of buttons, with your thumb** (S5-03j2b1, D-450, D-451; seen in Studio
   Play at A16 size, `docs/art/s5-03j2b-*.png`; the sound, the pinch and your thumb weren't).
   On your phone, in your home, tap Arrange, then tap a find without dragging:

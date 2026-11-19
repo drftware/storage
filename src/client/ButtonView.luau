@@ -20,6 +20,11 @@
 	  and takes no taps while something opens over them (the inventory wheel fans up over a door's
 	  buttons on a phone), then fades back. Their keys still press them.
 
+	- Crowded (S5-03j7a): where two things' buttons land on top of each other on the screen (an
+	  "Open" on one crate over a "Sit" on the next, at phone size), only the nearer thing's show;
+	  the farther thing's fade out and take no taps until the two come apart (`WorldButton.crowd`,
+	  looked at ten times a second while buttons show, never per find).
+
 	Only buttons in motion are stepped.
 
 	Hiding a button on this screen (was ButtonReach, L-16b1, D-111): `hide(prompt, reason, hidden)`
@@ -98,6 +103,8 @@ type Drawn = {
 	offset: Vector2, -- points from its point it's drawn at now (the prompt's UIOffset, or sliding there)
 	slideFrom: Vector2, -- where a slide along the row began
 	slideAt: number, -- os.clock its place on the row changed, or -1
+	crowded: boolean, -- a nearer thing's buttons sit over it on the screen: it yields
+	crowdLevel: number, -- 0 shown to 1 faded out for crowding
 	watch: { RBXScriptConnection },
 }
 
@@ -114,6 +121,12 @@ local refuseSound: Sound? = nil
 -- What has every button stepped aside now (`ButtonView.aside`), and how far: 0 shown to 1 gone.
 local asideFor: { [string]: true } = {}
 local asideLevel = 0
+-- Crowding's working tables, reused at every look: each thing's row by its point, the rows in a
+-- list for `WorldButton.crowd`, and rows waiting for reuse.
+local rowOf: { [Instance]: WorldButton.Row } = {}
+local rowList: { WorldButton.Row } = {}
+local rowPool: { WorldButton.Row } = {}
+local crowdClock = 0
 
 local function edge(parent: Instance, thickness: number, color: Color3): UIStroke
 	local s = Instance.new("UIStroke")
@@ -435,7 +448,16 @@ local function draw(d: Drawn, now: number, dt: number): boolean
 		moved = true
 	end
 	local alpha, scale = WorldButton.presence(d.level, d.coming)
-	alpha *= 1 - asideLevel
+	-- yielding to a nearer thing's buttons, or back
+	local crowdTarget = if d.crowded then 1 else 0
+	if d.crowdLevel ~= crowdTarget then
+		local by = dt / WorldButton.Crowd
+		d.crowdLevel = if crowdTarget > d.crowdLevel
+			then math.min(1, d.crowdLevel + by)
+			else math.max(0, d.crowdLevel - by)
+		moved = true
+	end
+	alpha *= (1 - asideLevel) * (1 - d.crowdLevel)
 	-- the hold ring
 	local fill = 0
 	if d.holdAt >= 0 then
@@ -514,9 +536,9 @@ local function holderGui(): ScreenGui?
 end
 
 -- Whether a tap or click on `d`'s chip reaches it: only where it's clickable, and not while
--- every button has stepped aside.
+-- every button has stepped aside, nor while a nearer thing's buttons crowd it out.
 local function tappable(d: Drawn)
-	local live = d.clickable and asideLevel < 0.5
+	local live = d.clickable and asideLevel < 0.5 and not d.crowded
 	local look = d.look
 	look.gui.Active = live
 	look.tap.Active = live
@@ -635,6 +657,8 @@ local function show(prompt: ProximityPrompt, input: Enum.ProximityPromptInputTyp
 		offset = Vector2.zero,
 		slideFrom = Vector2.zero,
 		slideAt = -1,
+		crowded = false,
+		crowdLevel = 0,
 		watch = {},
 	}
 	owner[look] = fresh
@@ -810,6 +834,78 @@ end
 
 --- Every button on this screen steps aside for `reason` (`on` true): faded out together and
 --- deaf to taps, until nothing has them aside. Their keys still press them.
+-- Where a button's point is in the world: an Attachment's or a part's position.
+local function pointAt(point: Instance?): Vector3?
+	if point and point:IsA("Attachment") then
+		return point.WorldPosition
+	elseif point and point:IsA("BasePart") then
+		return point.Position
+	end
+	return nil
+end
+
+-- Looks for things whose buttons land on top of each other on the screen; the farther thing's
+-- yield (`WorldButton.crowd`). Each thing's buttons make one row, boxed in screen points.
+local function lookForCrowding()
+	local camera = workspace.CurrentCamera
+	if not camera then
+		return
+	end
+	local character = Players.LocalPlayer.Character
+	local root = character and character.PrimaryPart
+	local from = if root then root.Position else camera.CFrame.Position
+	for prompt, d in drawn do
+		local point = prompt.Parent
+		local at = pointAt(point)
+		if not (d.coming and point and at) then
+			continue
+		end
+		local screen, onScreen = camera:WorldToViewportPoint(at)
+		if not onScreen then
+			continue
+		end
+		-- the chip's centre: the point, the row's offset, the anchor's shift left
+		local side = d.look.chip.Size.X.Offset
+		local x = screen.X + d.offset.X - WorldButton.Shift
+		local y = screen.Y - d.offset.Y
+		local left, right = x - side / 2, x + side / 2 + WorldButton.Gap + d.look.verb.TextBounds.X
+		local top = if d.look.name.Visible
+			then math.min(y - side / 2, y - WorldButton.Verb / 2 - WorldButton.Name)
+			else y - side / 2
+		local bottom = y + side / 2
+		local r = rowOf[point]
+		if r then
+			r.left, r.right = math.min(r.left, left), math.max(r.right, right)
+			r.top, r.bottom = math.min(r.top, top), math.max(r.bottom, bottom)
+			r.crowded = r.crowded or d.crowded
+		else
+			local fresh: WorldButton.Row = table.remove(rowPool)
+				or { left = 0, top = 0, right = 0, bottom = 0, near = 0, crowded = false }
+			fresh.left, fresh.top, fresh.right, fresh.bottom = left, top, right, bottom
+			fresh.near = (at - from).Magnitude
+			fresh.crowded = d.crowded
+			rowOf[point] = fresh
+			table.insert(rowList, fresh)
+		end
+	end
+	WorldButton.crowd(rowList)
+	for prompt, d in drawn do
+		local point = prompt.Parent
+		local r = if point then rowOf[point] else nil
+		local crowded = r ~= nil and r.crowded and d.coming
+		if crowded ~= d.crowded then
+			d.crowded = crowded
+			tappable(d)
+			startMoving(d)
+		end
+	end
+	for _, r in rowOf do
+		table.insert(rowPool, r)
+	end
+	table.clear(rowOf)
+	table.clear(rowList)
+end
+
 function ButtonView.aside(reason: string, on: boolean)
 	if on then
 		asideFor[reason] = true
@@ -893,6 +989,14 @@ function ButtonView.new(): Brix.System
 				if was ~= (asideLevel < 0.5) then
 					tappable(d)
 				end
+			end
+		end
+		-- crowding: looked at a few times a second while any button shows, not every frame
+		crowdClock += dt
+		if crowdClock >= WorldButton.CrowdEvery then
+			crowdClock = 0
+			if next(drawn) ~= nil then
+				lookForCrowding()
 			end
 		end
 		if next(moving) == nil then

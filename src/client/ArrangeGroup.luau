@@ -38,8 +38,8 @@ local Spots = require(ReplicatedStorage.Shared.Home.Spots)
 
 local Feel = Arrange.Feel
 
-local FITS = Color3.fromRGB(126, 214, 150) -- the hand's soft green: they can all stand there
-local REFUSED = Color3.fromRGB(232, 92, 80) -- the hand's red: one of them can't
+local FITS = Feel.Fits -- soft green: it can stand there
+local REFUSED = Feel.Refused -- red: it can't
 local LAND = TweenInfo.new(Feel.Land, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local BACK = TweenInfo.new(Feel.Back, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local FLOOR = "Floor" -- the room's floor area (Brix's Placements names it so)
@@ -271,7 +271,7 @@ function ArrangeGroup.new(options: Options): ArrangeGroup
 		if h then
 			h.OutlineColor = if fits then Color3.new(1, 1, 1) else REFUSED
 			h.FillColor = if fits then FITS else REFUSED
-			h.FillTransparency = if fits then 0.78 else 0.55
+			h.FillTransparency = if fits then Feel.FitsWash else Feel.RefusedWash
 		end
 	end
 

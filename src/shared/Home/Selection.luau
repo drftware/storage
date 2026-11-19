@@ -31,8 +31,9 @@ Selection.Fill = 0.86
 Selection.Edge = 0.15
 Selection.Fade = 0.1
 -- The glow on a taken thing: its fill's transparency (a faint wash, the thing still reads) and how
--- long it takes to come up as the box reaches it.
-Selection.Glow = 0.78
+-- long it takes to come up as the box reaches it. 0.78 read faint at phone size (D-470); 0.64
+-- reads plainly on a crate and the thing still shows through (S5-03j7a).
+Selection.Glow = 0.64
 Selection.GlowIn = 0.08
 
 -- A box on the screen, in points, y down; left <= right and top <= bottom.

@@ -43,8 +43,8 @@ local WallHang = require(ReplicatedStorage.Shared.Home.WallHang)
 
 local Feel = Arrange.Feel
 
-local FITS = Color3.fromRGB(126, 214, 150) -- a soft green: it can stand there
-local REFUSED = Color3.fromRGB(232, 92, 80) -- red: it can't
+local FITS = Feel.Fits -- soft green: it can stand there
+local REFUSED = Feel.Refused -- red: it can't
 local QUICK = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local LAND = TweenInfo.new(Feel.Land, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local BACK = TweenInfo.new(Feel.Back, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
@@ -409,7 +409,7 @@ function ArrangeHand.new(options: Options): Hand
 		local h = l.highlight
 		h.OutlineColor = if l.fits then Color3.new(1, 1, 1) else REFUSED
 		h.FillColor = if l.fits then FITS else REFUSED
-		h.FillTransparency = if l.fits then 0.78 else 0.55
+		h.FillTransparency = if l.fits then Feel.FitsWash else Feel.RefusedWash
 	end
 
 	-- Whether moving from area `from` to area `to` is a hop up or down: both face up and stand at

@@ -151,6 +151,55 @@ function WorldButton.draining(from: number, seconds: number): number
 	return clamp01(from) * (1 - clamp01(seconds / WorldButton.Drain))
 end
 
+-- Crowding (S5-03j7a): two things side by side whose buttons land on top of each other on a
+-- small screen (an "Open" on one crate over a "Sit" on the next) would read as one smear and take
+-- the wrong tap. Only the nearest thing's buttons show there; the farther thing's fade out until
+-- the camera or the player moves them apart, as Roblox's own prompts show one per key.
+WorldButton.CrowdEvery = 0.1 -- seconds between looks for crowding: quick enough to feel instant
+WorldButton.CrowdGap = 4 -- points two things' rows must stay apart to both show
+WorldButton.CrowdClear = 14 -- points a hidden row must clear by to come back: no flicker at the edge
+WorldButton.Crowd = 0.1 -- seconds a crowded row takes to fade out or back
+
+-- One thing's row of buttons on the screen: its box in screen points, how near it is to the
+-- player (smaller is nearer), and whether it yields to a nearer row now.
+export type Row = {
+	left: number,
+	top: number,
+	right: number,
+	bottom: number,
+	near: number,
+	crowded: boolean,
+}
+
+local function byNear(a: Row, b: Row): boolean
+	return a.near < b.near
+end
+
+--- Decides which of `rows` yield: nearest first, a row overlapping one that shows (within
+--- `CrowdGap`, or `CrowdClear` while it already yields) yields too. Sets each row's `crowded`;
+--- sorts `rows` in place; allocates nothing.
+function WorldButton.crowd(rows: { Row })
+	table.sort(rows, byNear)
+	for i, r in rows do
+		local gap = if r.crowded then WorldButton.CrowdClear else WorldButton.CrowdGap
+		local yields = false
+		for j = 1, i - 1 do
+			local o = rows[j]
+			if
+				not o.crowded
+				and r.left < o.right + gap
+				and o.left < r.right + gap
+				and r.top < o.bottom + gap
+				and o.top < r.bottom + gap
+			then
+				yields = true
+				break
+			end
+		end
+		r.crowded = yields
+	end
+end
+
 --- Words safe to draw from the wire: a string, trimmed to `MaxWords`; nil for anything else.
 function WorldButton.words(text: unknown): string?
 	if type(text) ~= "string" or text == "" then

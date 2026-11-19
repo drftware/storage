@@ -166,7 +166,11 @@ local function orbitFor(
 		Cam.HomeTilt,
 		screen
 	)
-	reach = math.max(reach, Cam.Near)
+	-- the snug fit shows the whole floor small on a phone (a crate ~16 points): it opens nearer,
+	-- the room's middle filling the band and its edges a slide away (S5-03j7a); a pinch out still
+	-- backs off to the whole floor
+	local whole = reach
+	reach = math.max(reach * Cam.Open, Cam.Near)
 	local flat, rise = reach * math.cos(Cam.HomeTilt), reach * math.sin(Cam.HomeTilt)
 	local out = math.max(Cam.Around, flat - math.min(s.X, s.Z) / 2 + 1)
 	local eyeBox = BuildView.eyeBox(s.X / 2, s.Z / 2, -out, out)
@@ -182,8 +186,10 @@ local function orbitFor(
 	return Brix.OrbitCamera.new({
 		area = Brix.Zone.box({
 			pathing = Brix.Pathing.floor(),
+			-- the focus slides only so far from the middle (`SlideReach`): the room's edge comes
+			-- onto the screen, never the room half off it
 			center = toVector(face * c),
-			size = toVector(s),
+			size = toVector(Vector3.new(s.X * Cam.SlideReach, s.Y, s.Z * Cam.SlideReach)),
 			turn = math.atan2(-across.Z, across.X),
 		}),
 		focus = toVector(focus),
@@ -191,7 +197,7 @@ local function orbitFor(
 		tilt = math.clamp(math.asin(off.Y / distance), Cam.LowTilt, Cam.HighTilt),
 		distance = distance,
 		near = Cam.Near,
-		far = math.max(distance, math.min(math.max(s.X, s.Z) + Cam.FarPast, Cam.FarMost)),
+		far = math.max(distance, whole, math.min(math.max(s.X, s.Z) + Cam.FarPast, Cam.FarMost)),
 		lowTilt = Cam.LowTilt,
 		highTilt = Cam.HighTilt,
 		eyeArea = Brix.Zone.box({

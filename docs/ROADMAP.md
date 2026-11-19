@@ -3608,7 +3608,11 @@ Done when players watch the results to the end and change their perks between cl
     - [ ] **S5-03j7 The editor seen whole.** Every row of the feedback table checked in Studio
       Play at A16 size and captured; fixes; ArrangeView's leftovers removed; OWNER.md's phone
       steps written. Split (Nov 19, the conductor; j6b2b's session):
-      - [ ] **j7a Seen whole, and the screen's fixes.** From the conductor's look at this run's
+      - [x] **j7a Seen whole, and the screen's fixes.** Done Nov 19 (D-471,
+        `docs/art/s5-03j7a-*`): (1) only the nearest thing's buttons show where they'd overlap
+        (`WorldButton.crowd`); (5) Arrange opens nearer (`Camera.Open` 0.65) and slides only half
+        way to the walls (`SlideReach`); the carried and picked washes made to read. (2), (3), (4),
+        the group's two unseen and the feedback table walk moved to j7b. Was: From the conductor's look at this run's
         captures (Nov 19): (1) at phone size the world buttons on neighbouring things overlap
         ("Open" and "Sit" on two crates, `s5-03j5b2-kept-spot-closeup.png`,
         `s5-03j5a2-place-close.png`): fix it for every button, by find for none (nudge
@@ -3628,7 +3632,11 @@ Done when players watch the results to the end and change their perks between cl
         to 1744 (72ff873) as undo, box-select, hold-to-pick-up and the group were wired into it.
         Move each piece's wiring into its own module (or a small `ArrangeWiring`) so ArrangeView
         ends as the plan says: wiring only, well under 1520 lines. Behaviour unchanged; check.sh
-        and a Play pass prove it. Then OWNER.md's phone steps for the whole editor.
+        and a Play pass prove it. Then OWNER.md's phone steps for the whole editor. Carried from
+        j7a (D-471): see and capture the weighted landing (thud and dust, D-461), Put away's
+        flight into its card (a RenderStepped logger), a group's Turn refused, Redo of a group
+        Put away; judge the guide line and the wall height handle at full scale; walk the plan's
+        feedback table row by row. If it won't fit, split j7b (taking apart first).
   - [ ] **S5-03k The recipe system: what one thing does to another** (the owner, Nov 18,
     D-436; D-188's "hatched pets live there"; the doc's "Part 2" section). One data row per
     recipe; a fixed vocabulary of starts, stage ends, results and looks; thousands of rows by

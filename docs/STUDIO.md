@@ -3839,3 +3839,15 @@ verified: a doc page, Studio, or "untested".
 - **The shelf's model holds its cubby finds**, and in this save two of them stand 8 and 12 studs
   in front of it: `GetBoundingBox` on the shelf reaches mid-room. Measure a thing by
   `Arranged.bounds(model, Shelf.Tag)` (D-470).
+
+## Buttons and the opening view in Play (S5-03j7a, Nov 19)
+
+- **Seeing two things' buttons crowd:** pivot to (64, 3.5, 478) in Unit1's Medium home, then a
+  Client `execute_luau` setting `CurrentCamera.CFrame = CFrame.lookAt(eye, (66, 1.6, 479.8))`
+  sticks (first person reads the camera's own look) and puts the moon lamp's Take/Switch (E, F)
+  and a crate's Sit (R) on top of each other. Read each `PlayerGui.WorldButtons` BillboardGui's
+  `Verb.TextTransparency` and its `Adornee` to see which yielded.
+- **The opening view is read on `start`:** a change to `Arrange.Camera` needs Play restarted, not
+  just Arrange reopened. `WorldToViewportPoint` minus 58 in y is the click's y, plus 47 in x.
+- **A held drag over the shelf** (press at the crate, a 60-point move at once, 5 s held) with a
+  background `sleep 4; capture` catches the carried wash; let go there and it hops beside.

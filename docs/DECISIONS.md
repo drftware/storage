@@ -11237,3 +11237,30 @@ captured to `docs/art/s5-03j6b2b-*`:
   reads faint at phone size, as the box's glow does (D-467): one polish line in j7a.
 - **S5-03j7 split** (the conductor, Nov 19): j7a the editor seen whole and the screen's fixes;
   j7b ArrangeView taken apart to wiring (it grew to 1744 lines this run) and OWNER.md's phone steps.
+
+- **D-471 Only the nearest thing's buttons show where they'd overlap; Arrange opens nearer and
+  slides only so far; the carried and picked washes read** (S5-03j7a, seen in Studio Play at A16
+  size, `docs/art/s5-03j7a-*`).
+  - Two things side by side (a crate's Sit, the moon lamp's Take and Switch) drew their buttons on
+    top of each other at phone size. ButtonView now boxes each thing's row on the screen ten times
+    a second while any button shows, and `WorldButton.crowd` (pure, in the spec) lets only the
+    nearest thing's row show where rows overlap; the farther thing's fade out in 0.1 s and take
+    no taps, and come back once clear by 14 points (no flicker at the edge). Chosen over nudging
+    rows apart: on a phone two stacked rows still crowd the thing you're looking at, and Roblox's
+    own prompts already show one per key. Nothing names a find. Its key (on a computer) still
+    presses a hidden one; OWNER.md asks whether that's ever wrong. Seen: the lamp's two buttons
+    faded under the crate's Sit.
+  - Arrange opened with the whole floor snug in the band, a crate about 16 points across. It now
+    opens at 0.65 of that distance (`Arrange.Camera.Open`), a crate about 30 points; 0.5 was
+    tried and brought the near walls and the unit's outside into view (kept as
+    `s5-03j7a-open-050-rejected.png`). A pinch out still reaches the snug view (`far` keeps it).
+    A slide (a finger, WASD) moves the point the camera circles at most half way from the room's
+    middle to its walls (`SlideReach`), so held D stops with the room's edge on screen.
+  - The carried thing's green and red and the box's picked glow were 0.78 see-through and read
+    faint at phone size; now 0.6 green, 0.45 red (`Arrange.Feel.FitsWash`, `RefusedWash`, the
+    colours moved there from ArrangeHand and ArrangeGroup) and 0.64 picked (`Selection.Glow`).
+    Seen: a crate carried over the shelf reads plainly red. The green wasn't captured.
+  - Not reached this session, carried into j7b by name: the weighted landing (thud and dust),
+    Put away's flight into its card, a group's Turn refused, Redo of a group Put away, the guide
+    line at full scale, the wall height handle beside the sign, and the walk of the plan's
+    feedback table.
